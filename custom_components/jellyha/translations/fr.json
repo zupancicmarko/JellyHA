@@ -1,0 +1,59 @@
+{
+    "title": "JellyHA",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Connexion à Jellyfin",
+                "description": "Entrez l'URL de votre serveur Jellyfin et la clé API",
+                "data": {
+                    "server_url": "URL du serveur",
+                    "api_key": "Clé API"
+                },
+                "data_description": {
+                    "server_url": "URL complète de votre serveur Jellyfin (ex: http://192.168.1.100:8096)",
+                    "api_key": "Clé API depuis Tableau de bord Jellyfin → Clés API"
+                }
+            },
+            "user_select": {
+                "title": "Sélectionner l'utilisateur",
+                "description": "Choisissez l'utilisateur Jellyfin à utiliser",
+                "data": {
+                    "user_id": "Utilisateur"
+                }
+            },
+            "library_select": {
+                "title": "Sélectionner les bibliothèques",
+                "description": "Choisissez les bibliothèques à inclure (laisser vide pour toutes)",
+                "data": {
+                    "libraries": "Bibliothèques"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Échec de la connexion au serveur Jellyfin",
+            "invalid_auth": "Clé API invalide",
+            "unknown": "Une erreur inattendue s'est produite"
+        },
+        "abort": {
+            "already_configured": "Ce serveur Jellyfin est déjà configuré"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Options",
+                "data": {
+                    "refresh_interval": "Intervalle de rafraîchissement",
+                    "item_limit": "Nombre maximum d'éléments"
+                }
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "library": {
+                "name": "Bibliothèque JellyHA"
+            }
+        }
+    }
+}

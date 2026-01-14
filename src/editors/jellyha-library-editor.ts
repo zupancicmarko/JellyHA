@@ -1,0 +1,383 @@
+/**
+ * Graphical editor for JellyHA Library Card
+ */
+
+import { LitElement, html, TemplateResult, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { JellyHALibraryCardConfig, HomeAssistant } from '../shared/types';
+
+// Helper function to fire events
+function fireEvent(
+  node: EventTarget,
+  type: string,
+  detail?: Record<string, unknown>
+): void {
+  const event = new CustomEvent(type, {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+  node.dispatchEvent(event);
+}
+
+@customElement('jellyha-library-editor')
+export class JellyHALibraryEditor extends LitElement {
+  @property({ attribute: false }) hass!: HomeAssistant;
+  @state() private _config!: JellyHALibraryCardConfig;
+
+  static styles = css`
+    .form-row {
+      margin-bottom: 16px;
+    }
+    .form-row ha-textfield,
+    .form-row ha-select {
+      width: 100%;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+  `;
+
+  public setConfig(config: JellyHALibraryCardConfig): void {
+    this._config = config;
+  }
+
+  protected render(): TemplateResult {
+    if (!this.hass || !this._config) {
+      return html``;
+    }
+
+    return html`
+      <div class="card-config">
+        <div class="form-row">
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${this._config.entity}
+            .label=${'Entity (required)'}
+            .includeDomains=${['sensor']}
+            @value-changed=${this._entityChanged}
+            allow-custom-entity
+          ></ha-entity-picker>
+        </div>
+
+        <div class="form-row">
+          <ha-textfield
+            label="Title"
+            .value=${this._config.title || ''}
+            @input=${this._titleChanged}
+          ></ha-textfield>
+        </div>
+
+        <div class="form-row">
+          <ha-select
+            label="Layout"
+            .value=${this._config.layout || 'carousel'}
+            @selected=${this._layoutChanged}
+            @closed=${(e: Event) => e.stopPropagation()}
+          >
+            <mwc-list-item value="carousel">Carousel</mwc-list-item>
+            <mwc-list-item value="grid">Grid</mwc-list-item>
+            <mwc-list-item value="list">List</mwc-list-item>
+          </ha-select>
+        </div>
+
+        ${this._config.layout === 'grid' || this._config.layout === 'list'
+        ? html`
+              <div class="form-row">
+                <ha-slider
+                  labeled
+                  min="1"
+                  max="${this._config.layout === 'list' ? 8 : 12}"
+                  .value=${this._config.columns || 1}
+                  @change=${this._columnsChanged}
+                ></ha-slider>
+                <span>Columns: ${(this._config.columns || 1) === 1 ? 'Auto' : this._config.columns}</span>
+              </div>
+            `
+        : ''}
+
+        <div class="form-row">
+          <ha-select
+            label="Media Type"
+            .value=${this._config.media_type || 'both'}
+            @selected=${this._mediaTypeChanged}
+            @closed=${(e: Event) => e.stopPropagation()}
+          >
+            <mwc-list-item value="both">Movies & TV Shows</mwc-list-item>
+            <mwc-list-item value="movies">Movies Only</mwc-list-item>
+            <mwc-list-item value="series">TV Shows Only</mwc-list-item>
+          </ha-select>
+        </div>
+
+        <div class="form-row">
+          <ha-textfield
+            label="Items Per Page"
+            type="number"
+            min="1"
+            .value=${this._config.items_per_page !== undefined ? String(this._config.items_per_page) : ''}
+            @input=${this._itemsPerPageChanged}
+          ></ha-textfield>
+        </div>
+
+        <div class="form-row">
+          <ha-textfield
+            label="Max Pages"
+            type="number"
+            min="1"
+            max="20"
+            .value=${String(this._config.max_pages || 5)}
+            @input=${this._maxPagesChanged}
+          ></ha-textfield>
+        </div>
+
+        <div class="form-row">
+          <ha-textfield
+            label="Auto Swipe Interval (seconds, 0 = off)"
+            type="number"
+            min="0"
+            max="60"
+            .value=${String(this._config.auto_swipe_interval || 0)}
+            @input=${this._autoSwipeIntervalChanged}
+          ></ha-textfield>
+        </div>
+
+        <div class="form-row">
+          <ha-textfield
+            label="New Badge Days"
+            type="number"
+            min="0"
+            max="30"
+            .value=${String(this._config.new_badge_days || 7)}
+            @input=${this._newBadgeDaysChanged}
+          ></ha-textfield>
+        </div>
+
+        <div class="form-row">
+          <ha-select
+            label="Click Action"
+            .value=${this._config.click_action || 'jellyfin'}
+            @selected=${this._clickActionChanged}
+            @closed=${(e: Event) => e.stopPropagation()}
+          >
+            <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
+            <mwc-list-item value="more-info">Show More Info</mwc-list-item>
+            <mwc-list-item value="none">No Action</mwc-list-item>
+          </ha-select>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_title !== false}
+            @change=${this._showTitleChanged}
+          ></ha-switch>
+          <span>Show Title</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_year !== false}
+            @change=${this._showYearChanged}
+          ></ha-switch>
+          <span>Show Year</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_date_added === true}
+            @change=${this._showDateAddedChanged}
+          ></ha-switch>
+          <span>Show Date Added</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_ratings !== false}
+            @change=${this._showRatingsChanged}
+          ></ha-switch>
+          <span>Show Ratings</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_runtime === true}
+            @change=${this._showRuntimeChanged}
+          ></ha-switch>
+          <span>Show Runtime</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_media_type_badge !== false}
+            @change=${this._showMediaTypeBadgeChanged}
+          ></ha-switch>
+          <span>Show Media Type Badge (Movie/Series)</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_genres === true}
+            @change=${this._showGenresChanged}
+          ></ha-switch>
+          <span>Show Genres</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_description_on_hover !== false}
+            @change=${this._showDescriptionOnHoverChanged}
+          ></ha-switch>
+          <span>Show Description</span>
+        </div>
+        </div>
+
+        <div class="form-row">
+          <ha-select
+            label="Metadata Position"
+            .value=${this._config.metadata_position || 'below'}
+            @selected=${this._metadataPositionChanged}
+            @closed=${(e: Event) => e.stopPropagation()}
+          >
+            <mwc-list-item value="below">Below</mwc-list-item>
+            <mwc-list-item value="above">Above</mwc-list-item>
+          </ha-select>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_pagination !== false}
+            @change=${this._showPaginationChanged}
+          ></ha-switch>
+          <span>Show Pagination Dots</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private _entityChanged(e: CustomEvent): void {
+    this._updateConfig('entity', e.detail.value);
+  }
+
+  private _titleChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('title', target.value);
+  }
+
+  private _layoutChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('layout', target.value);
+  }
+
+  private _columnsChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('columns', Number(target.value));
+  }
+
+  private _mediaTypeChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('media_type', target.value);
+  }
+
+  private _itemsPerPageChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    const value = target.value.trim();
+    if (value !== '') {
+      this._updateConfig('items_per_page', Number(value));
+    }
+  }
+
+  private _maxPagesChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('max_pages', Number(target.value));
+  }
+
+  private _autoSwipeIntervalChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('auto_swipe_interval', Number(target.value));
+  }
+
+  private _newBadgeDaysChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('new_badge_days', Number(target.value));
+  }
+
+  private _clickActionChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('click_action', target.value);
+  }
+
+  private _showTitleChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_title', target.checked);
+  }
+
+  private _showYearChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_year', target.checked);
+  }
+
+  private _showRatingsChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_ratings', target.checked);
+  }
+
+  private _showRuntimeChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_runtime', target.checked);
+  }
+
+  private _showMediaTypeBadgeChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_media_type_badge', target.checked);
+  }
+
+  private _showGenresChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_genres', target.checked);
+  }
+
+  private _showDateAddedChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_date_added', target.checked);
+  }
+
+  private _showDescriptionOnHoverChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_description_on_hover', target.checked);
+  }
+
+  private _metadataPositionChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('metadata_position', target.value);
+  }
+
+  private _horizontalAlignmentChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('horizontal_alignment', target.value);
+  }
+
+  private _showPaginationChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_pagination', target.checked);
+  }
+
+  private _updateConfig(key: string, value: unknown): void {
+    if (!this._config) {
+      return;
+    }
+
+    const newConfig = { ...this._config, [key]: value };
+    this._config = newConfig;
+
+    fireEvent(this as unknown as EventTarget, 'config-changed', { config: newConfig });
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'jellyha-library-editor': JellyHALibraryEditor;
+  }
+}
+

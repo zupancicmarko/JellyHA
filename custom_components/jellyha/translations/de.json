@@ -1,0 +1,39 @@
+{
+    "title": "Jellyfin Kürzlich hinzugefügt",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Mit Jellyfin verbinden",
+                "description": "Geben Sie Ihre Jellyfin-Server-URL und Ihren API-Schlüssel ein",
+                "data": {
+                    "server_url": "Server-URL",
+                    "api_key": "API-Schlüssel"
+                }
+            },
+            "user_select": {
+                "title": "Benutzer auswählen",
+                "data": {
+                    "user_id": "Benutzer"
+                }
+            },
+            "library_select": {
+                "title": "Bibliotheken auswählen",
+                "data": {
+                    "libraries": "Bibliotheken"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Verbindung zum Jellyfin-Server fehlgeschlagen",
+            "invalid_auth": "Ungültiger API-Schlüssel",
+            "unknown": "Ein unerwarteter Fehler ist aufgetreten"
+        }
+    },
+    "entity": {
+        "sensor": {
+            "library": {
+                "name": "JellyHA Bibliothek"
+            }
+        }
+    }
+}
