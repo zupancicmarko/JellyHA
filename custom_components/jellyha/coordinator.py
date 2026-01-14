@@ -143,6 +143,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             ),
             "date_added": item.get("DateCreated"),
             "jellyfin_url": self._api.get_jellyfin_url(item_id),
+            "is_played": item.get("UserData", {}).get("Played", False),
+            "unplayed_count": item.get("UserData", {}).get("UnplayedItemCount"),
         }
 
     def _get_rating(

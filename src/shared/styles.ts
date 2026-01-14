@@ -10,8 +10,8 @@ export const cardStyles = css`
     --jf-divider: var(--divider-color, rgba(255, 255, 255, 0.12));
     --jf-poster-radius: 10px;
     --jf-transition: 0s;
-    --jf-movie-badge: rgba(99, 102, 241, 0.85);
-    --jf-series-badge: rgba(245, 158, 11, 0.85);
+    --jf-movie-badge: rgb(99, 102, 241);
+    --jf-series-badge: rgb(245, 158, 11);
     --jf-border-color: var(--divider-color, rgba(255, 255, 255, 0.15));
   }
 
@@ -564,6 +564,8 @@ export const cardStyles = css`
     letter-spacing: 0.3px;
     color: #fff;
     z-index: 5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    opacity: 0.90;
   }
 
   .media-type-badge.movie {
@@ -588,6 +590,46 @@ export const cardStyles = css`
     text-transform: uppercase;
     letter-spacing: 0.3px;
     z-index: 5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    opacity: 0.90;
+  }
+
+  /* Status Badge (Watched/Unplayed) - Top Right */
+  .status-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  /* Watched Checkmark - Rectangular Green */
+  .status-badge.watched {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #4CAF50; /* Material Green 500 */
+    color: #fff;
+    font-size: 0.7rem;
+    opacity: 0.90;
+  }
+
+  .status-badge.watched ha-icon {
+    --mdc-icon-size: 14px;
+    margin-top: -1px;
+  }
+
+  /* Unplayed Count - Theme Colored Badge */
+  .status-badge.unplayed {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--jf-primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.90;
   }
 
   /* Rating Badge - Bottom Right */

@@ -55,6 +55,7 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   image_quality: 90,
   image_height: 300,
   theme: 'auto',
+  show_watched_status: true,
 };
 
 // Helper function to fire events (replaces custom-card-helpers)
@@ -724,9 +725,7 @@ export class JellyHALibraryCard extends LitElement {
               />
               <div class="poster-skeleton"></div>
               
-              ${isNew
-        ? html`<span class="new-badge">${localize(this.hass.language, 'new')}</span>`
-        : nothing}
+              ${this._renderStatusBadge(item, isNew)}
             </div>
           </div>
           ${this._config.metadata_position !== 'above' && this._config.show_date_added && item.date_added
@@ -772,6 +771,38 @@ export class JellyHALibraryCard extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Render status badge (watched checkmark, unplayed count, or new badge)
+   */
+  private _renderStatusBadge(item: MediaItem, isNew: boolean): TemplateResult {
+    const showWatched = this._config.show_watched_status !== false;
+
+    // 1. Watched Checkmark
+    if (showWatched && item.is_played) {
+      return html`
+        <div class="status-badge watched">
+          <ha-icon icon="mdi:check-bold"></ha-icon>
+        </div>
+      `;
+    }
+
+    // 2. Unplayed Count (Series only)
+    if (showWatched && item.type === 'Series' && (item.unplayed_count || 0) > 0) {
+      return html`
+        <div class="status-badge unplayed">
+          ${item.unplayed_count}
+        </div>
+      `;
+    }
+
+    // 3. New Badge (Fallback)
+    if (isNew) {
+      return html`<span class="new-badge">${localize(this.hass.language, 'new')}</span>`;
+    }
+
+    return html``;
   }
 
   /**
@@ -825,9 +856,7 @@ export class JellyHALibraryCard extends LitElement {
                 </span>`
         : nothing}
             
-            ${isNew
-        ? html`<span class="new-badge">${localize(this.hass.language, 'new')}</span>`
-        : nothing}
+            ${this._renderStatusBadge(item, isNew)}
             
             ${this._config.show_ratings && rating
         ? html`

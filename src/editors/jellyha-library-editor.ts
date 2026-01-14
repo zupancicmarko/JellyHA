@@ -218,6 +218,14 @@ export class JellyHALibraryEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
+            .checked=${this._config.show_watched_status !== false}
+            @change=${this._showWatchedStatusChanged}
+          ></ha-switch>
+          <span>Show Watched Status</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
             .checked=${this._config.show_genres === true}
             @change=${this._showGenresChanged}
           ></ha-switch>
@@ -331,6 +339,11 @@ export class JellyHALibraryEditor extends LitElement {
   private _showMediaTypeBadgeChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_media_type_badge', target.checked);
+  }
+
+  private _showWatchedStatusChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_watched_status', target.checked);
   }
 
   private _showGenresChanged(e: Event): void {

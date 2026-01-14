@@ -43,6 +43,8 @@ export interface MediaItem {
     backdrop_url: string;
     date_added: string;
     jellyfin_url: string;
+    is_played?: boolean;
+    unplayed_count?: number;
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
@@ -62,6 +64,7 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     show_description_on_hover?: boolean;
     show_genres?: boolean;
     show_date_added?: boolean;
+    show_watched_status?: boolean;
     show_pagination?: boolean;
     metadata_position?: 'above' | 'below';
     rating_source?: 'auto' | 'imdb' | 'tmdb';

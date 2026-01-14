@@ -95,6 +95,7 @@ max_pages: 5
 | `show_runtime` | boolean | `true` | Show runtime duration |
 | `show_ratings` | boolean | `true` | Show combined rating |
 | `show_media_type_badge` | boolean | `true` | Show Movie/Series badge |
+| `show_watched_status` | boolean | `true` | Show watched checkmarks (Movies) and unplayed counts (Series) |
 | `show_genres` | boolean | `true` | Show genres list |
 | `show_description_on_hover` | boolean | `true` | Show overview when hovering/tapping |
 | `show_pagination` | boolean | `true` | Show pagination dots |

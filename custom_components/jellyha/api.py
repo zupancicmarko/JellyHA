@@ -139,7 +139,7 @@ class JellyfinApiClient:
             "Limit": limit,
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
-            "Fields": "PrimaryImageAspectRatio,ProviderIds,Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,MediaStreams",
+            "Fields": "PrimaryImageAspectRatio,ProviderIds,Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,MediaStreams,UserData",
         }
 
         if library_ids:
