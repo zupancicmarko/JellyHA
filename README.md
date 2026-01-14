@@ -74,25 +74,37 @@ entity: sensor.jellyha_library
 title: Jellyfin Library
 layout: carousel
 media_type: both
-limit: 10
+items_per_page: 3
+max_pages: 5
 ```
 
 ### Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `entity` | string | **Required** | The sensor entity ID |
+| `entity` | string | **Required** | The sensor entity ID (e.g. `sensor.jellyha_library`) |
 | `title` | string | `Jellyfin Library` | Card title |
-| `layout` | string | `carousel` | `carousel`, `grid`, or `list` |
-| `media_type` | string | `both` | `movies`, `series`, or `both` |
-| `limit` | number | `10` | Maximum items to display |
-| `columns` | number | `4` | Columns for grid layout |
+| `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
+| `media_type` | string | `both` | Filter: `movies`, `series`, or `both` |
+| `items_per_page` | number | `3` | Items visible per page (carousel) or initial Load (list) |
+| `max_pages` | number | `5` | Maximum number of pages to display |
+| `columns` | number | `4` | Number of columns for grid layout |
+| `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (0 = disabled) |
 | `show_title` | boolean | `true` | Show media title |
 | `show_year` | boolean | `true` | Show release year |
-| `show_runtime` | boolean | `false` | Show runtime |
-| `show_ratings` | boolean | `true` | Show ratings |
-| `new_badge_days` | number | `7` | Days to show "New" badge |
-| `click_action` | string | `jellyfin` | `jellyfin`, `more-info`, or `none` |
+| `show_runtime` | boolean | `true` | Show runtime duration |
+| `show_ratings` | boolean | `true` | Show combined rating |
+| `show_media_type_badge` | boolean | `true` | Show Movie/Series badge |
+| `show_genres` | boolean | `true` | Show genres list |
+| `show_description_on_hover` | boolean | `true` | Show overview when hovering/tapping |
+| `show_pagination` | boolean | `true` | Show pagination dots |
+| `show_date_added` | boolean | `false` | Show the date item was added |
+| `metadata_position` | string | `below` | Position of text: `below` or `above` image |
+| `new_badge_days` | number | `3` | Items added within X days show "New" badge |
+| `click_action` | string | `jellyfin` | Action on click: `jellyfin`, `more-info`, or `none` |
+| `image_quality` | number | `90` | Image quality percentage (0-100) |
+| `image_height` | number | `300` | Maximum height of poster images in pixels |
+| `theme` | string | `auto` | Color theme: `auto`, `light`, or `dark` |
 
 ## API Key
 
