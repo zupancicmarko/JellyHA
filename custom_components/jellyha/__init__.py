@@ -9,7 +9,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .coordinator import JellyHALibraryCoordinator
+from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .services import async_register_services
 from .storage import JellyfinLibraryData
 from .websocket import async_register_websocket
@@ -24,12 +24,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     storage = JellyfinLibraryData(hass, entry.entry_id)
     await storage.async_load()
 
-    coordinator = JellyHALibraryCoordinator(hass, entry, storage)
-    
-    await coordinator.async_config_entry_first_refresh()
+    lib_coordinator = JellyHALibraryCoordinator(hass, entry, storage)
+    await lib_coordinator.async_config_entry_first_refresh()
+
+    # Initialize session coordinator (api is initialized in library coordinator)
+    session_coordinator = JellyHASessionCoordinator(
+        hass, entry, lib_coordinator._api
+    )
+    # Start session coordinator refresh (non-blocking)
+    await session_coordinator.async_config_entry_first_refresh()
     
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = coordinator
+    hass.data[DOMAIN][entry.entry_id] = {
+        "library": lib_coordinator,
+        "session": session_coordinator,
+    }
     
     # Register services and websocket
     await async_register_services(hass)

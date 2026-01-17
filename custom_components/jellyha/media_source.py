@@ -49,10 +49,11 @@ class JellyHAMediaSource(MediaSource):
         # media_type = parts[1] # Not strictly needed if we just stream item_id
         item_id = parts[2]
         
-        coordinator = self.hass.data[DOMAIN].get(entry_id)
-        if not coordinator:
+        coordinators = self.hass.data[DOMAIN].get(entry_id)
+        if not coordinators:
             raise Unresolvable(f"Config entry {entry_id} not found")
             
+        coordinator = coordinators["library"]
         api = coordinator._api
         if not api:
             raise Unresolvable("API not available")
@@ -116,7 +117,8 @@ class JellyHAMediaSource(MediaSource):
         """Build root showing available servers."""
         children = []
         if DOMAIN in self.hass.data:
-            for entry_id, coordinator in self.hass.data[DOMAIN].items():
+            for entry_id, coordinators in self.hass.data[DOMAIN].items():
+                coordinator = coordinators["library"]
                 children.append(
                     BrowseMediaSource(
                         domain=DOMAIN,

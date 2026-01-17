@@ -55,7 +55,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
         coordinator = None
         if DOMAIN in hass.data:
             for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]
+                coordinator = hass.data[DOMAIN][entry_id]["library"]
                 break
 
         if not coordinator or not coordinator._api:
@@ -336,7 +336,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
         coordinator = None
         if DOMAIN in hass.data:
             for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]
+                coordinator = hass.data[DOMAIN][entry_id]["library"]
                 break
 
         if not coordinator or not coordinator._api:
@@ -366,4 +366,80 @@ async def async_register_services(hass: HomeAssistant) -> None:
             SERVICE_DELETE_ITEM,
             async_delete_item,
             schema=DELETE_ITEM_SCHEMA,
+        )
+
+    async def async_update_favorite(call: ServiceCall) -> None:
+        """Update favorite status for an item."""
+        item_id = call.data["item_id"]
+        is_favorite = call.data["is_favorite"]
+        
+        # Find coordinator (assuming one instance for simplicity, but robust loop is better)
+        coordinator = None
+        if DOMAIN in hass.data:
+            for entry_id in hass.data[DOMAIN]:
+                coordinator = hass.data[DOMAIN][entry_id]["library"]
+                break
+        
+        if not coordinator or not coordinator._api:
+            _LOGGER.error("No JellyHA API client found")
+            return
+            
+        user_id = coordinator.entry.data.get("user_id")
+        if not user_id:
+            _LOGGER.error("No user ID found in config entry")
+            return
+
+        success = await coordinator._api.update_favorite(user_id, item_id, is_favorite)
+        if success:
+            _LOGGER.info("Updated favorite status for %s to %s", item_id, is_favorite)
+            # Force refresh to update UI immediately
+            await coordinator.async_refresh()
+
+    if not hass.services.has_service(DOMAIN, "update_favorite"):
+        hass.services.async_register(
+            DOMAIN,
+            "update_favorite",
+            async_update_favorite,
+            schema=vol.Schema({
+                vol.Required("item_id"): cv.string,
+                vol.Required("is_favorite"): cv.boolean,
+            }),
+        )
+
+    async def async_mark_watched(call: ServiceCall) -> None:
+        """Update watched status for an item."""
+        item_id = call.data["item_id"]
+        is_played = call.data["is_played"]
+        
+        # Find coordinator
+        coordinator = None
+        if DOMAIN in hass.data:
+            for entry_id in hass.data[DOMAIN]:
+                coordinator = hass.data[DOMAIN][entry_id]["library"]
+                break
+        
+        if not coordinator or not coordinator._api:
+            _LOGGER.error("No JellyHA API client found")
+            return
+            
+        user_id = coordinator.entry.data.get("user_id")
+        if not user_id:
+            _LOGGER.error("No user ID found in config entry")
+            return
+
+        success = await coordinator._api.update_played_status(user_id, item_id, is_played)
+        if success:
+            _LOGGER.info("Updated played status for %s to %s", item_id, is_played)
+            # Force refresh
+            await coordinator.async_refresh()
+
+    if not hass.services.has_service(DOMAIN, "mark_watched"):
+        hass.services.async_register(
+            DOMAIN,
+            "mark_watched",
+            async_mark_watched,
+            schema=vol.Schema({
+                vol.Required("item_id"): cv.string,
+                vol.Required("is_played"): cv.boolean,
+            }),
         )

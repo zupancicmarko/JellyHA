@@ -5,11 +5,15 @@
  */
 
 import { LitElement, html, nothing, PropertyValues, TemplateResult } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 
-import { JellyHALibraryCardConfig, MediaItem, SensorData, HomeAssistant } from '../shared/types';
+import { HomeAssistant, LovelaceCard, MediaItem, SensorData, JellyHALibraryCardConfig } from '../shared/types';
+import { JellyHAItemDetailsModal } from '../components/jellyha-item-details-modal';
 import { cardStyles } from '../shared/styles';
 import { localize } from '../shared/localize';
+
+// Import modal for side effects (registration)
+import '../components/jellyha-item-details-modal';
 
 // Import editor for side effects
 import '../editors/jellyha-library-editor';
@@ -81,13 +85,14 @@ export class JellyHALibraryCard extends LitElement {
   @state() private _config!: JellyHALibraryCardConfig;
   @state() private _currentPage = 0;
   @state() private _itemsPerPage = 5;
-  @state() private _error?: string;
   @state() private _pressStartTime: number = 0;
   @state() private _holdTimer?: number;
   @state() private _isHoldActive: boolean = false;
   @state() private _rewindActive: boolean = false;
   @state() private _items: MediaItem[] = [];
+  @state() private _error?: string;
   @state() private _lastUpdate: string = '';
+  @query('jellyha-item-details-modal') private _modal!: JellyHAItemDetailsModal;
 
   private _touchStartX: number = 0;
   private _touchStartY: number = 0;
@@ -808,18 +813,21 @@ export class JellyHALibraryCard extends LitElement {
 
     return html`
       <ha-card>
-        ${this._config.title
+        <div class="card-inner">
+            ${this._config.title
         ? html`
-              <div class="card-header">
-                <h2>${this._config.title}</h2>
-              </div>
-            `
+                  <div class="card-header">
+                    <h2>${this._config.title}</h2>
+                  </div>
+                `
         : nothing}
-        <div class="card-content">
-          ${items.length === 0
+            <div class="card-content">
+              ${items.length === 0
         ? this._renderEmpty()
         : this._renderLayout(items)}
+            </div>
         </div>
+        <jellyha-item-details-modal .hass=${this.hass}></jellyha-item-details-modal>
       </ha-card>
     `;
   }
@@ -1464,6 +1472,7 @@ export class JellyHALibraryCard extends LitElement {
     this.dispatchEvent(event);
 
     const action = type === 'click' ? this._config.click_action : this._config.hold_action;
+    console.log('JellyHA: performAction', { type, action, config: this._config, item });
 
     switch (action) {
       case 'jellyfin':
@@ -1473,9 +1482,7 @@ export class JellyHALibraryCard extends LitElement {
         this._castMedia(item);
         break;
       case 'more-info':
-        fireEvent(this as unknown as EventTarget, 'hass-more-info', {
-          entityId: this._config.entity,
-        });
+        this._showItemDetails(item);
         break;
       case 'none':
       default:
@@ -1684,6 +1691,15 @@ export class JellyHALibraryCard extends LitElement {
         </div>
       </ha-card>
     `;
+  }
+  private _showItemDetails(item: MediaItem): void {
+    if (this._modal) {
+      this._modal.showDialog({
+        item,
+        hass: this.hass,
+        defaultCastDevice: this._config.default_cast_device
+      });
+    }
   }
 }
 

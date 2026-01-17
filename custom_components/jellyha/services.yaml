@@ -30,3 +30,37 @@ delete_item:
       required: true
       selector:
         text:
+
+mark_watched:
+  name: Mark Watched
+  description: Mark an item as watched or unwatched
+  fields:
+    item_id:
+      name: Item ID
+      description: Jellyfin item ID to mark
+      required: true
+      selector:
+        text:
+    is_played:
+      name: Is Played
+      description: True to mark as played/watched, False to mark as unplayed
+      required: true
+      selector:
+        boolean:
+
+update_favorite:
+  name: Update Favorite
+  description: Mark an item as favorite or remove from favorites
+  fields:
+    item_id:
+      name: Item ID
+      description: Jellyfin item ID to update
+      required: true
+      selector:
+        text:
+    is_favorite:
+      name: Is Favorite
+      description: True to add to favorites, False to remove
+      required: true
+      selector:
+        boolean:

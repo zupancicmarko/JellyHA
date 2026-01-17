@@ -19,6 +19,13 @@ export const cardStyles = css`
   ha-card {
     background: var(--jf-card-bg);
     border-radius: 12px;
+    /* overflow: hidden; Removed to allow modal to escape */
+    position: relative;
+    z-index: 0;
+  }
+
+  .card-inner {
+    border-radius: 12px;
     overflow: hidden;
     position: relative;
     z-index: 0;
@@ -473,6 +480,12 @@ export const cardStyles = css`
   /* Brighter border on hover for dark theme */
   .poster-container:hover {
     border-color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Theme border for currently playing item */
+  .media-item.playing .poster-container {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 8px rgba(var(--rgb-primary-color, 3, 169, 244), 0.4);
   }
 
   .poster-inner {

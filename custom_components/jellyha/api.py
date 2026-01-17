@@ -128,6 +128,7 @@ class JellyfinApiClient:
         limit: int = 0,  # 0 = no limit, fetch all items
         item_types: list[str] | None = None,
         library_ids: list[str] | None = None,
+        search_term: str | None = None,
     ) -> list[dict[str, Any]]:
         """Get library items."""
         if item_types is None:
@@ -144,6 +145,9 @@ class JellyfinApiClient:
         if limit > 0:
             params["Limit"] = limit
 
+        if search_term:
+            params["SearchTerm"] = search_term
+
         if library_ids:
             params["ParentId"] = ",".join(library_ids)
 
@@ -153,6 +157,10 @@ class JellyfinApiClient:
     async def get_item(self, user_id: str, item_id: str) -> dict[str, Any]:
         """Get details for a single item."""
         return await self._request("GET", f"/Users/{user_id}/Items/{item_id}")
+
+    async def get_sessions(self) -> list[dict[str, Any]]:
+        """Get all active sessions."""
+        return await self._request("GET", "/Sessions")
 
     async def get_next_up_episode(self, user_id: str, series_id: str) -> dict[str, Any] | None:
         """Get the next unplayed episode for a series."""
@@ -184,7 +192,7 @@ class JellyfinApiClient:
         """Build image URL for an item."""
         return (
             f"{self._server_url}/Items/{item_id}/Images/{image_type}"
-            f"?maxHeight={max_height}&quality={quality}"
+            f"?maxHeight={max_height}&quality={quality}&api_key={self._api_key}"
         )
 
     def get_jellyfin_url(self, item_id: str) -> str:
@@ -196,6 +204,30 @@ class JellyfinApiClient:
         # Simple direct stream URL. Transcoding parameters could be added here.
         # We append api_key so the player can access without header auth.
         return f"{self._server_url}/Videos/{item_id}/stream?static=true&api_key={self._api_key}"
+
+    async def update_favorite(self, user_id: str, item_id: str, is_favorite: bool) -> bool:
+        """Update favorite status for an item."""
+        method = "POST" if is_favorite else "DELETE"
+        endpoint = f"/Users/{user_id}/FavoriteItems/{item_id}"
+        
+        try:
+            await self._request(method, endpoint)
+            return True
+        except JellyfinApiError as err:
+            _LOGGER.error("Failed to update favorite status: %s", err)
+            return False
+
+    async def update_played_status(self, user_id: str, item_id: str, is_played: bool) -> bool:
+        """Update played status for an item."""
+        method = "POST" if is_played else "DELETE"
+        endpoint = f"/Users/{user_id}/PlayedItems/{item_id}"
+        
+        try:
+            await self._request(method, endpoint)
+            return True
+        except JellyfinApiError as err:
+            _LOGGER.error("Failed to update played status: %s", err)
+            return False
 
     async def close(self) -> None:
         """Close the session."""

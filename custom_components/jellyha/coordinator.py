@@ -180,6 +180,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "is_played": item.get("UserData", {}).get("Played", False),
             "unplayed_count": item.get("UserData", {}).get("UnplayedItemCount"),
             "is_favorite": item.get("UserData", {}).get("IsFavorite", False),
+            "media_streams": item.get("MediaStreams", []),
+            "official_rating": item.get("OfficialRating"),
         }
 
     def _get_rating(
@@ -202,3 +204,45 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         # Fall back to community rating from Jellyfin
         return community_rating
+
+
+class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
+    """Coordinator to fetch active sessions from Jellyfin."""
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        api: JellyfinApiClient,
+    ) -> None:
+        """Initialize the coordinator."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_sessions",
+            update_interval=timedelta(seconds=10),
+            always_update=False,
+        )
+        self.entry = entry
+        self._api = api
+        self.users: dict[str, str] = {}  # Map user_id to username
+
+    async def _async_setup(self) -> None:
+        """Fetch users once on startup."""
+        try:
+            users = await self._api.get_users()
+            self.users = {u["Id"]: u["Name"] for u in users}
+            _LOGGER.debug("Loaded %d users", len(self.users))
+        except JellyfinApiError as err:
+            _LOGGER.error("Failed to fetch users: %s", err)
+
+    async def _async_update_data(self) -> list[dict[str, Any]]:
+        """Fetch sessions from Jellyfin API."""
+        if not self.users:
+            await self._async_setup()
+
+        try:
+            sessions = await self._api.get_sessions()
+            return sessions
+        except JellyfinApiError as err:
+            raise UpdateFailed(f"Error fetching sessions: {err}") from err

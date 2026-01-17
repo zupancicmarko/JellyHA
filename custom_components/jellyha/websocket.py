@@ -22,6 +22,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
     """Register JellyHA WebSocket handlers."""
     try:
         websocket_api.async_register_command(hass, websocket_get_items)
+        websocket_api.async_register_command(hass, websocket_get_next_up)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -64,10 +65,22 @@ async def websocket_get_items(
         )
         return
 
-    coordinator = hass.data[DOMAIN].get(entry_id)
-    if not coordinator:
+    coordinators = hass.data[DOMAIN].get(entry_id)
+    if not coordinators:
         connection.send_error(
              msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded"
+        )
+        return
+
+    # Handle new dict structure
+    if isinstance(coordinators, dict):
+        coordinator = coordinators.get("library")
+    else:
+        coordinator = coordinators
+
+    if not coordinator:
+        connection.send_error(
+             msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found"
         )
         return
 
@@ -86,3 +99,64 @@ async def websocket_get_items(
         items = coordinator.data["items"]
     
     connection.send_result(msg["id"], {"items": items})
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/get_next_up",
+    vol.Required("entity_id"): cv.entity_id,
+    vol.Required("series_id"): str,
+})
+@websocket_api.async_response
+async def websocket_get_next_up(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Handle get next up episode command."""
+    entity_id = msg["entity_id"]
+    series_id = msg["series_id"]
+    
+    state = hass.states.get(entity_id)
+    if not state:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, f"Entity {entity_id} not found")
+        return
+
+    entry_id = state.attributes.get("entry_id")
+    if not entry_id:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Missing entry_id")
+        return
+
+    coordinators = hass.data[DOMAIN].get(entry_id)
+    if not coordinators:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded")
+        return
+
+    if isinstance(coordinators, dict):
+        coordinator = coordinators.get("library")
+    else:
+        coordinator = coordinators
+        
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found")
+        return
+
+    if not coordinator.api:
+         await coordinator._async_setup()
+
+    try:
+        user_id = coordinator.entry.data["user_id"]
+        next_up = await coordinator.api.get_next_up_episode(user_id, series_id)
+        
+        if next_up:
+            # Transform using coordinator's helper
+            item = coordinator._transform_item(next_up)
+            # Find the season index/number from the raw item usually (ParentIndexNumber) or simple SeasonName
+            # Jellyfin 'ParentIndexNumber' is Season Number, 'IndexNumber' is Episode Number
+            item["season"] = next_up.get("ParentIndexNumber")
+            item["episode"] = next_up.get("IndexNumber")
+            item["season_nam"] = next_up.get("SeasonName")
+            connection.send_result(msg["id"], {"item": item})
+        else:
+            connection.send_result(msg["id"], {"item": None})
+            
+    except Exception as err:
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))

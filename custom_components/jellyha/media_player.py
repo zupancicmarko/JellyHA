@@ -17,7 +17,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .browse_media import async_browse_media, parse_item_id
+from .browse_media import async_browse_media, async_browse_media_search, parse_item_id
 from .const import CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME, DOMAIN
 from .coordinator import JellyHALibraryCoordinator
 
@@ -30,7 +30,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up JellyHA media player from config entry."""
-    coordinator: JellyHALibraryCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: JellyHALibraryCoordinator = hass.data[DOMAIN][entry.entry_id]["library"]
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
 
     async_add_entities([JellyHAMediaPlayer(coordinator, entry, device_name)])
@@ -46,6 +46,7 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
     _attr_supported_features = (
         MediaPlayerEntityFeature.BROWSE_MEDIA
         | MediaPlayerEntityFeature.PLAY_MEDIA
+        | MediaPlayerEntityFeature.SEARCH_MEDIA
     )
 
     def __init__(
@@ -137,4 +138,16 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
             "Play request for '%s' (ID: %s). Use card or call jellyha.play_on_chromecast service.",
             item.get("name"),
             item_id,
+        )
+
+    async def async_search_media(
+        self,
+        media_content_type: str | None = None,
+        media_content_id: str | None = None,
+    ) -> BrowseMedia:
+        """Search media from Jellyfin."""
+        return await async_browse_media_search(
+            self.hass,
+            self._entry.entry_id,
+            media_content_id or "",
         )

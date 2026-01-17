@@ -154,7 +154,8 @@ export class JellyHALibraryEditor extends LitElement {
             type="number"
             min="0"
             max="30"
-            .value=${String(this._config.new_badge_days || 7)}
+            .value=${this._config.new_badge_days !== undefined ? String(this._config.new_badge_days) : ''}
+            placeholder="3"
             @input=${this._newBadgeDaysChanged}
           ></ha-textfield>
         </div>
@@ -168,7 +169,7 @@ export class JellyHALibraryEditor extends LitElement {
           >
             <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
             <mwc-list-item value="cast">Cast to Chromecast</mwc-list-item>
-            <mwc-list-item value="more-info">Show More Info</mwc-list-item>
+            <mwc-list-item value="more-info">More Information</mwc-list-item>
             <mwc-list-item value="none">No Action</mwc-list-item>
           </ha-select>
         </div>
@@ -182,7 +183,7 @@ export class JellyHALibraryEditor extends LitElement {
           >
             <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
             <mwc-list-item value="cast">Cast to Chromecast</mwc-list-item>
-            <mwc-list-item value="more-info">Show More Info</mwc-list-item>
+            <mwc-list-item value="more-info">More Information</mwc-list-item>
             <mwc-list-item value="none">No Action</mwc-list-item>
           </ha-select>
         </div>
@@ -363,7 +364,12 @@ export class JellyHALibraryEditor extends LitElement {
 
   private _newBadgeDaysChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
-    this._updateConfig('new_badge_days', Number(target.value));
+    const value = target.value;
+    if (value === '' || value === null) {
+      this._updateConfig('new_badge_days', undefined);
+    } else {
+      this._updateConfig('new_badge_days', Number(value));
+    }
   }
 
   private _clickActionChanged(e: Event): void {

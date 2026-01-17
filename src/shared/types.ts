@@ -47,6 +47,10 @@ export interface MediaItem {
     is_played?: boolean;
     unplayed_count?: number;
     is_favorite?: boolean;
+    media_streams?: Record<string, any>[];
+    official_rating?: string;
+    season?: number;
+    episode?: number;
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
