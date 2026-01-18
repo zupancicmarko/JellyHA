@@ -52,8 +52,8 @@ export class JellyHALibraryEditor extends LitElement {
       return html``;
     }
 
-    const clickAction = this._config.click_action || 'jellyfin';
-    const holdAction = this._config.hold_action || 'cast';
+    const clickAction = this._config.click_action || 'more-info';
+    const holdAction = this._config.hold_action || 'jellyfin';
 
     return html`
       <div class="card-config">
@@ -62,7 +62,7 @@ export class JellyHALibraryEditor extends LitElement {
             .hass=${this.hass}
             .selector=${{ entity: { domain: 'sensor' } }}
             .value=${this._config.entity}
-            label="Entity (required)"
+            label="Entity"
             @value-changed=${this._entityChanged}
           ></ha-selector>
         </div>
@@ -121,6 +121,7 @@ export class JellyHALibraryEditor extends LitElement {
             label="Items Per Page"
             type="number"
             min="1"
+            required
             .value=${this._config.items_per_page !== undefined ? String(this._config.items_per_page) : ''}
             @input=${this._itemsPerPageChanged}
           ></ha-textfield>
@@ -128,11 +129,11 @@ export class JellyHALibraryEditor extends LitElement {
 
         <div class="form-row">
           <ha-textfield
-            label="Max Pages"
+            label="Max Pages (0 or blank = no limit)"
             type="number"
-            min="1"
+            min="0"
             max="20"
-            .value=${String(this._config.max_pages || 5)}
+            .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? String(this._config.max_pages) : ''}
             @input=${this._maxPagesChanged}
           ></ha-textfield>
         </div>
@@ -150,19 +151,18 @@ export class JellyHALibraryEditor extends LitElement {
 
         <div class="form-row">
           <ha-textfield
-            label="New Badge Days"
+            label="New Badge Days (0 or blank = off)"
             type="number"
             min="0"
             max="30"
-            .value=${this._config.new_badge_days !== undefined ? String(this._config.new_badge_days) : ''}
-            placeholder="3"
+            .value=${this._config.new_badge_days !== undefined && this._config.new_badge_days !== null ? String(this._config.new_badge_days) : ''}
             @input=${this._newBadgeDaysChanged}
           ></ha-textfield>
         </div>
 
         <div class="form-row">
           <ha-select
-            label="Click Action"
+            label="Short Press (Click) Action"
             .value=${clickAction}
             @selected=${this._clickActionChanged}
             @closed=${(e: Event) => e.stopPropagation()}
@@ -176,7 +176,7 @@ export class JellyHALibraryEditor extends LitElement {
 
         <div class="form-row">
           <ha-select
-            label="Hold (Long Press) Action"
+            label="Long Press (Hold) Action"
             .value=${holdAction}
             @selected=${this._holdActionChanged}
             @closed=${(e: Event) => e.stopPropagation()}
@@ -309,12 +309,43 @@ export class JellyHALibraryEditor extends LitElement {
       <span>Show Only Favorites</span>
     </div>
 
+    <div class="form-row">
+      <ha-select
+        label="Watch Status"
+        .value=${this._config.status_filter || 'all'}
+        @selected=${this._statusFilterChanged}
+        @closed=${(e: Event) => e.stopPropagation()}
+      >
+        <mwc-list-item value="all">All</mwc-list-item>
+        <mwc-list-item value="unwatched">Unwatched</mwc-list-item>
+        <mwc-list-item value="watched">Watched</mwc-list-item>
+      </ha-select>
+    </div>
+
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.filter_unwatched === true}
-        @change=${this._filterUnwatchedChanged}
+        .checked=${this._config.filter_newly_added === true}
+        @change=${this._filterNewlyAddedChanged}
       ></ha-switch>
-      <span>Show Only Unwatched</span>
+      <span>Show New Items Only</span>
+    </div>
+
+    <div class="form-row">
+      <ha-select
+        label="Sort Order"
+        .value=${this._config.sort_option || 'date_added_desc'}
+        @selected=${this._sortOptionChanged}
+        @closed=${(e: Event) => e.stopPropagation()}
+      >
+        <mwc-list-item value="date_added_desc">Date Added (Newest First)</mwc-list-item>
+        <mwc-list-item value="date_added_asc">Date Added (Oldest First)</mwc-list-item>
+        <mwc-list-item value="title_asc">Title (A-Z)</mwc-list-item>
+        <mwc-list-item value="title_desc">Title (Z-A)</mwc-list-item>
+        <mwc-list-item value="year_desc">Year (Newest First)</mwc-list-item>
+        <mwc-list-item value="year_asc">Year (Oldest First)</mwc-list-item>
+        <mwc-list-item value="last_played_desc">Last Played (Newest First)</mwc-list-item>
+        <mwc-list-item value="last_played_asc">Last Played (Oldest First)</mwc-list-item>
+      </ha-select>
     </div>
   </div>
 `;
@@ -349,12 +380,21 @@ export class JellyHALibraryEditor extends LitElement {
     const value = target.value.trim();
     if (value !== '') {
       this._updateConfig('items_per_page', Number(value));
+    } else {
+      // Revert to default if cleared
+      this._updateConfig('items_per_page', 5);
+      target.value = '5';
     }
   }
 
   private _maxPagesChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
-    this._updateConfig('max_pages', Number(target.value));
+    const value = target.value;
+    if (value === '' || value === null) {
+      this._updateConfig('max_pages', null);
+    } else {
+      this._updateConfig('max_pages', Number(value));
+    }
   }
 
   private _autoSwipeIntervalChanged(e: Event): void {
@@ -366,7 +406,7 @@ export class JellyHALibraryEditor extends LitElement {
     const target = e.target as HTMLInputElement;
     const value = target.value;
     if (value === '' || value === null) {
-      this._updateConfig('new_badge_days', undefined);
+      this._updateConfig('new_badge_days', null);
     } else {
       this._updateConfig('new_badge_days', Number(value));
     }
@@ -456,9 +496,19 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('filter_favorites', target.checked);
   }
 
-  private _filterUnwatchedChanged(e: Event): void {
+  private _statusFilterChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('status_filter', target.value);
+  }
+
+  private _filterNewlyAddedChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
-    this._updateConfig('filter_unwatched', target.checked);
+    this._updateConfig('filter_newly_added', target.checked);
+  }
+
+  private _sortOptionChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('sort_option', target.value);
   }
 
   private _updateConfig(key: string, value: unknown): void {

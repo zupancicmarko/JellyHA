@@ -325,7 +325,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
         """Force refresh library data."""
         if DOMAIN in hass.data:
             for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]
+                coordinator = hass.data[DOMAIN][entry_id]["library"]
                 await coordinator.async_refresh()
                 _LOGGER.info("Library refresh triggered via service")
 

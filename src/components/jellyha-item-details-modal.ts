@@ -124,8 +124,12 @@ export class JellyHAItemDetailsModal extends LitElement {
 
             .actions-col {
                 display: flex;
-                flex-direction: column;
-                gap: 12px;
+                flex-direction: row;
+                gap: 0;
+                justify-content: space-between;
+                align-items: center;
+                min-height: 44px; /* Maintain height for delete confirmation */
+                width: 100%;
             }
 
             .details-col {
@@ -224,59 +228,69 @@ export class JellyHAItemDetailsModal extends LitElement {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 8px;
                 padding: 10px;
-                border-radius: 8px;
+                border-radius: 50%; /* Circle shape */
                 border: none;
                 cursor: pointer;
-                font-weight: 600;
-                font-size: 0.95rem;
-                text-decoration: none;
-                width: 100%;
+                background: transparent;
+                color: var(--secondary-text-color);
+                width: 44px;
+                height: 44px;
                 box-sizing: border-box;
+                transition: background 0.2s, color 0.2s;
             }
 
-            .btn-primary {
-                background: var(--primary-color);
-                color: var(--text-primary-color, white);
-            }
-
-            .btn-secondary {
-                background: var(--secondary-background-color);
+            .action-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
                 color: var(--primary-text-color);
-                border: 1px solid var(--divider-color);
+            }
+
+            .action-btn.active {
+                color: var(--primary-color);
+            }
+            .favorite-btn.active {
+                color: #F44336;
+            }
+
+            .action-btn ha-icon {
+                --mdc-icon-size: 26px;
             }
 
             .btn-danger {
-                background: var(--error-color, #f44336);
-                color: white;
+                color: var(--error-color, #f44336);
             }
-            .btn-danger.small, .btn-secondary.small {
-                font-size: 0.85rem;
-                padding: 6px 12px;
+            .btn-danger:hover {
+                background: rgba(244, 67, 54, 0.15);
             }
 
             .confirmation-box {
-                background: rgba(244, 67, 54, 0.1);
-                border: 1px solid var(--error-color);
-                padding: 12px;
-                border-radius: 8px;
                 display: flex;
-                flex-direction: column;
-                gap: 8px;
+                gap: 12px;
                 align-items: center;
-                text-align: center;
-            }
-            
-            .confirm-actions {
-                display: flex;
-                gap: 8px;
+                justify-content: center;
                 width: 100%;
+                background: rgba(244, 67, 54, 0.1);
+                border-radius: 8px;
+                padding: 4px 8px;
             }
             
-            .confirm-actions .action-btn {
-               flex: 1;
+            .confirm-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--primary-text-color);
+                font-weight: 600;
+                padding: 8px 16px;
+                border-radius: 4px;
             }
+            .confirm-btn:hover {
+                 background: rgba(255,255,255,0.1);
+            }
+            .confirm-yes {
+                color: var(--error-color);
+            }
+
+
 
             /* Next Up Section */
             .next-up-card {
@@ -326,7 +340,7 @@ export class JellyHAItemDetailsModal extends LitElement {
 
             @media (max-width: 600px) {
                 .content { grid-template-columns: 1fr; }
-                .poster-col { max-width: 200px; margin: 0 auto; width: 100%; }
+                .poster-col { max-width: 350px; margin: 0 auto; width: 100%; }
             }
         </style>
         `;
@@ -354,42 +368,40 @@ export class JellyHAItemDetailsModal extends LitElement {
                         <img class="poster-img" src="${item.poster_url}" alt="${item.name}" />
 
                         <div class="actions-col">
-                            <button class="action-btn btn-primary" @click=${this._handlePlay}>
-                                <ha-icon icon="mdi:play"></ha-icon> Play on Chromecast
-                            </button>
-                            
-                            <button class="action-btn btn-secondary" @click=${this._handleFavorite}>
-                                <ha-icon icon="${item.is_favorite ? 'mdi:heart' : 'mdi:heart-outline'}" 
-                                         style="color: ${item.is_favorite ? '#F44336' : 'inherit'}">
-                                </ha-icon> 
-                                ${item.is_favorite ? 'Favorite' : 'Add to Favorites'}
-                            </button>
-                            
-                            <button class="action-btn btn-secondary" @click=${this._handleWatched}>
-                                <ha-icon icon="mdi:check"
-                                         style="color: ${item.is_played ? 'var(--primary-color)' : 'inherit'}">
-                                </ha-icon>
-                                ${item.is_played ? 'Watched' : 'Mark Watched'}
-                            </button>
-
-                            <a href="${item.jellyfin_url}" class="action-btn btn-secondary" target="_blank">
-                                <ha-icon icon="mdi:open-in-new"></ha-icon> Open in Jellyfin
-                            </a>
-
                             ${this._confirmDelete
                 ? html`
                                 <div class="confirmation-box">
-                                    <span>Are you sure?</span>
-                                    <div class="confirm-actions">
-                                        <button class="action-btn btn-danger small" @click=${this._handleDeleteConfirm}>Delete</button>
-                                        <button class="action-btn btn-secondary small" @click=${() => this._confirmDelete = false}>Cancel</button>
-                                    </div>
+                                    <span>Delete?</span>
+                                    <button class="confirm-btn confirm-yes" @click=${this._handleDeleteConfirm}>Yes</button>
+                                    <button class="confirm-btn" @click=${() => this._confirmDelete = false}>No</button>
                                 </div>
                               `
                 : html`
-                             <button class="action-btn btn-danger" @click=${() => this._confirmDelete = true}>
-                                <ha-icon icon="mdi:delete"></ha-icon> Delete Item
-                            </button>
+                                <button class="action-btn" @click=${this._handlePlay} title="Play on Chromecast">
+                                    <ha-icon icon="mdi:play"></ha-icon>
+                                </button>
+                                
+                                ${item.trailer_url ? html`
+                                    <button class="action-btn" @click=${this._handleWatchTrailer} title="Watch Trailer">
+                                        <ha-icon icon="mdi:filmstrip"></ha-icon>
+                                    </button>
+                                ` : nothing}
+
+                                <button class="action-btn ${item.is_played ? 'active' : ''}" @click=${this._handleWatched} title="${item.is_played ? 'Mark Unwatched' : 'Mark Watched'}">
+                                    <ha-icon icon="mdi:check"></ha-icon>
+                                </button>
+
+                                <button class="action-btn favorite-btn ${item.is_favorite ? 'active' : ''}" @click=${this._handleFavorite} title="${item.is_favorite ? 'Remove Favorite' : 'Add to Favorites'}">
+                                     <ha-icon icon="${item.is_favorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
+                                </button>
+
+                                <a href="${item.jellyfin_url}" class="action-btn" target="_blank" title="Open in Jellyfin">
+                                    <ha-icon icon="mdi:popcorn"></ha-icon>
+                                </a>
+
+                                <button class="action-btn" @click=${() => this._confirmDelete = true} title="Delete Item">
+                                    <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+                                </button>
                             `}
                         </div>
                     </div>
@@ -418,7 +430,7 @@ export class JellyHAItemDetailsModal extends LitElement {
 
                         <div class="stats-row">
                             <div class="stat-item">
-                                <ha-icon icon="mdi:star" style="color: #FFD700;"></ha-icon>
+                                <ha-icon icon="mdi:star" style="color: #FBC02D;"></ha-icon>
                                 <span>${item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
                             </div>
                             ${isSeries ? html`
@@ -543,6 +555,52 @@ export class JellyHAItemDetailsModal extends LitElement {
         await this.hass.callService('jellyha', 'delete_item', {
             item_id: itemId,
         });
+    }
+
+    private _handleWatchTrailer = () => {
+        const item = this._item;
+        if (!item?.trailer_url) return;
+        const url = item.trailer_url;
+
+        // Extract YouTube ID if possible
+        // Standard formats: youtube.com/watch?v=ID, youtu.be/ID
+        let youtubeId = '';
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname.includes('youtube.com')) {
+                youtubeId = urlObj.searchParams.get('v') || '';
+            } else if (urlObj.hostname.includes('youtu.be')) {
+                youtubeId = urlObj.pathname.slice(1);
+            }
+        } catch (e) {
+            // ignore invalid urls for now, will just open as is
+        }
+
+        if (youtubeId) {
+            const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+            const isAndroid = /android/i.test(ua);
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+
+            if (isAndroid) {
+                // Try to open YouTube app on Android
+                // Fallback handled by browser usually if it can't handle intent Scheme, 
+                // but window.open might just fail silently or open a blank tab if app not installed.
+                // A safer way for "intent" is setting location.href, but that navigates away.
+                // For a simple buttons, opening a new window with the intent might fetch.
+                // Actually 'vnd.youtube:' is the scheme.
+                window.open(`vnd.youtube:${youtubeId}`, '_blank');
+                return;
+            }
+
+            if (isIOS) {
+                // Try to open YouTube app on iOS
+                window.open(`youtube://${youtubeId}`, '_blank');
+                return;
+            }
+        }
+
+        // Default behavior: open in new tab
+        window.open(url, '_blank');
     }
 }
 

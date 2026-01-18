@@ -51,6 +51,8 @@ export interface MediaItem {
     official_rating?: string;
     season?: number;
     episode?: number;
+    trailer_url?: string;
+    last_played_date?: string;
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
@@ -84,7 +86,9 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     image_height?: number;
     theme?: 'auto' | 'light' | 'dark';
     filter_favorites?: boolean;
-    filter_unwatched?: boolean;
+    status_filter?: 'all' | 'watched' | 'unwatched';
+    filter_newly_added?: boolean;
+    sort_option?: 'date_added_asc' | 'date_added_desc' | 'title_asc' | 'title_desc' | 'year_asc' | 'year_desc' | 'last_played_asc' | 'last_played_desc';
 }
 
 export interface SensorData {

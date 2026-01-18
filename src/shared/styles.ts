@@ -1006,4 +1006,58 @@ export const cardStyles = css`
     animation: spin 1s linear infinite;
     transform-origin: center;
   }
+
+  /* Smart Pagination (Sliding Window) - iOS Style */
+  .pagination-container.smart {
+    overflow: hidden !important;
+    max-width: 80px; /* Approx 5 dots (8px + 8px gap * 5) */
+    margin: 0 auto;
+    padding: 8px 0 12px;
+    position: relative;
+    z-index: 100;
+  }
+
+  .pagination-track {
+    display: flex;
+    gap: 8px; /* Match standard gap */
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: transform;
+    justify-content: flex-start;
+    padding-left: 0;
+  }
+
+  /* Smart Dot - Clone of .pagination-dot to ensure visual match */
+  .smart-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--jf-divider);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background var(--jf-transition), transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: auto;
+    flex-shrink: 0;
+  }
+
+  .smart-dot:hover {
+    background: var(--jf-text-secondary);
+  }
+
+  .smart-dot.active {
+    background: var(--jf-primary);
+    transform: scale(1.2);
+  }
+
+  /* Smart Dot Specific Modifiers */
+  .smart-dot.small {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+
+  .smart-dot.hidden {
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
 `;

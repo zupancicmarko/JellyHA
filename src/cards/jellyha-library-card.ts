@@ -43,7 +43,7 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   items_per_page: 3,
   max_pages: 5,
   auto_swipe_interval: 0, // 0 = disabled, otherwise seconds
-  columns: 4,
+  columns: 3,
   show_title: true,
   show_year: true,
   show_runtime: true,
@@ -57,12 +57,14 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   new_badge_days: 3,
   theme: 'auto',
   show_watched_status: true,
-  click_action: 'jellyfin',
-  hold_action: 'cast',
+  click_action: 'more-info',
+  hold_action: 'jellyfin',
   default_cast_device: '',
   show_now_playing: true,
   filter_favorites: false,
-  filter_unwatched: false,
+  status_filter: 'all',
+  filter_newly_added: false,
+  sort_option: 'date_added_desc',
 };
 
 // Helper function to fire events (replaces custom-card-helpers)
@@ -851,13 +853,53 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Filter by unwatched
-    if (this._config.filter_unwatched) {
+    // Filter by watch status
+    const statusFilter = this._config.status_filter || 'all';
+    if (statusFilter === 'unwatched') {
       filtered = filtered.filter((item) => !item.is_played);
+    } else if (statusFilter === 'watched') {
+      filtered = filtered.filter((item) => item.is_played === true);
+    }
+    // Filter by newly added
+    if (this._config.filter_newly_added) {
+      filtered = filtered.filter((item) => this._isNewItem(item));
     }
 
+    // Sorting
+    const sortOption = this._config.sort_option || 'date_added_desc';
+    filtered.sort((a, b) => {
+      switch (sortOption) {
+        case 'date_added_asc':
+          return (a.date_added || '').localeCompare(b.date_added || '');
+        case 'date_added_desc':
+          return (b.date_added || '').localeCompare(a.date_added || '');
+
+        case 'title_asc':
+          return (a.name || '').localeCompare(b.name || '');
+        case 'title_desc':
+          return (b.name || '').localeCompare(a.name || '');
+
+        case 'year_asc':
+          return (a.year || 0) - (b.year || 0);
+        case 'year_desc':
+          return (b.year || 0) - (a.year || 0);
+
+        case 'last_played_asc':
+          return (a.last_played_date || '').localeCompare(b.last_played_date || '');
+        case 'last_played_desc':
+          return (b.last_played_date || '').localeCompare(a.last_played_date || '');
+
+        default:
+          return 0;
+      }
+    });
+
     // Apply limit based on items_per_page * max_pages
-    const limit = (this._config.items_per_page || 5) * (this._config.max_pages || 5);
-    filtered = filtered.slice(0, limit);
+    const maxPages = this._config.max_pages;
+    if (maxPages !== undefined && maxPages !== null && maxPages > 0) {
+      const limit = (this._config.items_per_page || 5) * maxPages;
+      filtered = filtered.slice(0, limit);
+    }
 
     return filtered;
   }
@@ -893,8 +935,11 @@ export class JellyHALibraryCard extends LitElement {
    */
   private _renderCarousel(items: MediaItem[], showPagination: boolean): TemplateResult {
     const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
-    const maxPages = this._config.max_pages || 10;
-    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
+    const rawMaxPages = this._config.max_pages;
+    const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
+    const effectiveMaxPages = (maxPagesNum > 0) ? maxPagesNum : Infinity;
+    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
+
     const startIdx = this._currentPage * itemsPerPage;
     const visibleItems = showPagination
       ? items.slice(startIdx, startIdx + itemsPerPage)
@@ -917,19 +962,7 @@ export class JellyHALibraryCard extends LitElement {
           ${visibleItems.map((item) => this._renderMediaItem(item))}
         </div>
         ${showPagination && totalPages > 1
-        ? html`
-              <div class="pagination-dots">
-                ${Array.from({ length: totalPages }, (_, i) => html`
-                  <button
-                    type="button"
-                    class="pagination-dot ${i === this._currentPage ? 'active' : ''}"
-                    data-page="${i}"
-                    @click="${this._onDotClick}"
-                    aria-label="Go to page ${i + 1}"
-                  ></button>
-                `)}
-              </div>
-            `
+        ? this._renderPagination(totalPages)
         : nothing}
         ${!showPagination ? this._renderScrollIndicator() : nothing}
       </div>
@@ -941,8 +974,11 @@ export class JellyHALibraryCard extends LitElement {
    */
   private _renderList(items: MediaItem[], showPagination: boolean): TemplateResult {
     const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
-    const maxPages = this._config.max_pages || 10;
-    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
+    const rawMaxPages = this._config.max_pages;
+    const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
+    const effectiveMaxPages = (maxPagesNum > 0) ? maxPagesNum : Infinity;
+    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
+
     const startIdx = this._currentPage * itemsPerPage;
     const visibleItems = showPagination
       ? items.slice(startIdx, startIdx + itemsPerPage)
@@ -968,19 +1004,7 @@ export class JellyHALibraryCard extends LitElement {
           ${visibleItems.map((item) => this._renderListItem(item))}
         </div>
         ${showPagination && totalPages > 1
-        ? html`
-              <div class="pagination-dots">
-                ${Array.from({ length: totalPages }, (_, i) => html`
-                  <button
-                    type="button"
-                    class="pagination-dot ${i === this._currentPage ? 'active' : ''}"
-                    data-page="${i}"
-                    @click="${this._onDotClick}"
-                    aria-label="Go to page ${i + 1}"
-                  ></button>
-                `)}
-              </div>
-            `
+        ? this._renderPagination(totalPages)
         : nothing}
       </div>
     `;
@@ -990,8 +1014,11 @@ export class JellyHALibraryCard extends LitElement {
    */
   private _renderGrid(items: MediaItem[], showPagination: boolean): TemplateResult {
     const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
-    const maxPages = this._config.max_pages || 10;
-    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
+    const rawMaxPages = this._config.max_pages;
+    const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
+    const effectiveMaxPages = (maxPagesNum > 0) ? maxPagesNum : Infinity;
+    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
+
     const startIdx = this._currentPage * itemsPerPage;
     const visibleItems = showPagination
       ? items.slice(startIdx, startIdx + itemsPerPage)
@@ -1019,21 +1046,98 @@ export class JellyHALibraryCard extends LitElement {
           </div>
         </div>
         ${showPagination && totalPages > 1
-        ? html`
-              <div class="pagination-dots">
-                ${Array.from({ length: totalPages }, (_, i) => html`
-                  <button
-                    type="button"
-                    class="pagination-dot ${i === this._currentPage ? 'active' : ''}"
-                    data-page="${i}"
-                    @click="${this._onDotClick}"
-                    aria-label="Go to page ${i + 1}"
-                  ></button>
-                `)}
-              </div>
-            `
+        ? this._renderPagination(totalPages)
         : nothing}
         ${!showPagination ? this._renderScrollIndicator() : nothing}
+      </div>
+    `;
+  }
+
+  /**
+   * Main Pagination Render Dispatcher
+   * Decides between standard and smart pagination based on page count
+   */
+  private _renderPagination(totalPages: number): TemplateResult {
+    // Hybrid Approach: Use standard simple dots for small counts
+    if (totalPages <= 5) {
+      return this._renderStandardPagination(totalPages);
+    }
+    // Use Smart Sliding Dots for larger counts
+    return this._renderSmartPagination(totalPages);
+  }
+
+  /**
+   * Render Standard Pagination (Existing Logic preserved)
+   */
+  private _renderStandardPagination(totalPages: number): TemplateResult {
+    return html`
+      <div class="pagination-dots">
+        ${Array.from({ length: totalPages }, (_, i) => html`
+          <button
+            type="button"
+            class="pagination-dot ${i === this._currentPage ? 'active' : ''}"
+            data-page="${i}"
+            @click="${this._onDotClick}"
+            aria-label="Go to page ${i + 1}"
+          ></button>
+        `)}
+      </div>
+    `;
+  }
+
+  /**
+   * Render Smart Sliding Pagination (iOS Style)
+   */
+  private _renderSmartPagination(totalPages: number): TemplateResult {
+    const DOT_SIZE = 8; // width/height
+    const GAP = 8;      // gap
+    const VISIBLE_DOTS = 5;
+
+    // Calculate translate X to center the current page
+    // Window Width = (VISIBLE_DOTS * (DOT_SIZE + GAP)) - GAP
+    // 5 * 16 - 8 = 72px
+
+    // Center of Window = 72 / 2 = 36px
+    // Center of First Dot (Index 0) = DOT_SIZE/2 = 4px
+
+    // If Page 0 is active:
+    // We want Dot 0 center (4px) to be at Window Center (36px).
+    // Shift needed = 36 - 4 = 32px to the right.
+
+    // General Formula:
+    // Track Position = - (currentPage * (DOT_SIZE + GAP)) + CenterOffset
+    // CenterOffset = (WindowWidth / 2) - (DOT_SIZE / 2)
+
+    const singleDotSpace = DOT_SIZE + GAP;
+    const windowWidth = (VISIBLE_DOTS * singleDotSpace) - GAP;
+    const centerOffset = (windowWidth / 2) - (DOT_SIZE / 2);
+
+    const trackShift = -(this._currentPage * singleDotSpace) + centerOffset;
+
+    return html`
+      <div class="pagination-container smart" style="width: ${windowWidth}px">
+        <div 
+          class="pagination-track" 
+          style="transform: translateX(${trackShift}px); width: ${totalPages * singleDotSpace}px"
+        >
+          ${Array.from({ length: totalPages }, (_, i) => {
+      const distance = Math.abs(i - this._currentPage);
+      let classes = 'smart-dot';
+      if (i === this._currentPage) classes += ' active';
+      else if (distance > 2) classes += ' hidden'; // Hide far dots (> 2 steps away)
+      else if (distance === 2) classes += ' small'; // Edge dots (2 steps away)
+
+      return html`
+              <button
+                type="button"
+                class="${classes}"
+                data-page="${i}"
+                @click="${this._onDotClick}"
+                aria-label="Go to page ${i + 1}"
+              ></button>
+            `;
+    })}
+        </div>
       </div>
     `;
   }

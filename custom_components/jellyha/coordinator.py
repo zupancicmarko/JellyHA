@@ -182,6 +182,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "is_favorite": item.get("UserData", {}).get("IsFavorite", False),
             "media_streams": item.get("MediaStreams", []),
             "official_rating": item.get("OfficialRating"),
+            "trailer_url": next((t["Url"] for t in item.get("RemoteTrailers", []) if t.get("Url")), None),
+            "last_played_date": item.get("UserData", {}).get("LastPlayedDate"),
         }
 
     def _get_rating(
@@ -220,7 +222,7 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_sessions",
-            update_interval=timedelta(seconds=10),
+            update_interval=timedelta(seconds=5),
             always_update=False,
         )
         self.entry = entry

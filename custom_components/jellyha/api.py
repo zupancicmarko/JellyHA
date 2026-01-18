@@ -139,7 +139,7 @@ class JellyfinApiClient:
             "SortOrder": "Descending",
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
-            "Fields": "PrimaryImageAspectRatio,ProviderIds,Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,MediaStreams,UserData",
+            "Fields": "PrimaryImageAspectRatio,ProviderIds,Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,MediaStreams,UserData,RemoteTrailers",
         }
 
         if limit > 0:
