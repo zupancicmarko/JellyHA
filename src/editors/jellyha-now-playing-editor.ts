@@ -102,10 +102,10 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_ratings === true}
-            @change=${this._showRatingsChanged}
+            .checked=${this._config.show_year !== false}
+            @change=${this._showYearChanged}
           ></ha-switch>
-          <span>Show Ratings</span>
+          <span>Show Year</span>
         </div>
 
         <div class="checkbox-row">
@@ -118,18 +118,18 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_genres === true}
-            @change=${this._showGenresChanged}
+            .checked=${this._config.show_ratings === true}
+            @change=${this._showRatingsChanged}
           ></ha-switch>
-          <span>Show Genres</span>
+          <span>Show Rating</span>
         </div>
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_year !== false}
-            @change=${this._showYearChanged}
+            .checked=${this._config.show_genres === true}
+            @change=${this._showGenresChanged}
           ></ha-switch>
-          <span>Show Year</span>
+          <span>Show Genre</span>
         </div>
 
         <div class="checkbox-row">

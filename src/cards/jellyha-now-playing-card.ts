@@ -23,6 +23,7 @@ import '../editors/jellyha-now-playing-editor';
 export class JellyHANowPlayingCard extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private _config!: JellyHANowPlayingCardConfig;
+    @state() private _rewindActive: boolean = false;
 
     public setConfig(config: JellyHANowPlayingCardConfig): void {
         this._config = {
@@ -54,6 +55,15 @@ export class JellyHANowPlayingCard extends LitElement {
 
     public getCardSize(): number {
         return 3;
+    }
+
+    public getGridOptions() {
+        return {
+            columns: 6,
+            rows: 3,
+            min_columns: 6,
+            min_rows: 3,
+        };
     }
 
     protected render(): TemplateResult {
@@ -99,7 +109,7 @@ export class JellyHANowPlayingCard extends LitElement {
                     
                     <div class="main-container">
                         ${imageUrl ? html`
-                            <div class="poster-container">
+                            <div class="poster-container" @click=${this._handlePosterRewind}>
                                 <img src="${imageUrl}" alt="${attributes.title}" />
                             </div>
                         ` : nothing}
@@ -111,7 +121,6 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ${attributes.series_title ? html`<div class="series">${attributes.series_title}</div>` : nothing}
                                     ${this._config.show_client !== false ? html`
                                         <div class="device-info">
-                                            <ha-icon icon="mdi:television-classic"></ha-icon>
                                             <span>${attributes.device_name} (${attributes.client})</span>
                                         </div>
                                     ` : nothing}
@@ -119,29 +128,37 @@ export class JellyHANowPlayingCard extends LitElement {
 
                                 <div class="meta-container">
                                     ${this._config.show_media_type_badge !== false ? html`
-                                        <span class="badge ${attributes.media_type?.toLowerCase()}">${attributes.media_type}</span>
+                                        <span class="badge meta-priority-4 ${attributes.media_type?.toLowerCase()}">${attributes.media_type}</span>
                                     ` : nothing}
                                     ${this._config.show_year !== false && attributes.year ? html`
-                                        <span class="meta-item">${attributes.year}</span>
+                                        <span class="meta-item meta-priority-3">${attributes.year}</span>
+                                    ` : nothing}
+                                    ${this._config.show_runtime && attributes.runtime_minutes ? html`
+                                        <span class="meta-item meta-priority-2">${attributes.runtime_minutes} min</span>
                                     ` : nothing}
                                     ${this._config.show_ratings && attributes.community_rating ? html`
-                                        <span class="meta-item external-rating">
+                                        <span class="meta-item external-rating meta-priority-1">
                                             <ha-icon icon="mdi:star"></ha-icon>
                                             <span>${attributes.community_rating.toFixed(1)}</span>
                                         </span>
                                     ` : nothing}
-                                    ${this._config.show_runtime && attributes.runtime_minutes ? html`
-                                        <span class="meta-item">${attributes.runtime_minutes} min</span>
-                                    ` : nothing}
                                 </div>
 
                                 ${this._config.show_genres && attributes.genres?.length ? html`
-                                    <div class="genres">${attributes.genres.join(', ')}</div>
+                                    <div class="genres-container meta-priority-0">
+                                        <div class="genres">${attributes.genres.join(', ')}</div>
+                                    </div>
                                 ` : nothing}
                             </div>
 
                             <div class="info-bottom">
                                 <div class="controls-container">
+                                    ${this._config.show_client !== false ? html`
+                                        <div class="device-info bottom-device-info">
+                                            <span>${attributes.device_name} (${attributes.client})</span>
+                                        </div>
+                                    ` : nothing}
+
                                     <div class="playback-controls">
                                         ${isPaused ? html`
                                             <ha-icon-button .label=${'Play'} @click=${() => this._handleControl('Unpause')}>
@@ -171,12 +188,53 @@ export class JellyHANowPlayingCard extends LitElement {
         `;
     }
 
+    private _phrases: string[] = [];
+
+    private async _fetchPhrases(): Promise<void> {
+        if (this._phrases.length > 0) return;
+        try {
+            const response = await fetch('/jellyha_static/now_playing_phrases.json');
+            if (response.ok) {
+                this._phrases = await response.json();
+            }
+        } catch (e) {
+            console.warn('JellyHA: Could not fetch phrases.json', e);
+        }
+    }
+
     private _renderEmpty(): TemplateResult {
+        this._fetchPhrases(); // Trigger async fetch
+
+        const isDarkMode = this.hass.themes?.darkMode;
+        const logoUrl = isDarkMode
+            ? 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/dark_logo.png'
+            : 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/logo.png';
+        const iconUrl = 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/icon.png';
+
+        let phrase = "Nothing is currently playing";
+
+        if (this._phrases.length > 0) {
+            const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+            const phraseIndex = daySeed % this._phrases.length;
+            phrase = this._phrases[phraseIndex];
+
+            // Get unwatched number - look for any sensor ending in _unwatched
+            const unwatchedSensor = Object.keys(this.hass.states).find(e => e.startsWith('sensor.') && e.endsWith('_unwatched'));
+            const count = unwatchedSensor ? this.hass.states[unwatchedSensor].state : "0";
+
+            phrase = phrase.replace(/\[number\]/g, count);
+        }
+
         return html`
-            <ha-card class="empty-state">
+            <ha-card class="jellyha-now-playing empty-state">
                 <div class="card-content">
-                    <ha-icon icon="mdi:play-network-outline"></ha-icon>
-                    <p>Nothing is currently playing</p>
+                    <div class="logo-container full-logo">
+                        <img src="${logoUrl}" alt="JellyHA Logo" />
+                    </div>
+                    <div class="logo-container mini-icon">
+                        <img src="${iconUrl}" alt="JellyHA Icon" />
+                    </div>
+                    <p>${phrase}</p>
                 </div>
             </ha-card>
         `;
@@ -227,9 +285,49 @@ export class JellyHANowPlayingCard extends LitElement {
         });
     }
 
+    private async _handlePosterRewind(): Promise<void> {
+        const stateObj = this.hass.states[this._config.entity];
+        if (!stateObj) return;
+
+        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
+        const sessionId = attributes.session_id;
+        const positionTicks = attributes.position_ticks || 0;
+
+        if (!sessionId) return;
+
+        // Visual feedback
+        this._rewindActive = true;
+        setTimeout(() => {
+            this._rewindActive = false;
+        }, 2000);
+
+        // Haptic feedback
+        const event = new CustomEvent('haptic', {
+            detail: 'selection',
+            bubbles: true,
+            composed: true,
+        });
+        this.dispatchEvent(event);
+
+        // Calculate rewind position (20 seconds = 200,000,000 ticks)
+        const rewindTicks = 20 * 10000000; // 20 seconds in ticks
+        const newPositionTicks = Math.max(0, positionTicks - rewindTicks);
+
+        await this.hass.callService('jellyha', 'session_seek', {
+            session_id: sessionId,
+            position_ticks: newPositionTicks
+        });
+    }
+
     static styles = css`
         :host {
             display: block;
+            height: 100%;
+            overflow: hidden;
+        }
+        ha-card {
+            height: 100%;
+            overflow: hidden;
         }
         .jellyha-now-playing {
             overflow: hidden;
@@ -237,6 +335,14 @@ export class JellyHANowPlayingCard extends LitElement {
             background: var(--ha-card-background, var(--card-background-color, #fff));
             border-radius: var(--ha-card-border-radius, 12px);
             transition: all 0.3s ease-out;
+            container-type: inline-size;
+            container-name: now-playing;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            min-height: 0;
+            padding: 0;
         }
         .jellyha-now-playing.has-background {
             background: transparent;
@@ -263,7 +369,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         /* Further increase padding when background is on for better balance */
         .jellyha-now-playing.has-background .card-content {
-            padding: 28px 20px 20px !important;
+            padding: 24px 20px 12px !important;
         }
         .card-background {
             position: absolute;
@@ -294,25 +400,36 @@ export class JellyHANowPlayingCard extends LitElement {
             display: flex;
             flex-direction: column;
             gap: 16px;
+            height: 100%;
+            box-sizing: border-box;
+            overflow: hidden; /* Ensure content doesn't spill out */
         }
         .card-header {
             font-size: 1.25rem;
             font-weight: 500;
             color: var(--primary-text-color);
             line-height: 1.2;
+            flex: 0 0 auto;
         }
         .main-container {
             display: flex;
             gap: 20px;
             align-items: flex-start;
+            flex: 1;
+            min-height: 0; /* Crucial for nested flex scrolling/hiding */
+            overflow: hidden;
         }
         .poster-container {
-            flex: 0 0 140px;
-            height: 210px;
+            flex: 0 0 auto;
+            height: 100%;
+            aspect-ratio: 2 / 3;
+            max-height: 100%;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
             transition: transform 0.2s ease-in-out;
+            position: relative;
+            cursor: pointer;
         }
         .poster-container:hover {
             transform: scale(1.02);
@@ -326,21 +443,30 @@ export class JellyHANowPlayingCard extends LitElement {
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 210px; /* Match poster height */
+            height: 100%;
+            min-height: 0; /* Crucial */
             min-width: 0;
+            overflow: hidden;
         }
         .info-top {
-            flex: 1;
+            flex: 1 1 auto; /* Can shrink and grow */
+            min-height: 0; /* Allows shrinking below content size */
+            overflow: hidden; /* Hide overflow content */
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+            padding-bottom: 4px; /* Prevent text clipping at bottom */
         }
         .header {
-            margin-bottom: 8px;
+            margin-bottom: 0px;
+            flex-shrink: 0; /* Don't squash the title too easily if possible */
         }
         .title {
             font-size: 1.4rem;
             font-weight: 700;
             line-height: 1.2;
             color: var(--primary-text-color);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
         .series {
             font-size: 1.1rem;
@@ -361,10 +487,78 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         .meta-container {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+            flex-wrap: nowrap;
+            gap: 12px;
             align-items: center;
+            white-space: nowrap;
+        }
+
+        .bottom-device-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+            color: var(--secondary-text-color);
+            margin-right: auto; /* Push controls to right */
+            opacity: 0.8;
+            height: 40px; /* Match button height area */
+        }
+
+        /* Default: Hide top device info, show bottom device info */
+        .info-top .device-info {
+            display: none;
+        }
+        
+        /* Ensure controls spread out when bottom info is present */
+        .controls-container {
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* When card is too narrow, HIDE bottom device info to prevent crowding */
+        @container now-playing (max-width: 350px) {
+            .bottom-device-info {
+                display: none !important;
+            }
+            .controls-container {
+                justify-content: flex-end; /* Revert to right align */
+            }
+        }
+        
+        /* Progressive metadata hiding based on priority */
+        /* Hide genres first (priority 0) */
+        @container now-playing (max-width: 450px) {
+            .meta-priority-0 {
+                display: none !important;
+            }
+        }
+        
+        /* Hide rating (priority 1) */
+        @container now-playing (max-width: 380px) {
+            .meta-priority-1 {
+                display: none !important;
+            }
+        }
+        
+        /* Hide runtime (priority 2) */
+        @container now-playing (max-width: 320px) {
+            .meta-priority-2 {
+                display: none !important;
+            }
+        }
+        
+        /* Hide year (priority 3) */
+        @container now-playing (max-width: 280px) {
+            .meta-priority-3 {
+                display: none !important;
+            }
+        }
+        
+        /* Hide badge last (priority 4) - only in ultra-compact mode */
+        @container now-playing (max-width: 220px) {
+            .meta-priority-4 {
+                display: none !important;
+            }
         }
         .badge {
             padding: 3px 10px;
@@ -375,6 +569,8 @@ export class JellyHANowPlayingCard extends LitElement {
             color: white;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            flex-shrink: 0; /* Prevent badge from shrinking */
+            overflow: visible; /* Ensure rounded corners aren't clipped */
         }
         .badge.movie { background-color: #00a4dc; }
         .badge.series { background-color: #aa5cc3; }
@@ -398,25 +594,33 @@ export class JellyHANowPlayingCard extends LitElement {
             --mdc-icon-size: 14px;
             color: #f1c40f;
         }
+        .genres-container {
+            flex-shrink: 0;
+            overflow: visible;
+            margin-bottom: -4px;
+            position: relative;
+            z-index: 4; /* Ensure it stays above other elements if needed */
+        }
         .genres {
             font-size: 0.95rem;
             color: var(--secondary-text-color);
-            margin-top: 8px;
+            margin: 0;
             font-style: italic;
             opacity: 0.7;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            white-space: nowrap;
+            text-overflow: ellipsis;
             overflow: hidden;
         }
         .info-bottom {
-            margin-top: auto;
+            flex: 0 0 auto; /* Never shrink */
             width: 100%;
+            margin-top: auto;
+            z-index: 5;
         }
         .controls-container {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
         }
         .playback-controls {
             display: flex;
@@ -424,8 +628,8 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
         }
         .playback-controls ha-icon-button {
-            --mdc-icon-button-size: 44px;
-            --mdc-icon-size: 32px;
+            --mdc-icon-button-size: 40px;
+            --mdc-icon-size: 28px;
             color: var(--primary-text-color);
             background: rgba(var(--rgb-primary-text-color), 0.05);
             border-radius: 50%;
@@ -462,35 +666,181 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         .empty-state, .error-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            box-sizing: border-box;
         }
-        .empty-state ha-icon {
-            --mdc-icon-size: 64px;
-            color: var(--secondary-text-color);
-            margin-bottom: 16px;
-            opacity: 0.5;
+        .empty-state .card-content {
+            padding: 0 !important;
+            gap: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            height: auto;
+        }
+        .empty-state .logo-container.mini-icon {
+            display: none;
+        }
+        .empty-state .logo-container.full-logo {
+            display: flex;
+            justify-content: center;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+        .empty-state img {
+            max-width: 200px;
+            height: auto;
         }
         .empty-state p {
             margin: 0;
             color: var(--secondary-text-color);
             font-size: 1.1rem;
+            opacity: 0.7;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 500px) {
-            .poster-container {
-                flex: 0 0 100px;
-                height: 150px;
+        /* Container Queries for Responsive Information Throttling */
+        @container now-playing (max-width: 250px) {
+            .empty-state .logo-container.full-logo {
+                display: none;
             }
-            .info-container {
-                height: auto;
-                min-height: 150px;
+            .empty-state .logo-container.mini-icon {
+                display: flex;
+                opacity: 0.9;
+                margin-bottom: 12px;
+            }
+            .empty-state img {
+                max-width: 80px;
+            }
+            .empty-state p {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Standard Tier Hiding (Width based) */
+        @container now-playing (max-width: 320px) {
+            .meta-container, .genres, .device-info {
+                display: none !important;
+            }
+            .title {
+                font-size: 1.25rem;
+                margin-bottom: 2px;
+            }
+        }
+
+        /* Vertical Tier Hiding (Height based - for 3-row fit) */
+        @container now-playing (max-height: 200px) {
+            .genres, .device-info {
+                display: none !important;
+            }
+            .meta-container {
+                margin-top: 4px;
             }
             .title {
                 font-size: 1.2rem;
+                line-height: 1.1;
+                margin-bottom: 2px;
             }
             .main-container {
                 gap: 12px;
+            }
+            .card-content {
+                gap: 8px;
+            }
+        }
+
+        /* Extreme Vertical Throttling (Very short cards) */
+        @container now-playing (max-height: 160px) {
+            .meta-container, .card-header {
+                display: none !important;
+            }
+            .info-top {
+                justify-content: center;
+            }
+        }
+
+        @container now-playing (max-width: 280px) {
+           .main-container {
+                gap: 12px;
+            }
+            .poster-container {
+                flex: 0 0 80px;
+                height: 120px;
+            }
+            .title {
+                font-size: 1.1rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
+
+        /* Ultra-Compact Micro Mode (Overlay controls on poster) */
+        @container now-playing (max-width: 220px) {
+            .card-header, .info-top {
+                display: none !important;
+            }
+            .card-content {
+                padding: 10px !important;
+                justify-content: center;
+                gap: 0;
+            }
+            .main-container {
+                justify-content: center;
+                gap: 0;
+                position: relative;
+                width: 100%;
+            }
+            .poster-container {
+                /* Center the original 140x210 poster */
+                flex: 0 0 140px !important;
+                height: 210px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            }
+            .info-container {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 140px;
+                height: 210px;
+                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                border-radius: 8px;
+                padding: 10px;
+                box-sizing: border-box;
+                pointer-events: none;
+                z-index: 5;
+                overflow: visible; /* Allow buttons to be clickable and not clipped oddly */
+            }
+            .info-bottom {
+                pointer-events: auto;
+                flex: 0 0 auto;
+            }
+            .controls-container {
+                justify-content: center;
+                margin-bottom: 8px;
+            }
+            .playback-controls ha-icon-button {
+                --mdc-icon-button-size: 32px;
+                --mdc-icon-size: 22px;
+                background: rgba(255, 255, 255, 0.2);
+                color: white !important;
+            }
+            .progress-container {
+                height: 4px;
+                background: rgba(255, 255, 255, 0.3);
+            }
+            .progress-fill {
+                background: #00a4dc;
             }
         }
     `;

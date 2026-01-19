@@ -88,6 +88,11 @@ class JellyfinApiClient:
                     if response.status == 403:
                         raise JellyfinAuthError("Access forbidden")
                     response.raise_for_status()
+                    
+                    # Handle 204 No Content responses (no body to parse)
+                    if response.status == 204:
+                        return None
+                    
                     return await response.json()
 
             except aiohttp.ClientError as err:
@@ -243,7 +248,7 @@ class JellyfinApiClient:
     async def session_seek(self, session_id: str, position_ticks: int) -> bool:
         """Seek to a position in a playback session."""
         endpoint = f"/Sessions/{session_id}/Playing/Seek"
-        params = {"PositionTicks": position_ticks}
+        params = {"SeekPositionTicks": position_ticks}
         try:
             await self._request("POST", endpoint, params=params)
             return True

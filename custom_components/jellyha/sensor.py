@@ -430,15 +430,29 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         return attributes
 
     def _get_active_session(self) -> dict[str, Any] | None:
-        """Get the active session for this user."""
+        """Get the active session for this user with stable priority."""
         if not self.coordinator.data:
             return None
             
-        # Find session for this user that is now playing
-        # Filter for sessions that have 'NowPlayingItem'
-        for session in self.coordinator.data:
-            if session.get("UserId") == self._user_id:
-                if "NowPlayingItem" in session:
-                    return session
+        # Find all sessions for this user that have active media
+        user_sessions = [
+            s for s in self.coordinator.data 
+            if s.get("UserId") == self._user_id and "NowPlayingItem" in s
+        ]
+        
+        if not user_sessions:
+            return None
+            
+        # Sort sessions:
+        # 1. Favor Playing (not paused) sessions first
+        # 2. Use SessionId for deterministic fallback
+        user_sessions.sort(
+            key=lambda s: (
+                s.get("PlayState", {}).get("IsPaused", False),
+                s.get("Id", "")
+            )
+        )
+        
+        return user_sessions[0]
         
         return None

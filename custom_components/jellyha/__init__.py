@@ -9,6 +9,8 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.components.http import StaticPathConfig
+import os
 
 from .const import (
     DOMAIN,
@@ -66,6 +68,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Register services and websocket
     await async_register_services(hass)
     async_register_websocket(hass)
+
+    # Register static path for assets (phrases, etc)
+    static_path = os.path.join(os.path.dirname(__file__))
+    await hass.http.async_register_static_paths([
+        StaticPathConfig("/jellyha_static", static_path, False)
+    ])
     
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     
