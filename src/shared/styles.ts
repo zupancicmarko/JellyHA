@@ -900,7 +900,7 @@ export const cardStyles = css`
 
   .now-playing-controls {
     display: flex;
-    gap: 2px;
+    gap: 16px;
     align-items: center;
   }
 
@@ -1063,5 +1063,41 @@ export const cardStyles = css`
     transform: scale(0);
     opacity: 0;
     pointer-events: none;
+  }
+
+
+  /* Touch Action Optimization - Prevent double-tap zoom delay */
+  .pagination-dot,
+  .smart-dot,
+  .media-item,
+  ha-icon-button {
+    touch-action: manipulation;
+  }
+
+  /* Reduced Motion Support - Respect user preference */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    /* Disable skeleton animation */
+    .poster-skeleton {
+      animation: none;
+      background: var(--jf-divider);
+    }
+
+    /* Keep transforms for layout but remove transitions */
+    .carousel,
+    .pagination-dot,
+    .scroll-dot,
+    .poster-inner,
+    .hover-overlay,
+    .media-item {
+      transition: none !important;
+    }
   }
 `;

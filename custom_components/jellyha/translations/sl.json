@@ -1,0 +1,141 @@
+{
+    "title": "JellyHA",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Poveži se z Jellyfin",
+                "description": "Vnesite URL strežnika Jellyfin in API ključ",
+                "data": {
+                    "server_url": "URL strežnika",
+                    "api_key": "API ključ"
+                },
+                "data_description": {
+                    "server_url": "Celoten URL vašega Jellyfin strežnika (npr. http://192.168.1.100:8096)",
+                    "api_key": "API ključ iz nadzorne plošče Jellyfin → API ključi"
+                }
+            },
+            "user_select": {
+                "title": "Izberi uporabnika",
+                "description": "Izberite uporabnika Jellyfin, ki ga želite uporabiti",
+                "data": {
+                    "user_id": "Uporabnik"
+                }
+            },
+            "library_select": {
+                "title": "Izberi knjižnice",
+                "description": "Izberite knjižnice, ki jih želite vključiti (pustite prazno za vse)",
+                "data": {
+                    "libraries": "Knjižnice",
+                    "refresh_interval": "Interval osveževanja knjižnice"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Povezava s strežnikom Jellyfin ni uspela",
+            "invalid_auth": "Neveljaven API ključ",
+            "unknown": "Prišlo je do nepričakovane napake"
+        },
+        "abort": {
+            "already_configured": "Ta strežnik Jellyfin je že konfiguriran"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Nastavitve strežnika",
+                "data": {
+                    "server_url": "URL strežnika",
+                    "api_key": "API ključ",
+                    "refresh_interval": "Interval osveževanja knjižnice"
+                }
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "library": {
+                "name": "Knjižnica"
+            },
+            "favorites_count": {
+                "name": "Priljubljeno"
+            },
+            "unwatched_count": {
+                "name": "Nepregledano"
+            },
+            "unwatched_movies": {
+                "name": "Nepregledani filmi"
+            },
+            "unwatched_series": {
+                "name": "Nepregledane serije"
+            },
+            "unwatched_episodes": {
+                "name": "Nepregledane epizode"
+            },
+            "last_refresh": {
+                "name": "Zadnja osvežitev"
+            },
+            "last_data_change": {
+                "name": "Zadnja posodobitev knjižnice"
+            },
+            "websocket_status": {
+                "name": "Stanje WebSocket"
+            },
+            "version": {
+                "name": "Različica Jellyfin"
+            },
+            "active_sessions": {
+                "name": "Aktivne seje"
+            },
+            "watched_count": {
+                "name": "Ogledano"
+            },
+            "watched_episodes": {
+                "name": "Ogledane epizode"
+            },
+            "watched_series": {
+                "name": "Ogledane serije"
+            },
+            "watched_movies": {
+                "name": "Ogledani filmi"
+            },
+            "refresh_duration": {
+                "name": "Trajanje osvežitve"
+            }
+        },
+        "media_player": {
+            "library_browser": {
+                "name": "Brskalnik knjižnice"
+            }
+        }
+    },
+    "services": {
+        "play_on_chromecast": {
+            "name": "Predvajaj na Chromecast-u",
+            "description": "Predvajaj Jellyfin medij na napravi Chromecast",
+            "fields": {
+                "entity_id": {
+                    "name": "Predvajalnik medijev",
+                    "description": "Entiteta predvajalnika medijev Chromecast"
+                },
+                "item_id": {
+                    "name": "ID elementa",
+                    "description": "Jellyfin ID elementa za predvajanje"
+                }
+            }
+        },
+        "refresh_library": {
+            "name": "Osveži knjižnico",
+            "description": "Prisili osvežitev podatkov knjižnice iz Jellyfina"
+        },
+        "delete_item": {
+            "name": "Izbriši element",
+            "description": "Izbriši element iz knjižnice Jellyfin",
+            "fields": {
+                "item_id": {
+                    "name": "ID elementa",
+                    "description": "Jellyfin ID elementa za brisanje"
+                }
+            }
+        }
+    }
+}

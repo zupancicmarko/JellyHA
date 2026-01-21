@@ -33,6 +33,51 @@
         "sensor": {
             "library": {
                 "name": "JellyHA Bibliothek"
+            },
+            "favorites_count": {
+                "name": "Favoriten"
+            },
+            "unwatched_count": {
+                "name": "Ungesehen"
+            },
+            "unwatched_movies": {
+                "name": "Ungesehene Filme"
+            },
+            "unwatched_series": {
+                "name": "Ungesehene Serien"
+            },
+            "unwatched_episodes": {
+                "name": "Ungesehene Episoden"
+            },
+            "last_refresh": {
+                "name": "Letzte Aktualisierung"
+            },
+            "last_data_change": {
+                "name": "Letztes Bibliotheksupdate"
+            },
+            "websocket_status": {
+                "name": "Websocket Status"
+            },
+            "version": {
+                "name": "Jellyfin Version"
+            },
+            "active_sessions": {
+                "name": "Aktive Sitzungen"
+            },
+            "watched_count": {
+                "name": "Gesehen"
+            },
+            "watched_episodes": {
+                "name": "Gesehene Episoden"
+            },
+            "watched_series": {
+                "name": "Gesehene Serien"
+            },
+            "watched_movies": {
+                "name": "Gesehene Filme"
+            },
+            "refresh_duration": {
+                "name": "Aktualisierungsdauer"
             }
         }
     }

@@ -68,11 +68,38 @@
             "unwatched_series": {
                 "name": "Unwatched Series"
             },
+            "unwatched_episodes": {
+                "name": "Unwatched Episodes"
+            },
             "last_refresh": {
                 "name": "Last Refresh"
             },
             "last_data_change": {
                 "name": "Last Library Update"
+            },
+            "websocket_status": {
+                "name": "WebSocket Status"
+            },
+            "version": {
+                "name": "Jellyfin Version"
+            },
+            "active_sessions": {
+                "name": "Active Sessions"
+            },
+            "watched_count": {
+                "name": "Watched"
+            },
+            "watched_episodes": {
+                "name": "Watched Episodes"
+            },
+            "watched_series": {
+                "name": "Watched Series"
+            },
+            "watched_movies": {
+                "name": "Watched Movies"
+            },
+            "refresh_duration": {
+                "name": "Refresh Duration"
             }
         },
         "media_player": {

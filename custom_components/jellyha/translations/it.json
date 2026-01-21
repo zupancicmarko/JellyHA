@@ -53,6 +53,51 @@
         "sensor": {
             "library": {
                 "name": "Libreria JellyHA"
+            },
+            "favorites_count": {
+                "name": "Preferiti"
+            },
+            "unwatched_count": {
+                "name": "Non visti"
+            },
+            "unwatched_movies": {
+                "name": "Film non visti"
+            },
+            "unwatched_series": {
+                "name": "Serie non viste"
+            },
+            "unwatched_episodes": {
+                "name": "Episodi non visti"
+            },
+            "last_refresh": {
+                "name": "Ultimo aggiornamento"
+            },
+            "last_data_change": {
+                "name": "Ultimo caricamento libreria"
+            },
+            "websocket_status": {
+                "name": "Stato WebSocket"
+            },
+            "version": {
+                "name": "Versione Jellyfin"
+            },
+            "active_sessions": {
+                "name": "Sessioni attive"
+            },
+            "watched_count": {
+                "name": "Visti"
+            },
+            "watched_episodes": {
+                "name": "Episodi visti"
+            },
+            "watched_series": {
+                "name": "Serie viste"
+            },
+            "watched_movies": {
+                "name": "Film visti"
+            },
+            "refresh_duration": {
+                "name": "Durata dell'aggiornamento"
             }
         }
     }

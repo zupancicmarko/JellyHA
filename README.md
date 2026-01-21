@@ -20,8 +20,26 @@ A Home Assistant integration and Lovelace card that displays media from your Jel
 - 📂 Full integration with Home Assistant Media Browser
 - 💾 Efficient local storage caching (no database bloat)
 - ⚡ Instant loading via WebSocket
-- 🌍 6 languages: English, German, French, Spanish, Italian, Dutch
+- 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
 - 🎛️ Graphical card editor (no YAML required)
+
+## Session & Now Playing Updates
+
+JellyHA uses a **WebSocket-first, API-fallback** strategy for real-time session monitoring. This powers the `active_sessions` sensor and per-user `now_playing` sensors.
+
+| Connection State | Update Method | Speed |
+|------------------|---------------|-------|
+| **WebSocket Connected** | Push updates from Jellyfin | Instant (~100ms) |
+| **WebSocket Disconnected** | API polling every 5 seconds | Near real-time |
+
+**How it works:**
+1. On startup, JellyHA connects to the Jellyfin WebSocket and subscribes to session events
+2. While connected, session updates are pushed instantly — no polling required
+3. If WebSocket disconnects (network issue, server restart), it automatically falls back to API polling
+4. When WebSocket reconnects, polling stops and push updates resume
+
+The `sensor.jellyha_websocket` sensor shows the current connection status (`connected`/`disconnected`).
+
 
 ## Media Browser
 
@@ -76,6 +94,43 @@ JellyHA requires **two installation steps**: installing the integration and addi
 2. Search for "JellyHA"
 3. Enter your Jellyfin server URL and API key
 4. Select the user and libraries to monitor
+
+## Sensors
+
+JellyHA provides several sensors to monitor your Jellyfin server and library. All sensors are prefixed with `sensor.jellyha_` (unless شما custom device name was used during setup).
+
+### Library Sensors
+
+| Entity ID | Description | State | Attributes |
+|-----------|-------------|-------|------------|
+| `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `episodes` |
+| `sensor.jellyha_favorites` | Favorite items | Count | - |
+| `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series`, `episodes` |
+| `sensor.jellyha_unwatched_movies` | Unwatched movies | Count | - |
+| `sensor.jellyha_unwatched_series` | Unwatched TV series | Count | - |
+| `sensor.jellyha_unwatched_episodes` | Unwatched individual episodes | Count | - |
+| `sensor.jellyha_watched` | Total watched content | Count | `movies`, `series` |
+| `sensor.jellyha_watched_movies` | Fully watched movies | Count | - |
+| `sensor.jellyha_watched_series` | Fully watched TV series | Count | - |
+| `sensor.jellyha_watched_episodes` | Fully watched series count | Count | - |
+
+### Server Status Sensors
+
+| Entity ID | Description | State | Attributes |
+|-----------|-------------|-------|------------|
+| `sensor.jellyha_websocket` | WebSocket connection status | `connected`/`disconnected` | - |
+| `sensor.jellyha_version` | Jellyfin server version | e.g. `10.11.6` | - |
+| `sensor.jellyha_active_sessions` | Number of active playbacks | Count | `sessions` (list of active session info) |
+| `sensor.jellyha_last_refresh` | Last time data was fetched | Timestamp | - |
+| `sensor.jellyha_last_data_change` | Last time library data changed | Timestamp | - |
+| `sensor.jellyha_refresh_duration` | Duration of the last library refresh | `5.2s`, `1m 30s` | `duration_seconds` (float) |
+
+### User Sensors
+
+| Entity ID Prefix | Description | State | Key Attributes |
+|-----------|-------------|-------|------------|
+| `sensor.jellyha_now_playing_[user]` | Real-time monitoring for specific user | `playing`, `paused`, `idle` | `title`, `series_title`, `season`, `episode`, `progress_percent`, `image_url`, `media_type`, `client`, `device_name` |
+
 
 ## Card Configuration
 
@@ -137,37 +192,16 @@ To get your Jellyfin API key:
 
 JellyHA provides several services to control and manage your library.
 
-### `jellyha.play_on_chromecast`
-Plays a Jellyfin item on a Google Cast device with optimized transcoding settings (Tuned 2026 Strategy).
-- **entity_id** (Required): The media player entity ID of the Chromecast (e.g. `media_player.living_room_tv`).
-- **item_id** (Required): The Jellyfin Item ID to play.
+| Service | Description | Parameters |
+|---------|-------------|------------|
+| `jellyha.play_on_chromecast` | Play an item on Chromecast with optimized transcoding. | `entity_id` (Req), `item_id` (Req) |
+| `jellyha.refresh_library` | Force refresh library data from Jellyfin. | - |
+| `jellyha.delete_item` | Delete an item from library/disk. ⚠️ **Use with caution.** | `item_id` (Req) |
+| `jellyha.mark_watched` | Mark an item as watched or unwatched. | `item_id` (Req), `is_played` (Req) |
+| `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req) |
+| `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req) |
+| `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req) |
 
-### `jellyha.refresh_library`
-Forces a manual refresh of the library data from the Jellyfin server. This is useful for automations or scripts.
-
-### `jellyha.delete_item`
-Permanently deletes an item from your Jellyfin library/disk. ⚠️ **Use with caution.**
-- **item_id** (Required): The Jellyfin Item ID to delete.
-
-### `jellyha.mark_watched`
-Marks an item as watched or unwatched in Jellyfin.
-- **item_id** (Required): The Jellyfin Item ID to mark.
-- **is_played** (Required): Set to `true` to mark as watched, `false` to mark as unwatched.
-
-### `jellyha.update_favorite`
-Adds or removes an item from your Jellyfin favorites.
-- **item_id** (Required): The Jellyfin Item ID to update.
-- **is_favorite** (Required): Set to `true` to favorite, `false` to unfavorite.
-
-### `jellyha.session_control`
-Sends a playback control command to an active Jellyfin session. Use this for automation control of currently playing media.
-- **session_id** (Required): The Jellyfin session ID to control.
-- **command** (Required): The command to send: `Pause`, `Unpause`, `TogglePause`, or `Stop`.
-
-### `jellyha.session_seek`
-Seeks to a specific position in an active Jellyfin playback session. Use `position_ticks: 0` to rewind to the beginning.
-- **session_id** (Required): The Jellyfin session ID to control.
-- **position_ticks** (Required): The target position in ticks (1 second = 10,000,000 ticks).
 
 ## Troubleshooting
 
@@ -188,6 +222,11 @@ This usually indicates a duplicate command registration. Ensure you are running 
 ## License
 
 MIT
+
+## Disclaimer
+
+**Personal Use Only**
+This integration is provided as a neutral interface for your private media library. JellyHA does not provide, facilitate, or encourage the use of unauthorized or pirated content. By using this software, you agree that you are solely responsible for the legality of the media you host and stream.
 
 [hacs-badge]: https://img.shields.io/badge/HACS-Custom-orange.svg
 [hacs-url]: https://github.com/hacs/integration

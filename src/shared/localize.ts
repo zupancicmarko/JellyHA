@@ -4,42 +4,42 @@
 
 const translations: Record<string, Record<string, string>> = {
     en: {
-        loading: 'Loading...',
+        loading: 'Loading…',
         no_media: 'No recent media found',
         error: 'Error loading media',
         new: 'New',
         minutes: 'min',
     },
     de: {
-        loading: 'Laden...',
+        loading: 'Laden…',
         no_media: 'Keine neuen Medien gefunden',
         error: 'Fehler beim Laden der Medien',
         new: 'Neu',
         minutes: 'Min',
     },
     fr: {
-        loading: 'Chargement...',
+        loading: 'Chargement…',
         no_media: 'Aucun média récent trouvé',
         error: 'Erreur lors du chargement des médias',
         new: 'Nouveau',
         minutes: 'min',
     },
     es: {
-        loading: 'Cargando...',
+        loading: 'Cargando…',
         no_media: 'No se encontraron medios recientes',
         error: 'Error al cargar medios',
         new: 'Nuevo',
         minutes: 'min',
     },
     it: {
-        loading: 'Caricamento...',
+        loading: 'Caricamento…',
         no_media: 'Nessun media recente trovato',
         error: 'Errore durante il caricamento dei media',
         new: 'Nuovo',
         minutes: 'min',
     },
     nl: {
-        loading: 'Laden...',
+        loading: 'Laden…',
         no_media: 'Geen recente media gevonden',
         error: 'Fout bij het laden van media',
         new: 'Nieuw',

@@ -20,6 +20,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .browse_media import async_browse_media, async_browse_media_search, parse_item_id
 from .const import CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME, DOMAIN
 from .coordinator import JellyHALibraryCoordinator
+from .device import get_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,13 +67,7 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._entry.entry_id)},
-            name=self._device_name.title(),
-            manufacturer="JellyHA",
-            model="Jellyfin Integration",
-            sw_version="1.0.0",
-        )
+        return get_device_info(self._entry.entry_id, self._device_name)
 
     @property
     def state(self) -> MediaPlayerState:

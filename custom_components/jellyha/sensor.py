@@ -19,6 +19,8 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
+from .device import get_device_info
+from .ws_client import JellyfinWebSocketClient
 
 
 async def async_setup_entry(
@@ -30,6 +32,7 @@ async def async_setup_entry(
     coordinators = hass.data[DOMAIN][entry.entry_id]
     coordinator: JellyHALibraryCoordinator = coordinators["library"]
     session_coordinator: JellyHASessionCoordinator = coordinators["session"]
+    ws_client: JellyfinWebSocketClient = coordinators["ws_client"]
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
 
     sensors: list[SensorEntity] = [
@@ -38,8 +41,17 @@ async def async_setup_entry(
         JellyHAUnwatchedCountSensor(coordinator, entry, device_name),
         JellyHAUnwatchedMoviesSensor(coordinator, entry, device_name),
         JellyHAUnwatchedSeriesSensor(coordinator, entry, device_name),
+        JellyHAUnwatchedEpisodesSensor(coordinator, entry, device_name),
         JellyHALastRefreshSensor(coordinator, entry, device_name),
         JellyHALastDataChangeSensor(coordinator, entry, device_name),
+        JellyHARefreshDurationSensor(coordinator, entry, device_name),
+        JellyHAWebSocketStatusSensor(ws_client, coordinator, entry, device_name),
+        JellyHAVersionSensor(coordinator, entry, device_name),
+        JellyHAActiveSessionsSensor(session_coordinator, entry, device_name),
+        JellyHAWatchedCountSensor(coordinator, entry, device_name),
+        JellyHAWatchedEpisodesSensor(coordinator, entry, device_name),
+        JellyHAWatchedSeriesSensor(coordinator, entry, device_name),
+        JellyHAWatchedMoviesSensor(coordinator, entry, device_name),
     ]
 
     # Create sensors for each user
@@ -83,13 +95,7 @@ class JellyHABaseSensor(CoordinatorEntity[JellyHALibraryCoordinator], SensorEnti
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info for this sensor."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._entry.entry_id)},
-            name=self._device_name.title(),
-            manufacturer="JellyHA",
-            model="Jellyfin Integration",
-            sw_version="1.0.0",
-        )
+        return get_device_info(self._entry.entry_id, self._device_name)
 
 
 class JellyHALibrarySensor(JellyHABaseSensor):
@@ -120,10 +126,21 @@ class JellyHALibrarySensor(JellyHABaseSensor):
         if not self.coordinator.data:
             return {}
 
+        items = self.coordinator.data.get("items", [])
+        movies = [i for i in items if i.get("type") == "Movie"]
+        series = [i for i in items if i.get("type") == "Series"]
+        # Sum up all episode counts from series items (unplayed + watched)
+        total_episodes = sum(
+            (i.get("unplayed_count") or 0) for i in series
+        )
+
         return {
             "entry_id": self._entry.entry_id,
             "server_name": self.coordinator.data.get("server_name"),
             "last_updated": self.coordinator.last_refresh_time,
+            "movies": len(movies),
+            "series": len(series),
+            "episodes": total_episodes,
         }
 
 
@@ -155,7 +172,7 @@ class JellyHAUnwatchedCountSensor(JellyHABaseSensor):
     """Sensor for total unwatched items count."""
 
     _attr_translation_key = "unwatched_count"
-    _attr_icon = "mdi:eye-off-outline"
+    _attr_icon = "mdi:eye-off"
 
     def __init__(
         self,
@@ -181,9 +198,14 @@ class JellyHAUnwatchedCountSensor(JellyHABaseSensor):
             return {}
         items = self.coordinator.data.get("items", [])
         unwatched = [i for i in items if not i.get("is_played", True)]
+        # Sum unplayed episode counts from unwatched series
+        unwatched_episodes = sum(
+            (i.get("unplayed_count") or 0) for i in unwatched if i.get("type") == "Series"
+        )
         return {
             "movies": len([i for i in unwatched if i.get("type") == "Movie"]),
             "series": len([i for i in unwatched if i.get("type") == "Series"]),
+            "episodes": unwatched_episodes,
         }
 
 
@@ -218,7 +240,7 @@ class JellyHAUnwatchedSeriesSensor(JellyHABaseSensor):
     """Sensor for unwatched series count."""
 
     _attr_translation_key = "unwatched_series"
-    _attr_icon = "mdi:television-classic"
+    _attr_icon = "mdi:video-outline"
 
     def __init__(
         self,
@@ -289,6 +311,43 @@ class JellyHALastDataChangeSensor(JellyHABaseSensor):
         return None
 
 
+class JellyHARefreshDurationSensor(JellyHABaseSensor):
+    """Sensor for last refresh duration."""
+
+    _attr_translation_key = "refresh_duration"
+    _attr_icon = "mdi:timer-outline"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "refresh_duration")
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the last refresh duration as a human-readable string."""
+        duration = self.coordinator.last_refresh_duration
+        if duration is None:
+            return None
+        
+        if duration < 60:
+            return f"{duration:.1f}s"
+        else:
+            minutes = int(duration // 60)
+            seconds = duration % 60
+            return f"{minutes}m {seconds:.0f}s"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return the raw duration in seconds as an attribute."""
+        return {
+            "duration_seconds": self.coordinator.last_refresh_duration,
+        }
+
+
 class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEntity):
     """Sensor tracking "Now Playing" for a specific Jellyfin user."""
 
@@ -309,7 +368,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         
         # Unique ID specifically for this user's viewing state
         self._attr_unique_id = f"{entry.entry_id}_now_playing_{user_id}"
-        self._attr_name = f"JellyHA Now Playing {username}"
+        self._attr_name = f"Now Playing {username}"
         self.entity_id = generate_entity_id(
             "sensor.{}", 
             f"jellyha_now_playing_{username}", 
@@ -319,13 +378,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._entry.entry_id)},
-            name="JellyHA Users",
-            manufacturer="JellyHA",
-            model="User Session Tracker",
-            sw_version="1.0.0",
-        )
+        return get_device_info(self._entry.entry_id, "JellyHA")
 
     @property
     def native_value(self) -> str:
@@ -347,7 +400,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             return "mdi:play"
         if state == "paused":
             return "mdi:pause"
-        return "mdi:television-off"
+        return "mdi:television-play"
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -454,5 +507,270 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         )
         
         return user_sessions[0]
+
+
+class JellyHAWebSocketStatusSensor(CoordinatorEntity[JellyHALibraryCoordinator], SensorEntity):
+    """Sensor for WebSocket connection status."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "websocket_status"
+
+    def __init__(
+        self,
+        ws_client: JellyfinWebSocketClient,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._ws_client = ws_client
+        self._device_name = device_name
+        self._entry = entry
+        self._attr_unique_id = f"{device_name}_websocket_status"
+        self.entity_id = f"sensor.{device_name}_websocket"
+
+    @property
+    def native_value(self) -> str:
+        """Return the WebSocket connection status."""
+        return "connected" if self._ws_client.connected else "disconnected"
+
+    @property
+    def icon(self) -> str:
+        """Return the icon based on connection status."""
+        return "mdi:lan-connect" if self._ws_client.connected else "mdi:lan-disconnect"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info for this sensor."""
+        return get_device_info(self._entry.entry_id, self._device_name)
+
+
+class JellyHAVersionSensor(JellyHABaseSensor):
+    """Sensor for Jellyfin server version."""
+
+    _attr_translation_key = "version"
+    _attr_icon = "mdi:information-outline"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "version")
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the Jellyfin server version."""
+        return self.coordinator._server_version
+
+
+class JellyHAActiveSessionsSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEntity):
+    """Sensor for count of active playback sessions."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "active_sessions"
+    _attr_icon = "mdi:account-multiple"
+
+    def __init__(
+        self,
+        coordinator: JellyHASessionCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._device_name = device_name
+        self._entry = entry
+        self._attr_unique_id = f"{device_name}_active_sessions"
+        self.entity_id = f"sensor.{device_name}_active_sessions"
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of active sessions with media playing."""
+        if not self.coordinator.data:
+            return 0
+        return len([s for s in self.coordinator.data if "NowPlayingItem" in s])
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return details about active sessions."""
+        if not self.coordinator.data:
+            return {}
         
-        return None
+        active_sessions = [s for s in self.coordinator.data if "NowPlayingItem" in s]
+        sessions_info = []
+        for session in active_sessions:
+            item = session.get("NowPlayingItem", {})
+            sessions_info.append({
+                "user": session.get("UserName"),
+                "device": session.get("DeviceName"),
+                "client": session.get("Client"),
+                "title": item.get("Name"),
+                "type": item.get("Type"),
+            })
+        
+        return {"sessions": sessions_info}
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info for this sensor."""
+        return get_device_info(self._entry.entry_id, self._device_name)
+
+
+class JellyHAUnwatchedEpisodesSensor(JellyHABaseSensor):
+    """Sensor for unwatched episodes count."""
+
+    _attr_translation_key = "unwatched_episodes"
+    _attr_icon = "mdi:video"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "unwatched_episodes")
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of unwatched episodes."""
+        if not self.coordinator.data:
+            return 0
+        items = self.coordinator.data.get("items", [])
+        # Sum unplayed_count from all series
+        return sum(
+            (i.get("unplayed_count") or 0) for i in items if i.get("type") == "Series"
+        )
+
+
+class JellyHAWatchedCountSensor(JellyHABaseSensor):
+    """Sensor for total watched items count."""
+
+    _attr_translation_key = "watched_count"
+    _attr_icon = "mdi:eye-check"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "watched")
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of watched items."""
+        if not self.coordinator.data:
+            return 0
+        items = self.coordinator.data.get("items", [])
+        return len([i for i in items if i.get("is_played", False)])
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return breakdown by type."""
+        if not self.coordinator.data:
+            return {}
+        items = self.coordinator.data.get("items", [])
+        watched = [i for i in items if i.get("is_played", False)]
+        
+        # For watched episodes: series that are fully watched don't have unplayed_count
+        # We can't accurately calculate watched episodes without additional API calls
+        # For now, count series with is_played=True
+        watched_movies = len([i for i in watched if i.get("type") == "Movie"])
+        watched_series = len([i for i in watched if i.get("type") == "Series"])
+        
+        return {
+            "movies": watched_movies,
+            "series": watched_series,
+        }
+
+
+class JellyHAWatchedEpisodesSensor(JellyHABaseSensor):
+    """Sensor for watched episodes count (estimated based on fully watched series)."""
+
+    _attr_translation_key = "watched_episodes"
+    _attr_icon = "mdi:video-check"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "watched_episodes")
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of watched episodes. 
+        
+        Note: This counts series marked as fully played (is_played=True).
+        Individual episode counts require additional API queries.
+        """
+        if not self.coordinator.data:
+            return 0
+        items = self.coordinator.data.get("items", [])
+        # Count fully watched series (is_played=True means all episodes watched)
+        return len([
+            i for i in items 
+            if i.get("type") == "Series" and i.get("is_played", False)
+        ])
+
+
+class JellyHAWatchedSeriesSensor(JellyHABaseSensor):
+    """Sensor for fully watched series count."""
+
+    _attr_translation_key = "watched_series"
+    _attr_icon = "mdi:video-check-outline"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "watched_series")
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of fully watched series."""
+        if not self.coordinator.data:
+            return 0
+        items = self.coordinator.data.get("items", [])
+        return len([
+            i for i in items 
+            if i.get("type") == "Series" and i.get("is_played", False)
+        ])
+
+
+class JellyHAWatchedMoviesSensor(JellyHABaseSensor):
+    """Sensor for watched movies count."""
+
+    _attr_translation_key = "watched_movies"
+    _attr_icon = "mdi:movie-check"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, entry, device_name, "watched_movies")
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of watched movies."""
+        if not self.coordinator.data:
+            return 0
+        items = self.coordinator.data.get("items", [])
+        return len([
+            i for i in items 
+            if i.get("type") == "Movie" and i.get("is_played", False)
+        ])

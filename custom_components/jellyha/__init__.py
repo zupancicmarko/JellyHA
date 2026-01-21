@@ -70,7 +70,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async_register_websocket(hass)
 
     # Register static path for assets (phrases, etc)
-    static_path = os.path.join(os.path.dirname(__file__))
+    # Security: Only expose the dedicated 'static' subdirectory, not the entire integration
+    static_path = os.path.join(os.path.dirname(__file__), "static")
     await hass.http.async_register_static_paths([
         StaticPathConfig("/jellyha_static", static_path, False)
     ])

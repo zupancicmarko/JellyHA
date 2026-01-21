@@ -55,8 +55,10 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.storage = storage
         self._api: JellyfinApiClient | None = None
         self._server_name: str | None = None
+        self._server_version: str | None = None
         self.last_refresh_time: datetime | None = None
         self.last_data_change_time: datetime | None = None
+        self.last_refresh_duration: float | None = None  # Duration of last refresh in seconds
         self._previous_item_ids: set[str] = set()
         self._previous_item_hash: str = ""
 
@@ -83,7 +85,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             server_info = await self._api.validate_connection()
             self._server_name = server_info.get("ServerName", "Jellyfin")
-            _LOGGER.debug("Connected to Jellyfin server: %s", self._server_name)
+            self._server_version = server_info.get("Version")
+            _LOGGER.debug("Connected to Jellyfin server: %s (v%s)", self._server_name, self._server_version)
         except JellyfinAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except JellyfinConnectionError as err:
@@ -91,6 +94,9 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from Jellyfin API."""
+        import time
+        start_time = time.monotonic()
+        
         if self._api is None:
             await self._async_setup()
 
@@ -124,6 +130,25 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if self.storage:
                 await self.storage.update_from_coordinator(items)
 
+            # Log timing information
+            elapsed = time.monotonic() - start_time
+            self.last_refresh_duration = elapsed  # Store for sensor access
+            
+            refresh_interval = self.entry.options.get(
+                CONF_REFRESH_INTERVAL,
+                self.entry.data.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL),
+            )
+            
+            if elapsed > refresh_interval:
+                _LOGGER.warning(
+                    "Library refresh took %.1fs, which exceeds the configured refresh_interval of %ds. "
+                    "Consider increasing refresh_interval to avoid potential data staleness.",
+                    elapsed,
+                    refresh_interval,
+                )
+            else:
+                _LOGGER.debug("Library refresh completed in %.1fs for %d items", elapsed, len(items))
+
             return {
                 "items": items,
                 "count": len(items),
@@ -144,7 +169,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         hash_data = []
         for item in sorted(items, key=lambda x: x.get("id", "")):
             hash_data.append(f"{item.get('id')}:{item.get('is_played')}:{item.get('is_favorite')}:{item.get('date_added')}")
-        return hashlib.md5("|".join(hash_data).encode()).hexdigest()
+        return hashlib.sha256("|".join(hash_data).encode()).hexdigest()
 
     def _transform_item(self, item: dict[str, Any]) -> dict[str, Any]:
         """Transform raw Jellyfin item to our schema."""

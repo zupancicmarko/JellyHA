@@ -242,9 +242,8 @@ export class JellyHALibraryCard extends LitElement {
     scrollContainer.style.opacity = '0';
     scrollContainer.style.transform = `translateX(${enterTranslate})`;
 
-    // Force reflow
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = scrollContainer.offsetHeight;
+    // Force reflow using getComputedStyle (batched read, safer)
+    void scrollContainer.offsetHeight;
 
     // Phase 4: Enter Animation
     scrollContainer.style.transition = 'transform 0.25s ease-out, opacity 0.25s ease-out';
@@ -1078,7 +1077,8 @@ export class JellyHALibraryCard extends LitElement {
             class="pagination-dot ${i === this._currentPage ? 'active' : ''}"
             data-page="${i}"
             @click="${this._onDotClick}"
-            aria-label="Go to page ${i + 1}"
+            aria-label="${i === this._currentPage ? `Page ${i + 1}, current page` : `Go to page ${i + 1}`}"
+            aria-current="${i === this._currentPage ? 'true' : 'false'}"
           ></button>
         `)}
       </div>
@@ -1133,7 +1133,8 @@ export class JellyHALibraryCard extends LitElement {
                 class="${classes}"
                 data-page="${i}"
                 @click="${this._onDotClick}"
-                aria-label="Go to page ${i + 1}"
+                aria-label="${i === this._currentPage ? `Page ${i + 1} of ${totalPages}, current page` : `Go to page ${i + 1} of ${totalPages}`}"
+                aria-current="${i === this._currentPage ? 'true' : 'false'}"
               ></button>
             `;
     })}
@@ -1175,6 +1176,8 @@ export class JellyHALibraryCard extends LitElement {
                 class="poster"
                 src="${item.poster_url}"
                 alt="${item.name}"
+                width="140"
+                height="210"
                 loading="lazy"
                 @load="${this._handleImageLoad}"
                 @error="${this._handleImageError}"
@@ -1312,6 +1315,8 @@ export class JellyHALibraryCard extends LitElement {
               class="poster"
               src="${item.poster_url}"
               alt="${item.name}"
+              width="140"
+              height="210"
               loading="lazy"
               @load="${this._handleImageLoad}"
               @error="${this._handleImageError}"
@@ -1398,11 +1403,12 @@ export class JellyHALibraryCard extends LitElement {
       const date = new Date(dateString);
       // Use Home Assistant's language if available
       const locale = this.hass?.language || 'en';
-      return date.toLocaleDateString(locale, {
+      const formatter = new Intl.DateTimeFormat(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       });
+      return formatter.format(date);
     } catch {
       return dateString;
     }
