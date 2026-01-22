@@ -14,7 +14,6 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-
 from homeassistant.exceptions import HomeAssistantError
 
 @callback
@@ -65,18 +64,15 @@ async def websocket_get_items(
         )
         return
 
-    coordinators = hass.data[DOMAIN].get(entry_id)
-    if not coordinators:
+    # Retrieve entry and runtime_data
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
         connection.send_error(
              msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded"
         )
         return
 
-    # Handle new dict structure
-    if isinstance(coordinators, dict):
-        coordinator = coordinators.get("library")
-    else:
-        coordinator = coordinators
+    coordinator = entry.runtime_data.library
 
     if not coordinator:
         connection.send_error(
@@ -125,15 +121,12 @@ async def websocket_get_next_up(
         connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Missing entry_id")
         return
 
-    coordinators = hass.data[DOMAIN].get(entry_id)
-    if not coordinators:
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded")
         return
 
-    if isinstance(coordinators, dict):
-        coordinator = coordinators.get("library")
-    else:
-        coordinator = coordinators
+    coordinator = entry.runtime_data.library
         
     if not coordinator:
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found")

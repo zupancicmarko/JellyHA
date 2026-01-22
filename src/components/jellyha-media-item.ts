@@ -61,11 +61,12 @@ export class JellyHAMediaItem extends LitElement {
             <div class="poster-inner">
               <img
                 class="poster"
-                src="${item.poster_url}"
+                src="${item.poster_url}&width=300&format=webp"
                 alt="${item.name}"
-                width="140"
-                height="210"
+                width="80"
+                height="120"
                 loading="lazy"
+                decoding="async"
                 @load="${this._handleImageLoad}"
                 @error="${this._handleImageError}"
               />
@@ -166,11 +167,12 @@ export class JellyHAMediaItem extends LitElement {
           <div class="poster-inner">
             <img
               class="poster"
-              src="${item.poster_url}"
+              src="${item.poster_url}&width=300&format=webp"
               alt="${item.name}"
               width="140"
               height="210"
               loading="lazy"
+              decoding="async"
               @load="${this._handleImageLoad}"
               @error="${this._handleImageError}"
             />

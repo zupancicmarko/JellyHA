@@ -15,5 +15,6 @@
   "requirements": [
     "aiohttp>=3.8.0",
     "pychromecast"
-  ]
+  ],
+  "version": "1.0.0"
 }

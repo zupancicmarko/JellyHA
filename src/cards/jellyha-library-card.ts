@@ -32,8 +32,8 @@ console.info(
 );
 
 // Register card for picker
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
+window.customCards = window.customCards || [];
+window.customCards.push({
   type: 'jellyha-library-card',
   name: 'JellyHA Library',
   description: 'Display media from Jellyfin',
@@ -47,7 +47,7 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   items_per_page: 3,
   max_pages: 5,
   auto_swipe_interval: 0, // 0 = disabled, otherwise seconds
-  columns: 3,
+  columns: 2,
   show_title: true,
   show_year: true,
   show_runtime: true,
@@ -55,8 +55,9 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   show_media_type_badge: true,
   show_genres: true,
   show_description_on_hover: true,
-  show_pagination: true,
+  enable_pagination: true,
   metadata_position: 'below',
+  show_date_added: false,
   rating_source: 'auto',
   new_badge_days: 3,
   theme: 'auto',
@@ -116,6 +117,10 @@ export class JellyHALibraryCard extends LitElement {
   private _effectiveListColumns = 1; // Calculated based on container width
 
   private _isSwiping = false;
+  private _autoSwipePaused = false;
+  private _animationFrameId?: number;
+  private _lastFrameTime = 0;
+  private _scrollAccumulator = 0;
 
   // Scroll indicator state (for non-paginated scrollable content)
   @state() private _scrollProgress = 0; // 0-1 representing scroll position
@@ -141,6 +146,11 @@ export class JellyHALibraryCard extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this._setupResizeHandler();
+    // Add interaction listeners for auto-swipe
+    this.addEventListener('mouseenter', this._handleMouseEnter);
+    this.addEventListener('mouseleave', this._handleMouseLeave);
+    this.addEventListener('touchstart', this._handleTouchStartInteraction, { passive: true });
+    this.addEventListener('touchend', this._handleTouchEndInteraction);
     this._setupAutoSwipe();
   }
 
@@ -150,16 +160,28 @@ export class JellyHALibraryCard extends LitElement {
     if (this._resizeHandler) {
       window.removeEventListener('resize', this._resizeHandler);
     }
+    this.removeEventListener('mouseenter', this._handleMouseEnter);
+    this.removeEventListener('mouseleave', this._handleMouseLeave);
+    this.removeEventListener('touchstart', this._handleTouchStartInteraction);
+    this.removeEventListener('touchend', this._handleTouchEndInteraction);
     this._clearAutoSwipe();
   }
 
   private _setupAutoSwipe(): void {
     this._clearAutoSwipe();
     const interval = this._config?.auto_swipe_interval;
-    if (interval && interval > 0) {
+    if (!interval || interval <= 0) return;
+
+    if (this._config.enable_pagination !== false) {
+      // Version 1: Paginated (Interval-based)
       this._autoSwipeTimer = window.setInterval(() => {
-        this._nextPage();
+        if (!this._autoSwipePaused) {
+          this._handleAutoSwipePage();
+        }
       }, interval * 1000);
+    } else {
+      // Version 2: Continuous Scroll (RAF-based)
+      this._startContinuousScroll();
     }
   }
 
@@ -167,6 +189,88 @@ export class JellyHALibraryCard extends LitElement {
     if (this._autoSwipeTimer) {
       clearInterval(this._autoSwipeTimer);
       this._autoSwipeTimer = undefined;
+    }
+    if (this._animationFrameId) {
+      cancelAnimationFrame(this._animationFrameId);
+      this._animationFrameId = undefined;
+    }
+  }
+
+  /* Interaction Handlers for Pausing */
+  private _handleMouseEnter = (): void => { this._autoSwipePaused = true; };
+  private _handleMouseLeave = (): void => { this._autoSwipePaused = false; };
+  private _handleTouchStartInteraction = (): void => { this._autoSwipePaused = true; };
+  // Resume after a delay on touch end to let momentum settle (if any) or just resume
+  private _handleTouchEndInteraction = (): void => {
+    setTimeout(() => { this._autoSwipePaused = false; }, 2000);
+  };
+
+  /* Continuous Scroll Logic */
+  private _startContinuousScroll(): void {
+    const scrollFn = (timestamp: number) => {
+      if (!this._lastFrameTime) this._lastFrameTime = timestamp;
+      const deltaTime = timestamp - this._lastFrameTime;
+      this._lastFrameTime = timestamp;
+
+      if (!this._autoSwipePaused && this._config.auto_swipe_interval) {
+        const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+
+        if (scrollContainer) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
+
+          // Sync accumulator if it's way off (e.g. user manually scrolled)
+          // We allow small drift, but if user drags, we need to re-sync
+          // Initialize if 0 (first run) or drift > 10
+          if (Math.abs(this._scrollAccumulator - scrollLeft) > 10) {
+            this._scrollAccumulator = scrollLeft;
+          }
+
+          // Calculate speed: We want to scroll 'clientWidth' pixels in 'interval' seconds
+          // pixelsPerMs = clientWidth / (interval * 1000)
+          const pxPerMs = clientWidth / (this._config.auto_swipe_interval * 1000);
+          const scrollStep = pxPerMs * deltaTime;
+
+          // Infinite Scroll Reset Logic
+          // We assume content is duplicated. Loop point is approx half scrollWidth.
+          const resetThreshold = scrollWidth / 2;
+
+          this._scrollAccumulator += scrollStep;
+
+          if (this._scrollAccumulator >= resetThreshold) {
+            // Seamlessly jump back
+            this._scrollAccumulator = this._scrollAccumulator - resetThreshold;
+            scrollContainer.scrollLeft = this._scrollAccumulator;
+          } else {
+            // Normal scroll
+            // Use the accumulated value for precise sub-pixel tracking
+            scrollContainer.scrollLeft = this._scrollAccumulator;
+          }
+        }
+      }
+
+      this._animationFrameId = requestAnimationFrame(scrollFn);
+    };
+
+    this._animationFrameId = requestAnimationFrame(scrollFn);
+  }
+
+  /* Pagination Auto Swipe Logic */
+  private async _handleAutoSwipePage(): Promise<void> {
+    // Determine if we need to loop
+    // Re-calculate basic stats
+    const items = this._items || []; // Use cached items
+    const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
+    const maxPages = this._config.max_pages || 10;
+    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
+
+    if (this._currentPage >= totalPages - 1) {
+      // Loop back to start
+      await this._animatePageChange('next', () => { // Animate direction 'next' usually feels like forward movement even when looping
+        this._currentPage = 0;
+      });
+    } else {
+      // Normal next page
+      this._nextPage();
     }
   }
 
@@ -550,7 +654,7 @@ export class JellyHALibraryCard extends LitElement {
 
   // Render scroll indicator for non-paginated scrollable content
   private _renderScrollIndicator(): TemplateResult {
-    if (!this._hasScrollableContent) return html``;
+    if (!this._hasScrollableContent || this._config.show_pagination_dots === false) return html``;
 
     const numDots = this.SCROLL_INDICATOR_DOTS;
     const progress = this._scrollProgress;
@@ -693,6 +797,22 @@ export class JellyHALibraryCard extends LitElement {
     return this._config?.layout === 'list' ? 5 : 3;
   }
 
+  public getLayoutOptions() {
+    return {
+      grid_rows: 6,
+      grid_columns: 12,
+    };
+  }
+
+  public getGridOptions() {
+    return {
+      columns: 12,
+      rows: 6,
+      min_columns: 12,
+      min_rows: 5,
+    };
+  }
+
   /**
    * Determine if component should update
    */
@@ -781,7 +901,7 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Check if carousel/grid/list is scrollable after render
-    if (!this._config.show_pagination) {
+    if (!this._config.enable_pagination) {
 
       requestAnimationFrame(() => {
         const scrollable = this.shadowRoot?.querySelector('.carousel.scrollable, .grid-wrapper, .list-wrapper') as HTMLElement;
@@ -920,18 +1040,18 @@ export class JellyHALibraryCard extends LitElement {
    */
   private _renderLayout(items: MediaItem[]): TemplateResult {
     const layout = this._config.layout || 'carousel';
-    const showPagination = this._config.show_pagination !== false;
+    const enablePagination = this._config.enable_pagination !== false;
 
     if (layout === 'carousel') {
-      return this._renderCarousel(items, showPagination);
+      return this._renderCarousel(items, enablePagination);
     }
 
     if (layout === 'list') {
-      return this._renderList(items, showPagination);
+      return this._renderList(items, enablePagination);
     }
 
     if (layout === 'grid') {
-      return this._renderGrid(items, showPagination);
+      return this._renderGrid(items, enablePagination);
     }
 
     return html`
@@ -960,9 +1080,11 @@ export class JellyHALibraryCard extends LitElement {
     const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
 
     const startIdx = this._currentPage * itemsPerPage;
+    // For Infinite Scroll (no pagination), duplicate items ONLY if auto swipe is enabled
+    const shouldDuplicate = !showPagination && (this._config.auto_swipe_interval || 0) > 0;
     const visibleItems = showPagination
       ? items.slice(startIdx, startIdx + itemsPerPage)
-      : items;
+      : (shouldDuplicate ? [...items, ...items] : items);
 
     return html`
       <div 
@@ -999,7 +1121,7 @@ export class JellyHALibraryCard extends LitElement {
   /**
    * Render list with optional pagination
    */
-  private _renderList(items: MediaItem[], showPagination: boolean): TemplateResult {
+  private _renderList(items: MediaItem[], enablePagination: boolean): TemplateResult {
     const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
     const rawMaxPages = this._config.max_pages;
     const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
@@ -1007,9 +1129,12 @@ export class JellyHALibraryCard extends LitElement {
     const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
 
     const startIdx = this._currentPage * itemsPerPage;
-    const visibleItems = showPagination
+    // For Infinite Scroll (no pagination), duplicate items ONLY if auto swipe is enabled
+    const shouldDuplicate = !enablePagination && (this._config.auto_swipe_interval || 0) > 0;
+    const visibleItems = enablePagination
       ? items.slice(startIdx, startIdx + itemsPerPage)
-      : items;
+      : (shouldDuplicate ? [...items, ...items] : items);
+
     // Use effective columns (calculated based on container width)
     const columns = this._effectiveListColumns;
     const isSingleColumn = columns === 1;
@@ -1025,7 +1150,7 @@ export class JellyHALibraryCard extends LitElement {
         @pointerup="${this._handlePointerUp}"
       >
         <div 
-          class="list ${showPagination ? 'paginated' : ''} ${isSingleColumn ? 'single-column' : ''}"
+          class="list ${enablePagination ? 'paginated' : ''} ${isSingleColumn ? 'single-column' : ''}"
           style="--jf-list-columns: ${columns}"
         >
           ${visibleItems.map((item) => html`
@@ -1038,7 +1163,7 @@ export class JellyHALibraryCard extends LitElement {
             ></jellyha-media-item>
           `)}
         </div>
-        ${showPagination && totalPages > 1
+        ${enablePagination && totalPages > 1
         ? this._renderPagination(totalPages)
         : nothing}
       </div>
@@ -1047,7 +1172,7 @@ export class JellyHALibraryCard extends LitElement {
   /**
    * Render grid with optional pagination
    */
-  private _renderGrid(items: MediaItem[], showPagination: boolean): TemplateResult {
+  private _renderGrid(items: MediaItem[], enablePagination: boolean): TemplateResult {
     const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
     const rawMaxPages = this._config.max_pages;
     const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
@@ -1055,11 +1180,15 @@ export class JellyHALibraryCard extends LitElement {
     const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
 
     const startIdx = this._currentPage * itemsPerPage;
-    const visibleItems = showPagination
+    // For Infinite Scroll (no pagination), duplicate items ONLY if auto swipe is enabled
+    const shouldDuplicate = !enablePagination && (this._config.auto_swipe_interval || 0) > 0;
+    const visibleItems = enablePagination
       ? items.slice(startIdx, startIdx + itemsPerPage)
-      : items;
+      : (shouldDuplicate ? [...items, ...items] : items);
+
     const columns = this._config.columns || 1;
     const isAutoColumns = columns === 1;
+    const isHorizontal = !enablePagination && (this._config.auto_swipe_interval || 0) > 0;
 
     return html`
       <div class="grid-outer">
@@ -1071,11 +1200,11 @@ export class JellyHALibraryCard extends LitElement {
           @pointerdown="${this._handlePointerDown}"
           @pointermove="${this._handlePointerMove}"
           @pointerup="${this._handlePointerUp}"
-          @scroll="${!showPagination ? this._handleScroll : nothing}"
+          @scroll="${!enablePagination ? this._handleScroll : nothing}"
         >
           <div
-            class="grid ${showPagination ? 'paginated' : ''} ${isAutoColumns ? 'auto-columns' : ''}"
-            style="--jf-columns: ${columns}"
+            class="grid ${enablePagination ? 'paginated' : ''} ${isAutoColumns ? 'auto-columns' : ''} ${isHorizontal ? 'horizontal' : ''}"
+            style="--jf-columns: ${columns}; --jf-grid-rows: ${columns}"
           >
             ${visibleItems.map((item) => html`
                 <jellyha-media-item
@@ -1088,10 +1217,10 @@ export class JellyHALibraryCard extends LitElement {
             `)}
           </div>
         </div>
-        ${showPagination && totalPages > 1
+        ${enablePagination && totalPages > 1
         ? this._renderPagination(totalPages)
         : nothing}
-        ${!showPagination ? this._renderScrollIndicator() : nothing}
+        ${!enablePagination ? this._renderScrollIndicator() : nothing}
       </div>
     `;
   }
@@ -1101,6 +1230,8 @@ export class JellyHALibraryCard extends LitElement {
    * Decides between standard and smart pagination based on page count
    */
   private _renderPagination(totalPages: number): TemplateResult {
+    if (this._config.show_pagination_dots === false) return html``;
+
     // Hybrid Approach: Use standard simple dots for small counts
     if (totalPages <= 5) {
       return this._renderStandardPagination(totalPages);

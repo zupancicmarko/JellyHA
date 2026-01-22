@@ -21,17 +21,18 @@ from .browse_media import async_browse_media, async_browse_media_search, parse_i
 from .const import CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME, DOMAIN
 from .coordinator import JellyHALibraryCoordinator
 from .device import get_device_info
+from . import JellyHAConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: JellyHAConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up JellyHA media player from config entry."""
-    coordinator: JellyHALibraryCoordinator = hass.data[DOMAIN][entry.entry_id]["library"]
+    coordinator: JellyHALibraryCoordinator = entry.runtime_data.library
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
 
     async_add_entities([JellyHAMediaPlayer(coordinator, entry, device_name)])

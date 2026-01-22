@@ -77,7 +77,8 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     show_genres?: boolean;
     show_date_added?: boolean;
     show_watched_status?: boolean;
-    show_pagination?: boolean;
+    enable_pagination?: boolean;
+    show_pagination_dots?: boolean;
     metadata_position?: 'above' | 'below';
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
@@ -149,6 +150,12 @@ export interface CustomCardInfo {
     name: string;
     description: string;
     preview: boolean;
+}
+
+declare global {
+    interface Window {
+        customCards: CustomCardInfo[];
+    }
 }
 
 // Declare custom elements

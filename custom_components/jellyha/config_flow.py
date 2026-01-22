@@ -10,6 +10,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import (
     JellyfinApiClient,
@@ -56,7 +57,8 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._server_url = user_input[CONF_SERVER_URL].rstrip("/")
             self._api_key = user_input[CONF_API_KEY]
 
-            self._api = JellyfinApiClient(self._server_url, self._api_key)
+            session = async_get_clientsession(self.hass)
+            self._api = JellyfinApiClient(self._server_url, self._api_key, session)
 
             try:
                 await self._api.validate_connection()

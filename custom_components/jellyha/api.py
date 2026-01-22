@@ -46,6 +46,9 @@ class JellyfinApiClient:
         self._session = session
         self._user_id: str | None = None
 
+        if session is None:
+            _LOGGER.warning("JellyfinApiClient created without shared session")
+
     @property
     def _headers(self) -> dict[str, str]:
         """Get authentication headers."""
@@ -61,6 +64,7 @@ class JellyfinApiClient:
     async def _get_session(self) -> aiohttp.ClientSession:
         """Get or create aiohttp session."""
         if self._session is None or self._session.closed:
+            # Fallback (discouraged in HA)
             self._session = aiohttp.ClientSession()
         return self._session
 
@@ -258,5 +262,5 @@ class JellyfinApiClient:
 
     async def close(self) -> None:
         """Close the session."""
-        if self._session and not self._session.closed:
-            await self._session.close()
+        # Do not close the shared session provided by Home Assistant
+        pass

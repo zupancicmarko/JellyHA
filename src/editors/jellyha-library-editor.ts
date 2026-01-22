@@ -41,6 +41,15 @@ export class JellyHALibraryEditor extends LitElement {
       gap: 8px;
       margin-bottom: 8px;
     }
+    .side-by-side {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .side-by-side > .form-row {
+      margin-bottom: 0;
+    }
   `;
 
   public setConfig(config: JellyHALibraryCardConfig): void {
@@ -54,6 +63,12 @@ export class JellyHALibraryEditor extends LitElement {
 
     const clickAction = this._config.click_action || 'more-info';
     const holdAction = this._config.hold_action || 'jellyfin';
+
+    // Determine label for columns/rows slider
+    const isHorizontalGrid = this._config.layout === 'grid' &&
+      this._config.enable_pagination === false &&
+      (this._config.auto_swipe_interval || 0) > 0;
+    const columnsLabel = isHorizontalGrid ? 'Rows' : 'Columns';
 
     return html`
       <div class="card-config">
@@ -75,17 +90,32 @@ export class JellyHALibraryEditor extends LitElement {
           ></ha-textfield>
         </div>
 
-        <div class="form-row">
-          <ha-select
-            label="Layout"
-            .value=${this._config.layout || 'carousel'}
-            @selected=${this._layoutChanged}
-            @closed=${(e: Event) => e.stopPropagation()}
-          >
-            <mwc-list-item value="carousel">Carousel</mwc-list-item>
-            <mwc-list-item value="grid">Grid</mwc-list-item>
-            <mwc-list-item value="list">List</mwc-list-item>
-          </ha-select>
+        <div class="side-by-side">
+          <div class="form-row">
+            <ha-select
+              label="Layout"
+              .value=${this._config.layout || 'carousel'}
+              @selected=${this._layoutChanged}
+              @closed=${(e: Event) => e.stopPropagation()}
+            >
+              <mwc-list-item value="carousel">Carousel</mwc-list-item>
+              <mwc-list-item value="grid">Grid</mwc-list-item>
+              <mwc-list-item value="list">List</mwc-list-item>
+            </ha-select>
+          </div>
+
+          <div class="form-row">
+            <ha-select
+              label="Media Type"
+              .value=${this._config.media_type || 'both'}
+              @selected=${this._mediaTypeChanged}
+              @closed=${(e: Event) => e.stopPropagation()}
+            >
+              <mwc-list-item value="both">Movies & TV Shows</mwc-list-item>
+              <mwc-list-item value="movies">Movies Only</mwc-list-item>
+              <mwc-list-item value="series">TV Shows Only</mwc-list-item>
+            </ha-select>
+          </div>
         </div>
 
         ${this._config.layout === 'grid' || this._config.layout === 'list'
@@ -98,94 +128,87 @@ export class JellyHALibraryEditor extends LitElement {
                   .value=${this._config.columns || 1}
                   @change=${this._columnsChanged}
                 ></ha-slider>
-                <span>Columns: ${(this._config.columns || 1) === 1 ? 'Auto' : this._config.columns}</span>
+                <span>${columnsLabel}: ${(this._config.columns || 1) === 1 ? 'Auto' : this._config.columns}</span>
               </div>
             `
         : ''}
 
-        <div class="form-row">
-          <ha-select
-            label="Media Type"
-            .value=${this._config.media_type || 'both'}
-            @selected=${this._mediaTypeChanged}
-            @closed=${(e: Event) => e.stopPropagation()}
-          >
-            <mwc-list-item value="both">Movies & TV Shows</mwc-list-item>
-            <mwc-list-item value="movies">Movies Only</mwc-list-item>
-            <mwc-list-item value="series">TV Shows Only</mwc-list-item>
-          </ha-select>
+        <div class="side-by-side">
+          <div class="form-row">
+            <ha-textfield
+              label="Items Per Page"
+              type="number"
+              min="1"
+              required
+              .value=${this._config.items_per_page !== undefined && this._config.items_per_page !== null ? String(this._config.items_per_page) : ''}
+              @input=${this._itemsPerPageChanged}
+            ></ha-textfield>
+          </div>
+
+          <div class="form-row">
+            <ha-textfield
+              label="Max Pages (0 = no limit)"
+              type="number"
+              min="0"
+              max="20"
+              .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? String(this._config.max_pages) : ''}
+              @input=${this._maxPagesChanged}
+            ></ha-textfield>
+          </div>
         </div>
 
-        <div class="form-row">
-          <ha-textfield
-            label="Items Per Page"
-            type="number"
-            min="1"
-            required
-            .value=${this._config.items_per_page !== undefined ? String(this._config.items_per_page) : ''}
-            @input=${this._itemsPerPageChanged}
-          ></ha-textfield>
+        <div class="side-by-side">
+          <div class="form-row">
+            <ha-textfield
+              label="Auto Swipe (sec, 0 = off)"
+              type="number"
+              min="0"
+              max="60"
+              .value=${String(this._config.auto_swipe_interval || 0)}
+              @input=${this._autoSwipeIntervalChanged}
+            ></ha-textfield>
+          </div>
+
+          <div class="form-row">
+            <ha-textfield
+              label="New Badge Days (0 = off)"
+              type="number"
+              min="0"
+              max="30"
+              .value=${this._config.new_badge_days !== undefined && this._config.new_badge_days !== null ? String(this._config.new_badge_days) : ''}
+              @input=${this._newBadgeDaysChanged}
+            ></ha-textfield>
+          </div>
         </div>
 
-        <div class="form-row">
-          <ha-textfield
-            label="Max Pages (0 or blank = no limit)"
-            type="number"
-            min="0"
-            max="20"
-            .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? String(this._config.max_pages) : ''}
-            @input=${this._maxPagesChanged}
-          ></ha-textfield>
-        </div>
+        <div class="side-by-side">
+          <div class="form-row">
+            <ha-select
+              label="Short Press (Click)"
+              .value=${clickAction}
+              @selected=${this._clickActionChanged}
+              @closed=${(e: Event) => e.stopPropagation()}
+            >
+              <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
+              <mwc-list-item value="cast">Cast to Chromecast</mwc-list-item>
+              <mwc-list-item value="more-info">More Information</mwc-list-item>
+              <mwc-list-item value="none">No Action</mwc-list-item>
+            </ha-select>
+          </div>
 
-        <div class="form-row">
-          <ha-textfield
-            label="Auto Swipe Interval (seconds, 0 = off)"
-            type="number"
-            min="0"
-            max="60"
-            .value=${String(this._config.auto_swipe_interval || 0)}
-            @input=${this._autoSwipeIntervalChanged}
-          ></ha-textfield>
-        </div>
-
-        <div class="form-row">
-          <ha-textfield
-            label="New Badge Days (0 or blank = off)"
-            type="number"
-            min="0"
-            max="30"
-            .value=${this._config.new_badge_days !== undefined && this._config.new_badge_days !== null ? String(this._config.new_badge_days) : ''}
-            @input=${this._newBadgeDaysChanged}
-          ></ha-textfield>
-        </div>
-
-        <div class="form-row">
-          <ha-select
-            label="Short Press (Click) Action"
-            .value=${clickAction}
-            @selected=${this._clickActionChanged}
-            @closed=${(e: Event) => e.stopPropagation()}
-          >
-            <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
-            <mwc-list-item value="cast">Cast to Chromecast</mwc-list-item>
-            <mwc-list-item value="more-info">More Information</mwc-list-item>
-            <mwc-list-item value="none">No Action</mwc-list-item>
-          </ha-select>
-        </div>
-
-        <div class="form-row">
-          <ha-select
-            label="Long Press (Hold) Action"
-            .value=${holdAction}
-            @selected=${this._holdActionChanged}
-            @closed=${(e: Event) => e.stopPropagation()}
-          >
-            <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
-            <mwc-list-item value="cast">Cast to Chromecast</mwc-list-item>
-            <mwc-list-item value="more-info">More Information</mwc-list-item>
-            <mwc-list-item value="none">No Action</mwc-list-item>
-          </ha-select>
+          <div class="form-row">
+            <ha-select
+              label="Long Press (Hold)"
+              .value=${holdAction}
+              @selected=${this._holdActionChanged}
+              @closed=${(e: Event) => e.stopPropagation()}
+            >
+              <mwc-list-item value="jellyfin">Open in Jellyfin</mwc-list-item>
+              <mwc-list-item value="cast">Cast to Chromecast</mwc-list-item>
+              <mwc-list-item value="more-info">More Information</mwc-list-item>
+              <mwc-list-item value="none">No Action</mwc-list-item>
+            </ha-select>
+          </div>
         </div>
 
         ${clickAction === 'cast' || holdAction === 'cast'
@@ -227,18 +250,10 @@ export class JellyHALibraryEditor extends LitElement {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.show_date_added === true}
-        @change=${this._showDateAddedChanged}
-      ></ha-switch>
-      <span>Show Date Added</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
         .checked=${this._config.show_ratings !== false}
         @change=${this._showRatingsChanged}
       ></ha-switch>
-      <span>Show Ratings</span>
+      <span>Show Rating</span>
     </div>
 
     <div class="checkbox-row">
@@ -247,6 +262,30 @@ export class JellyHALibraryEditor extends LitElement {
         @change=${this._showRuntimeChanged}
       ></ha-switch>
       <span>Show Runtime</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_date_added === true}
+        @change=${this._showDateAddedChanged}
+      ></ha-switch>
+      <span>Show Date Added</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_genres === true}
+        @change=${this._showGenresChanged}
+      ></ha-switch>
+      <span>Show Genre</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_description_on_hover !== false}
+        @change=${this._showDescriptionOnHoverChanged}
+      ></ha-switch>
+      <span>Show Description</span>
     </div>
 
     <div class="checkbox-row">
@@ -265,53 +304,59 @@ export class JellyHALibraryEditor extends LitElement {
       <span>Show Watched Status</span>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_genres === true}
-        @change=${this._showGenresChanged}
-      ></ha-switch>
-      <span>Show Genres</span>
+    <div class="side-by-side">
+      <div class="form-row">
+        <ha-select
+          label="Metadata Position"
+          .value=${this._config.metadata_position || 'below'}
+          @selected=${this._metadataPositionChanged}
+          @closed=${(e: Event) => e.stopPropagation()}
+        >
+          <mwc-list-item value="below">Below</mwc-list-item>
+          <mwc-list-item value="above">Above</mwc-list-item>
+        </ha-select>
+      </div>
+
+      <div class="form-row">
+        <ha-select
+          label="Sort Order"
+          .value=${this._config.sort_option || 'date_added_desc'}
+          @selected=${this._sortOptionChanged}
+          @closed=${(e: Event) => e.stopPropagation()}
+        >
+          <mwc-list-item value="date_added_desc">Date Added (Newest First)</mwc-list-item>
+          <mwc-list-item value="date_added_asc">Date Added (Oldest First)</mwc-list-item>
+          <mwc-list-item value="title_asc">Title (A-Z)</mwc-list-item>
+          <mwc-list-item value="title_desc">Title (Z-A)</mwc-list-item>
+          <mwc-list-item value="year_desc">Year (Newest First)</mwc-list-item>
+          <mwc-list-item value="year_asc">Year (Oldest First)</mwc-list-item>
+          <mwc-list-item value="last_played_desc">Last Played (Newest First)</mwc-list-item>
+          <mwc-list-item value="last_played_asc">Last Played (Oldest First)</mwc-list-item>
+        </ha-select>
+      </div>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_description_on_hover !== false}
-        @change=${this._showDescriptionOnHoverChanged}
-      ></ha-switch>
-      <span>Show Description</span>
+    <div class="side-by-side">
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.enable_pagination !== false}
+          @change=${this._enablePaginationChanged}
+        ></ha-switch>
+        <span>Enable Pagination</span>
+      </div>
+
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.show_pagination_dots !== false}
+          @change=${this._showPaginationDotsChanged}
+        ></ha-switch>
+        <span>Show Pagination Dots</span>
+      </div>
     </div>
 
     <div class="form-row">
       <ha-select
-        label="Metadata Position"
-        .value=${this._config.metadata_position || 'below'}
-        @selected=${this._metadataPositionChanged}
-        @closed=${(e: Event) => e.stopPropagation()}
-      >
-        <mwc-list-item value="below">Below</mwc-list-item>
-        <mwc-list-item value="above">Above</mwc-list-item>
-      </ha-select>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_pagination !== false}
-        @change=${this._showPaginationChanged}
-      ></ha-switch>
-      <span>Show Pagination Dots</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.filter_favorites === true}
-        @change=${this._filterFavoritesChanged}
-      ></ha-switch>
-      <span>Show Only Favorites</span>
-    </div>
-
-    <div class="form-row">
-      <ha-select
-        label="Watch Status"
+        label="Filter Watch Status"
         .value=${this._config.status_filter || 'all'}
         @selected=${this._statusFilterChanged}
         @closed=${(e: Event) => e.stopPropagation()}
@@ -322,30 +367,22 @@ export class JellyHALibraryEditor extends LitElement {
       </ha-select>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.filter_newly_added === true}
-        @change=${this._filterNewlyAddedChanged}
-      ></ha-switch>
-      <span>Show New Items Only</span>
-    </div>
+    <div class="side-by-side">
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.filter_favorites === true}
+          @change=${this._filterFavoritesChanged}
+        ></ha-switch>
+        <span>Filter Favorites</span>
+      </div>
 
-    <div class="form-row">
-      <ha-select
-        label="Sort Order"
-        .value=${this._config.sort_option || 'date_added_desc'}
-        @selected=${this._sortOptionChanged}
-        @closed=${(e: Event) => e.stopPropagation()}
-      >
-        <mwc-list-item value="date_added_desc">Date Added (Newest First)</mwc-list-item>
-        <mwc-list-item value="date_added_asc">Date Added (Oldest First)</mwc-list-item>
-        <mwc-list-item value="title_asc">Title (A-Z)</mwc-list-item>
-        <mwc-list-item value="title_desc">Title (Z-A)</mwc-list-item>
-        <mwc-list-item value="year_desc">Year (Newest First)</mwc-list-item>
-        <mwc-list-item value="year_asc">Year (Oldest First)</mwc-list-item>
-        <mwc-list-item value="last_played_desc">Last Played (Newest First)</mwc-list-item>
-        <mwc-list-item value="last_played_asc">Last Played (Oldest First)</mwc-list-item>
-      </ha-select>
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.filter_newly_added === true}
+          @change=${this._filterNewlyAddedChanged}
+        ></ha-switch>
+        <span>Filter New Items</span>
+      </div>
     </div>
   </div>
 `;
@@ -381,9 +418,8 @@ export class JellyHALibraryEditor extends LitElement {
     if (value !== '') {
       this._updateConfig('items_per_page', Number(value));
     } else {
-      // Revert to default if cleared
-      this._updateConfig('items_per_page', 5);
-      target.value = '5';
+      // Allow clearing (will use default later or in card)
+      this._updateConfig('items_per_page', null);
     }
   }
 
@@ -486,9 +522,14 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('horizontal_alignment', target.value);
   }
 
-  private _showPaginationChanged(e: Event): void {
+  private _enablePaginationChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
-    this._updateConfig('show_pagination', target.checked);
+    this._updateConfig('enable_pagination', target.checked);
+  }
+
+  private _showPaginationDotsChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_pagination_dots', target.checked);
   }
 
   private _filterFavoritesChanged(e: Event): void {

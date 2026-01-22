@@ -49,11 +49,11 @@ class JellyHAMediaSource(MediaSource):
         # media_type = parts[1] # Not strictly needed if we just stream item_id
         item_id = parts[2]
         
-        coordinators = self.hass.data[DOMAIN].get(entry_id)
-        if not coordinators:
-            raise Unresolvable(f"Config entry {entry_id} not found")
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if not entry or not hasattr(entry, "runtime_data"):
+            raise Unresolvable(f"Config entry {entry_id} not loaded")
             
-        coordinator = coordinators["library"]
+        coordinator = entry.runtime_data.library
         api = coordinator._api
         if not api:
             raise Unresolvable("API not available")
@@ -82,8 +82,9 @@ class JellyHAMediaSource(MediaSource):
         entry_id = parts[0]
         path = parts[1] if len(parts) > 1 else ""
          
-        # Check if entry exists
-        if entry_id not in self.hass.data.get(DOMAIN, {}):
+        # Check if entry exists and is loaded
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if not entry:
              raise MediaSourceError(f"Server {entry_id} not available")
 
         # Map to internal jellyha:// format expected by browse_media.py
@@ -116,13 +117,15 @@ class JellyHAMediaSource(MediaSource):
     def _build_root(self) -> BrowseMediaSource:
         """Build root showing available servers."""
         children = []
-        if DOMAIN in self.hass.data:
-            for entry_id, coordinators in self.hass.data[DOMAIN].items():
-                coordinator = coordinators["library"]
+        # Iterate over loaded config entries
+        jellyha_entries = self.hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 children.append(
                     BrowseMediaSource(
                         domain=DOMAIN,
-                        identifier=entry_id,
+                        identifier=entry.entry_id,
                         media_class=MediaClass.DIRECTORY,
                         media_content_type="server",
                         title=coordinator._server_name or "Jellyfin",

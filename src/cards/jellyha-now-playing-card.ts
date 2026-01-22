@@ -11,9 +11,11 @@ import { formatRuntime } from '../shared/utils';
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
 
+import '../editors/jellyha-now-playing-editor';
+
 // Register card in the custom cards array
-(window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
+window.customCards = window.customCards || [];
+window.customCards.push({
     type: 'jellyha-now-playing-card',
     name: 'JellyHA Now Playing',
     description: 'Display currently playing media from Jellyfin',
@@ -108,7 +110,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const progressPercent = attributes.progress_percent || 0;
         const imageUrl = attributes.image_url;
 
-        const backdropUrl = attributes.backdrop_url;
+        const backdropUrl = attributes.backdrop_url ? `${attributes.backdrop_url}&width=1280&format=webp` : undefined;
         const showBackground = this._config.show_background && backdropUrl;
         const isPaused = attributes.is_paused;
 
@@ -127,10 +129,10 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="main-container">
                         ${imageUrl ? html`
                             <div class="poster-container" @click=${this._handlePosterRewind}>
-                                <img src="${imageUrl}" alt="${attributes.title}" />
+                                <img src="${imageUrl}&width=400&format=webp" alt="${attributes.title}" loading="eager" fetchpriority="high" />
                                 ${this._rewindActive ? html`
                                     <div class="rewind-overlay">
-                                        <span>REWINDING</span>
+                                        <span>${localize(this.hass.language, 'rewinding')}</span>
                                     </div>
                                 ` : nothing}
                             </div>
@@ -184,20 +186,20 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ` : nothing}
 
                                     <div class="playback-controls">
-                                        ${this._rewindActive ? html`
-                                            <ha-icon-button class="spinning" .label=${'Loading'}>
+                                                                    ${this._rewindActive ? html`
+                                            <ha-icon-button class="spinning" .label=${localize(this.hass.language, 'loading')}>
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : isPaused ? html`
-                                            <ha-icon-button .label=${'Play'} @click=${() => this._handleControl('Unpause')}>
+                                            <ha-icon-button .label=${localize(this.hass.language, 'play')} @click=${() => this._handleControl('Unpause')}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : html`
-                                            <ha-icon-button .label=${'Pause'} @click=${() => this._handleControl('Pause')}>
+                                            <ha-icon-button .label=${localize(this.hass.language, 'pause')} @click=${() => this._handleControl('Pause')}>
                                                 <ha-icon icon="mdi:pause"></ha-icon>
                                             </ha-icon-button>
                                         `}
-                                        <ha-icon-button .label=${'Stop'} @click=${() => this._handleControl('Stop')}>
+                                        <ha-icon-button .label=${localize(this.hass.language, 'stop')} @click=${() => this._handleControl('Stop')}>
                                             <ha-icon icon="mdi:stop"></ha-icon>
                                         </ha-icon-button>
                                     </div>
@@ -221,7 +223,7 @@ export class JellyHANowPlayingCard extends LitElement {
     private async _fetchPhrases(): Promise<void> {
         if (this._phrases.length > 0) return;
         try {
-            const response = await fetch('/jellyha_static/now_playing_phrases.json');
+            const response = await fetch('/jellyha_static/phrases.json');
             if (response.ok) {
                 this._phrases = await response.json();
             }
@@ -239,7 +241,7 @@ export class JellyHANowPlayingCard extends LitElement {
             : 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/logo.png';
         const iconUrl = 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/icon.png';
 
-        let phrase = "Nothing is currently playing";
+        let phrase = localize(this.hass.language, 'nothing_playing');
 
         if (this._phrases.length > 0) {
             const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
@@ -433,6 +435,8 @@ export class JellyHANowPlayingCard extends LitElement {
             position: relative;
             background: var(--ha-card-background, var(--card-background-color, #fff));
             border-radius: var(--ha-card-border-radius, 12px);
+            box-shadow: var(--ha-card-box-shadow, none);
+            border: var(--ha-card-border, 1px solid var(--ha-card-border-color, var(--divider-color, #e0e0e0)));
             transition: all 0.3s ease-out;
             container-type: size;
             container-name: now-playing;

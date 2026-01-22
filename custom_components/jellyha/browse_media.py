@@ -38,10 +38,11 @@ async def async_browse_media(
     media_content_id: str | None = None,
 ) -> BrowseMedia:
     """Browse Jellyfin media library."""
-    coordinators = hass.data[DOMAIN].get(entry_id)
-    if not coordinators:
-        raise ValueError("JellyHA coordinator not found")
-    coordinator = coordinators["library"]
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
+        raise ValueError("JellyHA integration not loaded")
+    
+    coordinator = entry.runtime_data.library
 
     # Root level - show categories
     if media_content_id is None or media_content_id == "":
@@ -272,12 +273,12 @@ async def async_browse_media_search(
     search_term: str,
 ) -> BrowseMedia:
     """Browse media with search."""
-    coordinators = hass.data[DOMAIN].get(entry_id)
-    if not coordinators:
-        _LOGGER.error("JellyHA coordinator or API not found for search")
-        raise ValueError("JellyHA coordinator or API not found")
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
+        _LOGGER.error("JellyHA integration not loaded for search")
+        raise ValueError("JellyHA integration not loaded")
     
-    coordinator = coordinators["library"]
+    coordinator = entry.runtime_data.library
 
     user_id = coordinator.config_entry.data.get("user_id")
     api = coordinator._api

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 import logging
+import hashlib
+import time
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -12,6 +14,9 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.issue_registry import async_create_issue, IssueSeverity
 from homeassistant.util import dt as dt_util
 
 from .api import (
@@ -77,9 +82,11 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_setup(self) -> None:
         """Set up the coordinator (called once during first refresh)."""
+        session = async_get_clientsession(self.hass)
         self._api = JellyfinApiClient(
             server_url=self.entry.data[CONF_SERVER_URL],
             api_key=self.entry.data[CONF_API_KEY],
+            session=session,
         )
 
         try:
@@ -94,7 +101,6 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from Jellyfin API."""
-        import time
         start_time = time.monotonic()
         
         if self._api is None:
@@ -158,13 +164,21 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             }
 
         except JellyfinAuthError as err:
+            async_create_issue(
+                self.hass,
+                DOMAIN,
+                "invalid_auth",
+                is_fixable=False,
+                severity=IssueSeverity.ERROR,
+                translation_key="invalid_auth",
+                learn_more_url="https://github.com/zupancicmarko/jellyha",
+            )
             raise ConfigEntryAuthFailed(str(err)) from err
         except JellyfinApiError as err:
             raise UpdateFailed(f"Error fetching data: {err}") from err
 
     def _compute_data_hash(self, items: list[dict[str, Any]]) -> str:
         """Compute a hash of item data to detect changes."""
-        import hashlib
         # Include item IDs, count, and key changing attributes like is_played
         hash_data = []
         for item in sorted(items, key=lambda x: x.get("id", "")):
@@ -195,12 +209,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "rating_imdb": provider_ids.get("Imdb"),
             "rating_tmdb": provider_ids.get("Tmdb"),
             "description": item.get("Overview", ""),
-            "poster_url": self._api.get_image_url(
-                item_id, "Primary", DEFAULT_IMAGE_HEIGHT, DEFAULT_IMAGE_QUALITY
-            ),
-            "backdrop_url": self._api.get_image_url(
-                item_id, "Backdrop", DEFAULT_IMAGE_HEIGHT, DEFAULT_IMAGE_QUALITY
-            ),
+            "poster_url": f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Primary?tag={item.get('ImageTags', {}).get('Primary', '')}",
+            "backdrop_url": f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Backdrop?tag={item.get('BackdropImageTags', [''])[0]}" if item.get('BackdropImageTags') else None,
             "date_added": item.get("DateCreated"),
             "jellyfin_url": self._api.get_jellyfin_url(item_id),
             "is_played": item.get("UserData", {}).get("Played", False),
@@ -256,6 +266,8 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         self._api = api
         self._ws_client = ws_client
         self.users: dict[str, str] = {}  # Map user_id to username
+        self._previous_sessions: dict[str, dict[str, Any]] = {}  # Map session_id to session data
+        self._device_id: str | None = None
 
         if self._ws_client:
             self._ws_client.set_on_session_update(self._handle_ws_session_update)
@@ -285,10 +297,75 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
     async def _handle_ws_session_update(self, sessions: list[dict[str, Any]]) -> None:
         """Handle session updates from WebSocket."""
         _LOGGER.debug("Coordinator received %d sessions from WS", len(sessions))
+        
+        # Fire events for device triggers
+        await self._fire_session_events(sessions)
+        
         for s in sessions:
              _LOGGER.debug("Session user: %s, Device: %s, NowPlaying: %s", 
                            s.get("UserId"), s.get("DeviceName"), "Yes" if "NowPlayingItem" in s else "No")
         self.async_set_updated_data(sessions)
+
+    async def _fire_session_events(self, current_sessions: list[dict[str, Any]]) -> None:
+        """Fire events based on session state changes."""
+        if not self._device_id:
+            dev_reg = dr.async_get(self.hass)
+            device = dev_reg.async_get_device(identifiers={(DOMAIN, self.entry.entry_id)})
+            if device:
+                self._device_id = device.id
+        
+        if not self._device_id:
+            return
+
+        curr_map = {s["Id"]: s for s in current_sessions}
+        
+        # Check for changes
+        for s_id, s in curr_map.items():
+            prev = self._previous_sessions.get(s_id)
+            event_type = None
+            
+            # Check for Play/Pause logic
+            # "NowPlayingItem" must exist for it to be a relevant media session
+            if "NowPlayingItem" in s:
+                is_paused = s.get("PlayState", {}).get("IsPaused", False)
+                
+                if not prev or "NowPlayingItem" not in prev:
+                    # New media session -> Play
+                    event_type = "media_play" if not is_paused else "media_pause"
+                else:
+                    # Existing session, check state change
+                    prev_paused = prev.get("PlayState", {}).get("IsPaused", False)
+                    if is_paused != prev_paused:
+                        event_type = "media_pause" if is_paused else "media_play"
+            
+            if event_type:
+                self.hass.bus.async_fire(
+                    f"{DOMAIN}_event",
+                    {
+                        "type": event_type,
+                        "device_id": self._device_id,
+                        "session_id": s_id,
+                        "user_id": s.get("UserId"),
+                        "media_title": s.get("NowPlayingItem", {}).get("Name"),
+                    }
+                )
+
+        # Check for Stops (session removed or media stopped)
+        for s_id, prev in self._previous_sessions.items():
+            if s_id not in curr_map or "NowPlayingItem" not in curr_map[s_id]:
+                if "NowPlayingItem" in prev:
+                    self.hass.bus.async_fire(
+                        f"{DOMAIN}_event",
+                        {
+                            "type": "media_stop",
+                            "device_id": self._device_id,
+                            "session_id": s_id,
+                            "user_id": prev.get("UserId"),
+                            "media_title": prev.get("NowPlayingItem", {}).get("Name"),
+                        }
+                    )
+
+        self._previous_sessions = curr_map
 
     async def _handle_ws_connect(self) -> None:
         """Handle WebSocket connection."""

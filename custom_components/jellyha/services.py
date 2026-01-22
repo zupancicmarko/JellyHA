@@ -68,10 +68,17 @@ async def async_register_services(hass: HomeAssistant) -> None:
         item_id = call.data["item_id"]
 
         # Find coordinator
-        coordinator = None
         if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+            # New architectural approach: Iterate over config entries
+            # hass.data[DOMAIN] is no longer a dict of entries
+            # We must use hass.config_entries.async_entries(DOMAIN) check
+            pass
+
+        # Find first loaded config entry for JellyHA
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 break
 
         if not coordinator or not coordinator._api:
@@ -137,158 +144,22 @@ async def async_register_services(hass: HomeAssistant) -> None:
         _LOGGER.info("Detected Device: %s (Legacy Mode: %s)", model_name, is_legacy_device)
 
         # ------------------------------------------------------------------
+        # ------------------------------------------------------------------
         # 2. ANALYSIS
         # ------------------------------------------------------------------
-        media_streams = item.get("MediaStreams", [])
-        video_codec = "unknown"
-        video_height = 0
-        bit_depth = 8
-        audio_codec = "unknown"
-        audio_channels = 2
+        from .media_strategy import MediaStrategy
         
-        for stream in media_streams:
-            if stream.get("Type") == "Video":
-                video_codec = stream.get("Codec", "unknown").lower()
-                video_height = int(stream.get("Height", 0))
-                bit_depth = int(stream.get("BitDepth", 8))
-            elif stream.get("Type") == "Audio" and stream.get("Index") == 1:
-                # Assuming first audio track is main
-                audio_codec = stream.get("Codec", "unknown").lower()
-                audio_channels = int(stream.get("Channels", 2))
+        media_info = MediaStrategy.analyze_media(item)
         
-        if audio_codec == "unknown":
-             for stream in media_streams:
-                if stream.get("Type") == "Audio":
-                    audio_codec = stream.get("Codec", "unknown").lower()
-                    audio_channels = int(stream.get("Channels", 2))
-                    break
-
-        # Check Format Basics
-        is_format_standard = (
-            video_codec in ["h264", "avc"] and 
-            bit_depth == 8 and
-            audio_codec in ["aac", "mp3", "ac3"]
+        # ------------------------------------------------------------------
+        # 3. USE STRATEGY
+        # ------------------------------------------------------------------
+        playback_info = MediaStrategy.get_playback_info(
+            server_url, api_key, item_id, media_info, model_name
         )
-
-        # ------------------------------------------------------------------
-        # 3. DECISION MATRIX (Corrected for Gen 1 Limits)
-        # ------------------------------------------------------------------
         
-        should_direct_play = False
-
-        if is_legacy_device:
-            # LEGACY: Strict limits (Max 720p, Max Stereo)
-            # 720p H.264 Stereo -> DIRECT PLAY
-            # 1080p H.264 Stereo -> TRANSCODE (Downscale)
-            # 720p H.264 5.1 -> TRANSCODE (Downmix)
-            if is_format_standard and video_height <= 720 and audio_channels <= 2:
-                should_direct_play = True
-        else:
-            # MODERN: Standard limits (Max 1080p)
-            if is_format_standard and video_height <= 1080:
-                should_direct_play = True
-
-        _LOGGER.info("Media: %s/%s | %sp | %sch | Legacy? %s | DirectPlay? %s", 
-                     video_codec, audio_codec, video_height, audio_channels, is_legacy_device, should_direct_play)
-
-        media_url = ""
-        content_type = ""
-        log_mode = ""
-
-        if should_direct_play:
-            # [A] DIRECT PLAY
-            log_mode = "DIRECT (H.264)"
-            media_url = (
-                f"{server_url}/Videos/{item_id}/stream"
-                f"?Static=true"
-                f"&api_key={api_key}"
-                f"&VideoCodec=h264"
-                f"&AudioCodec=aac"
-            )
-            content_type = "video/mp4"
-            
-        elif is_legacy_device:
-            # [B] LEGACY TRANSCODE (Gen 1)
-            # FORCE 720p & STEREO (Fixes Nuremberg/District 9)
-            log_mode = "TRANSCODE (Legacy Gen 1 - Force 720p/Stereo)"
-            
-            media_url = (
-                f"{server_url}/Videos/{item_id}/master.m3u8"
-                f"?api_key={api_key}"
-                f"&MediaSourceId={item_id}"
-                
-                # FORCE 720p
-                f"&Width=1280"
-                f"&Height=720"
-                
-                # FORCE 18 Mbps
-                f"&VideoBitrate=18000000"
-                f"&MaxStreamingBitrate=18000000"
-                
-                # COMPATIBILITY
-                f"&EncoderPreset=veryfast"
-                f"&VideoCodec=h264"
-                f"&h264-profile=high"
-                f"&h264-level=41"
-                f"&h264-videobitdepth=8"
-                
-                # AUDIO (Force Stereo)
-                f"&AudioCodec=aac"
-                f"&AudioBitrate=256000"
-                f"&AudioSampleRate=48000"
-                f"&TranscodingMaxAudioChannels=2" 
-                
-                # HLS
-                f"&SegmentContainer=ts"
-                f"&MinSegments=2"
-                f"&BreakOnNonKeyFrames=False"
-                f"&CopyTimestamps=true"
-                f"&EnableSubtitlesInManifest=false"
-            )
-            content_type = "application/x-mpegURL"
-            
-        else:
-            # [C] MODERN TRANSCODE (Tuned 2026 Settings)
-            log_mode = "TRANSCODE (Modern HQ)"
-            
-            media_url = (
-                f"{server_url}/Videos/{item_id}/master.m3u8"
-                f"?api_key={api_key}"
-                f"&MediaSourceId={item_id}"
-                
-                # FORCE 1080p
-                f"&Width=1920"
-                f"&Height=1080"
-                
-                # FORCE 20 Mbps
-                f"&VideoBitrate=20000000"
-                f"&MaxStreamingBitrate=20000000"
-                
-                # QUALITY
-                f"&EncoderPreset=medium"
-                f"&VideoCodec=h264"
-                f"&h264-profile=high"
-                f"&h264-level=51"
-                f"&h264-videobitdepth=8"
-                
-                # AUDIO (5.1 OK)
-                f"&AudioCodec=aac"
-                f"&AudioBitrate=320000"
-                f"&TranscodingMaxAudioChannels=6"
-                
-                # HLS
-                f"&SegmentContainer=ts"
-                f"&MinSegments=2"
-                f"&BreakOnNonKeyFrames=False"
-                f"&CopyTimestamps=true"
-                f"&EnableSubtitlesInManifest=false"
-            )
-            content_type = "application/x-mpegURL"
-
-        # Log
-        safe_url = media_url.replace(api_key, "REDACTED")
-        _LOGGER.info("Strategy: %s", log_mode)
-        _LOGGER.info("URL: %s", safe_url)
+        media_url = playback_info["media_url"]
+        content_type = playback_info["content_type"]
 
         # Prepare Metadata
         metadata = {
@@ -337,22 +208,40 @@ async def async_register_services(hass: HomeAssistant) -> None:
             schema=PLAY_ON_CHROMECAST_SCHEMA,
         )
 
+        # Iterate over config entries
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
+                await coordinator.async_refresh()
+                _LOGGER.info("Library refresh triggered via service for %s", entry.entry_id)
+
     async def async_refresh_library(call: ServiceCall) -> None:
         """Force refresh library data."""
-        if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+        # Iterate over config entries
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 await coordinator.async_refresh()
-                _LOGGER.info("Library refresh triggered via service")
+                _LOGGER.info("Library refresh triggered via service for %s", entry.entry_id)
+
+    if not hass.services.has_service(DOMAIN, SERVICE_REFRESH_LIBRARY):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_REFRESH_LIBRARY,
+            async_refresh_library,
+        )
 
     async def async_delete_item(call: ServiceCall) -> None:
         """Delete an item from Jellyfin library."""
         item_id = call.data["item_id"]
 
-        coordinator = None
-        if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+        # Find first loaded config entry for JellyHA
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 break
 
         if not coordinator or not coordinator._api:
@@ -369,13 +258,6 @@ async def async_register_services(hass: HomeAssistant) -> None:
         except Exception as e:
             _LOGGER.error("Failed to delete item %s: %s", item_id, e)
 
-    if not hass.services.has_service(DOMAIN, SERVICE_REFRESH_LIBRARY):
-        hass.services.async_register(
-            DOMAIN,
-            SERVICE_REFRESH_LIBRARY,
-            async_refresh_library,
-        )
-
     if not hass.services.has_service(DOMAIN, SERVICE_DELETE_ITEM):
         hass.services.async_register(
             DOMAIN,
@@ -389,11 +271,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         item_id = call.data["item_id"]
         is_favorite = call.data["is_favorite"]
         
-        # Find coordinator (assuming one instance for simplicity, but robust loop is better)
-        coordinator = None
-        if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+        # Find first loaded config entry for JellyHA
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 break
         
         if not coordinator or not coordinator._api:
@@ -427,10 +309,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         session_id = call.data["session_id"]
         command = call.data["command"]
         
-        coordinator = None
-        if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+        # Find first loaded config entry for JellyHA
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 break
         
         if not coordinator or not coordinator._api:
@@ -444,10 +327,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         session_id = call.data["session_id"]
         ticks = call.data["position_ticks"]
         
-        coordinator = None
-        if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+        # Find first loaded config entry for JellyHA
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 break
         
         if not coordinator or not coordinator._api:
@@ -477,11 +361,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         item_id = call.data["item_id"]
         is_played = call.data["is_played"]
         
-        # Find coordinator
-        coordinator = None
-        if DOMAIN in hass.data:
-            for entry_id in hass.data[DOMAIN]:
-                coordinator = hass.data[DOMAIN][entry_id]["library"]
+        # Find first loaded config entry for JellyHA
+        jellyha_entries = hass.config_entries.async_entries(DOMAIN)
+        for entry in jellyha_entries:
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                coordinator = entry.runtime_data.library
                 break
         
         if not coordinator or not coordinator._api:

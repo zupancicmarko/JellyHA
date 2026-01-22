@@ -154,7 +154,7 @@ max_pages: 5
 | `title` | string | `Jellyfin Library` | Card title |
 | `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
 | `media_type` | string | `both` | Filter: `movies`, `series`, or `both` |
-| `items_per_page` | number | `3` | Items visible per page (carousel) or initial Load (list) |
+| `items_per_page` | number | `3` | Items visible per page (carousel) or initial Load (list) or **Rows** (grid). **Note for Grid:** Use YAML editor to set > 8 rows. |
 | `max_pages` | number | `5` | Maximum number of pages to display |
 | `columns` | number | `4` | Number of columns for grid layout |
 | `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (0 = disabled) |
@@ -166,7 +166,7 @@ max_pages: 5
 | `show_watched_status` | boolean | `true` | Show watched checkmarks (Movies) and unplayed counts (Series) |
 | `show_genres` | boolean | `true` | Show genres list |
 | `show_description_on_hover` | boolean | `true` | Show overview when hovering/tapping |
-| `show_pagination` | boolean | `true` | Show pagination dots |
+| `enable_pagination` | boolean | `true` | Enable pagination dots |
 | `show_date_added` | boolean | `false` | Show the date item was added in List view |
 | `show_now_playing` | boolean | `true` | Show currently playing item banner if active |
 | `metadata_position` | string | `below` | Position of text: `below` or `above` image |
@@ -176,8 +176,10 @@ max_pages: 5
 | `click_action` | string | `jellyfin` | Action on click: `jellyfin`, `more-info`, `play`, or `none` |
 | `hold_action` | string | `cast` | Action on hold: `cast`, `jellyfin`, `more-info`, or `none` |
 | `default_cast_device` | string | `''` | Default media_player entity for casting |
-| `filter_favorites` | boolean | `false` | Filter to show only favorite items |
-| `filter_unwatched` | boolean | `false` | Filter to show only unwatched items |
+| `filter_favorites` | boolean | `false` | Filter Favorites (Show only favorite items) |
+| `status_filter` | string | `all` | Filter Watch Status: `all`, `unwatched`, `watched` |
+| `filter_newly_added` | boolean | `false` | Filter New Items (Show only new items) |
+| `sort_option` | string | `date_added_desc` | Sort order options |
 
 ## API Key
 

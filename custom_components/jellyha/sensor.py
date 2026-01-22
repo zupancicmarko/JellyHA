@@ -21,18 +21,18 @@ from .const import (
 from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .device import get_device_info
 from .ws_client import JellyfinWebSocketClient
+from . import JellyHAConfigEntry
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: JellyHAConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up JellyHA Library sensors from a config entry."""
-    coordinators = hass.data[DOMAIN][entry.entry_id]
-    coordinator: JellyHALibraryCoordinator = coordinators["library"]
-    session_coordinator: JellyHASessionCoordinator = coordinators["session"]
-    ws_client: JellyfinWebSocketClient = coordinators["ws_client"]
+    coordinator: JellyHALibraryCoordinator = entry.runtime_data.library
+    session_coordinator: JellyHASessionCoordinator = entry.runtime_data.session
+    ws_client: JellyfinWebSocketClient = entry.runtime_data.ws_client
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
 
     sensors: list[SensorEntity] = [
@@ -86,8 +86,8 @@ class JellyHABaseSensor(CoordinatorEntity[JellyHALibraryCoordinator], SensorEnti
         self._device_name = device_name
         self._entry = entry
         
-        # Use device_name as prefix for unique_id
-        self._attr_unique_id = f"{device_name}_{sensor_key}"
+        # Use entry_id as prefix for unique_id (migrated from device_name in __init__)
+        self._attr_unique_id = f"{entry.entry_id}_{sensor_key}"
         
         # Set entity_id to use device_name prefix (e.g., sensor.jellyha_library)
         self.entity_id = f"sensor.{device_name}_{sensor_key}"
@@ -527,7 +527,7 @@ class JellyHAWebSocketStatusSensor(CoordinatorEntity[JellyHALibraryCoordinator],
         self._ws_client = ws_client
         self._device_name = device_name
         self._entry = entry
-        self._attr_unique_id = f"{device_name}_websocket_status"
+        self._attr_unique_id = f"{entry.entry_id}_websocket_status"
         self.entity_id = f"sensor.{device_name}_websocket"
 
     @property
@@ -584,7 +584,7 @@ class JellyHAActiveSessionsSensor(CoordinatorEntity[JellyHASessionCoordinator], 
         super().__init__(coordinator)
         self._device_name = device_name
         self._entry = entry
-        self._attr_unique_id = f"{device_name}_active_sessions"
+        self._attr_unique_id = f"{entry.entry_id}_active_sessions"
         self.entity_id = f"sensor.{device_name}_active_sessions"
 
     @property
