@@ -6,6 +6,7 @@ import {
     NowPlayingSensorData
 } from '../shared/types';
 import { localize } from '../shared/localize';
+import { formatRuntime } from '../shared/utils';
 
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
@@ -156,7 +157,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                             <span class="meta-item meta-priority-3">${attributes.year}</span>
                                         ` : nothing}
                                         ${this._config.show_runtime && attributes.runtime_minutes ? html`
-                                            <span class="meta-item meta-priority-2">${attributes.runtime_minutes} min</span>
+                                            <span class="meta-item meta-priority-2">${formatRuntime(attributes.runtime_minutes)}</span>
                                         ` : nothing}
                                         ${this._config.show_ratings && attributes.community_rating ? html`
                                             <span class="meta-item external-rating meta-priority-1">

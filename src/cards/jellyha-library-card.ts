@@ -8,8 +8,9 @@ import { LitElement, html, nothing, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 
 import { HomeAssistant, LovelaceCard, MediaItem, SensorData, JellyHALibraryCardConfig } from '../shared/types';
+import { isNewItem } from '../shared/utils';
 import { JellyHAItemDetailsModal } from '../components/jellyha-item-details-modal';
-import { cardStyles } from '../shared/styles';
+import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
 
 // Import modal for side effects (registration)
@@ -17,6 +18,9 @@ import '../components/jellyha-item-details-modal';
 
 // Import editor for side effects
 import '../editors/jellyha-library-editor';
+
+// Import media item for side effects
+import '../components/jellyha-media-item';
 
 // Register card in the custom cards array
 const CARD_VERSION = '1.0.0';
@@ -861,7 +865,7 @@ export class JellyHALibraryCard extends LitElement {
     }
     // Filter by newly added
     if (this._config.filter_newly_added) {
-      filtered = filtered.filter((item) => this._isNewItem(item));
+      filtered = filtered.filter((item) => isNewItem(item, this._config.new_badge_days || 0));
     }
 
     // Sorting
@@ -904,6 +908,14 @@ export class JellyHALibraryCard extends LitElement {
   }
 
   /**
+   * Render media item action handler
+   */
+  private _handleItemAction(e: CustomEvent): void {
+    const { type, item } = e.detail;
+    this._performAction(item, type);
+  }
+
+  /**
    * Render layout based on config
    */
   private _renderLayout(items: MediaItem[]): TemplateResult {
@@ -924,7 +936,15 @@ export class JellyHALibraryCard extends LitElement {
 
     return html`
       <div class="${layout}">
-        ${items.map((item) => this._renderMediaItem(item))}
+        ${items.map((item) => html`
+            <jellyha-media-item
+                .hass=${this.hass}
+                .config=${this._config}
+                .item=${item}
+                .layout=${'grid'}
+                @jellyha-action=${this._handleItemAction}
+            ></jellyha-media-item>
+        `)}
       </div>
     `;
   }
@@ -958,7 +978,15 @@ export class JellyHALibraryCard extends LitElement {
           class="carousel ${showPagination ? 'paginated' : 'scrollable'}"
           @scroll="${!showPagination ? this._handleScroll : nothing}"
         >
-          ${visibleItems.map((item) => this._renderMediaItem(item))}
+          ${visibleItems.map((item) => html`
+            <jellyha-media-item
+                .hass=${this.hass}
+                .config=${this._config}
+                .item=${item}
+                .layout=${'grid'}
+                @jellyha-action=${this._handleItemAction}
+            ></jellyha-media-item>
+          `)}
         </div>
         ${showPagination && totalPages > 1
         ? this._renderPagination(totalPages)
@@ -1000,7 +1028,15 @@ export class JellyHALibraryCard extends LitElement {
           class="list ${showPagination ? 'paginated' : ''} ${isSingleColumn ? 'single-column' : ''}"
           style="--jf-list-columns: ${columns}"
         >
-          ${visibleItems.map((item) => this._renderListItem(item))}
+          ${visibleItems.map((item) => html`
+            <jellyha-media-item
+                .hass=${this.hass}
+                .config=${this._config}
+                .item=${item}
+                .layout=${'list'}
+                @jellyha-action=${this._handleItemAction}
+            ></jellyha-media-item>
+          `)}
         </div>
         ${showPagination && totalPages > 1
         ? this._renderPagination(totalPages)
@@ -1041,7 +1077,15 @@ export class JellyHALibraryCard extends LitElement {
             class="grid ${showPagination ? 'paginated' : ''} ${isAutoColumns ? 'auto-columns' : ''}"
             style="--jf-columns: ${columns}"
           >
-            ${visibleItems.map((item) => this._renderMediaItem(item))}
+            ${visibleItems.map((item) => html`
+                <jellyha-media-item
+                    .hass=${this.hass}
+                    .config=${this._config}
+                    .item=${item}
+                    .layout=${'grid'}
+                    @jellyha-action=${this._handleItemAction}
+                ></jellyha-media-item>
+            `)}
           </div>
         </div>
         ${showPagination && totalPages > 1
@@ -1143,447 +1187,16 @@ export class JellyHALibraryCard extends LitElement {
     `;
   }
 
-  /**
-   * Render individual list item (horizontal layout with metadata outside poster)
-   */
-  private _renderListItem(item: MediaItem): TemplateResult {
-    const isNew = this._isNewItem(item);
-    const rating = this._getRating(item);
-    const showMediaTypeBadge = this._config.show_media_type_badge !== false;
-    const isPlaying = this._isItemPlaying(item);
 
-    return html`
-      <div
-        class="media-item list-item ${isPlaying ? 'playing' : ''} ${!this._config.show_title ? 'no-title' : ''} ${this._config.metadata_position === 'above' ? 'metadata-above' : ''}"
-        tabindex="0"
-        role="button"
-        aria-label="${item.name}"
-        @mousedown="${(e: MouseEvent) => this._handleMouseDown(e, item)}"
-        @mouseup="${(e: MouseEvent) => this._handleMouseUp(e, item)}"
-        @touchstart="${(e: TouchEvent) => this._handleTouchStartItem(e, item)}"
-        @touchmove="${(e: TouchEvent) => this._handleTouchMoveItem(e, item)}"
-        @touchend="${(e: TouchEvent) => this._handleTouchEndItem(e, item)}"
-        @touchcancel="${(e: TouchEvent) => this._handleTouchEndItem(e, item)}"
-        @keydown="${(e: KeyboardEvent) => this._handleKeydown(e, item)}"
-      >
-        <div class="list-poster-wrapper">
-          ${this._config.metadata_position === 'above' && this._config.show_date_added && item.date_added
-        ? html`<p class="list-date-added">${this._formatDate(item.date_added)}</p>`
-        : nothing}
-          <div class="poster-container" id="poster-${item.id}">
-            <div class="poster-inner">
-              <img
-                class="poster"
-                src="${item.poster_url}"
-                alt="${item.name}"
-                width="140"
-                height="210"
-                loading="lazy"
-                @load="${this._handleImageLoad}"
-                @error="${this._handleImageError}"
-              />
-              <div class="poster-skeleton"></div>
-              
-              ${showMediaTypeBadge && !isPlaying
-        ? html`<span class="list-type-badge ${item.type === 'Movie' ? 'movie' : 'series'}">
-                  ${item.type === 'Movie' ? 'Movie' : 'Series'}
-                </span>`
-        : nothing}
-              
-              ${!isPlaying ? this._renderStatusBadge(item, isNew) : nothing}
-              ${this._renderNowPlayingOverlay(item)}
-            </div>
-          </div>
-          ${this._config.metadata_position !== 'above' && this._config.show_date_added && item.date_added
-        ? html`<p class="list-date-added">${this._formatDate(item.date_added)}</p>`
-        : nothing}
-        </div>
-        
-        <div class="list-info">
-          ${this._config.show_title
-        ? html`<h3 class="list-title">${item.name}</h3>`
-        : nothing}
-          
-          <div class="list-metadata">
-            ${showMediaTypeBadge && !isPlaying
-        ? html`<span class="list-type-badge ${item.type === 'Movie' ? 'movie' : 'series'}">
-                  ${item.type === 'Movie' ? 'Movie' : 'Series'}
-                </span>`
-        : nothing}
-            ${this._config.show_year && item.year
-        ? html`<span class="list-year">${item.year}</span>`
-        : nothing}
-            ${this._config.show_ratings && rating
-        ? html`<span class="list-rating">
-                  <ha-icon icon="mdi:star"></ha-icon>
-                  ${rating.toFixed(1)}
-                </span>`
-        : nothing}
-            ${this._config.show_runtime && item.runtime_minutes
-        ? html`<span class="list-runtime">
-                  <ha-icon icon="mdi:clock-outline"></ha-icon>
-                  ${this._formatRuntime(item.runtime_minutes)}
-                </span>`
-        : nothing}
-          </div>
-          
-          ${this._config.show_genres && item.genres && item.genres.length > 0
-        ? html`<p class="list-genres">${item.genres.slice(0, 3).join(', ')}</p>`
-        : nothing}
-          
-          ${this._config.show_description_on_hover !== false && item.description
-        ? html`<p class="list-description">${item.description}</p>`
-        : nothing}
-        </div>
-      </div>
-    `;
-  }
 
-  /**
-   * Render status badge (watched checkmark, unplayed count, or new badge)
-   */
-  private _renderStatusBadge(item: MediaItem, isNew: boolean): TemplateResult {
-    const showWatched = this._config.show_watched_status !== false;
 
-    // 1. Watched Checkmark
-    if (showWatched && item.is_played) {
-      return html`
-        <div class="status-badge watched">
-          <ha-icon icon="mdi:check-bold"></ha-icon>
-        </div>
-      `;
-    }
 
-    // 2. Unplayed Count (Series only)
-    if (showWatched && item.type === 'Series' && (item.unplayed_count || 0) > 0) {
-      return html`
-        <div class="status-badge unplayed">
-          ${item.unplayed_count}
-        </div>
-      `;
-    }
-
-    // 3. New Badge (Fallback)
-    if (isNew) {
-      return html`<span class="new-badge">${localize(this.hass.language, 'new')}</span>`;
-    }
-
-    return html``;
-  }
-
-  /**
-   * Render individual media item
-   */
-  private _renderMediaItem(item: MediaItem): TemplateResult {
-    const isNew = this._isNewItem(item);
-    const rating = this._getRating(item);
-    const showMediaTypeBadge = this._config.show_media_type_badge !== false;
-    const isPlaying = this._isItemPlaying(item);
-
-    return html`
-      <div
-        class="media-item ${isPlaying ? 'playing' : ''}"
-        tabindex="0"
-        role="button"
-        aria-label="${item.name}"
-        @mousedown="${(e: MouseEvent) => this._handleMouseDown(e, item)}"
-        @mouseup="${(e: MouseEvent) => this._handleMouseUp(e, item)}"
-        @touchstart="${(e: TouchEvent) => this._handleTouchStartItem(e, item)}"
-        @touchmove="${(e: TouchEvent) => this._handleTouchMoveItem(e, item)}"
-        @touchend="${(e: TouchEvent) => this._handleTouchEndItem(e, item)}"
-        @touchcancel="${(e: TouchEvent) => this._handleTouchEndItem(e, item)}"
-        @keydown="${(e: KeyboardEvent) => this._handleKeydown(e, item)}"
-      >
-        ${this._config.metadata_position === 'above'
-        ? html`
-              <div class="media-info-above">
-                ${this._config.show_title
-            ? html`<p class="media-title">${item.name}</p>`
-            : nothing}
-                ${this._config.show_year && item.year
-            ? html`<p class="media-year">${item.year}</p>`
-            : nothing}
-                ${this._config.show_date_added && item.date_added
-            ? html`<p class="media-date-added">${this._formatDate(item.date_added)}</p>`
-            : nothing}
-              </div>
-            `
-        : nothing}
-        <div class="poster-container" id="poster-${item.id}">
-          <div class="poster-inner">
-            <img
-              class="poster"
-              src="${item.poster_url}"
-              alt="${item.name}"
-              width="140"
-              height="210"
-              loading="lazy"
-              @load="${this._handleImageLoad}"
-              @error="${this._handleImageError}"
-            />
-            <div class="poster-skeleton"></div>
-            
-            ${showMediaTypeBadge && !isPlaying
-        ? html`<span class="media-type-badge ${item.type === 'Movie' ? 'movie' : 'series'}">
-                  ${item.type === 'Movie' ? 'Movie' : 'Series'}
-                </span>`
-        : nothing}
-            
-            ${!isPlaying ? this._renderStatusBadge(item, isNew) : nothing}
-            
-            ${this._config.show_ratings && rating && !isPlaying
-        ? html`
-                  <span class="rating">
-                    <ha-icon icon="mdi:star"></ha-icon>
-                    ${rating.toFixed(1)}
-                  </span>
-                `
-        : nothing}
-            
-            ${this._config.show_runtime && item.runtime_minutes && !isPlaying
-        ? html`
-                  <span class="runtime">
-                    <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${this._formatRuntime(item.runtime_minutes)}
-                  </span>
-                `
-        : nothing}
-            
-            ${!isPlaying ? html`
-            <div class="hover-overlay">
-                    ${item.year ? html`<span class="overlay-year">${item.year}</span>` : nothing}
-                    <h3 class="overlay-title">${item.name}</h3>
-                    ${this._config.show_genres && item.genres && item.genres.length > 0
-          ? html`<span class="overlay-genres">${item.genres.slice(0, 3).join(', ')}</span>`
-          : nothing}
-                    ${this._config.show_description_on_hover !== false && item.description
-          ? html`<p class="overlay-description">${item.description}</p>`
-          : nothing}
-            </div>` : nothing}
-
-            ${this._renderNowPlayingOverlay(item)}
-          </div>
-        </div>
-        
-        ${this._config.metadata_position === 'below'
-        ? html`
-              <div class="media-info-below">
-                ${this._config.show_title
-            ? html`<p class="media-title">${item.name}</p>`
-            : nothing}
-                ${this._config.show_year && item.year
-            ? html`<p class="media-year">${item.year}</p>`
-            : nothing}
-                ${this._config.show_date_added && item.date_added
-            ? html`<p class="media-date-added">${this._formatDate(item.date_added)}</p>`
-            : nothing}
-              </div>
-            `
-        : nothing}
-      </div>
-    `;
-  }
-
-  /**
-   * Get rating based on config (IMDB for movies, TMDB for TV)
-   */
-  private _getRating(item: MediaItem): number | null {
-    if (this._config.rating_source === 'auto') {
-      // Auto: IMDB for movies, TMDB for TV
-      return item.rating || null;
-    }
-    return item.rating || null;
-  }
-
-  /**
-   * Format date using Home Assistant's locale
-   */
-  private _formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      // Use Home Assistant's language if available
-      const locale = this.hass?.language || 'en';
-      const formatter = new Intl.DateTimeFormat(locale, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-      return formatter.format(date);
-    } catch {
-      return dateString;
-    }
-  }
-
-  /**
-   * Format runtime in hours and minutes
-   */
-  private _formatRuntime(minutes: number): string {
-    if (minutes < 60) {
-      return `${minutes}m`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  }
-
-  /**
-   * Check if item was added within new_badge_days
-   */
-  private _isNewItem(item: MediaItem): boolean {
-    if (!this._config.new_badge_days || !item.date_added) {
-      return false;
-    }
-    const addedDate = new Date(item.date_added);
-    const now = new Date();
-    const diffDays = (now.getTime() - addedDate.getTime()) / (1000 * 60 * 60 * 24);
-    return diffDays <= this._config.new_badge_days;
-  }
-
-  /**
-   * Start hold timer
-   */
-  private _startHoldTimer(item: MediaItem): void {
-    this._pressStartTime = Date.now();
-    this._isHoldActive = false;
-    this._holdTimer = window.setTimeout(() => {
-      this._isHoldActive = true;
-      this._performAction(item, 'hold');
-    }, 500); // 500ms for long press
-  }
-
-  /**
-   * Clear hold timer
-   */
-  private _clearHoldTimer(): void {
-    if (this._holdTimer) {
-      clearTimeout(this._holdTimer);
-      this._holdTimer = undefined;
-    }
-  }
-
-  /**
-   * Handle mouse down on media item
-   */
-  private _handleMouseDown(e: MouseEvent, item: MediaItem): void {
-    if (e.button !== 0) return; // Only left click
-    this._startHoldTimer(item);
-  }
-
-  /**
-   * Handle mouse up on media item
-   */
-  private _handleMouseUp(e: MouseEvent, item: MediaItem): void {
-    if (this._isHoldActive) {
-      e.preventDefault();
-      e.stopPropagation();
-    } else {
-      const duration = Date.now() - this._pressStartTime;
-      if (duration < 500) {
-        this._performAction(item, 'click');
-      }
-    }
-    this._clearHoldTimer();
-  }
-
-  /**
-   * Handle touch start on media item
-   */
-  private _handleTouchStartItem(e: TouchEvent, item: MediaItem): void {
-    if (e.touches.length > 0) {
-      this._itemTouchStartX = e.touches[0].clientX;
-      this._itemTouchStartY = e.touches[0].clientY;
-
-      // Add visual feedback class
-      const target = e.currentTarget as HTMLElement;
-      target.classList.add('active-press');
-    }
-    this._startHoldTimer(item);
-  }
-
-  private _handleTouchMoveItem(e: TouchEvent, _item: MediaItem): void {
-    if (e.touches.length > 0) {
-      const diffX = Math.abs(e.touches[0].clientX - this._itemTouchStartX);
-      const diffY = Math.abs(e.touches[0].clientY - this._itemTouchStartY);
-
-      // If moved more than 10px, cancel hold
-      if (diffX > 10 || diffY > 10) {
-        this._clearHoldTimer();
-        const target = e.currentTarget as HTMLElement;
-        target.classList.remove('active-press');
-      }
-    }
-  }
-
-  private _handleTouchEndItem(e: TouchEvent, item: MediaItem): void {
-    // Remove visual feedback class
-    const target = e.currentTarget as HTMLElement;
-    target.classList.remove('active-press');
-
-    if (this._holdTimer) {
-      clearTimeout(this._holdTimer);
-      this._holdTimer = undefined;
-    }
-
-    // Calculate movement distance
-    let dist = 0;
-    if (e.changedTouches.length > 0) {
-      const diffX = e.changedTouches[0].clientX - this._itemTouchStartX;
-      const diffY = e.changedTouches[0].clientY - this._itemTouchStartY;
-      dist = Math.sqrt(diffX * diffX + diffY * diffY);
-    }
-
-    e.preventDefault(); // Prevent ghost clicks
-
-    // If long press triggered, do nothing (action already performed)
-    if (this._isHoldActive) {
-      this._isHoldActive = false;
-      return;
-    }
-
-    // If moved significantly, treat as scroll/swipe and ignore
-    if (dist > 10) {
-      return;
-    }
-
-    // Otherwise, it's a short press
-    this._performAction(item, 'click');
-  }
-
-  /**
-   * Check if item is currently playing
-   */
-  private _isItemPlaying(item: MediaItem): boolean {
-    if (!this._config.default_cast_device || !this.hass) return false;
-
-    const player = this.hass.states[this._config.default_cast_device];
-    if (!player || (player.state !== 'playing' && player.state !== 'paused' && player.state !== 'buffering')) {
-      return false;
-    }
-
-    const playingTitle = player.attributes.media_title as string;
-    const playingSeries = player.attributes.media_series_title as string;
-
-    return (
-      (item.name && (playingTitle === item.name || playingSeries === item.name)) ||
-      (item.type === 'Series' && playingSeries === item.name)
-    );
-  }
 
   /**
    * Perform configured action
    */
   private _performAction(item: MediaItem, type: 'click' | 'hold'): void {
-    // Haptic feedback
-    const event = new CustomEvent('haptic', {
-      detail: 'selection',
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-
     const action = type === 'click' ? this._config.click_action : this._config.hold_action;
-    console.log('JellyHA: performAction', { type, action, config: this._config, item });
-
     switch (action) {
       case 'jellyfin':
         window.open(item.jellyfin_url, '_blank');
@@ -1600,17 +1213,12 @@ export class JellyHALibraryCard extends LitElement {
     }
   }
 
-  /**
-   * Cast media to default device
-   */
   private async _castMedia(item: MediaItem): Promise<void> {
     const entityId = this._config.default_cast_device;
     if (!entityId) {
-      // If no default device, show more-info of the card to let user know or just log error
       console.warn('JellyHA: No default cast device configured');
       return;
     }
-
     try {
       await this.hass.callService('jellyha', 'play_on_chromecast', {
         entity_id: entityId,
@@ -1618,166 +1226,6 @@ export class JellyHALibraryCard extends LitElement {
       });
     } catch (err) {
       console.error('JellyHA: Failed to cast media', err);
-    }
-  }
-
-  /**
-   * Handle click on media item (for accessibility)
-   */
-  private _handleClick(item: MediaItem): void {
-    // If not using mouse/touch events (e.g. keyboard), perform default click action
-    this._performAction(item, 'click');
-  }
-
-  /**
-   * Handle keyboard navigation
-   */
-  private _handleKeydown(e: KeyboardEvent, item: MediaItem): void {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      this._performAction(item, 'click');
-    }
-  }
-
-  /**
-   * Handle image load - add loaded class for transition
-   */
-  private _handleImageLoad(e: Event): void {
-    const img = e.target as HTMLImageElement;
-    img.classList.add('loaded');
-  }
-
-  /**
-   * Handle image error - could show placeholder
-   */
-  private _handleImageError(e: Event): void {
-    const img = e.target as HTMLImageElement;
-    img.style.display = 'none';
-  }
-
-  /**
-   * Render Now Playing overlay if item matches currently playing media
-   */
-  private _renderNowPlayingOverlay(item: MediaItem): TemplateResult | typeof nothing {
-    if (!this._config.show_now_playing || !this._isItemPlaying(item)) {
-      return nothing;
-    }
-
-    const player = this.hass.states[this._config.default_cast_device!];
-
-    return html`
-      <div 
-        class="now-playing-overlay" 
-        @click="${() => this._handleRewind(this._config.default_cast_device!)}"
-        @mousedown="${this._stopPropagation}"
-        @mouseup="${this._stopPropagation}"
-        @touchstart="${this._stopPropagation}"
-        @touchend="${this._stopPropagation}"
-        @touchcancel="${this._stopPropagation}"
-      >
-        <span class="now-playing-status">
-          ${this._rewindActive ? 'REWINDING' : player.state}
-        </span>
-        <div class="now-playing-controls">
-          <ha-icon-button
-            class="${this._rewindActive ? 'spinning' : ''}"
-            .label=${'Play/Pause'}
-            @click="${(e: Event) => { e.stopPropagation(); this._handlePlayPause(this._config.default_cast_device!); }}"
-          >
-            <ha-icon icon="${this._rewindActive ? 'mdi:loading' : (player.state === 'playing' ? 'mdi:pause' : 'mdi:play')}"></ha-icon>
-          </ha-icon-button>
-          <ha-icon-button
-            class="stop"
-            .label=${'Stop'}
-            @click="${(e: Event) => { e.stopPropagation(); this._handleStop(this._config.default_cast_device!); }}"
-          >
-            <ha-icon icon="mdi:stop"></ha-icon>
-          </ha-icon-button>
-        </div>
-      </div>
-    `;
-  }
-
-  private _stopPropagation(e: Event): void {
-    e.stopPropagation();
-  }
-
-  /**
-   * Toggle play/pause on player
-   */
-  private _handlePlayPause(entityId: string): void {
-    // Haptic feedback
-    const event = new CustomEvent('haptic', {
-      detail: 'selection',
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-
-    this.hass.callService('media_player', 'media_play_pause', { entity_id: entityId });
-  }
-
-  /**
-   * Stop playback on player
-   */
-  private _handleStop(entityId: string): void {
-    // Haptic feedback
-    const event = new CustomEvent('haptic', {
-      detail: 'selection',
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-
-    this.hass.callService('media_player', 'turn_off', { entity_id: entityId });
-  }
-
-  /**
-   * Handle rewind on overlay click
-   */
-  private _handleRewind(entityId: string): void {
-    // Stop propagation if called from event
-    // (In template we pass string, but if needed we can handle event)
-
-    // Visual feedback
-    this._rewindActive = true;
-    setTimeout(() => {
-      this._rewindActive = false;
-    }, 2000);
-
-    // Haptic feedback
-    const event = new CustomEvent('haptic', {
-      detail: 'selection',
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-
-    // Calculate seek position
-    const player = this.hass.states[entityId];
-    if (player && player.attributes.media_position) {
-      const position = player.attributes.media_position as number;
-      const validTime = player.attributes.media_position_updated_at as string;
-      let currentPosition = position;
-
-      // If we have a timestamp, calculate elapsed time
-      if (validTime) {
-        const now = new Date().getTime();
-        const updated = new Date(validTime).getTime();
-        const diff = (now - updated) / 1000;
-        // Only add diff if playing
-        if (player.state === 'playing') {
-          currentPosition += diff;
-        }
-      }
-
-      // Seek back 20 seconds, ensuring we don't go below 0
-      const newPosition = Math.max(0, currentPosition - 20);
-
-      this.hass.callService('media_player', 'media_seek', {
-        entity_id: entityId,
-        seek_position: newPosition
-      });
     }
   }
 
