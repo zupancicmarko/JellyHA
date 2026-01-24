@@ -466,6 +466,9 @@ export const cardStyles = css`
     cursor: pointer;
     width: auto;
     z-index: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   .media-item:hover {

@@ -64,6 +64,7 @@ export class JellyHALibraryEditor extends LitElement {
 
     const clickAction = this._config.click_action || 'more-info';
     const holdAction = this._config.hold_action || 'jellyfin';
+    const doubleTapAction = this._config.double_tap_action || 'none';
 
     const lang = this.hass.locale?.language || this.hass.language;
 
@@ -215,6 +216,23 @@ export class JellyHALibraryEditor extends LitElement {
               <mwc-list-item value="none">${localize(lang, 'editor.action_none')}</mwc-list-item>
             </ha-select>
           </div>
+        
+        <div class="side-by-side">
+          <div class="form-row">
+            <ha-select
+              label="${localize(lang, 'editor.double_tap_action')}"
+              .value=${doubleTapAction}
+              @selected=${this._doubleTapActionChanged}
+              @closed=${(e: Event) => e.stopPropagation()}
+            >
+              <mwc-list-item value="jellyfin">${localize(lang, 'editor.action_jellyfin')}</mwc-list-item>
+              <mwc-list-item value="cast">${localize(lang, 'editor.action_cast')}</mwc-list-item>
+              <mwc-list-item value="more-info">${localize(lang, 'editor.action_more_info')}</mwc-list-item>
+              <mwc-list-item value="trailer">${localize(lang, 'editor.action_trailer')}</mwc-list-item>
+              <mwc-list-item value="none">${localize(lang, 'editor.action_none')}</mwc-list-item>
+            </ha-select>
+          </div>
+        </div>
         </div>
 
         ${clickAction === 'cast' || holdAction === 'cast'
@@ -462,6 +480,11 @@ export class JellyHALibraryEditor extends LitElement {
   private _holdActionChanged(e: Event): void {
     const target = e.target as HTMLSelectElement;
     this._updateConfig('hold_action', target.value);
+  }
+
+  private _doubleTapActionChanged(e: Event): void {
+    const target = e.target as HTMLSelectElement;
+    this._updateConfig('double_tap_action', target.value);
   }
 
   private _defaultCastDeviceChanged(e: CustomEvent): void {

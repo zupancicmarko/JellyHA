@@ -18,6 +18,7 @@ export class JellyHAMediaItem extends LitElement {
   @state() private _isHoldActive: boolean = false;
   @state() private _itemTouchStartX: number = 0;
   @state() private _itemTouchStartY: number = 0;
+  @state() private _clickTimer?: number;
 
   // Local state for rewind animation
   @state() private _rewindActive: boolean = false;
@@ -53,6 +54,7 @@ export class JellyHAMediaItem extends LitElement {
         @touchend="${this._handleTouchEnd}"
         @touchcancel="${this._handleTouchEnd}"
         @keydown="${this._handleKeydown}"
+        @contextmenu="${this._handleContextMenu}"
       >
         <div class="list-poster-wrapper">
           ${this.config.metadata_position === 'above' && this.config.show_date_added && item.date_added
@@ -160,6 +162,7 @@ export class JellyHAMediaItem extends LitElement {
         @touchend="${this._handleTouchEnd}"
         @touchcancel="${this._handleTouchEnd}"
         @keydown="${this._handleKeydown}"
+        @contextmenu="${this._handleContextMenu}"
       >
         ${this.config.metadata_position === 'above'
         ? html`
@@ -360,7 +363,7 @@ export class JellyHAMediaItem extends LitElement {
 
   /* --- Event Handlers --- */
 
-  private _fireAction(type: 'click' | 'hold'): void {
+  private _fireAction(type: 'click' | 'hold' | 'double_tap'): void {
     const event = new CustomEvent('jellyha-action', {
       detail: { type, item: this.item },
       bubbles: true,
@@ -374,6 +377,7 @@ export class JellyHAMediaItem extends LitElement {
     this._isHoldActive = false;
     this._holdTimer = window.setTimeout(() => {
       this._isHoldActive = true;
+      this._dispatchHaptic('medium');
       this._fireAction('hold');
     }, 500);
   }
@@ -397,10 +401,42 @@ export class JellyHAMediaItem extends LitElement {
     } else {
       const duration = Date.now() - this._pressStartTime;
       if (duration < 500) {
-        this._fireAction('click');
+        this._handleTap();
       }
     }
     this._clearHoldTimer();
+  }
+
+  private _handleTap(): void {
+    const doubleTapAction = this.config.double_tap_action || 'none';
+
+    // If no double tap action is configured, trigger click immediately
+    if (doubleTapAction === 'none') {
+      this._dispatchHaptic('light');
+      this._fireAction('click');
+      return;
+    }
+
+    if (this._clickTimer) {
+      // Double tap detected
+      clearTimeout(this._clickTimer);
+      this._clickTimer = undefined;
+      this._dispatchHaptic('medium');
+      this._fireAction('double_tap');
+    } else {
+      // First tap, start timer
+      this._clickTimer = window.setTimeout(() => {
+        this._clickTimer = undefined;
+        this._dispatchHaptic('light');
+        this._fireAction('click');
+      }, 250);
+    }
+  }
+
+  private _handleContextMenu(e: Event): void {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
   }
 
   private _handleTouchStart(e: TouchEvent): void {
@@ -451,7 +487,7 @@ export class JellyHAMediaItem extends LitElement {
       return;
     }
 
-    this._fireAction('click');
+    this._handleTap();
   }
 
   private _handleKeydown(e: KeyboardEvent): void {
@@ -519,9 +555,9 @@ export class JellyHAMediaItem extends LitElement {
     }
   }
 
-  private _dispatchHaptic(): void {
+  private _dispatchHaptic(type: 'selection' | 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'failure' = 'selection'): void {
     const event = new CustomEvent('haptic', {
-      detail: 'selection',
+      detail: type,
       bubbles: true,
       composed: true,
     });

@@ -91,6 +91,7 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     horizontal_alignment?: 'left' | 'center';
     click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
     hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
+    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
     default_cast_device?: string;
     show_now_playing?: boolean;
     image_quality?: number;

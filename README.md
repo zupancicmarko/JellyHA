@@ -176,6 +176,7 @@ max_pages: 5
 | `theme` | string | `auto` | Theme: `auto`, `dark`, or `light` |
 | `click_action` | string | `jellyfin` | Action on click: `jellyfin`, `more-info`, `cast`, `trailer`, or `none` |
 | `hold_action` | string | `cast` | Action on hold: `jellyfin`, `cast`, `more-info`, `trailer`, or `none` |
+| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `cast`, `more-info`, `trailer`, or `none` |
 | `default_cast_device` | string | `''` | Default media_player entity for casting |
 | `filter_favorites` | boolean | `false` | Filter Favorites (Show only favorite items) |
 | `status_filter` | string | `all` | Filter Watch Status: `all`, `unwatched`, `watched` |

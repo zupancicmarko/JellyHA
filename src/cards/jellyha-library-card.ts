@@ -1355,8 +1355,17 @@ export class JellyHALibraryCard extends LitElement {
   /**
    * Perform configured action
    */
-  private _performAction(item: MediaItem, type: 'click' | 'hold'): void {
-    const action = type === 'click' ? this._config.click_action : this._config.hold_action;
+  private _performAction(item: MediaItem, type: 'click' | 'hold' | 'double_tap'): void {
+    let action = 'none';
+
+    if (type === 'click') {
+      action = this._config.click_action || 'more-info';
+    } else if (type === 'hold') {
+      action = this._config.hold_action || 'jellyfin';
+    } else if (type === 'double_tap') {
+      action = this._config.double_tap_action || 'none';
+    }
+
     switch (action) {
       case 'jellyfin':
         window.open(item.jellyfin_url, '_blank');
