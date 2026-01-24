@@ -12,6 +12,11 @@ export interface HomeAssistant {
     };
     callService: (domain: string, service: string, data?: Record<string, unknown>) => Promise<void>;
     callWS: <T>(msg: Record<string, unknown>) => Promise<T>;
+    locale?: {
+        language: string;
+        number_format?: string;
+        time_format?: string;
+    };
 }
 
 export interface HassEntity {
@@ -57,13 +62,14 @@ export interface MediaItem {
     episode?: number;
     trailer_url?: string;
     last_played_date?: string;
+    series_name?: string;
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     entity: string;
     title?: string;
     layout?: 'carousel' | 'grid' | 'list';
-    media_type?: 'movies' | 'series' | 'both';
+    media_type?: 'movies' | 'series' | 'next_up' | 'both';
     items_per_page?: number;
     max_pages?: number;
     auto_swipe_interval?: number; // seconds, 0 = disabled
@@ -83,8 +89,8 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
     horizontal_alignment?: 'left' | 'center';
-    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'none';
-    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'none';
+    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
+    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
     default_cast_device?: string;
     show_now_playing?: boolean;
     image_quality?: number;

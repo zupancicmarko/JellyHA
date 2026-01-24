@@ -41,7 +41,7 @@ window.customCards.push({
 });
 
 const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
-  title: 'Jellyfin Library',
+  title: '',
   layout: 'carousel',
   media_type: 'both',
   items_per_page: 3,
@@ -99,6 +99,7 @@ export class JellyHALibraryCard extends LitElement {
   @state() private _items: MediaItem[] = [];
   @state() private _error?: string;
   @state() private _lastUpdate: string = '';
+  @state() private _mostRecentNextUpItemId?: string;
   @query('jellyha-item-details-modal') private _modal!: JellyHAItemDetailsModal;
 
   private _touchStartX: number = 0;
@@ -863,17 +864,39 @@ export class JellyHALibraryCard extends LitElement {
 
     this._error = undefined; // Reset error
 
+
     try {
-      const result = await this.hass.callWS<{ items: MediaItem[] }>({
-        type: 'jellyha/get_items',
-        entity_id: this._config.entity
-      });
+      let result;
+      if (this._config.media_type === 'next_up') {
+        result = await this.hass.callWS<{ items: MediaItem[] }>({
+          type: 'jellyha/get_user_next_up',
+          entity_id: this._config.entity
+        });
+      } else {
+        result = await this.hass.callWS<{ items: MediaItem[] }>({
+          type: 'jellyha/get_items',
+          entity_id: this._config.entity
+        });
+      }
 
       if (result && result.items) {
         this._items = result.items;
+        // For Next Up media type, the default API sort is DatePlayed Descending.
+        // So the first item in the raw list is the most recently watched series' next episode.
+        // We capture this ID to consistently highlight it regardless of frontend sorting.
+        if (this._config.media_type === 'next_up' && this._items.length > 0) {
+          this._mostRecentNextUpItemId = this._items[0].id;
+        } else {
+          this._mostRecentNextUpItemId = undefined;
+        }
+      } else {
+        // Fallback or empty
+        this._items = [];
+        this._mostRecentNextUpItemId = undefined;
       }
     } catch (err) {
       console.error('Error fetching JellyHA items:', err);
+      // For Next Up, if WS fails (e.g. old backend), we might just show error or empty
       this._error = `Error fetching items: ${err}`;
     }
   }
@@ -968,6 +991,9 @@ export class JellyHALibraryCard extends LitElement {
       filtered = filtered.filter((item) => item.type === 'Movie');
     } else if (this._config.media_type === 'series') {
       filtered = filtered.filter((item) => item.type === 'Series');
+    } else if (this._config.media_type === 'next_up') {
+      // Next Up items are already filtered by backend
+      // But we might want to ensure they are valid
     }
 
     // Filter by favorites
@@ -1106,6 +1132,7 @@ export class JellyHALibraryCard extends LitElement {
                 .config=${this._config}
                 .item=${item}
                 .layout=${'grid'}
+                .isNextUpHighlight=${this._config.media_type === 'next_up' && item.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -1159,6 +1186,7 @@ export class JellyHALibraryCard extends LitElement {
                 .config=${this._config}
                 .item=${item}
                 .layout=${'list'}
+                .isNextUpHighlight=${this._config.media_type === 'next_up' && item.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -1212,6 +1240,7 @@ export class JellyHALibraryCard extends LitElement {
                     .config=${this._config}
                     .item=${item}
                     .layout=${'grid'}
+                    .isNextUpHighlight=${this._config.media_type === 'next_up' && item.id === this._mostRecentNextUpItemId}
                     @jellyha-action=${this._handleItemAction}
                 ></jellyha-media-item>
             `)}
@@ -1338,6 +1367,15 @@ export class JellyHALibraryCard extends LitElement {
       case 'more-info':
         this._showItemDetails(item);
         break;
+      case 'trailer':
+        if (item.trailer_url) {
+          window.open(item.trailer_url, '_blank');
+        } else {
+          fireEvent(this, 'hass-notification', {
+            message: localize(this.hass.locale?.language || this.hass.language, 'no_trailer'),
+          });
+        }
+        break;
       case 'none':
       default:
         break;
@@ -1367,7 +1405,7 @@ export class JellyHALibraryCard extends LitElement {
     return html`
       <div class="empty">
         <ha-icon icon="mdi:movie-open-outline"></ha-icon>
-        <p>${localize(this.hass.language, 'no_media')}</p>
+        <p>${localize(this.hass.locale?.language || this.hass.language, 'no_media')}</p>
       </div>
     `;
   }

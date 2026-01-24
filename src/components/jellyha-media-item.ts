@@ -11,6 +11,7 @@ export class JellyHAMediaItem extends LitElement {
   @property({ attribute: false }) config!: JellyHALibraryCardConfig;
   @property({ attribute: false }) item!: MediaItem;
   @property({ type: String }) layout: 'grid' | 'list' = 'grid';
+  @property({ type: Boolean }) isNextUpHighlight = false;
 
   @state() private _pressStartTime: number = 0;
   @state() private _holdTimer?: number;
@@ -55,7 +56,7 @@ export class JellyHAMediaItem extends LitElement {
       >
         <div class="list-poster-wrapper">
           ${this.config.metadata_position === 'above' && this.config.show_date_added && item.date_added
-        ? html`<p class="list-date-added">${formatDate(item.date_added, this.hass?.language)}</p>`
+        ? html`<p class="list-date-added">${formatDate(item.date_added, this.hass?.locale?.language || this.hass?.language)}</p>`
         : nothing}
           <div class="poster-container" id="poster-${item.id}">
             <div class="poster-inner">
@@ -72,10 +73,20 @@ export class JellyHAMediaItem extends LitElement {
               />
               <div class="poster-skeleton"></div>
               
-              ${showMediaTypeBadge && !isPlaying
-        ? html`<span class="list-type-badge ${item.type === 'Movie' ? 'movie' : 'series'}">
-                    ${item.type === 'Movie' ? 'Movie' : 'Series'}
+              ${showMediaTypeBadge && !isPlaying && !item.series_name
+        ? html`<span class="list-type-badge ${item.series_name ? 'series' : (item.type === 'Movie' ? 'movie' : 'series')}">
+                    ${item.series_name && item.season !== undefined && item.episode !== undefined
+            ? `S${String(item.season).padStart(2, '0')}E${String(item.episode).padStart(2, '0')}`
+            : (item.type === 'Movie' ? 'Movie' : 'Series')}
                   </span>`
+        : nothing}
+
+              ${item.series_name && !isPlaying
+        ? html`
+            <div class="censor-bar list-bar ${this.isNextUpHighlight ? 'highlight' : ''}">
+              <span>${item.series_name}</span>
+            </div>
+              `
         : nothing}
               
               ${!isPlaying ? this._renderStatusBadge(item, isNew) : nothing}
@@ -83,7 +94,7 @@ export class JellyHAMediaItem extends LitElement {
             </div>
           </div>
           ${this.config.metadata_position !== 'above' && this.config.show_date_added && item.date_added
-        ? html`<p class="list-date-added">${formatDate(item.date_added, this.hass?.language)}</p>`
+        ? html`<p class="list-date-added">${formatDate(item.date_added, this.hass?.locale?.language || this.hass?.language)}</p>`
         : nothing}
         </div>
         
@@ -94,8 +105,10 @@ export class JellyHAMediaItem extends LitElement {
           
           <div class="list-metadata">
             ${showMediaTypeBadge && !isPlaying
-        ? html`<span class="list-type-badge ${item.type === 'Movie' ? 'movie' : 'series'}">
-                  ${item.type === 'Movie' ? 'Movie' : 'Series'}
+        ? html`<span class="list-type-badge ${item.series_name ? 'series' : (item.type === 'Movie' ? 'movie' : 'series')}">
+                  ${item.series_name && item.season !== undefined && item.episode !== undefined
+            ? `S${String(item.season).padStart(2, '0')}E${String(item.episode).padStart(2, '0')}`
+            : (item.type === 'Movie' ? 'Movie' : 'Series')}
                 </span>`
         : nothing}
             ${this.config.show_year && item.year
@@ -158,7 +171,7 @@ export class JellyHAMediaItem extends LitElement {
             ? html`<p class="media-year">${item.year}</p>`
             : nothing}
                 ${this.config.show_date_added && item.date_added
-            ? html`<p class="media-date-added">${formatDate(item.date_added, this.hass?.language)}</p>`
+            ? html`<p class="media-date-added">${formatDate(item.date_added, this.hass?.locale?.language || this.hass?.language)}</p>`
             : nothing}
               </div>
             `
@@ -179,9 +192,21 @@ export class JellyHAMediaItem extends LitElement {
             <div class="poster-skeleton"></div>
             
             ${showMediaTypeBadge && !isPlaying
-        ? html`<span class="media-type-badge ${item.type === 'Movie' ? 'movie' : 'series'}">
-                  ${item.type === 'Movie' ? 'Movie' : 'Series'}
-                </span>`
+        ? html`
+            <span class="media-type-badge ${item.series_name ? 'series' : (item.type === 'Movie' ? 'movie' : 'series')}">
+              ${item.series_name && item.season !== undefined && item.episode !== undefined
+            ? `S${String(item.season).padStart(2, '0')}E${String(item.episode).padStart(2, '0')}`
+            : (item.type === 'Movie' ? 'Movie' : 'Series')}
+            </span>
+          `
+        : nothing}
+
+            ${item.series_name && !isPlaying
+        ? html`
+            <div class="censor-bar ${this.isNextUpHighlight ? 'highlight' : ''}">
+              <span>${item.series_name}</span>
+            </div>
+              `
         : nothing}
             
             ${!isPlaying ? this._renderStatusBadge(item, isNew) : nothing}
@@ -230,7 +255,7 @@ export class JellyHAMediaItem extends LitElement {
             ? html`<p class="media-year">${item.year}</p>`
             : nothing}
                 ${this.config.show_date_added && item.date_added
-            ? html`<p class="media-date-added">${formatDate(item.date_added, this.hass?.language)}</p>`
+            ? html`<p class="media-date-added">${formatDate(item.date_added, this.hass?.locale?.language || this.hass?.language)}</p>`
             : nothing}
               </div>
             `
@@ -259,7 +284,7 @@ export class JellyHAMediaItem extends LitElement {
     }
 
     if (isNew) {
-      return html`<span class="new-badge">${localize(this.hass.language, 'new')}</span>`;
+      return html`<span class="new-badge">${localize(this.hass.locale?.language || this.hass.language, 'new')}</span>`;
     }
 
     return html``;

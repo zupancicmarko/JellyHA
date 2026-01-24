@@ -12,6 +12,7 @@ A Home Assistant integration and Lovelace card that displays media from your Jel
 ## Features
 
 - 🎬 Display movies and TV shows from your library
+- ⏭️ "Next Up" support to resume TV shows
 - 🎨 Three layouts: Carousel, Grid, List
 - 🌙 Automatic dark/light theme adaptation
 - 🔗 Click to open in Jellyfin (new tab)
@@ -97,7 +98,7 @@ JellyHA requires **two installation steps**: installing the integration and addi
 
 ## Sensors
 
-JellyHA provides several sensors to monitor your Jellyfin server and library. All sensors are prefixed with `sensor.jellyha_` (unless شما custom device name was used during setup).
+JellyHA provides several sensors to monitor your Jellyfin server and library. All sensors are prefixed with `sensor.jellyha_` (unless a custom device name was used during setup).
 
 ### Library Sensors
 
@@ -153,7 +154,7 @@ max_pages: 5
 | `entity` | string | **Required** | The sensor entity ID (e.g. `sensor.jellyha_library`) |
 | `title` | string | `Jellyfin Library` | Card title |
 | `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
-| `media_type` | string | `both` | Filter: `movies`, `series`, or `both` |
+| `media_type` | string | `both` | Filter: `movies`, `series`, `next_up`, or `both` |
 | `items_per_page` | number | `3` | Items visible per page (carousel) or initial Load (list) or **Rows** (grid). **Note for Grid:** Use YAML editor to set > 8 rows. |
 | `max_pages` | number | `5` | Maximum number of pages to display |
 | `columns` | number | `4` | Number of columns for grid layout |
@@ -173,8 +174,8 @@ max_pages: 5
 | `rating_source` | string | `auto` | Rating source: `auto`, `imdb`, `tmdb`, or `jellyfin` |
 | `new_badge_days` | number | `3` | Items added within X days show "New" badge |
 | `theme` | string | `auto` | Theme: `auto`, `dark`, or `light` |
-| `click_action` | string | `jellyfin` | Action on click: `jellyfin`, `more-info`, `play`, or `none` |
-| `hold_action` | string | `cast` | Action on hold: `cast`, `jellyfin`, `more-info`, or `none` |
+| `click_action` | string | `jellyfin` | Action on click: `jellyfin`, `more-info`, `cast`, `trailer`, or `none` |
+| `hold_action` | string | `cast` | Action on hold: `jellyfin`, `cast`, `more-info`, `trailer`, or `none` |
 | `default_cast_device` | string | `''` | Default media_player entity for casting |
 | `filter_favorites` | boolean | `false` | Filter Favorites (Show only favorite items) |
 | `status_filter` | string | `all` | Filter Watch Status: `all`, `unwatched`, `watched` |

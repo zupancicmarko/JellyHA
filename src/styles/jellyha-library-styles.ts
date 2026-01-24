@@ -14,7 +14,9 @@ export const cardStyles = css`
     --jf-transition: 0.2s ease-out;
     --jf-movie-badge: #AA5CC3;
     --jf-series-badge: #F2A218;
+    --jf-series-badge: #F2A218;
     --jf-border-color: var(--divider-color, rgba(255, 255, 255, 0.15));
+    --jf-highlight: var(--primary-color, #18BCF2);
   }
 
   ha-card {
@@ -350,7 +352,7 @@ export const cardStyles = css`
   .list-type-badge {
     padding: 2px 8px;
     border-radius: 6px;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -547,7 +549,7 @@ export const cardStyles = css`
     background: radial-gradient(
       ellipse at center,
       transparent 50%,
-      rgba(0, 0, 0, 0.4) 100%
+      rgba(0, 0, 0, 0.15) 100%
     );
     opacity: 0;
     transition: opacity var(--jf-transition);
@@ -600,7 +602,7 @@ export const cardStyles = css`
     left: 6px;
     padding: 2px 8px 1px 8px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -626,7 +628,7 @@ export const cardStyles = css`
     color: #fff;
     padding: 2px 8px 1px 8px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -653,7 +655,7 @@ export const cardStyles = css`
     border-radius: 4px;
     background: #14B8A6;
     color: #fff;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 
   .status-badge.watched ha-icon {
@@ -667,7 +669,7 @@ export const cardStyles = css`
     border-radius: 4px;
     background: var(--jf-primary);
     color: #fff;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 800;
   }
 
@@ -745,7 +747,7 @@ export const cardStyles = css`
     opacity: 0;
     transition: opacity var(--jf-transition);
     border-radius: var(--jf-poster-radius);
-    z-index: 4;
+    z-index: 7;
   }
 
   .media-item:hover .hover-overlay {
@@ -789,6 +791,63 @@ export const cardStyles = css`
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+  }
+
+  /* Censor Bar Overlay - Aggressive Style */
+  .censor-bar {
+    position: absolute;
+    top: 50%;
+    left: -4%;
+    right: -2%;
+    transform: translateY(calc(-50%)) rotate(-5deg);
+    background: #000;
+    color: #fff;
+    padding: 4px 4px;
+    text-align: center;
+    z-index: 6;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+    width: 105%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .censor-bar span {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: 0.8px; /* Slightly increased for better readability */
+    text-shadow: 2px 2px 0px #000;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 85%; /* Ensure text stays within visible poster area since bar is wider */
+  }
+
+  /* Highlight Style for Next Up */
+  .censor-bar.highlight {
+    background: var(--jf-series-badge);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    z-index: 7;
+    transform: translateY(calc(-50%)) rotate(-6deg) scale(1.05);
+  }
+  
+  /* List specific adjustments for Censor Bar */
+  .censor-bar.list-bar {
+    padding: 2px 2px;
+    /* Adjust position for smaller poster */
+    transform: translateY(calc(-50%)) rotate(-3deg);
+  }
+
+  .censor-bar.list-bar span {
+    font-size: 0.9rem; /* Smaller text for list view */
+    letter-spacing: 0.3px;
   }
 
   /* Metadata Below Image (Default View) */

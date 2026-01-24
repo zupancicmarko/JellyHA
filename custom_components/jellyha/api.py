@@ -182,6 +182,21 @@ class JellyfinApiClient:
         items = result.get("Items", [])
         return items[0] if items else None
 
+    async def get_next_up_items(self, user_id: str, limit: int | None = None) -> list[dict[str, Any]]:
+        """Get the user's Next Up list (shows in progress)."""
+        params = {
+            "UserId": user_id,
+            "SortBy": "DatePlayed",
+            "SortOrder": "Descending",
+            "Dependencies": "true",
+            "Fields": "PrimaryImageAspectRatio,ProviderIds,Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,MediaStreams,UserData,RemoteTrailers,SeriesInfo,ParentId",
+        }
+        if limit:
+            params["Limit"] = limit
+            
+        result = await self._request("GET", "/Shows/NextUp", params=params)
+        return result.get("Items", [])
+
     async def get_playback_info(
         self, user_id: str, item_id: str, profile: dict[str, Any] | None = None
     ) -> dict[str, Any]:

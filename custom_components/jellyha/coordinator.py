@@ -118,13 +118,26 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             items = [self._transform_item(item) for item in raw_items]
 
+            # Fetch Next Up items (limit 20)
+            next_up_limit = 20
+            raw_next_up = await self._api.get_next_up_items(user_id=user_id, limit=next_up_limit)
+            next_up_items = []
+            if raw_next_up:
+                next_up_items = [self._transform_item(item) for item in raw_next_up]
+                # Enhance Next Up items with season/episode info specifically
+                for i, raw in zip(next_up_items, raw_next_up):
+                    i["season"] = raw.get("ParentIndexNumber")
+                    i["episode"] = raw.get("IndexNumber")
+                    i["season_name"] = raw.get("SeasonName")
+                    i["series_name"] = raw.get("SeriesName")
+
             # Update last refresh time (always updates)
             self.last_refresh_time = dt_util.utcnow()
 
             # Check if data actually changed
             current_item_ids = {item["id"] for item in items}
             # Create a simple hash based on item IDs and key attributes
-            current_hash = self._compute_data_hash(items)
+            current_hash = await self._compute_data_hash(items, next_up_items)
             
             if current_hash != self._previous_item_hash:
                 self.last_data_change_time = dt_util.utcnow()
@@ -160,7 +173,9 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "count": len(items),
                 "server_name": self._server_name,
                 "last_refresh": self.last_refresh_time.isoformat(),
+                "last_refresh": self.last_refresh_time.isoformat(),
                 "last_data_change": self.last_data_change_time.isoformat() if self.last_data_change_time else None,
+                "next_up_items": next_up_items,
             }
 
         except JellyfinAuthError as err:
@@ -177,12 +192,19 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except JellyfinApiError as err:
             raise UpdateFailed(f"Error fetching data: {err}") from err
 
-    def _compute_data_hash(self, items: list[dict[str, Any]]) -> str:
+    async def _compute_data_hash(self, items: list[dict[str, Any]], next_up_items: list[dict[str, Any]] = None) -> str:
         """Compute a hash of item data to detect changes."""
         # Include item IDs, count, and key changing attributes like is_played
         hash_data = []
         for item in sorted(items, key=lambda x: x.get("id", "")):
             hash_data.append(f"{item.get('id')}:{item.get('is_played')}:{item.get('is_favorite')}:{item.get('date_added')}")
+        
+        # Include Next Up in hash
+        if next_up_items:
+             hash_data.append("NEXT_UP")
+             for item in sorted(next_up_items, key=lambda x: x.get("id", "")):
+                 hash_data.append(f"{item.get('id')}:{item.get('is_played')}")
+
         return hashlib.sha256("|".join(hash_data).encode()).hexdigest()
 
     def _transform_item(self, item: dict[str, Any]) -> dict[str, Any]:

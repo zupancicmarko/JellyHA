@@ -5,6 +5,7 @@
 import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { JellyHANowPlayingCardConfig, HomeAssistant } from '../shared/types';
+import { localize } from '../shared/localize';
 
 // Helper function to fire events
 function fireEvent(
@@ -57,11 +58,13 @@ export class JellyHANowPlayingEditor extends LitElement {
       (entity) => entity.startsWith('sensor.jellyha_now_playing_')
     );
 
+    const lang = this.hass.locale?.language || this.hass.language;
+
     return html`
       <div class="card-config">
         <div class="form-row">
           <ha-select
-            label="Now Playing Sensor"
+            label="${localize(lang, 'editor.now_playing_sensor')}"
             .value=${this._config.entity || ''}
             @selected=${this._entityChanged}
             @closed=${(e: Event) => e.stopPropagation()}
@@ -78,7 +81,7 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="form-row">
           <ha-textfield
-            label="Title (Optional)"
+            label="${localize(lang, 'editor.title')} (Optional)"
             .value=${this._config.title || ''}
             @input=${this._titleChanged}
           ></ha-textfield>
@@ -89,7 +92,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_title !== false}
             @change=${this._showTitleChanged}
           ></ha-switch>
-          <span>Show Title</span>
+          <span>${localize(lang, 'editor.show_title')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -97,7 +100,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_media_type_badge !== false}
             @change=${this._showMediaTypeBadgeChanged}
           ></ha-switch>
-          <span>Show Media Type Badge</span>
+          <span>${localize(lang, 'editor.show_media_type_badge')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -105,7 +108,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_year !== false}
             @change=${this._showYearChanged}
           ></ha-switch>
-          <span>Show Year</span>
+          <span>${localize(lang, 'editor.show_year')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -113,7 +116,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_runtime === true}
             @change=${this._showRuntimeChanged}
           ></ha-switch>
-          <span>Show Runtime</span>
+          <span>${localize(lang, 'editor.show_runtime')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -121,7 +124,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_ratings === true}
             @change=${this._showRatingsChanged}
           ></ha-switch>
-          <span>Show Rating</span>
+          <span>${localize(lang, 'editor.show_rating')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -129,7 +132,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_genres === true}
             @change=${this._showGenresChanged}
           ></ha-switch>
-          <span>Show Genre</span>
+          <span>${localize(lang, 'editor.show_genres')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -137,7 +140,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_client !== false}
             @change=${this._showClientChanged}
           ></ha-switch>
-          <span>Show Jellyfin Client</span>
+          <span>${localize(lang, 'editor.show_client')}</span>
         </div>
 
         <div class="checkbox-row">
@@ -145,7 +148,7 @@ export class JellyHANowPlayingEditor extends LitElement {
             .checked=${this._config.show_background === true}
             @change=${this._showBackgroundChanged}
           ></ha-switch>
-          <span>Show Background</span>
+          <span>${localize(lang, 'editor.show_background')}</span>
         </div>
       </div>
     `;

@@ -97,7 +97,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const stateObj = this.hass.states[entityId];
         if (!stateObj) {
-            return this._renderError(localize(this.hass.language, 'entity_not_found') || 'Entity not found');
+            return this._renderError(localize(this.hass.locale?.language || this.hass.language, 'entity_not_found') || 'Entity not found');
         }
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
@@ -132,7 +132,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                 <img src="${imageUrl}&width=400&format=webp" alt="${attributes.title}" loading="eager" fetchpriority="high" />
                                 ${this._rewindActive ? html`
                                     <div class="rewind-overlay">
-                                        <span>${localize(this.hass.language, 'rewinding')}</span>
+                                        <span>${localize(this.hass.locale?.language || this.hass.language, 'rewinding')}</span>
                                     </div>
                                 ` : nothing}
                             </div>
@@ -187,19 +187,19 @@ export class JellyHANowPlayingCard extends LitElement {
 
                                     <div class="playback-controls">
                                                                     ${this._rewindActive ? html`
-                                            <ha-icon-button class="spinning" .label=${localize(this.hass.language, 'loading')}>
+                                            <ha-icon-button class="spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : isPaused ? html`
-                                            <ha-icon-button .label=${localize(this.hass.language, 'play')} @click=${() => this._handleControl('Unpause')}>
+                                            <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => this._handleControl('Unpause')}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : html`
-                                            <ha-icon-button .label=${localize(this.hass.language, 'pause')} @click=${() => this._handleControl('Pause')}>
+                                            <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => this._handleControl('Pause')}>
                                                 <ha-icon icon="mdi:pause"></ha-icon>
                                             </ha-icon-button>
                                         `}
-                                        <ha-icon-button .label=${localize(this.hass.language, 'stop')} @click=${() => this._handleControl('Stop')}>
+                                        <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'stop')} @click=${() => this._handleControl('Stop')}>
                                             <ha-icon icon="mdi:stop"></ha-icon>
                                         </ha-icon-button>
                                     </div>
@@ -241,7 +241,7 @@ export class JellyHANowPlayingCard extends LitElement {
             : 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/logo.png';
         const iconUrl = 'https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/icon.png';
 
-        let phrase = localize(this.hass.language, 'nothing_playing');
+        let phrase = localize(this.hass.locale?.language || this.hass.language, 'nothing_playing');
 
         if (this._phrases.length > 0) {
             const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24));

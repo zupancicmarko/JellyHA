@@ -22,6 +22,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
     try:
         websocket_api.async_register_command(hass, websocket_get_items)
         websocket_api.async_register_command(hass, websocket_get_next_up)
+        websocket_api.async_register_command(hass, websocket_get_user_next_up)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -151,5 +152,63 @@ async def websocket_get_next_up(
         else:
             connection.send_result(msg["id"], {"item": None})
             
+    except Exception as err:
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/get_user_next_up",
+    vol.Required("entity_id"): cv.entity_id,
+})
+@websocket_api.async_response
+async def websocket_get_user_next_up(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Handle get global next up items command."""
+    entity_id = msg["entity_id"]
+    
+    state = hass.states.get(entity_id)
+    if not state:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, f"Entity {entity_id} not found")
+        return
+
+    entry_id = state.attributes.get("entry_id")
+    if not entry_id:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Missing entry_id")
+        return
+
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded")
+        return
+
+    coordinator = entry.runtime_data.library
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found")
+        return
+
+    # Serve from coordinator cache if available
+    if coordinator.data and "next_up_items" in coordinator.data:
+        connection.send_result(msg["id"], {"items": coordinator.data["next_up_items"]})
+        return
+
+    # Fallback to direct fetch if cache miss (e.g. first run)
+    try:
+        if not coordinator.api:
+            await coordinator._async_setup()
+            
+        user_id = coordinator.entry.data["user_id"]
+        raw_next_up = await coordinator.api.get_next_up_items(user_id=user_id, limit=20)
+        items = []
+        if raw_next_up:
+            items = [coordinator._transform_item(item) for item in raw_next_up]
+            for i, raw in zip(items, raw_next_up):
+                i["season"] = raw.get("ParentIndexNumber")
+                i["episode"] = raw.get("IndexNumber")
+                i["season_name"] = raw.get("SeasonName")
+                i["series_name"] = raw.get("SeriesName")
+                
+        connection.send_result(msg["id"], {"items": items})
     except Exception as err:
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))
