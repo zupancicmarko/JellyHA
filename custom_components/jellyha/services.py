@@ -150,6 +150,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 "series_name": item.get("SeriesName"),
                 "season": item.get("ParentIndexNumber"),
                 "episode": item.get("IndexNumber"),
+                "image_url": coordinator._api.get_image_url(item.get("Id"), "Primary"),
             })
 
         return {"items": results}
@@ -597,6 +598,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 "type": item.get("Type"),
                 "year": item.get("ProductionYear"),
                 "rating": item.get("CommunityRating"),
+                "image_url": coordinator._api.get_image_url(item.get("Id"), "Primary"),
             })
 
         return {"items": results}
