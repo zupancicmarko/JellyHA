@@ -231,6 +231,8 @@ JellyHA provides several services to control and manage your library.
 | `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req) |
 | `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req) |
 | `jellyha.search` | Search for media and return Item IDs. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt) |
+| `jellyha.get_recommendations` | Get similar items based on item ID. | `item_id` (Req), `limit` (Opt) |
+| `jellyha.get_item` | Get full details for an item. | `item_id` (Req) |
 
 
 ## Session & Now Playing Updates
