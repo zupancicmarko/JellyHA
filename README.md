@@ -54,6 +54,12 @@ JellyHA integrates directly with the Home Assistant Media Browser. You can explo
 
 JellyHA requires **two installation steps**: installing the integration and adding the dashboard card resource.
 
+## Prerequisites
+
+Before installing JellyHA, ensure you have **HACS (Home Assistant Community Store)** installed.
+
+Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/) to install HACS on your Home Assistant instance.
+
 ### Step 1: Install the Integration
 
 [![My Home Assistant][my-ha-badge]][my-ha-url]

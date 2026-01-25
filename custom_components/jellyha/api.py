@@ -37,7 +37,7 @@ class JellyfinApiClient:
     def __init__(
         self,
         server_url: str,
-        api_key: str,
+        api_key: str | None = None,
         session: aiohttp.ClientSession | None = None,
     ) -> None:
         """Initialize the API client."""
@@ -52,14 +52,18 @@ class JellyfinApiClient:
     @property
     def _headers(self) -> dict[str, str]:
         """Get authentication headers."""
-        return {
+        headers = {
             "Authorization": f'MediaBrowser Client="Home Assistant", '
             f'Device="HACS Integration", '
             f'DeviceId="jellyha", '
-            f'Version="1.0.0", '
-            f'Token="{self._api_key}"',
+            f'Version="1.0.0"',
             "Content-Type": "application/json",
         }
+
+        if self._api_key:
+            headers["Authorization"] += f', Token="{self._api_key}"'
+
+        return headers
 
     async def _get_session(self) -> aiohttp.ClientSession:
         """Get or create aiohttp session."""
@@ -117,6 +121,40 @@ class JellyfinApiClient:
     async def validate_connection(self) -> dict[str, Any]:
         """Validate the connection and return server info."""
         return await self._request("GET", "/System/Info/Public")
+
+    async def authenticate(self, username: str, password: str) -> dict[str, Any]:
+        """Authenticate with username and password."""
+        headers = {
+            "Content-Type": "application/json",
+            "X-Emby-Authorization": (
+                'MediaBrowser Client="Home Assistant", '
+                'Device="HACS Integration", '
+                'DeviceId="jellyha", '
+                'Version="1.0.0"'
+            ),
+        }
+        
+        url = urljoin(self._server_url + "/", "Users/AuthenticateByName")
+        session = await self._get_session()
+        
+        try:
+            async with session.post(
+                url,
+                json={"Username": username, "Pw": password},
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
+            ) as response:
+                if response.status == 401:
+                    raise JellyfinAuthError("Invalid username or password")
+                response.raise_for_status()
+                data = await response.json()
+                
+                self._api_key = data.get("AccessToken")
+                self._user_id = data.get("User", {}).get("Id")
+                return data
+                
+        except aiohttp.ClientError as err:
+            raise JellyfinConnectionError(f"Connection failed: {err}") from err
 
     async def get_users(self) -> list[dict[str, Any]]:
         """Get list of users."""

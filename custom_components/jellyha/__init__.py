@@ -40,7 +40,7 @@ class JellyHAData:
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.MEDIA_PLAYER]
 
 # Type alias for the config entry
-type JellyHAConfigEntry = ConfigEntry[JellyHAData]
+JellyHAConfigEntry = ConfigEntry[JellyHAData]
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
