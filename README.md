@@ -3,11 +3,19 @@
 [![HACS][hacs-badge]][hacs-url]
 [![GitHub Release][release-badge]][release-url]
 
-A Home Assistant integration and Lovelace card that displays media from your Jellyfin server.
+Jellyfin for Home Assistant Custom Integration.
 
-**JellyHA Library** provides a beautiful way to showcase your media collection in Home Assistant.
+**JellyHA Library** provides a beautiful way to showcase and interact with your media collection in Home Assistant.
 
-![Card Preview](./docs/JellyHA-Library.png)
+**JellyHA Now Playing** provides a beautiful way show and interact with currently playing media in Home Assistant.
+
+<div align="center">
+  <img src="./docs/JellyHA-Library-Carousel.png" width="45%" alt="Carousel View" />
+  <img src="./docs/JellyHA-Library-Grid.png" width="45%" alt="Grid View" />
+  <img src="./docs/JellyHA-Library-List.png" width="45%" alt="List View" />
+  <img src="./docs/JellyHA-Library-Next-Up.png" width="45%" alt="Next Up View" />
+  <img src="./docs/JellyHA-NowPlaying.png" width="45%" alt="NowPlaying View" />  
+</div>
 
 ## Features
 
@@ -23,32 +31,6 @@ A Home Assistant integration and Lovelace card that displays media from your Jel
 - ⚡ Instant loading via WebSocket
 - 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
 - 🎛️ Graphical card editor (no YAML required)
-
-## Session & Now Playing Updates
-
-JellyHA uses a **WebSocket-first, API-fallback** strategy for real-time session monitoring. This powers the `active_sessions` sensor and per-user `now_playing` sensors.
-
-| Connection State | Update Method | Speed |
-|------------------|---------------|-------|
-| **WebSocket Connected** | Push updates from Jellyfin | Instant (~100ms) |
-| **WebSocket Disconnected** | API polling every 5 seconds | Near real-time |
-
-**How it works:**
-1. On startup, JellyHA connects to the Jellyfin WebSocket and subscribes to session events
-2. While connected, session updates are pushed instantly — no polling required
-3. If WebSocket disconnects (network issue, server restart), it automatically falls back to API polling
-4. When WebSocket reconnects, polling stops and push updates resume
-
-The `sensor.jellyha_websocket` sensor shows the current connection status (`connected`/`disconnected`).
-
-
-## Media Browser
-
-JellyHA integrates directly with the Home Assistant Media Browser. You can explore your Jellyfin libraries, play media on supported players, and even stream directly to your browser, all without leaving Home Assistant.
-
-1. Go to **Media** in the sidebar.
-2. Select **JellyHA**.
-3. Browse your Movies, Series, and Music collections.
 
 ## Installation
 
@@ -102,6 +84,17 @@ Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/u
 3. Enter your Jellyfin server URL and API key
 4. Select the user and libraries to monitor
 
+
+### Jellyfin API Key
+
+To get your Jellyfin API key:
+
+1. Open Jellyfin Dashboard
+2. Go to **Administration** → **API Keys**
+3. Click **+** to create a new key
+4. Copy the generated key
+
+
 ## Sensors
 
 JellyHA provides several sensors to monitor your Jellyfin server and library. All sensors are prefixed with `sensor.jellyha_` (unless a custom device name was used during setup).
@@ -139,9 +132,9 @@ JellyHA provides several sensors to monitor your Jellyfin server and library. Al
 | `sensor.jellyha_now_playing_[user]` | Real-time monitoring for specific user | `playing`, `paused`, `idle` | `title`, `series_title`, `season`, `episode`, `progress_percent`, `image_url`, `media_type`, `client`, `device_name` |
 
 
-## Card Configuration
+## Library Card Configuration
 
-Add the card to your dashboard:
+Add the **Library Card** to your dashboard:
 
 ```yaml
 type: custom:jellyha-library-card
@@ -189,14 +182,31 @@ max_pages: 5
 | `filter_newly_added` | boolean | `false` | Filter New Items (Show only new items) |
 | `sort_option` | string | `date_added_desc` | Sort order options |
 
-## API Key
+## Now Playing Card Configuration
 
-To get your Jellyfin API key:
+The **Now Playing Card** shows a rich media control interface for the currently playing item.
 
-1. Open Jellyfin Dashboard
-2. Go to **Administration** → **API Keys**
-3. Click **+** to create a new key
-4. Copy the generated key
+```yaml
+type: custom:jellyha-now-playing-card
+entity: sensor.jellyha_now_playing_username
+title: Now Playing
+show_background: true
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `entity` | string | **Required** | The user-specific Now Playing sensor (e.g. `sensor.jellyha_now_playing_marko`) |
+| `title` | string | `Jellyfin` | Optional title header |
+| `show_background` | boolean | `true` | Show blurred backdrop fanart as background |
+| `show_title` | boolean | `true` | Show media title text |
+| `show_client` | boolean | `true` | Show client device name (e.g. "Chrome") |
+| `show_media_type_badge` | boolean | `true` | Show badge (MOVIE, SERIES, EPISODE) |
+| `show_genres` | boolean | `true` | Show genres list |
+| `show_ratings` | boolean | `true` | Show community rating |
+| `show_runtime` | boolean | `true` | Show runtime duration |
+| `show_year` | boolean | `true` | Show release year |
 
 ## Services
 
@@ -212,6 +222,34 @@ JellyHA provides several services to control and manage your library.
 | `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req) |
 | `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req) |
 | `jellyha.search` | Search for media and return Item IDs. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt) |
+
+
+## Session & Now Playing Updates
+
+JellyHA uses a **WebSocket-first, API-fallback** strategy for real-time session monitoring. This powers the `active_sessions` sensor and per-user `now_playing` sensors.
+
+| Connection State | Update Method | Speed |
+|------------------|---------------|-------|
+| **WebSocket Connected** | Push updates from Jellyfin | Instant (~100ms) |
+| **WebSocket Disconnected** | API polling every 5 seconds | Near real-time |
+
+**How it works:**
+1. On startup, JellyHA connects to the Jellyfin WebSocket and subscribes to session events
+2. While connected, session updates are pushed instantly — no polling required
+3. If WebSocket disconnects (network issue, server restart), it automatically falls back to API polling
+4. When WebSocket reconnects, polling stops and push updates resume
+
+The `sensor.jellyha_websocket` sensor shows the current connection status (`connected`/`disconnected`).
+
+
+## Media Browser
+
+JellyHA integrates directly with the Home Assistant Media Browser. You can explore your Jellyfin libraries, play media on supported players, and even stream directly to your browser, all without leaving Home Assistant.
+
+1. Go to **Media** in the sidebar.
+2. Select **JellyHA**.
+3. Browse your Movies, Series, and Music collections.
+
 
 ## Advanced Automations
 

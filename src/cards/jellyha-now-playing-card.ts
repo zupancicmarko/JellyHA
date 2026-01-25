@@ -110,7 +110,9 @@ export class JellyHANowPlayingCard extends LitElement {
         const progressPercent = attributes.progress_percent || 0;
         const imageUrl = attributes.image_url;
 
-        const backdropUrl = attributes.backdrop_url ? `${attributes.backdrop_url}&width=1280&format=webp` : undefined;
+        const backdropUrl = (attributes.backdrop_url || attributes.image_url)
+            ? `${attributes.backdrop_url || attributes.image_url}&width=1280&format=webp`
+            : undefined;
         const showBackground = this._config.show_background && backdropUrl;
         const isPaused = attributes.is_paused;
 
@@ -773,10 +775,6 @@ export class JellyHANowPlayingCard extends LitElement {
             display: flex;
             align-items: center;
             gap: 4px;
-            background: rgba(var(--rgb-primary-text-color), 0.08);
-            padding: 2px 0px;
-            border-radius: 4px;
-            border: 1px solid rgba(var(--rgb-primary-text-color), 0.1);
         }
         .meta-item.external-rating ha-icon {
             --mdc-icon-size: 14px;
