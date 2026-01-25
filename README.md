@@ -14,7 +14,6 @@ Jellyfin for Home Assistant Custom Integration.
   <img src="./docs/JellyHA-Library-Grid.png" width="45%" alt="Grid View" />
   <img src="./docs/JellyHA-Library-List.png" width="45%" alt="List View" />
   <img src="./docs/JellyHA-Library-Next-Up.png" width="45%" alt="Next Up View" />
-  <img src="./docs/JellyHA-NowPlaying.png" width="45%" alt="NowPlaying View" />  
 </div>
 
 ## Features
