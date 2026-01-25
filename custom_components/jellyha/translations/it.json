@@ -35,7 +35,8 @@
             "unknown": "Si è verificato un errore imprevisto"
         },
         "abort": {
-            "already_configured": "Questo server Jellyfin è già configurato"
+            "already_configured": "Questo server Jellyfin è già configurato",
+            "single_instance_allowed": "È consentita una sola configurazione di JellyHA."
         }
     },
     "options": {

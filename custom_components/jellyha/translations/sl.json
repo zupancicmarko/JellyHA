@@ -36,7 +36,8 @@
             "unknown": "Prišlo je do nepričakovane napake"
         },
         "abort": {
-            "already_configured": "Ta strežnik Jellyfin je že konfiguriran"
+            "already_configured": "Ta strežnik Jellyfin je že konfiguriran",
+            "single_instance_allowed": "Dovoljena je le ena konfiguracija JellyHA."
         }
     },
     "options": {

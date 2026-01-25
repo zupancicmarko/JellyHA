@@ -86,6 +86,8 @@ Or
 
 ## Setup
 
+> **⚠️ Note:** Only a single instance of this integration is supported. Please configure it once for your main user.
+
 1. Go to **Settings** → **Devices & Services** → **Add Integration**
 2. Search for "JellyHA"
 3. Enter your Jellyfin server URL and API key

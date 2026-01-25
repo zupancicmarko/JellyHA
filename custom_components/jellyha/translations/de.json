@@ -27,6 +27,10 @@
             "cannot_connect": "Verbindung zum Jellyfin-Server fehlgeschlagen",
             "invalid_auth": "Ungültiger API-Schlüssel",
             "unknown": "Ein unerwarteter Fehler ist aufgetreten"
+        },
+        "abort": {
+            "already_configured": "Dieser Jellyfin-Server ist bereits konfiguriert",
+            "single_instance_allowed": "Nur eine Konfiguration von JellyHA ist erlaubt."
         }
     },
     "entity": {
