@@ -66,7 +66,8 @@
         "abort": {
             "already_configured": "This Jellyfin server is already configured",
             "reauth_successful": "Re-authentication successful",
-            "reauth_failed": "Re-authentication failed"
+            "reauth_failed": "Re-authentication failed",
+            "single_instance_allowed": "Only a single configuration of JellyHA is allowed."
         }
     },
     "options": {

@@ -98,6 +98,9 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step - server URL and auth method."""
         errors: dict[str, str] = {}
 
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
         if user_input is not None:
             self._server_url = user_input[CONF_SERVER_URL].rstrip("/")
             auth_method = user_input[CONF_AUTH_METHOD]
