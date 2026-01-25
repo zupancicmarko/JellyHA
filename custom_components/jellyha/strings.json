@@ -195,6 +195,116 @@
                     "name": "Item ID",
                     "description": "Jellyfin item ID to delete"
                 }
+            },
+            "mark_watched": {
+                "name": "Mark Watched",
+                "description": "Mark an item as watched or unwatched.",
+                "fields": {
+                    "item_id": {
+                        "name": "Item ID",
+                        "description": "The Jellyfin Item ID."
+                    },
+                    "is_played": {
+                        "name": "Is Watched",
+                        "description": "Set to true for watched, false for unwatched."
+                    }
+                }
+            },
+            "update_favorite": {
+                "name": "Update Favorite",
+                "description": "Mark an item as favorite or remove it.",
+                "fields": {
+                    "item_id": {
+                        "name": "Item ID",
+                        "description": "The Jellyfin Item ID."
+                    },
+                    "is_favorite": {
+                        "name": "Is Favorite",
+                        "description": "Set to true for favorite, false to remove."
+                    }
+                }
+            },
+            "session_control": {
+                "name": "Session Control",
+                "description": "Send a control command to a playback session.",
+                "fields": {
+                    "session_id": {
+                        "name": "Session ID",
+                        "description": "The active session ID."
+                    },
+                    "command": {
+                        "name": "Command",
+                        "description": "The command to send (Pause, Unpause, TogglePause, Stop)."
+                    }
+                }
+            },
+            "session_seek": {
+                "name": "Session Seek",
+                "description": "Seek to a specific position in a playback session.",
+                "fields": {
+                    "session_id": {
+                        "name": "Session ID",
+                        "description": "The active session ID."
+                    },
+                    "position_ticks": {
+                        "name": "Position (Ticks)",
+                        "description": "Position in ticks (1 sec = 10,000,000 ticks)."
+                    }
+                }
+            },
+            "search": {
+                "name": "Search",
+                "description": "Search for media items in your library.",
+                "fields": {
+                    "query": {
+                        "name": "Search Query",
+                        "description": "Text to search for."
+                    },
+                    "media_type": {
+                        "name": "Media Type",
+                        "description": "Filter by Movie, Series, or Episode."
+                    },
+                    "limit": {
+                        "name": "Limit",
+                        "description": "Maximum number of results."
+                    },
+                    "is_played": {
+                        "name": "Is Watched",
+                        "description": "Filter by watched status."
+                    },
+                    "min_rating": {
+                        "name": "Minimum Rating",
+                        "description": "Filter by minimum rating (0-10)."
+                    },
+                    "year": {
+                        "name": "Year",
+                        "description": "Filter by release year."
+                    }
+                }
+            },
+            "get_recommendations": {
+                "name": "Get Recommendations",
+                "description": "Get similar items for a specific media item.",
+                "fields": {
+                    "item_id": {
+                        "name": "Item ID",
+                        "description": "The Item ID to base recommendations on."
+                    },
+                    "limit": {
+                        "name": "Limit",
+                        "description": "Maximum number of results."
+                    }
+                }
+            },
+            "get_item": {
+                "name": "Get Item Details",
+                "description": "Get full details including overview and metadata for an item.",
+                "fields": {
+                    "item_id": {
+                        "name": "Item ID",
+                        "description": "The Jellyfin Item ID."
+                    }
+                }
             }
         }
     }
