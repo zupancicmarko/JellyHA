@@ -19,12 +19,16 @@ Jellyfin for Home Assistant Custom Integration.
 ## Features
 
 - 🎬 Display movies and TV shows from your library
+- 📺 Cast media directly to Chromecast (Gen 1 supported)
+- ⏯️ Full playback control: Play, Pause, Stop, Seek
 - ⏭️ "Next Up" support to resume TV shows
 - 🎨 Three layouts: Carousel, Grid, List
 - 🌙 Automatic dark/light theme adaptation
 - 🔗 Click to open in Jellyfin (new tab)
 - ⭐ IMDB ratings for movies, TMDB for TV shows
 - 🆕 "New" badge for recently added items
+- 🔐 Secure login via Username/Password or API Key
+- 🤖 Advanced automation triggers via custom sensors & services
 - 📂 Full integration with Home Assistant Media Browser
 - 💾 Efficient local storage caching (no database bloat)
 - ⚡ Instant loading via WebSocket
@@ -108,7 +112,7 @@ JellyHA provides several sensors to monitor your Jellyfin server and library. Al
 |-----------|-------------|-------|------------|
 | `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `episodes` |
 | `sensor.jellyha_favorites` | Favorite items | Count | - |
-| `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series`, `episodes` |
+| `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series` |
 | `sensor.jellyha_unwatched_movies` | Unwatched movies | Count | - |
 | `sensor.jellyha_unwatched_series` | Unwatched TV series | Count | - |
 | `sensor.jellyha_unwatched_episodes` | Unwatched individual episodes | Count | - |
