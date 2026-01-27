@@ -164,6 +164,8 @@ max_pages: 5
 | `filter_favorites` | boolean | `false` | Filter Favorites (Show only favorite items) |
 | `filter_newly_added` | boolean | `false` | Filter New Items (Show only new items) |
 
+> **⚠️ Performance Note:** Using **Auto Swipe** with a large number of items may impact performance on some devices. We recommend limiting the number of items for the best experience.
+
 ## Now Playing Card Configuration
 
 The **Now Playing Card** shows a rich media control interface for the currently playing item.
