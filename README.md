@@ -5,9 +5,9 @@
 
 Jellyfin for Home Assistant Custom Integration.
 
-**JellyHA Library** provides a beautiful way to showcase and interact with your media collection in Home Assistant.
+**JellyHA Library** provides a beautiful way to browse and play your media collection directly in Home Assistant.
 
-**JellyHA Now Playing** provides a beautiful way show and interact with currently playing media in Home Assistant.
+**JellyHA Now Playing** displays currently playing media with some playback controls.
 
 <div align="center">
   <img src="./docs/JellyHA-Library-Grid.png" width="45%" alt="Grid View" />
