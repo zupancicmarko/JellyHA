@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
+from homeassistant.loader import async_get_integration
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.components.http import StaticPathConfig
 import os
@@ -49,6 +50,8 @@ JellyHAConfigEntry = ConfigEntry[JellyHAData]
 
 async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> bool:
     """Set up JellyHA from a config entry."""
+    integration = await async_get_integration(hass, DOMAIN)
+    _LOGGER.info("Setting up JellyHA integration version %s", integration.version)
     storage = JellyfinLibraryData(hass, entry.entry_id)
     await storage.async_load()
 

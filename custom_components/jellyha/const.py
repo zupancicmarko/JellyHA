@@ -1,7 +1,6 @@
 """Constants for JellyHA integration."""
 
 DOMAIN = "jellyha"
-
 # Configuration keys
 CONF_SERVER_URL = "server_url"
 CONF_API_KEY = "api_key"
