@@ -262,6 +262,28 @@ class JellyfinApiClient:
         result = await self._request("GET", "/Shows/NextUp", params=params)
         return result.get("Items", [])
 
+    async def get_episodes_by_season(
+        self, user_id: str, series_id: str, season: int | None = None
+    ) -> list[dict[str, Any]]:
+        """Get all episodes for a specific season (or all if None)."""
+        params = {
+            "UserId": user_id,
+            "ParentId": series_id,
+            "IncludeItemTypes": "Episode",
+            "SortBy": "SortName", # Sort by episode number typically via SortName or index
+            "SortOrder": "Ascending",
+            "Fields": "PrimaryImageAspectRatio,Overview,MediaStreams,RunTimeTicks,OfficialRating,CommunityRating,UserData",
+        }
+        
+        if season is not None:
+            params["ParentIndexNumber"] = str(season)
+            
+        # Recursive true is needed to find episodes inside seasons inside series
+        params["Recursive"] = "true"
+
+        result = await self._request("GET", f"/Users/{user_id}/Items", params=params)
+        return result.get("Items", [])
+
     async def get_similar_items(self, user_id: str, item_id: str, limit: int = 5) -> list[dict[str, Any]]:
         """Get similar items (recommendations) for a specific item."""
         # Reduced fields for optimization

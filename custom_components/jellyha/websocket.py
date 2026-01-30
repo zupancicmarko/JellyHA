@@ -23,6 +23,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         websocket_api.async_register_command(hass, websocket_get_items)
         websocket_api.async_register_command(hass, websocket_get_next_up)
         websocket_api.async_register_command(hass, websocket_get_user_next_up)
+        websocket_api.async_register_command(hass, websocket_get_episodes)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -223,4 +224,71 @@ async def websocket_get_user_next_up(
                 
         connection.send_result(msg["id"], {"items": items})
     except Exception as err:
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/get_episodes",
+    vol.Required("entity_id"): cv.entity_id,
+    vol.Required("series_id"): str,
+    vol.Required("season"): int,
+})
+@websocket_api.async_response
+async def websocket_get_episodes(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Handle get episodes command."""
+    entity_id = msg["entity_id"]
+    series_id = msg["series_id"]
+    season = msg["season"]
+    
+    state = hass.states.get(entity_id)
+    if not state:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, f"Entity {entity_id} not found")
+        return
+
+    entry_id = state.attributes.get("entry_id")
+    if not entry_id:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Missing entry_id")
+        return
+
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded")
+        return
+
+    coordinator = entry.runtime_data.library
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found")
+        return
+
+    try:
+        if not coordinator._api:
+            await coordinator._async_setup()
+            
+        user_id = coordinator.entry.data["user_id"]
+        
+        # Use our new API method
+        raw_episodes = await coordinator._api.get_episodes_by_season(
+            user_id=user_id, series_id=series_id, season=season
+        )
+        
+        items = []
+        if raw_episodes:
+            items = [coordinator._transform_item(item) for item in raw_episodes]
+            # Enrich items with logic similar to NextUp to ensure consistency
+            for i, raw in zip(items, raw_episodes):
+                i["season"] = raw.get("ParentIndexNumber")
+                i["episode"] = raw.get("IndexNumber")
+                
+                # Ensure media streams are present for playback info
+                if "MediaSources" in raw and raw["MediaSources"]:
+                    i["media_streams"] = raw["MediaSources"][0].get("MediaStreams", [])
+                elif "MediaStreams" in raw:
+                     i["media_streams"] = raw["MediaStreams"]
+
+        connection.send_result(msg["id"], {"items": items})
+    except Exception as err:
+        _LOGGER.exception("Error fetching episodes: %s", err)
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))

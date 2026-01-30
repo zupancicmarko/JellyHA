@@ -248,6 +248,9 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "official_rating": item.get("OfficialRating"),
             "trailer_url": next((t["Url"] for t in item.get("RemoteTrailers", []) if t.get("Url")), None),
             "last_played_date": item.get("UserData", {}).get("LastPlayedDate"),
+            "community_rating": rating,
+            "season_name": item.get("SeasonName"),
+            "index_number": item.get("IndexNumber"),
         }
 
     def _get_rating(

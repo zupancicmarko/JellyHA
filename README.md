@@ -3,7 +3,7 @@
 [![HACS][hacs-badge]][hacs-url]
 [![GitHub Release][release-badge]][release-url]
 
-Jellyfin for Home Assistant Custom Integration.
+Jellyfin for Home Assistant
 
 <div align="center">
   <img src="./docs/JellyHA-Library-Grid.png" width="45%" alt="Grid View" />
@@ -45,8 +45,6 @@ JellyHA requires **two installation steps**: installing the integration and addi
 Before installing JellyHA, ensure you have **HACS (Home Assistant Community Store)** installed.
 
 Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/) to install HACS on your Home Assistant instance.
-
-[![Open your Home Assistant instance and open a repository inside the (HACS) Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?repository=JellyHA&category=Integration&owner=zupancicmarko)
 
 1. Open HACS in Home Assistant
 2. Go to **Integrations** → **⋮** → **Custom repositories**

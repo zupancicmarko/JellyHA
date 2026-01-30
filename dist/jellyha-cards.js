@@ -262,9 +262,9 @@ E.elementStyles = [], E.shadowRootOptions = { mode: "open" }, E[N("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const se = globalThis, ge = (t) => t, V = se.trustedTypes, ue = V ? V.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, $e = "$lit$", C = `lit$${Math.random().toFixed(9).slice(2)}$`, ke = "?" + C, He = `<${ke}>`, j = document, O = () => j.createComment(""), L = (t) => t === null || typeof t != "object" && typeof t != "function", re = Array.isArray, Re = (t) => re(t) || typeof t?.[Symbol.iterator] == "function", Q = `[ 	
+const se = globalThis, ge = (t) => t, V = se.trustedTypes, ue = V ? V.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, $e = "$lit$", C = `lit$${Math.random().toFixed(9).slice(2)}$`, ke = "?" + C, Ue = `<${ke}>`, j = document, O = () => j.createComment(""), L = (t) => t === null || typeof t != "object" && typeof t != "function", re = Array.isArray, He = (t) => re(t) || typeof t?.[Symbol.iterator] == "function", Q = `[ 	
 \f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, me = /-->/g, fe = />/g, P = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), we = /'/g, ye = /"/g, Se = /^(?:script|style|textarea|title)$/i, Ue = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Ue(1), M = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ve = /* @__PURE__ */ new WeakMap(), A = j.createTreeWalker(j, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, we = /"/g, Se = /^(?:script|style|textarea|title)$/i, Re = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Re(1), M = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ve = /* @__PURE__ */ new WeakMap(), A = j.createTreeWalker(j, 129);
 function Ce(t, e) {
   if (!re(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ue !== void 0 ? ue.createHTML(e) : e;
@@ -274,34 +274,34 @@ const Fe = (t, e) => {
   let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = I;
   for (let h = 0; h < i; h++) {
     const c = t[h];
-    let _, g, p = -1, m = 0;
-    for (; m < c.length && (r.lastIndex = m, g = r.exec(c), g !== null); ) m = r.lastIndex, r === I ? g[1] === "!--" ? r = me : g[1] !== void 0 ? r = fe : g[2] !== void 0 ? (Se.test(g[2]) && (o = RegExp("</" + g[2], "g")), r = P) : g[3] !== void 0 && (r = P) : r === P ? g[0] === ">" ? (r = o ?? I, p = -1) : g[1] === void 0 ? p = -2 : (p = r.lastIndex - g[2].length, _ = g[1], r = g[3] === void 0 ? P : g[3] === '"' ? ye : we) : r === ye || r === we ? r = P : r === me || r === fe ? r = I : (r = P, o = void 0);
-    const y = r === P && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === I ? c + He : p >= 0 ? (a.push(_), c.slice(0, p) + $e + c.slice(p) + C + y) : c + C + (p === -2 ? h : y);
+    let _, u, p = -1, m = 0;
+    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === I ? u[1] === "!--" ? r = me : u[1] !== void 0 ? r = fe : u[2] !== void 0 ? (Se.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = P) : u[3] !== void 0 && (r = P) : r === P ? u[0] === ">" ? (r = o ?? I, p = -1) : u[1] === void 0 ? p = -2 : (p = r.lastIndex - u[2].length, _ = u[1], r = u[3] === void 0 ? P : u[3] === '"' ? we : ye) : r === we || r === ye ? r = P : r === me || r === fe ? r = I : (r = P, o = void 0);
+    const w = r === P && t[h + 1].startsWith("/>") ? " " : "";
+    s += r === I ? c + Ue : p >= 0 ? (a.push(_), c.slice(0, p) + $e + c.slice(p) + C + w) : c + C + (p === -2 ? h : w);
   }
   return [Ce(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
-class H {
+class U {
   constructor({ strings: e, _$litType$: i }, a) {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = e.length - 1, c = this.parts, [_, g] = Fe(e, i);
-    if (this.el = H.createElement(_, a), A.currentNode = this.el.content, i === 2 || i === 3) {
+    const h = e.length - 1, c = this.parts, [_, u] = Fe(e, i);
+    if (this.el = U.createElement(_, a), A.currentNode = this.el.content, i === 2 || i === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
     for (; (o = A.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
         if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith($e)) {
-          const m = g[r++], y = o.getAttribute(p).split(C), G = /([.?@])?(.*)/.exec(m);
-          c.push({ type: 1, index: s, name: G[2], strings: y, ctor: G[1] === "." ? We : G[1] === "?" ? Ge : G[1] === "@" ? Xe : K }), o.removeAttribute(p);
+          const m = u[r++], w = o.getAttribute(p).split(C), G = /([.?@])?(.*)/.exec(m);
+          c.push({ type: 1, index: s, name: G[2], strings: w, ctor: G[1] === "." ? We : G[1] === "?" ? Ge : G[1] === "@" ? Xe : K }), o.removeAttribute(p);
         } else p.startsWith(C) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
         if (Se.test(o.tagName)) {
           const p = o.textContent.split(C), m = p.length - 1;
           if (m > 0) {
             o.textContent = V ? V.emptyScript : "";
-            for (let y = 0; y < m; y++) o.append(p[y], O()), A.nextNode(), c.push({ type: 2, index: ++s });
+            for (let w = 0; w < m; w++) o.append(p[w], O()), A.nextNode(), c.push({ type: 2, index: ++s });
             o.append(p[m], O());
           }
         }
@@ -371,7 +371,7 @@ class B {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = z(this, e, i), L(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== M && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Re(e) ? this.k(e) : this._(e);
+    e = z(this, e, i), L(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== M && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : He(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -383,7 +383,7 @@ class B {
     this._$AH !== d && L(this._$AH) ? this._$AA.nextSibling.data = e : this.T(j.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = H.createElement(Ce(a.h, a.h[0]), this.options)), a);
+    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = U.createElement(Ce(a.h, a.h[0]), this.options)), a);
     if (this._$AH?._$AD === o) this._$AH.p(i);
     else {
       const s = new Be(o, this), r = s.u(this.options);
@@ -392,7 +392,7 @@ class B {
   }
   _$AC(e) {
     let i = ve.get(e.strings);
-    return i === void 0 && ve.set(e.strings, i = new H(e)), i;
+    return i === void 0 && ve.set(e.strings, i = new U(e)), i;
   }
   k(e) {
     re(this._$AH) || (this._$AH = [], this._$AR());
@@ -477,7 +477,7 @@ class Ye {
   }
 }
 const Je = se.litHtmlPolyfillSupport;
-Je?.(H, B), (se.litHtmlVersions ??= []).push("3.3.2");
+Je?.(U, B), (se.litHtmlVersions ??= []).push("3.3.2");
 const Pe = (t, e, i) => {
   const a = i?.renderBefore ?? e;
   let o = a._$litPart$;
@@ -493,7 +493,7 @@ const Pe = (t, e, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ne = globalThis;
-class k extends E {
+class S extends E {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -515,9 +515,9 @@ class k extends E {
     return M;
   }
 }
-k._$litElement$ = !0, k.finalized = !0, ne.litElementHydrateSupport?.({ LitElement: k });
+S._$litElement$ = !0, S.finalized = !0, ne.litElementHydrateSupport?.({ LitElement: S });
 const qe = ne.litElementPolyfillSupport;
-qe?.({ LitElement: k });
+qe?.({ LitElement: S });
 (ne.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -555,7 +555,7 @@ const Ve = { attribute: !0, type: String, converter: q, reflect: !1, hasChanged:
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function $(t) {
+function k(t) {
   return (e, i) => typeof i == "object" ? Ze(t, e, i) : ((a, o, s) => {
     const r = o.hasOwnProperty(s);
     return o.constructor.createProperty(s, a), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
@@ -566,8 +566,8 @@ function $(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function u(t) {
-  return $({ ...t, state: !0, attribute: !1 });
+function g(t) {
+  return k({ ...t, state: !0, attribute: !1 });
 }
 /**
  * @license
@@ -2479,18 +2479,45 @@ function l(t, e) {
   const i = t.split("-")[0].toLowerCase();
   return Y[i]?.[e] ? Y[i][e] : Y.en?.[e] ? Y.en[e] : e;
 }
-var et = Object.defineProperty, tt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+var et = Object.defineProperty, tt = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? tt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && et(e, i, o), o;
 };
-let x = class extends k {
+let b = class extends S {
   constructor() {
-    super(...arguments), this._open = !1, this._confirmDelete = !1, this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
+    super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
       this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
+    }, this._toggleEpisodesView = (t) => {
+      t && (t.stopPropagation(), t.preventDefault()), this._viewMode === "default" ? this._fetchEpisodes() : this._viewMode = "default";
+    }, this._handlePlayEpisode = async (t) => {
+      if (this._haptic(), !this._defaultCastDevice) {
+        this.dispatchEvent(new CustomEvent("hass-notification", {
+          detail: { message: "No Chromecast device selected. Please configure a cast device in the card editor." },
+          bubbles: !0,
+          composed: !0
+        }));
+        return;
+      }
+      try {
+        await this.hass.callService("jellyha", "play_on_chromecast", {
+          entity_id: this._defaultCastDevice,
+          item_id: t.id
+        }), this.closeDialog();
+      } catch (e) {
+        console.error("Failed to cast episode", e), this.dispatchEvent(new CustomEvent("hass-notification", {
+          detail: { message: "Failed to cast episode. Check logs." },
+          bubbles: !0,
+          composed: !0
+        }));
+      }
     }, this._handlePlay = async () => {
       if (this._haptic(), !this._item || !this._defaultCastDevice) {
-        this._defaultCastDevice || alert("No default cast device configured.");
+        this._defaultCastDevice || this.dispatchEvent(new CustomEvent("hass-notification", {
+          detail: { message: "No Chromecast device selected. Please configure a cast device in the card editor." },
+          bubbles: !0,
+          composed: !0
+        }));
         return;
       }
       try {
@@ -2503,7 +2530,11 @@ let x = class extends k {
       }
     }, this._playNextUp = async () => {
       if (this._haptic(), !this._nextUpItem || !this._defaultCastDevice) {
-        this._defaultCastDevice || alert("No default cast device configured.");
+        this._defaultCastDevice || this.dispatchEvent(new CustomEvent("hass-notification", {
+          detail: { message: "No Chromecast device selected. Please configure a cast device in the card editor." },
+          bubbles: !0,
+          composed: !0
+        }));
         return;
       }
       try {
@@ -2549,17 +2580,29 @@ let x = class extends k {
       } catch {
       }
       if (i) {
-        const a = navigator.userAgent || navigator.vendor || window.opera, o = /android/i.test(a), s = /iPad|iPhone|iPod/.test(a) && !window.MSStream;
-        if (o) {
+        const a = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android/i.test(a)) {
           window.open(`vnd.youtube:${i}`, "_blank");
-          return;
-        }
-        if (s) {
-          window.open(`youtube://${i}`, "_blank");
           return;
         }
       }
       window.open(e, "_blank");
+    }, this._handleMarkEpisodeWatched = async (t) => {
+      this._haptic();
+      const e = !t.is_played;
+      if (this._episodes = this._episodes.map(
+        (i) => i.id === t.id ? { ...i, is_played: e, unplayed_count: e ? 0 : 1 } : i
+      ), e && this._nextUpItem && t.id === this._nextUpItem.id) {
+        const i = this._episodes.findIndex((a) => a.id === t.id);
+        i !== -1 && i < this._episodes.length - 1 && (this._nextUpItem = this._episodes[i + 1]);
+      } else if (!e && this._nextUpItem && t.id !== this._nextUpItem.id) {
+        const i = this._episodes.findIndex((o) => o.id === t.id), a = this._episodes.findIndex((o) => o.id === this._nextUpItem.id);
+        i !== -1 && a !== -1 && i < a && (this._nextUpItem = this._episodes[i]);
+      }
+      this.requestUpdate(), await this.hass.callService("jellyha", "mark_watched", {
+        item_id: t.id,
+        is_played: e
+      });
     }, this._handleModalTouchStart = (t) => {
       const e = t.target, i = this._getScrollParent(e);
       i && i.scrollTop > 0 || (this._touchStartY = t.touches[0].clientY, this._isDragging = !0);
@@ -2580,7 +2623,7 @@ let x = class extends k {
     super.disconnectedCallback(), this._portalContainer && (this._portalContainer.remove(), this._portalContainer = null);
   }
   async showDialog(t) {
-    this._item = t.item, this.hass = t.hass, this._defaultCastDevice = t.defaultCastDevice, this._open = !0, this._nextUpItem = void 0, this._item.type === "Series" && this._fetchNextUp(this._item), this._fetchFullDetails(this._item.id), await this.updateComplete;
+    this._item = t.item, this.hass = t.hass, this._defaultCastDevice = t.defaultCastDevice, this._open = !0, this._open = !0, this._nextUpItem = void 0, this._viewMode = "default", this._episodes = [], this._item.type === "Series" && this._fetchNextUp(this._item), this._fetchFullDetails(this._item.id), await this.updateComplete;
   }
   async _fetchFullDetails(t) {
     try {
@@ -2615,6 +2658,23 @@ let x = class extends k {
       console.warn("Failed to fetch Next Up:", a);
     }
   }
+  async _fetchEpisodes() {
+    if (!this._item || this._item.type !== "Series" || !this._nextUpItem) return;
+    const t = this._nextUpItem.season || 1, e = Object.keys(this.hass.states).filter(
+      (a) => this.hass.states[a].attributes.integration === "jellyha" || a.startsWith("sensor.jellyha_")
+    ), i = e.length > 0 ? e[0] : "sensor.jellyha_library";
+    try {
+      const a = await this.hass.callWS({
+        type: "jellyha/get_episodes",
+        entity_id: i,
+        series_id: this._item.id,
+        season: t
+      });
+      a && a.items && (this._episodes = a.items, this._viewMode = "episodes", this.requestUpdate());
+    } catch (a) {
+      console.warn("Failed to fetch episodes:", a);
+    }
+  }
   updated() {
     if (this._portalContainer) {
       Pe(this._renderDialogContent(), this._portalContainer);
@@ -2641,47 +2701,72 @@ let x = class extends k {
              }
 
             .content {
-                display: grid;
-                grid-template-columns: 300px 1fr;
-                gap: 24px;
-                /* Enable transform for swipe closing */
+                display: flex; /* Flex container for children scrollers */
+                flex-direction: column;
+                
                 transform-origin: top center;
                 will-change: transform;
                 background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
                 border-radius: 20px;
                 box-shadow: 0 10px 40px rgba(0,0,0,0.5); /* Card shadow */
                 padding: 24px;
-                overflow-y: auto;
                 max-height: 80vh;
-                display: block; /* Use block for mobile flow, or flex/grid as needed */
                 overscroll-behavior-y: contain; /* Prevent browser overscroll/refresh */
                 
-                /* Hide scrollbar for cleaner mobile look */
-                scrollbar-width: none; /* Firefox */
-                -ms-overflow-style: none; /* IE/Edge */
+                /* Hide scrollbar on the container itself */
+                scrollbar-width: none; 
+                -ms-overflow-style: none; 
+                overflow: hidden; /* Clip content to rounded corners */
             }
             
-            /* Aggressive scrollbar hiding for WebKit (Chrome/Safari/Android) */
+            /* Episodes View specific */
+            .content.episodes {
+                overflow: hidden !important; 
+                padding-right: 24px; 
+            }
+
             .content::-webkit-scrollbar {
                 display: none; 
                 width: 0px !important;
                 height: 0px !important;
                 background: transparent;
             }
-            .content::-webkit-scrollbar-track {
-                background: transparent;
+
+            /* Inner Layouts (Default View) */
+            .default-layout {
+                display: block; /* Mobile default */
+                overflow-y: auto;
+                height: 100%;
+                width: 100%;
+                padding-right: 4px; /* Space for scrollbar */
+                
+                /* Inset Scrollbar */
+                scrollbar-width: thin; 
+                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
             }
-            .content::-webkit-scrollbar-thumb {
+            .default-layout::-webkit-scrollbar {
+                display: block;
+                width: 6px !important;
+                height: 6px !important;
+            }
+            .default-layout::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 3px;
+            }
+            .default-layout::-webkit-scrollbar-track {
                 background: transparent;
-                border: none;
             }
 
+            /* Desktop Grid */
             @media (min-width: 601px) {
-                .content {
+                .default-layout {
                     display: grid;
                     grid-template-columns: 300px 1fr;
-                    overflow-y: visible; /* Let content determine height, dialog handles scroll if needed or max-height */
-                    max-height: none; 
+                    gap: 24px;
+                    overflow-y: auto; 
+                }
+                .content.episodes {
+                    max-height: 80vh;
                 }
             }
 
@@ -2930,13 +3015,149 @@ let x = class extends k {
             @media (max-width: 600px) {
                 .poster-col { max-width: 350px; margin: 0 auto; width: 100%; margin-bottom: 24px; }
             }
+
+            /* Episode List Styles */
+            .episodes-header {
+                 display: flex;
+                 align-items: center;
+                 gap: 12px;
+                 margin-bottom: 16px;
+            }
+            .back-btn {
+                background: none;
+                border: none;
+                color: var(--primary-text-color);
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 50%;
+                display: flex; /* Fix icon alignment */
+            }
+            .back-btn:hover {
+                background: rgba(255,255,255,0.1);
+            }
+            .episodes-title {
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+            .episodes-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                overflow-y: auto;
+                flex: 1; /* Take remaining height */
+                min-height: 0; /* Flexbox scroll fix */
+                padding-right: 4px; /* Space for scrollbar */
+                
+                /* Re-enable scrollbars for this list */
+                scrollbar-width: thin; 
+                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            }
+            .episodes-list::-webkit-scrollbar {
+                display: block;
+                width: 6px !important;
+                height: 6px !important;
+            }
+            .episodes-list::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 3px;
+            }
+            .episodes-list::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .episode-row {
+                display: flex;
+                gap: 16px;
+                padding: 12px;
+                background: rgba(255,255,255,0.03);
+                border-radius: 12px;
+                align-items: center;
+                transition: background 0.2s;
+            }
+            .episode-row:hover {
+                background: rgba(255,255,255,0.08); /* Slightly lighter on hover */
+            }
+            .episode-row.next-up-highlight {
+                background: rgba(var(--rgb-primary-color), 0.1);
+                border-left: 3px solid var(--primary-color);
+            }
+            .episode-content {
+                flex: 1;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 4px;
+            }
+            .episode-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .episode-actions {
+                display: flex;
+                gap: 12px;
+            }
+            .episode-thumb {
+                width: 100px;
+                aspect-ratio: 16/9;
+                object-fit: cover;
+                border-radius: 8px;
+                flex-shrink: 0; 
+                background: var(--secondary-background-color); /* Skeleton placeholder */
+                border: 1px solid rgba(255, 255, 255, 0.5);
+            }
+            .episode-info {
+                flex: 1;
+                min-width: 0; /* truncate text */
+            }
+            .episode-title {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 500;
+                line-height: 1.2;
+                color: var(--primary-text-color);
+            }
+            .episode-meta {
+                font-size: 0.85rem;
+                color: var(--secondary-text-color);
+                display: flex;
+                align-items: center;
+            }
+            .play-episode-btn {
+                background: transparent;
+                border: none;
+                color: var(--primary-color);
+                border-radius: 50%; /* Keep radius for hover effect */
+                width: 36px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .play-episode-btn:hover {
+                background: rgba(255, 255, 255, 0.15);
+                color: var(--primary-color);
+            }
+            /* Specific override for the checkmark button */
+            .watched-btn {
+                color: var(--secondary-text-color);
+                opacity: 0.6;
+            }
+            .watched-btn:hover {
+                opacity: 1;
+            }
+            .watched-btn.active {
+                color: var(--primary-color);
+                opacity: 1;
+            }
         </style>
         `;
   }
   _renderDialogContent() {
-    if (!this._open || !this._item) return n``;
-    const t = this._item, e = t.type === "Series", i = t.year || (t.date_added ? new Date(t.date_added).getFullYear() : "");
-    return n`
+    return !this._open || !this._item ? n`` : n`
             ${this._getPortalStyles()}
             <ha-dialog
                 open
@@ -2947,107 +3168,176 @@ let x = class extends k {
                 .heading=${""} 
             >
                 <ha-card 
-                    class="content"
+                    class="content ${this._viewMode}"
                     style="${this._isDragging || this._currentTranslateY > 0 ? `transform: translateY(${this._currentTranslateY}px); transition: ${this._isDragging ? "none" : "transform 0.3s ease-out"}` : ""}"
                 >
-                    <div class="poster-col">
-                        <img class="poster-img" src="${t.poster_url}" alt="${t.name}" />
-
-                        <div class="actions-col">
-                            ${this._confirmDelete ? n`
-                                <div class="confirmation-box">
-                                    <span>Delete?</span>
-                                    <button class="confirm-btn confirm-yes" @click=${this._handleDeleteConfirm}>Yes</button>
-                                    <button class="confirm-btn" @click=${() => this._confirmDelete = !1}>No</button>
-                                </div>
-                              ` : n`
-                                <button class="action-btn" @click=${this._handlePlay} title="Play on Chromecast">
-                                    <ha-icon icon="mdi:play"></ha-icon>
-                                </button>
-                                
-                                ${t.trailer_url ? n`
-                                    <button class="action-btn" @click=${this._handleWatchTrailer} title="Watch Trailer">
-                                        <ha-icon icon="mdi:filmstrip"></ha-icon>
-                                    </button>
-                                ` : d}
-
-                                <button class="action-btn ${t.is_played ? "active" : ""}" @click=${this._handleWatched} title="${t.is_played ? "Mark Unwatched" : "Mark Watched"}">
-                                    <ha-icon icon="mdi:check"></ha-icon>
-                                </button>
-
-                                <button class="action-btn favorite-btn ${t.is_favorite ? "active" : ""}" @click=${this._handleFavorite} title="${t.is_favorite ? "Remove Favorite" : "Add to Favorites"}">
-                                     <ha-icon icon="${t.is_favorite ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
-                                </button>
-
-                                <a href="${t.jellyfin_url}" class="action-btn" target="_blank" title="Open in Jellyfin" @click=${() => this._haptic()}>
-                                    <ha-icon icon="mdi:popcorn"></ha-icon>
-                                </a>
-
-                                <button class="action-btn" @click=${() => {
-      this._haptic(), this._confirmDelete = !0;
-    }} title="Delete Item">
-                                    <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-                                </button>
-                            `}
-                        </div>
-                    </div>
-
-                    <div class="details-col">
-                        <div class="header-group">
-                            <h1>${t.name}</h1>
-                            <div class="header-sub">
-                                ${i ? n`<span>${i}</span>` : d}
-                                <span class="badge">${t.type}</span>
-                                ${t.official_rating ? n`<span class="badge">${t.official_rating}</span>` : d}
-                            </div>
-                        </div>
-                        
-                        ${this._nextUpItem ? n`
-                            <div class="next-up-card" @click=${this._playNextUp}>
-                                <img class="next-up-thumb" src="${this._nextUpItem.backdrop_url || this._nextUpItem.poster_url}" />
-                                <div class="next-up-info">
-                                    <span class="next-up-label">Next Up</span>
-                                    <h3 class="next-up-title">${this._nextUpItem.name}</h3>
-                                    <span class="next-up-meta">S${this._nextUpItem.season} : E${this._nextUpItem.episode} • ${this._formatRuntime(this._nextUpItem.runtime_minutes)}</span>
-                                </div>
-                                <ha-icon icon="mdi:play-circle" style="font-size: 36px; color: var(--primary-color); opacity: 1;"></ha-icon>
-                            </div>
-                        ` : d}
-
-                        <div class="stats-row">
-                            <div class="stat-item">
-                                <ha-icon icon="mdi:star" style="color: #FBC02D;"></ha-icon>
-                                <span>${t.rating ? t.rating.toFixed(1) : "N/A"}</span>
-                            </div>
-                            ${e ? n`
-                                <div class="stat-item">
-                                    <ha-icon icon="mdi:television-classic"></ha-icon>
-                                    <span>${t.unplayed_count !== void 0 ? t.unplayed_count + " Unplayed" : ""}</span>
-                                </div>
-                             ` : n`
-                                <div class="stat-item">
-                                    <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                    <span>${this._formatRuntime(t.runtime_minutes)}</span>
-                                </div>
-                             `}
-                        </div>
-
-                         ${t.description ? n`<div class="description">${t.description}</div>` : d}
-
-                         ${t.genres && t.genres.length > 0 ? n`
-                            <div class="genres-list">
-                                ${t.genres.map((a) => n`<span class="genre-tag">${a}</span>`)}
-                            </div>
-                          ` : d}
-                        
-                         <div class="divider"></div>
-
-                         <div class="media-info-grid">
-                            ${this._renderMediaDetails(e && this._nextUpItem ? this._nextUpItem : t)}
-                         </div>
-                    </div>
+                    ${this._viewMode === "episodes" ? this._renderEpisodesContent() : this._renderDefaultContent()}
                 </ha-card>
             </ha-dialog>
+        `;
+  }
+  _renderDefaultContent() {
+    if (!this._item) return n``;
+    const t = this._item, e = t.type === "Series", i = t.year || (t.date_added ? new Date(t.date_added).getFullYear() : "");
+    return n`
+        <div class="default-layout">
+            <div class="poster-col">
+                <img class="poster-img" src="${t.poster_url}" alt="${t.name}" />
+
+                <div class="actions-col">
+                    ${this._confirmDelete ? n`
+                        <div class="confirmation-box">
+                            <span>Delete?</span>
+                            <button class="confirm-btn confirm-yes" @click=${this._handleDeleteConfirm}>Yes</button>
+                            <button class="confirm-btn" @click=${() => this._confirmDelete = !1}>No</button>
+                        </div>
+                        ` : n`
+                        <button class="action-btn" @click=${this._handlePlay} title="Play on Chromecast">
+                            <ha-icon icon="mdi:cast"></ha-icon>
+                        </button>
+                        
+                        ${e && this._nextUpItem ? n`
+                                <button class="action-btn" @click=${(a) => {
+      this._haptic(), this._toggleEpisodesView(a);
+    }} title="View All Episodes" type="button">
+                                <ha-icon icon="mdi:format-list-bulleted"></ha-icon>
+                                </button>
+                        ` : d}
+
+                        ${t.trailer_url ? n`
+                            <button class="action-btn" @click=${this._handleWatchTrailer} title="Watch Trailer">
+                                <ha-icon icon="mdi:filmstrip"></ha-icon>
+                        ` : d}
+
+                        <button class="action-btn ${t.is_played ? "active" : ""}" @click=${this._handleWatched} title="${t.is_played ? "Mark Unwatched" : "Mark Watched"}">
+                            <ha-icon icon="mdi:check"></ha-icon>
+                        </button>
+
+                        <button class="action-btn favorite-btn ${t.is_favorite ? "active" : ""}" @click=${this._handleFavorite} title="${t.is_favorite ? "Remove Favorite" : "Add to Favorites"}">
+                                <ha-icon icon="${t.is_favorite ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
+                        </button>
+
+                        <a href="${t.jellyfin_url}" class="action-btn" target="_blank" title="Open in Jellyfin" @click=${() => this._haptic()}>
+                            <ha-icon icon="mdi:popcorn"></ha-icon>
+                        </a>
+
+                        <button class="action-btn" @click=${() => {
+      this._haptic(), this._confirmDelete = !0;
+    }} title="Delete Item">
+                            <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+                        </button>
+                        
+                    `}
+                </div>
+            </div>
+
+            <div class="details-col">
+                <div class="header-group">
+                    <h1>${t.name}</h1>
+                    <div class="header-sub">
+                        ${i ? n`<span>${i}</span>` : d}
+                        <span class="badge">${t.type}</span>
+                        ${t.official_rating ? n`<span class="badge">${t.official_rating}</span>` : d}
+                    </div>
+                </div>
+                
+                ${this._nextUpItem ? n`
+                    <div class="next-up-card" @click=${this._playNextUp}>
+                        <img class="next-up-thumb" src="${this._nextUpItem.backdrop_url || this._nextUpItem.poster_url}" />
+                        <div class="next-up-info">
+                            <span class="next-up-label">Next Up</span>
+                            <h3 class="next-up-title">${this._nextUpItem.name}</h3>
+                            <span class="next-up-meta">S${this._nextUpItem.season} : E${this._nextUpItem.episode} • ${this._formatRuntime(this._nextUpItem.runtime_minutes)}</span>
+                        </div>
+                        <ha-icon icon="mdi:cast" style="font-size: 36px; color: var(--primary-color); opacity: 1;"></ha-icon>
+                    </div>
+                ` : d}
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <ha-icon icon="mdi:star" style="color: #FBC02D;"></ha-icon>
+                        <span>${t.rating ? t.rating.toFixed(1) : "N/A"}</span>
+                    </div>
+                    ${e ? n`
+                        <div class="stat-item">
+                            <ha-icon icon="mdi:television-classic"></ha-icon>
+                            <span>${t.unplayed_count !== void 0 ? t.unplayed_count + " Unplayed" : ""}</span>
+                        </div>
+                        ` : n`
+                        <div class="stat-item">
+                            <ha-icon icon="mdi:clock-outline"></ha-icon>
+                            <span>${this._formatRuntime(t.runtime_minutes)}</span>
+                        </div>
+                        `}
+                </div>
+
+                    ${t.description ? n`<div class="description">${t.description}</div>` : d}
+
+                    ${t.genres && t.genres.length > 0 ? n`
+                    <div class="genres-list">
+                        ${t.genres.map((a) => n`<span class="genre-tag">${a}</span>`)}
+                    </div>
+                    ` : d}
+                
+                    <div class="divider"></div>
+
+                    <div class="media-info-grid">
+                    ${this._renderMediaDetails(e && this._nextUpItem ? this._nextUpItem : t)}
+                    </div>
+            </div>
+        </div>
+        `;
+  }
+  _renderEpisodesContent() {
+    if (!this._item || !this._nextUpItem) return n``;
+    const t = this._item.name;
+    return n`
+            <div style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+                <div class="episodes-header">
+                    <button class="back-btn" @click=${(e) => this._toggleEpisodesView(e)} type="button">
+                        <ha-icon icon="mdi:arrow-left"></ha-icon>
+                    </button>
+                    <h2 class="episodes-title">${t}</h2>
+                </div>
+                
+                <div class="episodes-list">
+                    ${this._episodes.map((e) => n`
+                        <div class="episode-row ${this._nextUpItem && e.id === this._nextUpItem.id ? "next-up-highlight" : ""}" @click=${(i) => {
+      i.stopPropagation(), this._handlePlayEpisode(e);
+    }}>
+                            <img class="episode-thumb" src="${e.backdrop_url || e.poster_url || this._item.backdrop_url}" />
+                            
+                            <div class="episode-content">
+                                <h4 class="episode-title">
+                                    ${e.episode || e.index_number}. ${e.name}
+                                    ${this._nextUpItem && e.id === this._nextUpItem.id ? n`<span style="font-size: 0.7em; background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; white-space: nowrap;">NEXT UP</span>` : d}
+                                </h4>
+                                
+                                <div class="episode-footer">
+                                    <div class="episode-meta">
+                                        <span>${this._formatRuntime(e.runtime_minutes)}</span>
+                                        ${e.rating !== void 0 ? n` <ha-icon icon="mdi:star" style="--mdc-icon-size: 14px; color: #FBC02D; margin-left: 6px; transform: translateY(-1px);"></ha-icon> ${e.rating.toFixed(1)}` : d}
+                                    </div>
+
+                                    <div class="episode-actions">
+                                        <button class="play-episode-btn watched-btn ${e.is_played ? "active" : ""}" @click=${(i) => {
+      i.stopPropagation(), this._handleMarkEpisodeWatched(e);
+    }} type="button" title="${e.is_played ? "Mark Unwatched" : "Mark Watched"}">
+                                            <ha-icon icon="mdi:check"></ha-icon>
+                                        </button>
+
+                                        <button class="play-episode-btn" @click=${(i) => {
+      i.stopPropagation(), this._handlePlayEpisode(e);
+    }} type="button">
+                                            <ha-icon icon="mdi:cast"></ha-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `)}
+                </div>
+            </div>
         `;
   }
   _formatRuntime(t) {
@@ -3084,39 +3374,45 @@ let x = class extends k {
     return null;
   }
 };
-x.styles = F`
+b.styles = F`
         /* Styles handled in _getPortalStyles */
     `;
-S([
-  $({ attribute: !1 })
-], x.prototype, "hass", 2);
-S([
-  u()
-], x.prototype, "_item", 2);
-S([
-  u()
-], x.prototype, "_nextUpItem", 2);
-S([
-  u()
-], x.prototype, "_defaultCastDevice", 2);
-S([
-  u()
-], x.prototype, "_open", 2);
-S([
-  u()
-], x.prototype, "_confirmDelete", 2);
-S([
-  u()
-], x.prototype, "_touchStartY", 2);
-S([
-  u()
-], x.prototype, "_currentTranslateY", 2);
-S([
-  u()
-], x.prototype, "_isDragging", 2);
-x = S([
+$([
+  k({ attribute: !1 })
+], b.prototype, "hass", 2);
+$([
+  g()
+], b.prototype, "_item", 2);
+$([
+  g()
+], b.prototype, "_nextUpItem", 2);
+$([
+  g()
+], b.prototype, "_defaultCastDevice", 2);
+$([
+  g()
+], b.prototype, "_open", 2);
+$([
+  g()
+], b.prototype, "_confirmDelete", 2);
+$([
+  g()
+], b.prototype, "_viewMode", 2);
+$([
+  g()
+], b.prototype, "_episodes", 2);
+$([
+  g()
+], b.prototype, "_touchStartY", 2);
+$([
+  g()
+], b.prototype, "_currentTranslateY", 2);
+$([
+  g()
+], b.prototype, "_isDragging", 2);
+b = $([
   D("jellyha-item-details-modal")
-], x);
+], b);
 var it = Object.defineProperty, at = Object.getOwnPropertyDescriptor, le = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? at(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
@@ -3130,7 +3426,7 @@ function ot(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let R = class extends k {
+let H = class extends S {
   setConfig(t) {
     this._config = t;
   }
@@ -3618,7 +3914,7 @@ let R = class extends k {
     this._config = i, ot(this, "config-changed", { config: i });
   }
 };
-R.styles = F`
+H.styles = F`
     .form-row {
       margin-bottom: 16px;
     }
@@ -3645,20 +3941,20 @@ R.styles = F`
     }
   `;
 le([
-  $({ attribute: !1 })
-], R.prototype, "hass", 2);
+  k({ attribute: !1 })
+], H.prototype, "hass", 2);
 le([
-  u()
-], R.prototype, "_config", 2);
-R = le([
+  g()
+], H.prototype, "_config", 2);
+H = le([
   D("jellyha-library-editor")
-], R);
-var st = Object.defineProperty, rt = Object.getOwnPropertyDescriptor, b = (t, e, i, a) => {
+], H);
+var st = Object.defineProperty, rt = Object.getOwnPropertyDescriptor, x = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? rt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && st(e, i, o), o;
 };
-let v = class extends k {
+let v = class extends S {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
@@ -4006,46 +4302,46 @@ let v = class extends k {
   }
 };
 v.styles = Ae;
-b([
-  $({ attribute: !1 })
+x([
+  k({ attribute: !1 })
 ], v.prototype, "hass", 2);
-b([
-  $({ attribute: !1 })
+x([
+  k({ attribute: !1 })
 ], v.prototype, "config", 2);
-b([
-  $({ attribute: !1 })
+x([
+  k({ attribute: !1 })
 ], v.prototype, "item", 2);
-b([
-  $({ type: String })
+x([
+  k({ type: String })
 ], v.prototype, "layout", 2);
-b([
-  $({ type: Boolean })
+x([
+  k({ type: Boolean })
 ], v.prototype, "isNextUpHighlight", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_pressStartTime", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_holdTimer", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_isHoldActive", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_itemTouchStartX", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_itemTouchStartY", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_clickTimer", 2);
-b([
-  u()
+x([
+  g()
 ], v.prototype, "_rewindActive", 2);
-v = b([
+v = x([
   D("jellyha-media-item")
 ], v);
-var nt = Object.defineProperty, lt = Object.getOwnPropertyDescriptor, w = (t, e, i, a) => {
+var nt = Object.defineProperty, lt = Object.getOwnPropertyDescriptor, y = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? lt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && nt(e, i, o), o;
@@ -4103,7 +4399,7 @@ function ct(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let f = class extends k {
+let f = class extends S {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -4210,17 +4506,17 @@ let f = class extends k {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, g = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, u = this._config.show_pagination !== !1;
         let p = !1;
-        if (g) {
+        if (u) {
           const m = this._getTotalPages();
           c && e > 0 && this._currentPage === 0 && (p = !0), _ && e < 0 && this._currentPage >= m - 1 && (p = !0);
         } else
           c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
         if (p) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.preventDefault();
-          const m = 0.3, y = e - this._elasticAnchorX;
-          a.style.transition = "none", a.style.transform = `translateX(${y * m}px)`;
+          const m = 0.3, w = e - this._elasticAnchorX;
+          a.style.transition = "none", a.style.transform = `translateX(${w * m}px)`;
           return;
         }
       }
@@ -4262,17 +4558,17 @@ let f = class extends k {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, g = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, u = this._config.show_pagination !== !1;
         let p = !1;
-        if (g) {
+        if (u) {
           const m = this._getTotalPages();
           c && e > 0 && this._currentPage === 0 && (p = !0), _ && e < 0 && this._currentPage >= m - 1 && (p = !0);
         } else
           c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
         if (p) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.preventDefault();
-          const m = 0.3, y = e - this._elasticAnchorX;
-          a.style.transition = "none", a.style.transform = `translateX(${y * m}px)`;
+          const m = 0.3, w = e - this._elasticAnchorX;
+          a.style.transition = "none", a.style.transform = `translateX(${w * m}px)`;
           return;
         }
       }
@@ -4600,13 +4896,13 @@ let f = class extends k {
           class="carousel ${e ? "paginated" : "scrollable"}"
           @scroll="${e ? d : this._handleScroll}"
         >
-          ${_.map((g) => n`
+          ${_.map((u) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
-                .item=${g}
+                .item=${u}
                 .layout=${"grid"}
-                .isNextUpHighlight=${this._config.media_type === "next_up" && g.id === this._mostRecentNextUpItemId}
+                .isNextUpHighlight=${this._config.media_type === "next_up" && u.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -4620,7 +4916,7 @@ let f = class extends k {
    * Render list with optional pagination
    */
   _renderList(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, g = this._effectiveListColumns, p = g === 1;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, u = this._effectiveListColumns, p = u === 1;
     return n`
       <div 
         class="list-wrapper"
@@ -4633,7 +4929,7 @@ let f = class extends k {
       >
         <div 
           class="list ${e ? "paginated" : ""} ${p ? "single-column" : ""}"
-          style="--jf-list-columns: ${g}"
+          style="--jf-list-columns: ${u}"
         >
           ${_.map((m) => n`
             <jellyha-media-item
@@ -4654,7 +4950,7 @@ let f = class extends k {
    * Render grid with optional pagination
    */
   _renderGrid(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, g = this._config.columns || 1, p = g === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, u = this._config.columns || 1, p = u === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
     return n`
       <div class="grid-outer">
         <div 
@@ -4669,15 +4965,15 @@ let f = class extends k {
         >
           <div
             class="grid ${e ? "paginated" : ""} ${p ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
-            style="--jf-columns: ${g}; --jf-grid-rows: ${g}"
+            style="--jf-columns: ${u}; --jf-grid-rows: ${u}"
           >
-            ${_.map((y) => n`
+            ${_.map((w) => n`
                 <jellyha-media-item
                     .hass=${this.hass}
                     .config=${this._config}
-                    .item=${y}
+                    .item=${w}
                     .layout=${"grid"}
-                    .isNextUpHighlight=${this._config.media_type === "next_up" && y.id === this._mostRecentNextUpItemId}
+                    .isNextUpHighlight=${this._config.media_type === "next_up" && w.id === this._mostRecentNextUpItemId}
                     @jellyha-action=${this._handleItemAction}
                 ></jellyha-media-item>
             `)}
@@ -4726,9 +5022,9 @@ let f = class extends k {
           style="transform: translateX(${h}px); width: ${t * 16}px"
         >
           ${Array.from({ length: t }, (c, _) => {
-      const g = Math.abs(_ - this._currentPage);
+      const u = Math.abs(_ - this._currentPage);
       let p = "smart-dot";
-      return _ === this._currentPage ? p += " active" : g > 2 ? p += " hidden" : g === 2 && (p += " small"), n`
+      return _ === this._currentPage ? p += " active" : u > 2 ? p += " hidden" : u === 2 && (p += " small"), n`
               <button
                 type="button"
                 class="${p}"
@@ -4859,58 +5155,58 @@ let f = class extends k {
   }
 };
 f.styles = Ae;
-w([
-  $({ attribute: !1 })
+y([
+  k({ attribute: !1 })
 ], f.prototype, "hass", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_config", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_currentPage", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_itemsPerPage", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_pressStartTime", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_holdTimer", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_isHoldActive", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_rewindActive", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_items", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_error", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_lastUpdate", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_mostRecentNextUpItemId", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_searchQuery", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_searchGenre", 2);
-w([
+y([
   Qe("jellyha-item-details-modal")
 ], f.prototype, "_modal", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_scrollProgress", 2);
-w([
-  u()
+y([
+  g()
 ], f.prototype, "_hasScrollableContent", 2);
-f = w([
+f = y([
   D("jellyha-library-card")
 ], f);
 var ht = Object.defineProperty, pt = Object.getOwnPropertyDescriptor, de = (t, e, i, a) => {
@@ -4926,7 +5222,7 @@ function _t(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let U = class extends k {
+let R = class extends S {
   setConfig(t) {
     this._config = t;
   }
@@ -5076,7 +5372,7 @@ let U = class extends k {
     this._config = i, _t(this, "config-changed", { config: i });
   }
 };
-U.styles = F`
+R.styles = F`
     .form-row {
       margin-bottom: 16px;
     }
@@ -5094,14 +5390,14 @@ U.styles = F`
     }
   `;
 de([
-  $({ attribute: !1 })
-], U.prototype, "hass", 2);
+  k({ attribute: !1 })
+], R.prototype, "hass", 2);
 de([
-  u()
-], U.prototype, "_config", 2);
-U = de([
+  g()
+], R.prototype, "_config", 2);
+R = de([
   D("jellyha-now-playing-editor")
-], U);
+], R);
 var gt = Object.defineProperty, ut = Object.getOwnPropertyDescriptor, W = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? ut(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
@@ -5114,7 +5410,7 @@ window.customCards.push({
   description: "Display currently playing media from Jellyfin",
   preview: !0
 });
-let T = class extends k {
+let T = class extends S {
   constructor() {
     super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._phrases = [];
   }
@@ -5382,9 +5678,9 @@ let T = class extends k {
   _doLayoutCheck() {
     const t = this.shadowRoot?.querySelector(".title"), e = this.shadowRoot?.querySelector(".info-bottom");
     if (!t || !e) return;
-    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 28, c = 22, g = a.bottom - i.top + h, p = g + c;
+    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 28, c = 22, u = a.bottom - i.top + h, p = u + c;
     let m = 0;
-    p > r && (m = 1), g > r && (m = 2), this._overflowState !== m && (this._overflowState = m);
+    p > r && (m = 1), u > r && (m = 2), this._overflowState !== m && (this._overflowState = m);
   }
 };
 T.styles = F`
@@ -6211,16 +6507,16 @@ T.styles = F`
         }
     `;
 W([
-  $({ attribute: !1 })
+  k({ attribute: !1 })
 ], T.prototype, "hass", 2);
 W([
-  u()
+  g()
 ], T.prototype, "_config", 2);
 W([
-  u()
+  g()
 ], T.prototype, "_rewindActive", 2);
 W([
-  u()
+  g()
 ], T.prototype, "_overflowState", 2);
 T = W([
   D("jellyha-now-playing-card")

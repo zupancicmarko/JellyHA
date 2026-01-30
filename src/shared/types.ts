@@ -64,6 +64,9 @@ export interface MediaItem {
     last_played_date?: string;
     series_name?: string;
     config_entry_id?: string;
+    season_name?: string;
+    index_number?: number;
+    community_rating?: number;
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {

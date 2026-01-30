@@ -352,6 +352,8 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
     """Sensor tracking "Now Playing" for a specific Jellyfin user."""
 
     _attr_has_entity_name = True
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["idle", "playing", "paused"]
 
     def __init__(
         self,
