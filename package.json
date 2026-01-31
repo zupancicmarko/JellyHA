@@ -2,7 +2,7 @@
     "name": "jellyha",
     "version": "1.0.0",
     "description": "JellyHA Library - Display media from Jellyfin in Home Assistant",
-    "main": "dist/jellyha.js",
+    "main": "custom_components/jellyha/www/jellyha-cards.js",
     "type": "module",
     "scripts": {
         "build": "vite build",
