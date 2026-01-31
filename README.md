@@ -464,6 +464,12 @@ cards:
 
 ## Troubleshooting
 
+### "Custom element doesn't exist: jellyha-library-card"
+This error means the dashboard cannot load the frontend code.
+1. **Verify Installation**: Ensure you have added the correct Dashboard Resource URL: `/jellyha/jellyha-cards.js`.
+2. **Clear Cache**: Restart Home Assistant and clear your browser cache (Ctrl + F5) or go into Incognito mode.
+3. **Redownload**: If installed via HACS, go to HACS → JellyHA → ⋮ → Redownload (select "main" version if specifically troubleshooting a new fix).
+
 ### Card is empty ("No recent media found")
 If the card shows "No recent media found" but you know you have items:
 1. **Check Filters**: Ensure "Filter Favorites" or "Filter Unwatched" are not enabled in the card configuration if your items don't match those criteria.
