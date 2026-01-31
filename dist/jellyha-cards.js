@@ -4247,7 +4247,7 @@ let v = class extends S {
       const a = t.changedTouches[0].clientX - this._itemTouchStartX, o = t.changedTouches[0].clientY - this._itemTouchStartY;
       i = Math.sqrt(a * a + o * o);
     }
-    if (t.preventDefault(), this._isHoldActive) {
+    if (t.cancelable && t.preventDefault(), this._isHoldActive) {
       this._isHoldActive = !1;
       return;
     }
@@ -4514,7 +4514,7 @@ let f = class extends S {
         } else
           c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
         if (p) {
-          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.preventDefault();
+          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
           const m = 0.3, w = e - this._elasticAnchorX;
           a.style.transition = "none", a.style.transform = `translateX(${w * m}px)`;
           return;
@@ -4566,7 +4566,7 @@ let f = class extends S {
         } else
           c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
         if (p) {
-          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.preventDefault();
+          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
           const m = 0.3, w = e - this._elasticAnchorX;
           a.style.transition = "none", a.style.transform = `translateX(${w * m}px)`;
           return;

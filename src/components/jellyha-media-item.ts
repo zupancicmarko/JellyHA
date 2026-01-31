@@ -487,7 +487,7 @@ export class JellyHAMediaItem extends LitElement {
       dist = Math.sqrt(diffX * diffX + diffY * diffY);
     }
 
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
 
     if (this._isHoldActive) {
       this._isHoldActive = false;

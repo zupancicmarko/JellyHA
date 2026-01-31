@@ -429,7 +429,7 @@ export class JellyHALibraryCard extends LitElement {
             this._elasticAnchorX = diffX;
           }
 
-          e.preventDefault(); // Stop native scroll to control transform manually
+          if (e.cancelable) e.preventDefault(); // Stop native scroll to control transform manually
           // Apply resistance (0.3 factor) to the delta from anchor
           const resistance = 0.3;
           const elasticDiff = diffX - this._elasticAnchorX;
@@ -552,7 +552,7 @@ export class JellyHALibraryCard extends LitElement {
             this._elasticAnchorX = diffX;
           }
 
-          e.preventDefault();
+          if (e.cancelable) e.preventDefault();
           const resistance = 0.3;
           const elasticDiff = diffX - this._elasticAnchorX;
 
