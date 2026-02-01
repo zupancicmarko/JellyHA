@@ -46,7 +46,7 @@ Before installing JellyHA, ensure you have **HACS (Home Assistant Community Stor
 Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/) to install HACS on your Home Assistant instance.
 
 1. Open HACS in Home Assistant
-2. Go to **Integrations** → **⋮** → **Custom repositories**
+2. Go to **⋮** → **Custom repositories**
 3. Add repository URL: `https://github.com/zupancicmarko/JellyHA`
 4. Select Type: **Integration**
 5. Click **ADD**
