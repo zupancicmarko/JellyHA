@@ -5,10 +5,10 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.3] - 2026-02-01
+## [1.0.3] - 2026-02-05
 
 ### Added
-- Server URL validation in configuration flow to ensure correct format (automatically adds `http://` scheme if missing).
+- **Smart Server URL Validation**: Automatically probes `http` and `https` schemes to detect the correct server address, even if the scheme is missing or incorrect.
 - **Secure Image Proxy**: All image URLs are now signed with 24-hour expiration for security.
 - **Image URL Caching**: Signed URLs are cached by `(item_id, image_type, tag)` to enable proper browser caching.
 

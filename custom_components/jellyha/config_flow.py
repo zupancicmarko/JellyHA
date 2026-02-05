@@ -36,12 +36,31 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-def validate_url(url: str) -> str:
-    """Validate and fix the server URL."""
-    url = url.strip()
-    if not url.startswith(("http://", "https://")):
-        return f"http://{url}".rstrip("/")
-    return url.rstrip("/")
+
+
+
+async def async_probe_url(hass, url: str) -> str:
+    """Probe the URL to determine correct scheme and validity."""
+    url = url.strip().rstrip("/")
+    urls_to_try = []
+
+    if url.startswith(("http://", "https://")):
+        urls_to_try.append(url)
+    else:
+        urls_to_try.append(f"https://{url}")
+        urls_to_try.append(f"http://{url}")
+
+    session = async_get_clientsession(hass)
+
+    for try_url in urls_to_try:
+        api = JellyfinApiClient(try_url, session=session)
+        try:
+            await api.validate_connection()
+            return try_url
+        except (JellyfinConnectionError, JellyfinApiError):
+            continue
+    
+    raise JellyfinConnectionError("Cannot connect to server")
 
 
 class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -76,12 +95,18 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            self._server_url = validate_url(user_input[CONF_SERVER_URL])
-            auth_method = user_input[CONF_AUTH_METHOD]
+            try:
+                self._server_url = await async_probe_url(self.hass, user_input[CONF_SERVER_URL])
+                auth_method = user_input[CONF_AUTH_METHOD]
 
-            if auth_method == "API Key":
-                return await self.async_step_auth_api_key()
-            return await self.async_step_auth_login()
+                if auth_method == "API Key":
+                    return await self.async_step_auth_api_key()
+                return await self.async_step_auth_login()
+            except JellyfinConnectionError:
+                errors["base"] = "cannot_connect"
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
 
         return self.async_show_form(
             step_id="reauth_confirm",
@@ -111,12 +136,18 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
-            self._server_url = validate_url(user_input[CONF_SERVER_URL])
-            auth_method = user_input[CONF_AUTH_METHOD]
+            try:
+                self._server_url = await async_probe_url(self.hass, user_input[CONF_SERVER_URL])
+                auth_method = user_input[CONF_AUTH_METHOD]
 
-            if auth_method == "API Key":
-                return await self.async_step_auth_api_key()
-            return await self.async_step_auth_login()
+                if auth_method == "API Key":
+                    return await self.async_step_auth_api_key()
+                return await self.async_step_auth_login()
+            except JellyfinConnectionError:
+                errors["base"] = "cannot_connect"
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
 
         return self.async_show_form(
             step_id="user",
@@ -381,6 +412,8 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
+        errors: dict[str, str] = {}
+        
         if user_input is not None:
             # Update generic options
             new_data = dict(self._config_entry.data)
@@ -388,23 +421,27 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
             
             # Update Server URL if changed
             if CONF_SERVER_URL in user_input:
-                self._server_url = validate_url(user_input[CONF_SERVER_URL])
-                new_data[CONF_SERVER_URL] = self._server_url
+                try:
+                    self._server_url = await async_probe_url(self.hass, user_input[CONF_SERVER_URL])
+                    new_data[CONF_SERVER_URL] = self._server_url
+                except JellyfinConnectionError:
+                    errors["base"] = "cannot_connect"
             
-            if CONF_REFRESH_INTERVAL in user_input:
-                new_options[CONF_REFRESH_INTERVAL] = user_input[CONF_REFRESH_INTERVAL]
+            if not errors:
+                if CONF_REFRESH_INTERVAL in user_input:
+                    new_options[CONF_REFRESH_INTERVAL] = user_input[CONF_REFRESH_INTERVAL]
 
-            # Update the entry with these preliminary changes
-            self.hass.config_entries.async_update_entry(
-                self._config_entry,
-                data=new_data,
-                options=new_options
-            )
+                # Update the entry with these preliminary changes
+                self.hass.config_entries.async_update_entry(
+                    self._config_entry,
+                    data=new_data,
+                    options=new_options
+                )
 
-            # Check if user wants to update credentials
-            if user_input.get("update_credentials"):
-                return await self.async_step_auth_method()
-            
+                # Check if user wants to update credentials
+                if user_input.get("update_credentials"):
+                    return await self.async_step_auth_method()
+                
                 return self.async_abort(reason="configuration_saved")
 
         return self.async_show_form(
@@ -436,6 +473,7 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Optional("update_credentials", default=False): selector.BooleanSelector(),
                 }
             ),
+            errors=errors
         )
 
     async def async_step_auth_method(
