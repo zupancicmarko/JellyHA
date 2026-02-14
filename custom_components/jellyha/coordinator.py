@@ -48,6 +48,10 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Signed URL cache TTL in seconds.
+# JWTs expire after 24h; re-sign 1h early to avoid serving near-expiry tokens.
+# Temporarily lower this value (e.g. 60) for quick manual testing.
+_URL_CACHE_TTL = 23 * 3600  # 23 hours
 
 class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Coordinator to fetch media library items from Jellyfin."""
@@ -69,8 +73,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.last_refresh_duration: float | None = None  # Duration of last refresh in seconds
         self._previous_item_ids: set[str] = set()
         self._previous_item_hash: str = ""
-        # Cache signed URLs by (item_id, image_type, tag) to avoid regenerating
-        self._url_cache: dict[tuple[str, str, str], str] = {}
+        # Cache signed URLs by (item_id, image_type, tag) -> (url, monotonic timestamp)
+        self._url_cache: dict[tuple[str, str, str], tuple[str, float]] = {}
 
         refresh_interval = entry.options.get(
             CONF_REFRESH_INTERVAL,
@@ -138,6 +142,13 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             # Update last refresh time (always updates)
             self.last_refresh_time = dt_util.utcnow()
+
+            # Evict expired entries from the URL cache
+            now_mono = time.monotonic()
+            self._url_cache = {
+                k: v for k, v in self._url_cache.items()
+                if (now_mono - v[1]) < _URL_CACHE_TTL
+            }
 
             # Check if data actually changed
             current_item_ids = {item["id"] for item in items}
@@ -231,29 +242,32 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Simplified rating
         rating = item.get("CommunityRating")
 
-        # Generate signed URLs with caching (only regenerate if tag changes)
+        # Generate signed URLs with caching and TTL-based expiry
         expiration = timedelta(hours=24)
+        now = time.monotonic()
         
         poster_tag = item.get('ImageTags', {}).get('Primary', '')
         poster_cache_key = (item_id, "Primary", poster_tag)
-        if poster_cache_key in self._url_cache:
-            poster_url = self._url_cache[poster_cache_key]
+        cached = self._url_cache.get(poster_cache_key)
+        if cached and (now - cached[1]) < _URL_CACHE_TTL:
+            poster_url = cached[0]
         else:
             poster_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Primary?tag={poster_tag}"
             poster_url = async_sign_path(self.hass, poster_path, expiration)
-            self._url_cache[poster_cache_key] = poster_url
+            self._url_cache[poster_cache_key] = (poster_url, now)
 
         backdrop_url = None
         backdrop_tags = item.get('BackdropImageTags', [])
         if backdrop_tags:
             backdrop_tag = backdrop_tags[0]
             backdrop_cache_key = (item_id, "Backdrop", backdrop_tag)
-            if backdrop_cache_key in self._url_cache:
-                backdrop_url = self._url_cache[backdrop_cache_key]
+            cached = self._url_cache.get(backdrop_cache_key)
+            if cached and (now - cached[1]) < _URL_CACHE_TTL:
+                backdrop_url = cached[0]
             else:
                 backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Backdrop?tag={backdrop_tag}"
                 backdrop_url = async_sign_path(self.hass, backdrop_path, expiration)
-                self._url_cache[backdrop_cache_key] = backdrop_url
+                self._url_cache[backdrop_cache_key] = (backdrop_url, now)
 
         return {
             "id": item_id,
@@ -308,8 +322,8 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         self.users: dict[str, str] = {}  # Map user_id to username
         self._previous_sessions: dict[str, dict[str, Any]] = {}  # Map session_id to session data
         self._device_id: str | None = None
-        # Cache signed URLs by (item_id, image_type, tag) to avoid regenerating
-        self._url_cache: dict[tuple[str, str, str], str] = {}
+        # Cache signed URLs by (item_id, image_type, tag) -> (url, monotonic timestamp)
+        self._url_cache: dict[tuple[str, str, str], tuple[str, float]] = {}
 
         if self._ws_client:
             self._ws_client.set_on_session_update(self._handle_ws_session_update)
@@ -341,8 +355,15 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             raise UpdateFailed(f"Error fetching sessions: {err}") from err
 
     def _enrich_sessions(self, sessions: list[dict[str, Any]]) -> None:
-        """Add signed image URLs to sessions with caching."""
+        """Add signed image URLs to sessions with caching and TTL-based expiry."""
         expiration = timedelta(hours=24)
+        now = time.monotonic()
+
+        # Evict expired entries from the URL cache
+        self._url_cache = {
+            k: v for k, v in self._url_cache.items()
+            if (now - v[1]) < _URL_CACHE_TTL
+        }
         
         for s in sessions:
             if "NowPlayingItem" in s:
@@ -353,24 +374,26 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                     # Cache poster URL
                     poster_tag = item.get('ImageTags', {}).get('Primary', '')
                     poster_cache_key = (item_id, "Primary", poster_tag)
-                    if poster_cache_key in self._url_cache:
-                        s["jellyha_poster_url"] = self._url_cache[poster_cache_key]
+                    cached = self._url_cache.get(poster_cache_key)
+                    if cached and (now - cached[1]) < _URL_CACHE_TTL:
+                        s["jellyha_poster_url"] = cached[0]
                     else:
                         poster_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Primary?tag={poster_tag}"
                         s["jellyha_poster_url"] = async_sign_path(self.hass, poster_path, expiration)
-                        self._url_cache[poster_cache_key] = s["jellyha_poster_url"]
+                        self._url_cache[poster_cache_key] = (s["jellyha_poster_url"], now)
                     
                     # Cache backdrop URL
                     backdrop_tags = item.get("BackdropImageTags", [])
                     if backdrop_tags:
                         backdrop_tag = backdrop_tags[0]
                         backdrop_cache_key = (item_id, "Backdrop", backdrop_tag)
-                        if backdrop_cache_key in self._url_cache:
-                            s["jellyha_backdrop_url"] = self._url_cache[backdrop_cache_key]
+                        cached = self._url_cache.get(backdrop_cache_key)
+                        if cached and (now - cached[1]) < _URL_CACHE_TTL:
+                            s["jellyha_backdrop_url"] = cached[0]
                         else:
                             backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Backdrop?tag={backdrop_tag}"
                             s["jellyha_backdrop_url"] = async_sign_path(self.hass, backdrop_path, expiration)
-                            self._url_cache[backdrop_cache_key] = s["jellyha_backdrop_url"]
+                            self._url_cache[backdrop_cache_key] = (s["jellyha_backdrop_url"], now)
 
     async def _handle_ws_session_update(self, sessions: list[dict[str, Any]]) -> None:
         """Handle session updates from WebSocket."""
