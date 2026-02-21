@@ -31,6 +31,8 @@ from .const import (
     DEFAULT_DEVICE_NAME,
     DEFAULT_REFRESH_INTERVAL,
     DOMAIN,
+    REFRESH_INTERVAL_OPTIONS,
+    migrate_refresh_interval,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -328,7 +330,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_DEVICE_NAME: DEFAULT_DEVICE_NAME,
                 },
                 options={
-                    CONF_REFRESH_INTERVAL: user_input.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL),
+                    CONF_REFRESH_INTERVAL: int(user_input.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)),
                 },
             )
 
@@ -352,14 +354,14 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     ),
                     vol.Optional(
                         CONF_REFRESH_INTERVAL,
-                        default=DEFAULT_REFRESH_INTERVAL,
-                    ): selector.NumberSelector(
-                        selector.NumberSelectorConfig(
-                            min=60,
-                            max=3600,
-                            step=60,
-                            unit_of_measurement="seconds",
-                            mode=selector.NumberSelectorMode.SLIDER,
+                        default=str(DEFAULT_REFRESH_INTERVAL),
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(value=str(v), label=label)
+                                for label, v in REFRESH_INTERVAL_OPTIONS
+                            ],
+                            mode=selector.SelectSelectorMode.DROPDOWN,
                         )
                     ),
                 }
@@ -429,7 +431,7 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
             
             if not errors:
                 if CONF_REFRESH_INTERVAL in user_input:
-                    new_options[CONF_REFRESH_INTERVAL] = user_input[CONF_REFRESH_INTERVAL]
+                    new_options[CONF_REFRESH_INTERVAL] = int(user_input[CONF_REFRESH_INTERVAL])
 
                 # Update the entry with these preliminary changes
                 self.hass.config_entries.async_update_entry(
@@ -458,16 +460,18 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                     ),
                     vol.Optional(
                         CONF_REFRESH_INTERVAL,
-                        default=self._config_entry.options.get(
-                            CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL
-                        ),
-                    ): selector.NumberSelector(
-                        selector.NumberSelectorConfig(
-                            min=60,
-                            max=3600,
-                            step=60,
-                            unit_of_measurement="seconds",
-                            mode=selector.NumberSelectorMode.SLIDER,
+                        default=str(migrate_refresh_interval(
+                            int(self._config_entry.options.get(
+                                CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL
+                            ))
+                        )),
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(value=str(v), label=label)
+                                for label, v in REFRESH_INTERVAL_OPTIONS
+                            ],
+                            mode=selector.SelectSelectorMode.DROPDOWN,
                         )
                     ),
                     vol.Optional("update_credentials", default=False): selector.BooleanSelector(),

@@ -40,6 +40,8 @@ export class JellyHANowPlayingCard extends LitElement {
             show_media_type_badge: true,
             show_year: true,
             show_client: true,
+            show_user: true,
+            show_time: false,
             show_background: true,
             show_genres: true,
             show_ratings: true,
@@ -62,6 +64,8 @@ export class JellyHANowPlayingCard extends LitElement {
             show_media_type_badge: true,
             show_year: true,
             show_client: true,
+            show_user: true,
+            show_time: false,
             show_background: true,
             show_genres: true,
             show_ratings: true,
@@ -201,11 +205,16 @@ export class JellyHANowPlayingCard extends LitElement {
 
                             <div class="info-bottom">
                                 <div class="controls-container">
-                                    ${this._config.show_client !== false ? html`
-                                        <div class="device-info bottom-device-info">
-                                            <span>${attributes.device_name} (${attributes.client})</span>
-                                        </div>
-                                    ` : nothing}
+                                    <div class="controls-left">
+                                        ${this._config.show_user !== false && this._overflowState < 1 && attributes.user_name ? html`
+                                            <div class="bottom-user-info">${attributes.user_name}</div>
+                                        ` : nothing}
+                                        ${this._config.show_client !== false ? html`
+                                            <div class="device-info bottom-device-info">
+                                                <span>${attributes.device_name} (${attributes.client})</span>
+                                            </div>
+                                        ` : nothing}
+                                    </div>
 
                                     <div class="playback-controls">
                                                                     ${this._rewindActive ? html`
@@ -228,9 +237,15 @@ export class JellyHANowPlayingCard extends LitElement {
                                 </div>
 
                                 <div class="progress-container" @click=${this._handleSeek}>
+                                    ${this._config.show_time && this._overflowState < 1 && attributes.duration_ticks ? html`
+                                        <span class="time-elapsed">${this._formatTicks(attributes.position_ticks || 0)}</span>
+                                    ` : nothing}
                                     <div class="progress-bar">
                                         <div class="progress-fill" style="width: ${progressPercent}%"></div>
                                     </div>
+                                    ${this._config.show_time && this._overflowState < 1 && attributes.duration_ticks ? html`
+                                        <span class="time-remaining">${this._formatTicks(-((attributes.duration_ticks || 0) - (attributes.position_ticks || 0)))}</span>
+                                    ` : nothing}
                                 </div>
                             </div>
                         </div>
@@ -442,6 +457,19 @@ export class JellyHANowPlayingCard extends LitElement {
         }
     }
 
+    private _formatTicks(ticks: number): string {
+        const negative = ticks < 0;
+        const totalSeconds = Math.floor(Math.abs(ticks) / 10000000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const sign = negative ? '-' : '';
+        if (hours > 0) {
+            return `${sign}${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+        return `${sign}${minutes}:${String(seconds).padStart(2, '0')}`;
+    }
+
     static styles = css`
         :host {
             display: block;
@@ -481,6 +509,9 @@ export class JellyHANowPlayingCard extends LitElement {
         .jellyha-now-playing.has-background .title,
         .jellyha-now-playing.has-background .series,
         .jellyha-now-playing.has-background .device-info,
+        .jellyha-now-playing.has-background .bottom-user-info,
+        .jellyha-now-playing.has-background .time-elapsed,
+        .jellyha-now-playing.has-background .time-remaining,
         .jellyha-now-playing.has-background .meta-item,
         .jellyha-now-playing.has-background .genres,
         .jellyha-now-playing.has-background .card-header,
@@ -651,6 +682,17 @@ export class JellyHANowPlayingCard extends LitElement {
         .device-info ha-icon {
             --mdc-icon-size: 18px;
         }
+        .bottom-user-info {
+            font-size: 0.8rem;
+            color: var(--secondary-text-color);
+            opacity: 0.85;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bottom-device-info {
+            margin-top: 0;
+        }
         .meta-container {
             display: flex;
             flex-wrap: nowrap;
@@ -682,17 +724,17 @@ export class JellyHANowPlayingCard extends LitElement {
         
         /* When card is too narrow, HIDE bottom device info to prevent crowding */
         @container now-playing (max-width: 350px) {
-            .bottom-device-info {
+            .controls-left {
                 display: none !important;
             }
             .controls-container {
-                justify-content: flex-end; /* Revert to right align */
+                justify-content: center;
             }
         }
         
         /* For 5+ row cards, hide device info sooner to prevent overflow */
         @container now-playing (min-height: 300px) and (max-width: 430px) {
-            .bottom-device-info {
+            .controls-left {
                 display: none !important;
             }
         }
@@ -830,8 +872,17 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         .controls-container {
             display: flex;
-            justify-content: flex-end;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 6px;
+        }
+        .controls-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
         }
         .playback-controls {
             display: flex;
@@ -855,20 +906,36 @@ export class JellyHANowPlayingCard extends LitElement {
             justify-content: center;
         }
         .progress-container {
-            height: 6px;
-            background: rgba(var(--rgb-primary-text-color), 0.15); /* Slightly darker for visibility */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
             cursor: pointer;
             position: relative;
-            border-radius: 3px;
-            overflow: hidden;
             width: 100%;
         }
         .has-background .progress-container {
-            background: rgba(255, 255, 255, 0.2); /* Much clearer on backdrop */
+            background: transparent;
         }
+        .time-elapsed,
+        .time-remaining {
+            flex-shrink: 0;
+            font-size: 0.7rem;
+            color: var(--secondary-text-color);
+            opacity: 0.85;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
         .progress-bar {
-            height: 100%;
-            width: 100%;
+            flex: 1;
+            height: 6px;
+            background: rgba(var(--rgb-primary-text-color), 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .has-background .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
         }
         .progress-fill {
             height: 100%;

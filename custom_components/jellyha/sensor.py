@@ -409,10 +409,11 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         """Return additional state attributes."""
         session = self._get_active_session()
         if not session:
-             return {"user_id": self._user_id}
+             return {"user_id": self._user_id, "user_name": self._username}
 
         attributes = {
             "user_id": self._user_id,
+            "user_name": self._username,
             "session_id": session.get("Id"),
             "device_name": session.get("DeviceName"),
             "client": session.get("Client"),
@@ -463,6 +464,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             
             attributes["is_paused"] = play_state.get("IsPaused", False)
             attributes["position_ticks"] = position_ticks
+            attributes["duration_ticks"] = duration_ticks
             if duration_ticks and duration_ticks > 0:
                 attributes["progress_percent"] = int((position_ticks / duration_ticks) * 100)
 

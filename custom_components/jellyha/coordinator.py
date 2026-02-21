@@ -44,6 +44,7 @@ from .const import (
     RATING_SOURCE_IMDB,
     RATING_SOURCE_TMDB,
     TICKS_PER_MINUTE,
+    migrate_refresh_interval,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,16 +77,20 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # Cache signed URLs by (item_id, image_type, tag) -> (url, monotonic timestamp)
         self._url_cache: dict[tuple[str, str, str], tuple[str, float]] = {}
 
-        refresh_interval = entry.options.get(
+        raw_interval = entry.options.get(
             CONF_REFRESH_INTERVAL,
             entry.data.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL),
         )
+        # Migrate legacy raw-seconds values to nearest valid dropdown option
+        interval_seconds = migrate_refresh_interval(int(raw_interval))
+        # 0 = Off: disable polling entirely
+        update_interval = timedelta(seconds=interval_seconds) if interval_seconds > 0 else None
 
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(seconds=refresh_interval),
+            update_interval=update_interval,
             always_update=False,
         )
 

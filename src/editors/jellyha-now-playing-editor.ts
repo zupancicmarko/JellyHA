@@ -145,6 +145,22 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
+            .checked=${this._config.show_user !== false}
+            @change=${this._showUserChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_user')}</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_time === true}
+            @change=${this._showTimeChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_time')}</span>
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
             .checked=${this._config.show_background === true}
             @change=${this._showBackgroundChanged}
           ></ha-switch>
@@ -205,6 +221,16 @@ export class JellyHANowPlayingEditor extends LitElement {
   private _showClientChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_client', target.checked);
+  }
+
+  private _showUserChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_user', target.checked);
+  }
+
+  private _showTimeChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_time', target.checked);
   }
 
   private _showBackgroundChanged(e: Event): void {

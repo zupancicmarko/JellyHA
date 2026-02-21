@@ -15,6 +15,37 @@ CONF_DEVICE_NAME = "device_name"
 # Defaults
 DEFAULT_REFRESH_INTERVAL = 300  # 5 minutes
 DEFAULT_DEVICE_NAME = "JellyHA"
+
+# Refresh interval dropdown options: list of (label, seconds)
+# Value 0 = Off (disables polling)
+REFRESH_INTERVAL_OPTIONS: list[tuple[str, int]] = [
+    ("Off", 0),
+    ("1 minute", 60),
+    ("5 minutes", 300),
+    ("15 minutes", 900),
+    ("30 minutes", 1800),
+    ("1 hour", 3600),
+    ("2 hours", 7200),
+    ("6 hours", 21600),
+    ("12 hours", 43200),
+    ("24 hours", 86400),
+]
+
+# Set of valid refresh interval values (for migration/validation)
+REFRESH_INTERVAL_VALUES: set[int] = {v for _, v in REFRESH_INTERVAL_OPTIONS}
+
+
+def migrate_refresh_interval(raw_value: int) -> int:
+    """Convert a legacy seconds value to the nearest valid dropdown option.
+
+    This ensures backward compatibility when upgrading from the old
+    seconds-based number slider to the new dropdown.
+    """
+    if raw_value in REFRESH_INTERVAL_VALUES:
+        return raw_value
+    # Find the closest valid non-zero value (never snap to 0/Off automatically)
+    valid_sorted = sorted(v for v in REFRESH_INTERVAL_VALUES if v > 0)
+    return min(valid_sorted, key=lambda v: abs(v - raw_value))
 DEFAULT_IMAGE_QUALITY = 90
 DEFAULT_IMAGE_HEIGHT = 500
 

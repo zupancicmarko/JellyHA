@@ -120,6 +120,7 @@ export interface SensorData {
 
 export interface NowPlayingSensorData {
     user_id: string;
+    user_name?: string;
     session_id?: string;
     device_name?: string;
     client?: string;
@@ -131,6 +132,7 @@ export interface NowPlayingSensorData {
     year?: number;
     progress_percent?: number;
     position_ticks?: number;
+    duration_ticks?: number;
     image_url?: string;
     series_image_url?: string;
     media_type?: string;
@@ -154,6 +156,8 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     show_genres?: boolean;
     show_year?: boolean;
     show_client?: boolean;
+    show_user?: boolean;
+    show_time?: boolean;
     show_background?: boolean;
     use_series_image?: boolean;
     show_description?: boolean;
