@@ -3,18 +3,18 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const J = globalThis, ae = J.ShadowRoot && (J.ShadyCSS === void 0 || J.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, oe = Symbol(), he = /* @__PURE__ */ new WeakMap();
-let $e = class {
+const te = globalThis, de = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ce = Symbol(), we = /* @__PURE__ */ new WeakMap();
+let Te = class {
   constructor(e, i, a) {
-    if (this._$cssResult$ = !0, a !== oe) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, a !== ce) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = i;
   }
   get styleSheet() {
     let e = this.o;
     const i = this.t;
-    if (ae && e === void 0) {
+    if (de && e === void 0) {
       const a = i !== void 0 && i.length === 1;
-      a && (e = he.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && he.set(i, e));
+      a && (e = we.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && we.set(i, e));
     }
     return e;
   }
@@ -22,33 +22,33 @@ let $e = class {
     return this.cssText;
   }
 };
-const Te = (t) => new $e(typeof t == "string" ? t : t + "", void 0, oe), F = (t, ...e) => {
+const Le = (t) => new Te(typeof t == "string" ? t : t + "", void 0, ce), V = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((a, o, s) => a + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(o) + t[s + 1], t[0]);
-  return new $e(i, t, oe);
-}, Ee = (t, e) => {
-  if (ae) t.adoptedStyleSheets = e.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
+  return new Te(i, t, ce);
+}, Ue = (t, e) => {
+  if (de) t.adoptedStyleSheets = e.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of e) {
-    const a = document.createElement("style"), o = J.litNonce;
+    const a = document.createElement("style"), o = te.litNonce;
     o !== void 0 && a.setAttribute("nonce", o), a.textContent = i.cssText, t.appendChild(a);
   }
-}, pe = ae ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
+}, ve = de ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let i = "";
   for (const a of e.cssRules) i += a.cssText;
-  return Te(i);
+  return Le(i);
 })(t) : t;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Me, defineProperty: ze, getOwnPropertyDescriptor: De, getOwnPropertyNames: Ie, getOwnPropertySymbols: Ne, getPrototypeOf: Oe } = Object, K = globalThis, _e = K.trustedTypes, Ue = _e ? _e.emptyScript : "", Le = K.reactiveElementPolyfillSupport, N = (t, e) => t, V = { toAttribute(t, e) {
+const { is: Re, defineProperty: He, getOwnPropertyDescriptor: Fe, getOwnPropertyNames: Be, getOwnPropertySymbols: We, getPrototypeOf: Ge } = Object, oe = globalThis, ye = oe.trustedTypes, Xe = ye ? ye.emptyScript : "", Ye = oe.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
-      t = t ? Ue : null;
+      t = t ? Xe : null;
       break;
     case Object:
     case Array:
@@ -73,23 +73,23 @@ const { is: Me, defineProperty: ze, getOwnPropertyDescriptor: De, getOwnProperty
       }
   }
   return i;
-} }, se = (t, e) => !Me(t, e), ge = { attribute: !0, type: String, converter: V, reflect: !1, useDefault: !1, hasChanged: se };
-Symbol.metadata ??= Symbol("metadata"), K.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let E = class extends HTMLElement {
+} }, he = (t, e) => !Re(t, e), be = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: he };
+Symbol.metadata ??= Symbol("metadata"), oe.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+let N = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ??= []).push(e);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, i = ge) {
+  static createProperty(e, i = be) {
     if (i.state && (i.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((i = Object.create(i)).wrapped = !0), this.elementProperties.set(e, i), !i.noAccessor) {
       const a = Symbol(), o = this.getPropertyDescriptor(e, a, i);
-      o !== void 0 && ze(this.prototype, e, o);
+      o !== void 0 && He(this.prototype, e, o);
     }
   }
   static getPropertyDescriptor(e, i, a) {
-    const { get: o, set: s } = De(this.prototype, e) ?? { get() {
+    const { get: o, set: s } = Fe(this.prototype, e) ?? { get() {
       return this[i];
     }, set(r) {
       this[i] = r;
@@ -100,17 +100,17 @@ let E = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? ge;
+    return this.elementProperties.get(e) ?? be;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(N("elementProperties"))) return;
-    const e = Oe(this);
+    if (this.hasOwnProperty(F("elementProperties"))) return;
+    const e = Ge(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(N("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(N("properties"))) {
-      const i = this.properties, a = [...Ie(i), ...Ne(i)];
+    if (this.hasOwnProperty(F("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(F("properties"))) {
+      const i = this.properties, a = [...Be(i), ...We(i)];
       for (const o of a) this.createProperty(o, i[o]);
     }
     const e = this[Symbol.metadata];
@@ -129,8 +129,8 @@ let E = class extends HTMLElement {
     const i = [];
     if (Array.isArray(e)) {
       const a = new Set(e.flat(1 / 0).reverse());
-      for (const o of a) i.unshift(pe(o));
-    } else e !== void 0 && i.push(pe(e));
+      for (const o of a) i.unshift(ve(o));
+    } else e !== void 0 && i.push(ve(e));
     return i;
   }
   static _$Eu(e, i) {
@@ -156,7 +156,7 @@ let E = class extends HTMLElement {
   }
   createRenderRoot() {
     const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Ee(e, this.constructor.elementStyles), e;
+    return Ue(e, this.constructor.elementStyles), e;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((e) => e.hostConnected?.());
@@ -172,14 +172,14 @@ let E = class extends HTMLElement {
   _$ET(e, i) {
     const a = this.constructor.elementProperties.get(e), o = this.constructor._$Eu(e, a);
     if (o !== void 0 && a.reflect === !0) {
-      const s = (a.converter?.toAttribute !== void 0 ? a.converter : V).toAttribute(i, a.type);
+      const s = (a.converter?.toAttribute !== void 0 ? a.converter : ie).toAttribute(i, a.type);
       this._$Em = e, s == null ? this.removeAttribute(o) : this.setAttribute(o, s), this._$Em = null;
     }
   }
   _$AK(e, i) {
     const a = this.constructor, o = a._$Eh.get(e);
     if (o !== void 0 && this._$Em !== o) {
-      const s = a.getPropertyOptions(o), r = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : V;
+      const s = a.getPropertyOptions(o), r = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : ie;
       this._$Em = o;
       const h = r.fromAttribute(i, s.type);
       this[o] = h ?? this._$Ej?.get(o) ?? h, this._$Em = null;
@@ -188,7 +188,7 @@ let E = class extends HTMLElement {
   requestUpdate(e, i, a, o = !1, s) {
     if (e !== void 0) {
       const r = this.constructor;
-      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? se)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
+      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? he)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
       this.C(e, i, a);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -256,75 +256,75 @@ let E = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-E.elementStyles = [], E.shadowRootOptions = { mode: "open" }, E[N("elementProperties")] = /* @__PURE__ */ new Map(), E[N("finalized")] = /* @__PURE__ */ new Map(), Le?.({ ReactiveElement: E }), (K.reactiveElementVersions ??= []).push("2.1.2");
+N.elementStyles = [], N.shadowRootOptions = { mode: "open" }, N[F("elementProperties")] = /* @__PURE__ */ new Map(), N[F("finalized")] = /* @__PURE__ */ new Map(), Ye?.({ ReactiveElement: N }), (oe.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const re = globalThis, ue = (t) => t, q = re.trustedTypes, me = q ? q.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, ke = "$lit$", C = `lit$${Math.random().toFixed(9).slice(2)}$`, Se = "?" + C, Re = `<${Se}>`, j = document, O = () => j.createComment(""), U = (t) => t === null || typeof t != "object" && typeof t != "function", ne = Array.isArray, He = (t) => ne(t) || typeof t?.[Symbol.iterator] == "function", ee = `[ 	
-\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, fe = /-->/g, we = />/g, P = RegExp(`>|${ee}(?:([^\\s"'>=/]+)(${ee}*=${ee}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, ve = /"/g, Ce = /^(?:script|style|textarea|title)$/i, Fe = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Fe(1), M = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), be = /* @__PURE__ */ new WeakMap(), A = j.createTreeWalker(j, 129);
-function Pe(t, e) {
-  if (!ne(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return me !== void 0 ? me.createHTML(e) : e;
+const pe = globalThis, xe = (t) => t, ae = pe.trustedTypes, $e = ae ? ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ee = "$lit$", j = `lit$${Math.random().toFixed(9).slice(2)}$`, Me = "?" + j, Je = `<${Me}>`, I = document, W = () => I.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", _e = Array.isArray, Ve = (t) => _e(t) || typeof t?.[Symbol.iterator] == "function", re = `[ 	
+\f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ke = /-->/g, Se = />/g, M = RegExp(`>|${re}(?:([^\\s"'>=/]+)(${re}*=${re}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Ce = /'/g, Pe = /"/g, ze = /^(?:script|style|textarea|title)$/i, qe = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = qe(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
+function Ie(t, e) {
+  if (!_e(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return $e !== void 0 ? $e.createHTML(e) : e;
 }
-const Be = (t, e) => {
+const Ze = (t, e) => {
   const i = t.length - 1, a = [];
-  let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = I;
+  let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = H;
   for (let h = 0; h < i; h++) {
     const c = t[h];
-    let _, g, p = -1, m = 0;
-    for (; m < c.length && (r.lastIndex = m, g = r.exec(c), g !== null); ) m = r.lastIndex, r === I ? g[1] === "!--" ? r = fe : g[1] !== void 0 ? r = we : g[2] !== void 0 ? (Ce.test(g[2]) && (o = RegExp("</" + g[2], "g")), r = P) : g[3] !== void 0 && (r = P) : r === P ? g[0] === ">" ? (r = o ?? I, p = -1) : g[1] === void 0 ? p = -2 : (p = r.lastIndex - g[2].length, _ = g[1], r = g[3] === void 0 ? P : g[3] === '"' ? ve : ye) : r === ve || r === ye ? r = P : r === fe || r === we ? r = I : (r = P, o = void 0);
-    const y = r === P && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === I ? c + Re : p >= 0 ? (a.push(_), c.slice(0, p) + ke + c.slice(p) + C + y) : c + C + (p === -2 ? h : y);
+    let _, u, p = -1, m = 0;
+    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === H ? u[1] === "!--" ? r = ke : u[1] !== void 0 ? r = Se : u[2] !== void 0 ? (ze.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? H, p = -1) : u[1] === void 0 ? p = -2 : (p = r.lastIndex - u[2].length, _ = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Pe : Ce) : r === Pe || r === Ce ? r = M : r === ke || r === Se ? r = H : (r = M, o = void 0);
+    const f = r === M && t[h + 1].startsWith("/>") ? " " : "";
+    s += r === H ? c + Je : p >= 0 ? (a.push(_), c.slice(0, p) + Ee + c.slice(p) + j + f) : c + j + (p === -2 ? h : f);
   }
-  return [Pe(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
+  return [Ie(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
-class L {
+class X {
   constructor({ strings: e, _$litType$: i }, a) {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = e.length - 1, c = this.parts, [_, g] = Be(e, i);
-    if (this.el = L.createElement(_, a), A.currentNode = this.el.content, i === 2 || i === 3) {
+    const h = e.length - 1, c = this.parts, [_, u] = Ze(e, i);
+    if (this.el = X.createElement(_, a), z.currentNode = this.el.content, i === 2 || i === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
-    for (; (o = A.nextNode()) !== null && c.length < h; ) {
+    for (; (o = z.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(ke)) {
-          const m = g[r++], y = o.getAttribute(p).split(C), G = /([.?@])?(.*)/.exec(m);
-          c.push({ type: 1, index: s, name: G[2], strings: y, ctor: G[1] === "." ? Ge : G[1] === "?" ? Xe : G[1] === "@" ? Ye : Q }), o.removeAttribute(p);
-        } else p.startsWith(C) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
-        if (Ce.test(o.tagName)) {
-          const p = o.textContent.split(C), m = p.length - 1;
+        if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(Ee)) {
+          const m = u[r++], f = o.getAttribute(p).split(j), x = /([.?@])?(.*)/.exec(m);
+          c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? Qe : x[1] === "?" ? et : x[1] === "@" ? tt : se }), o.removeAttribute(p);
+        } else p.startsWith(j) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
+        if (ze.test(o.tagName)) {
+          const p = o.textContent.split(j), m = p.length - 1;
           if (m > 0) {
-            o.textContent = q ? q.emptyScript : "";
-            for (let y = 0; y < m; y++) o.append(p[y], O()), A.nextNode(), c.push({ type: 2, index: ++s });
-            o.append(p[m], O());
+            o.textContent = ae ? ae.emptyScript : "";
+            for (let f = 0; f < m; f++) o.append(p[f], W()), z.nextNode(), c.push({ type: 2, index: ++s });
+            o.append(p[m], W());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === Se) c.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === Me) c.push({ type: 2, index: s });
       else {
         let p = -1;
-        for (; (p = o.data.indexOf(C, p + 1)) !== -1; ) c.push({ type: 7, index: s }), p += C.length - 1;
+        for (; (p = o.data.indexOf(j, p + 1)) !== -1; ) c.push({ type: 7, index: s }), p += j.length - 1;
       }
       s++;
     }
   }
   static createElement(e, i) {
-    const a = j.createElement("template");
+    const a = I.createElement("template");
     return a.innerHTML = e, a;
   }
 }
-function z(t, e, i = t, a) {
-  if (e === M) return e;
+function L(t, e, i = t, a) {
+  if (e === O) return e;
   let o = a !== void 0 ? i._$Co?.[a] : i._$Cl;
-  const s = U(e) ? void 0 : e._$litDirective$;
-  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = z(t, o._$AS(t, e.values), o, a)), e;
+  const s = G(e) ? void 0 : e._$litDirective$;
+  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = L(t, o._$AS(t, e.values), o, a)), e;
 }
-class We {
+class Ke {
   constructor(e, i) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = i;
   }
@@ -335,24 +335,24 @@ class We {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: i }, parts: a } = this._$AD, o = (e?.creationScope ?? j).importNode(i, !0);
-    A.currentNode = o;
-    let s = A.nextNode(), r = 0, h = 0, c = a[0];
+    const { el: { content: i }, parts: a } = this._$AD, o = (e?.creationScope ?? I).importNode(i, !0);
+    z.currentNode = o;
+    let s = z.nextNode(), r = 0, h = 0, c = a[0];
     for (; c !== void 0; ) {
       if (r === c.index) {
         let _;
-        c.type === 2 ? _ = new B(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new Je(s, this, e)), this._$AV.push(_), c = a[++h];
+        c.type === 2 ? _ = new q(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new it(s, this, e)), this._$AV.push(_), c = a[++h];
       }
-      r !== c?.index && (s = A.nextNode(), r++);
+      r !== c?.index && (s = z.nextNode(), r++);
     }
-    return A.currentNode = j, o;
+    return z.currentNode = I, o;
   }
   p(e) {
     let i = 0;
     for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(e, a, i), i += a.strings.length - 2) : a._$AI(e[i])), i++;
   }
 }
-class B {
+class q {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -371,7 +371,7 @@ class B {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = z(this, e, i), U(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== M && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : He(e) ? this.k(e) : this._(e);
+    e = L(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Ve(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -380,38 +380,38 @@ class B {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== d && U(this._$AH) ? this._$AA.nextSibling.data = e : this.T(j.createTextNode(e)), this._$AH = e;
+    this._$AH !== d && G(this._$AH) ? this._$AA.nextSibling.data = e : this.T(I.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = L.createElement(Pe(a.h, a.h[0]), this.options)), a);
+    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = X.createElement(Ie(a.h, a.h[0]), this.options)), a);
     if (this._$AH?._$AD === o) this._$AH.p(i);
     else {
-      const s = new We(o, this), r = s.u(this.options);
+      const s = new Ke(o, this), r = s.u(this.options);
       s.p(i), this.T(r), this._$AH = s;
     }
   }
   _$AC(e) {
-    let i = be.get(e.strings);
-    return i === void 0 && be.set(e.strings, i = new L(e)), i;
+    let i = Ae.get(e.strings);
+    return i === void 0 && Ae.set(e.strings, i = new X(e)), i;
   }
   k(e) {
-    ne(this._$AH) || (this._$AH = [], this._$AR());
+    _e(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let a, o = 0;
-    for (const s of e) o === i.length ? i.push(a = new B(this.O(O()), this.O(O()), this, this.options)) : a = i[o], a._$AI(s), o++;
+    for (const s of e) o === i.length ? i.push(a = new q(this.O(W()), this.O(W()), this, this.options)) : a = i[o], a._$AI(s), o++;
     o < i.length && (this._$AR(a && a._$AB.nextSibling, o), i.length = o);
   }
   _$AR(e = this._$AA.nextSibling, i) {
     for (this._$AP?.(!1, !0, i); e !== this._$AB; ) {
-      const a = ue(e).nextSibling;
-      ue(e).remove(), e = a;
+      const a = xe(e).nextSibling;
+      xe(e).remove(), e = a;
     }
   }
   setConnected(e) {
     this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
   }
 }
-class Q {
+class se {
   get tagName() {
     return this.element.tagName;
   }
@@ -424,11 +424,11 @@ class Q {
   _$AI(e, i = this, a, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) e = z(this, e, i, 0), r = !U(e) || e !== this._$AH && e !== M, r && (this._$AH = e);
+    if (s === void 0) e = L(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
     else {
       const h = e;
       let c, _;
-      for (e = s[0], c = 0; c < s.length - 1; c++) _ = z(this, h[a + c], i, c), _ === M && (_ = this._$AH[c]), r ||= !U(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
+      for (e = s[0], c = 0; c < s.length - 1; c++) _ = L(this, h[a + c], i, c), _ === O && (_ = this._$AH[c]), r ||= !G(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
     }
     r && !o && this.j(e);
   }
@@ -436,7 +436,7 @@ class Q {
     e === d ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class Ge extends Q {
+class Qe extends se {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -444,7 +444,7 @@ class Ge extends Q {
     this.element[this.name] = e === d ? void 0 : e;
   }
 }
-class Xe extends Q {
+class et extends se {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -452,12 +452,12 @@ class Xe extends Q {
     this.element.toggleAttribute(this.name, !!e && e !== d);
   }
 }
-class Ye extends Q {
+class tt extends se {
   constructor(e, i, a, o, s) {
     super(e, i, a, o, s), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = z(this, e, i, 0) ?? d) === M) return;
+    if ((e = L(this, e, i, 0) ?? d) === O) return;
     const a = this._$AH, o = e === d && a !== d || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== d && (a === d || o);
     o && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -465,7 +465,7 @@ class Ye extends Q {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
   }
 }
-class Je {
+class it {
   constructor(e, i, a) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = i, this.options = a;
   }
@@ -473,17 +473,17 @@ class Je {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    z(this, e);
+    L(this, e);
   }
 }
-const Ve = re.litHtmlPolyfillSupport;
-Ve?.(L, B), (re.litHtmlVersions ??= []).push("3.3.2");
-const Ae = (t, e, i) => {
+const at = pe.litHtmlPolyfillSupport;
+at?.(X, q), (pe.litHtmlVersions ??= []).push("3.3.2");
+const De = (t, e, i) => {
   const a = i?.renderBefore ?? e;
   let o = a._$litPart$;
   if (o === void 0) {
     const s = i?.renderBefore ?? null;
-    a._$litPart$ = o = new B(e.insertBefore(O(), s), s, void 0, i ?? {});
+    a._$litPart$ = o = new q(e.insertBefore(W(), s), s, void 0, i ?? {});
   }
   return o._$AI(t), o;
 };
@@ -492,8 +492,8 @@ const Ae = (t, e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const le = globalThis;
-class S extends E {
+const ue = globalThis;
+class P extends N {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -503,7 +503,7 @@ class S extends E {
   }
   update(e) {
     const i = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ae(i, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = De(i, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -512,19 +512,19 @@ class S extends E {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return M;
+    return O;
   }
 }
-S._$litElement$ = !0, S.finalized = !0, le.litElementHydrateSupport?.({ LitElement: S });
-const qe = le.litElementPolyfillSupport;
-qe?.({ LitElement: S });
-(le.litElementVersions ??= []).push("4.2.2");
+P._$litElement$ = !0, P.finalized = !0, ue.litElementHydrateSupport?.({ LitElement: P });
+const ot = ue.litElementPolyfillSupport;
+ot?.({ LitElement: P });
+(ue.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const D = (t) => (e, i) => {
+const U = (t) => (e, i) => {
   i !== void 0 ? i.addInitializer(() => {
     customElements.define(t, e);
   }) : customElements.define(t, e);
@@ -534,7 +534,7 @@ const D = (t) => (e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ze = { attribute: !0, type: String, converter: V, reflect: !1, hasChanged: se }, Ke = (t = Ze, e, i) => {
+const st = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged: he }, rt = (t = st, e, i) => {
   const { kind: a, metadata: o } = i;
   let s = globalThis.litPropertyMetadata.get(o);
   if (s === void 0 && globalThis.litPropertyMetadata.set(o, s = /* @__PURE__ */ new Map()), a === "setter" && ((t = Object.create(t)).wrapped = !0), s.set(i.name, t), a === "accessor") {
@@ -555,8 +555,8 @@ const Ze = { attribute: !0, type: String, converter: V, reflect: !1, hasChanged:
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function k(t) {
-  return (e, i) => typeof i == "object" ? Ke(t, e, i) : ((a, o, s) => {
+function C(t) {
+  return (e, i) => typeof i == "object" ? rt(t, e, i) : ((a, o, s) => {
     const r = o.hasOwnProperty(s);
     return o.constructor.createProperty(s, a), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
   })(t, e, i);
@@ -566,35 +566,35 @@ function k(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function u(t) {
-  return k({ ...t, state: !0, attribute: !1 });
+function g(t) {
+  return C({ ...t, state: !0, attribute: !1 });
 }
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Qe = (t, e, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof e != "object" && Object.defineProperty(t, e, i), i);
+const nt = (t, e, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof e != "object" && Object.defineProperty(t, e, i), i);
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function et(t, e) {
+function lt(t, e) {
   return (i, a, o) => {
     const s = (r) => r.renderRoot?.querySelector(t) ?? null;
-    return Qe(i, a, { get() {
+    return nt(i, a, { get() {
       return s(this);
     } });
   };
 }
-function te(t, e) {
+function ne(t, e) {
   if (!e || !t.date_added)
     return !1;
   const i = new Date(t.date_added);
   return ((/* @__PURE__ */ new Date()).getTime() - i.getTime()) / (1e3 * 60 * 60 * 24) <= e;
 }
-function X(t, e = "en") {
+function Q(t, e = "en") {
   try {
     const i = new Date(t);
     return new Intl.DateTimeFormat(e, {
@@ -606,16 +606,16 @@ function X(t, e = "en") {
     return t;
   }
 }
-function ie(t) {
+function le(t) {
   if (t < 60)
     return `${t}m`;
   const e = Math.floor(t / 60), i = t % 60;
   return i > 0 ? `${e}h ${i}m` : `${e}h`;
 }
-function Z(t, e) {
+function B(t, e) {
   return t && `${t}&width=${e}`;
 }
-const je = F`
+const Ne = V`
   :host {
     display: block;
     height: 100%;
@@ -1923,7 +1923,7 @@ const je = F`
       transition: none !important;
     }
   }
-`, Y = {
+`, ee = {
   en: {
     loading: "Loading…",
     no_media: "No recent media found",
@@ -1941,6 +1941,7 @@ const je = F`
     "editor.entity": "Entity",
     "editor.title": "Title",
     "editor.show_title": "Show Title",
+    "editor.show_subtitle": "Show Artist / Series",
     "editor.show_year": "Show Year",
     "editor.show_runtime": "Show Runtime",
     "editor.show_rating": "Show Rating",
@@ -2023,6 +2024,7 @@ const je = F`
     "editor.entity": "Entität",
     "editor.title": "Titel",
     "editor.show_title": "Titel anzeigen",
+    "editor.show_subtitle": "Interpret / Serie anzeigen",
     "editor.show_year": "Jahr anzeigen",
     "editor.show_runtime": "Laufzeit anzeigen",
     "editor.show_rating": "Bewertung anzeigen",
@@ -2105,6 +2107,7 @@ const je = F`
     "editor.entity": "Entité",
     "editor.title": "Titre",
     "editor.show_title": "Afficher le titre",
+    "editor.show_subtitle": "Afficher l'artiste / la série",
     "editor.show_year": "Afficher l'année",
     "editor.show_runtime": "Afficher la durée",
     "editor.show_rating": "Afficher la note",
@@ -2187,6 +2190,7 @@ const je = F`
     "editor.entity": "Entidad",
     "editor.title": "Título",
     "editor.show_title": "Mostrar título",
+    "editor.show_subtitle": "Mostrar artista / serie",
     "editor.show_year": "Mostrar año",
     "editor.show_runtime": "Mostrar duración",
     "editor.show_rating": "Mostrar clasificación",
@@ -2269,6 +2273,7 @@ const je = F`
     "editor.entity": "Entità",
     "editor.title": "Titolo",
     "editor.show_title": "Mostra titolo",
+    "editor.show_subtitle": "Mostra artista / serie",
     "editor.show_year": "Mostra anno",
     "editor.show_runtime": "Mostra durata",
     "editor.show_rating": "Mostra valutazione",
@@ -2351,6 +2356,7 @@ const je = F`
     "editor.entity": "Entiteit",
     "editor.title": "Titel",
     "editor.show_title": "Titel tonen",
+    "editor.show_subtitle": "Artiest / serie tonen",
     "editor.show_year": "Jaar tonen",
     "editor.show_runtime": "Duur tonen",
     "editor.show_rating": "Beoordeling tonen",
@@ -2433,6 +2439,7 @@ const je = F`
     "editor.entity": "Entiteta",
     "editor.title": "Naslov",
     "editor.show_title": "Prikaži naslov",
+    "editor.show_subtitle": "Prikaži izvajalca / serijo",
     "editor.show_year": "Prikaži leto",
     "editor.show_runtime": "Prikaži trajanje",
     "editor.show_rating": "Prikaži oceno",
@@ -2501,14 +2508,14 @@ const je = F`
 };
 function l(t, e) {
   const i = t.split("-")[0].toLowerCase();
-  return Y[i]?.[e] ? Y[i][e] : Y.en?.[e] ? Y.en[e] : e;
+  return ee[i]?.[e] ? ee[i][e] : ee.en?.[e] ? ee.en[e] : e;
 }
-var tt = Object.defineProperty, it = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? it(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var dt = Object.defineProperty, ct = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? ct(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && tt(e, i, o), o;
+  return a && o && dt(e, i, o), o;
 };
-let b = class extends S {
+let b = class extends P {
   constructor() {
     super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
       this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
@@ -2701,7 +2708,7 @@ let b = class extends S {
   }
   updated() {
     if (this._portalContainer) {
-      Ae(this._renderDialogContent(), this._portalContainer);
+      De(this._renderDialogContent(), this._portalContainer);
       const t = this._portalContainer.querySelector(".content");
       t && (t.removeEventListener("touchstart", this._handleModalTouchStart), t.removeEventListener("touchmove", this._handleModalTouchMove), t.removeEventListener("touchend", this._handleModalTouchEnd), t.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), t.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), t.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
     }
@@ -3398,51 +3405,51 @@ let b = class extends S {
     return null;
   }
 };
-b.styles = F`
+b.styles = V`
         /* Styles handled in _getPortalStyles */
     `;
-$([
-  k({ attribute: !1 })
+S([
+  C({ attribute: !1 })
 ], b.prototype, "hass", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_item", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_nextUpItem", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_defaultCastDevice", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_open", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_confirmDelete", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_viewMode", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_episodes", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_touchStartY", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_currentTranslateY", 2);
-$([
-  u()
+S([
+  g()
 ], b.prototype, "_isDragging", 2);
-b = $([
-  D("jellyha-item-details-modal")
+b = S([
+  U("jellyha-item-details-modal")
 ], b);
-var at = Object.defineProperty, ot = Object.getOwnPropertyDescriptor, de = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? ot(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var ht = Object.defineProperty, pt = Object.getOwnPropertyDescriptor, ge = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? pt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && at(e, i, o), o;
+  return a && o && ht(e, i, o), o;
 };
-function st(t, e, i) {
+function _t(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -3450,7 +3457,7 @@ function st(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let R = class extends S {
+let Y = class extends P {
   setConfig(t) {
     this._config = t;
   }
@@ -3949,10 +3956,10 @@ let R = class extends S {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, st(this, "config-changed", { config: i });
+    this._config = i, _t(this, "config-changed", { config: i });
   }
 };
-R.styles = F`
+Y.styles = V`
     .form-row {
       margin-bottom: 16px;
     }
@@ -3978,21 +3985,21 @@ R.styles = F`
       margin-bottom: 0;
     }
   `;
-de([
-  k({ attribute: !1 })
-], R.prototype, "hass", 2);
-de([
-  u()
-], R.prototype, "_config", 2);
-R = de([
-  D("jellyha-library-editor")
-], R);
-var rt = Object.defineProperty, nt = Object.getOwnPropertyDescriptor, x = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? nt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+ge([
+  C({ attribute: !1 })
+], Y.prototype, "hass", 2);
+ge([
+  g()
+], Y.prototype, "_config", 2);
+Y = ge([
+  U("jellyha-library-editor")
+], Y);
+var ut = Object.defineProperty, gt = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? gt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && rt(e, i, o), o;
+  return a && o && ut(e, i, o), o;
 };
-let v = class extends S {
+let y = class extends P {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
@@ -4000,7 +4007,7 @@ let v = class extends S {
     return !this.item || !this.config || !this.hass ? n`` : this.layout === "list" ? this._renderListItem() : this._renderMediaItem();
   }
   _renderListItem() {
-    const t = this.item, e = te(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
+    const t = this.item, e = ne(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
     return n`
       <div
         class="media-item list-item ${o ? "playing" : ""} ${this.config.show_title ? "" : "no-title"} ${this.config.metadata_position === "above" ? "metadata-above" : ""}"
@@ -4017,12 +4024,12 @@ let v = class extends S {
         @contextmenu="${this._handleContextMenu}"
       >
         <div class="list-poster-wrapper">
-          ${this.config.metadata_position === "above" && this.config.show_date_added && t.date_added ? n`<p class="list-date-added">${X(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+          ${this.config.metadata_position === "above" && this.config.show_date_added && t.date_added ? n`<p class="list-date-added">${Q(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
           <div class="poster-container" id="poster-${t.id}">
             <div class="poster-inner">
               <img
                 class="poster"
-                src="${Z(
+                src="${B(
       this.config.use_series_image && t.series_poster_url ? t.series_poster_url : t.poster_url,
       160
     )}"
@@ -4050,7 +4057,7 @@ let v = class extends S {
               ${this._renderNowPlayingOverlay(t)}
             </div>
           </div>
-          ${this.config.metadata_position !== "above" && this.config.show_date_added && t.date_added ? n`<p class="list-date-added">${X(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+          ${this.config.metadata_position !== "above" && this.config.show_date_added && t.date_added ? n`<p class="list-date-added">${Q(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
         </div>
         
         <div class="list-info">
@@ -4067,7 +4074,7 @@ let v = class extends S {
                 </span>` : d}
             ${this.config.show_runtime && t.runtime_minutes ? n`<span class="list-runtime">
                   <ha-icon icon="mdi:clock-outline"></ha-icon>
-                  ${ie(t.runtime_minutes)}
+                  ${le(t.runtime_minutes)}
                 </span>` : d}
           </div>
           
@@ -4079,7 +4086,7 @@ let v = class extends S {
     `;
   }
   _renderMediaItem() {
-    const t = this.item, e = te(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
+    const t = this.item, e = ne(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
     return n`
       <div
         class="media-item ${o ? "playing" : ""}"
@@ -4099,14 +4106,14 @@ let v = class extends S {
               <div class="media-info-above">
                 ${this.config.show_title ? n`<p class="media-title">${t.name}</p>` : d}
                 ${this.config.show_year && t.year ? n`<p class="media-year">${t.year}</p>` : d}
-                ${this.config.show_date_added && t.date_added ? n`<p class="media-date-added">${X(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+                ${this.config.show_date_added && t.date_added ? n`<p class="media-date-added">${Q(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
               </div>
             ` : d}
         <div class="poster-container" id="poster-${t.id}">
           <div class="poster-inner">
             <img
               class="poster"
-              src="${Z(
+              src="${B(
       this.config.use_series_image && t.series_poster_url ? t.series_poster_url : t.poster_url,
       300
     )}"
@@ -4144,7 +4151,7 @@ let v = class extends S {
             ${this.config.show_runtime && t.runtime_minutes && !o ? n`
                   <span class="runtime">
                     <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${ie(t.runtime_minutes)}
+                    ${le(t.runtime_minutes)}
                   </span>
                 ` : d}
             
@@ -4164,7 +4171,7 @@ let v = class extends S {
               <div class="media-info-below">
                 ${this.config.show_title ? n`<p class="media-title">${t.name}</p>` : d}
                 ${this.config.show_year && t.year ? n`<p class="media-year">${t.year}</p>` : d}
-                ${this.config.show_date_added && t.date_added ? n`<p class="media-date-added">${X(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+                ${this.config.show_date_added && t.date_added ? n`<p class="media-date-added">${Q(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
               </div>
             ` : d}
       </div>
@@ -4345,54 +4352,54 @@ let v = class extends S {
     this.dispatchEvent(e);
   }
 };
-v.styles = je;
-x([
-  k({ attribute: !1 })
-], v.prototype, "hass", 2);
-x([
-  k({ attribute: !1 })
-], v.prototype, "config", 2);
-x([
-  k({ attribute: !1 })
-], v.prototype, "item", 2);
-x([
-  k({ type: String })
-], v.prototype, "layout", 2);
-x([
-  k({ type: Boolean })
-], v.prototype, "isNextUpHighlight", 2);
-x([
-  u()
-], v.prototype, "_pressStartTime", 2);
-x([
-  u()
-], v.prototype, "_holdTimer", 2);
-x([
-  u()
-], v.prototype, "_isHoldActive", 2);
-x([
-  u()
-], v.prototype, "_itemTouchStartX", 2);
-x([
-  u()
-], v.prototype, "_itemTouchStartY", 2);
-x([
-  u()
-], v.prototype, "_clickTimer", 2);
-x([
-  u()
-], v.prototype, "_rewindActive", 2);
-v = x([
-  D("jellyha-media-item")
-], v);
-var lt = Object.defineProperty, dt = Object.getOwnPropertyDescriptor, w = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? dt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+y.styles = Ne;
+$([
+  C({ attribute: !1 })
+], y.prototype, "hass", 2);
+$([
+  C({ attribute: !1 })
+], y.prototype, "config", 2);
+$([
+  C({ attribute: !1 })
+], y.prototype, "item", 2);
+$([
+  C({ type: String })
+], y.prototype, "layout", 2);
+$([
+  C({ type: Boolean })
+], y.prototype, "isNextUpHighlight", 2);
+$([
+  g()
+], y.prototype, "_pressStartTime", 2);
+$([
+  g()
+], y.prototype, "_holdTimer", 2);
+$([
+  g()
+], y.prototype, "_isHoldActive", 2);
+$([
+  g()
+], y.prototype, "_itemTouchStartX", 2);
+$([
+  g()
+], y.prototype, "_itemTouchStartY", 2);
+$([
+  g()
+], y.prototype, "_clickTimer", 2);
+$([
+  g()
+], y.prototype, "_rewindActive", 2);
+y = $([
+  U("jellyha-media-item")
+], y);
+var mt = Object.defineProperty, ft = Object.getOwnPropertyDescriptor, v = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? ft(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && lt(e, i, o), o;
+  return a && o && mt(e, i, o), o;
 };
-const ct = "1.0.0";
+const wt = "1.0.0";
 console.info(
-  `%c JELLYHA-LIBRARY-CARD %c v${ct} `,
+  `%c JELLYHA-LIBRARY-CARD %c v${wt} `,
   "color: white; background: #00a4dc; font-weight: bold;",
   "color: #00a4dc; background: white; font-weight: bold;"
 );
@@ -4403,7 +4410,7 @@ window.customCards.push({
   description: "Display media from Jellyfin",
   preview: !0
 });
-const xe = {
+const je = {
   title: "",
   layout: "carousel",
   media_type: "both",
@@ -4435,7 +4442,7 @@ const xe = {
   filter_newly_added: !1,
   sort_option: "date_added_desc"
 };
-function ht(t, e, i) {
+function vt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -4443,7 +4450,7 @@ function ht(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let f = class extends S {
+let w = class extends P {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -4550,17 +4557,17 @@ let f = class extends S {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, g = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, u = this._config.show_pagination !== !1;
         let p = !1;
-        if (g) {
+        if (u) {
           const m = this._getTotalPages();
           c && e > 0 && this._currentPage === 0 && (p = !0), _ && e < 0 && this._currentPage >= m - 1 && (p = !0);
         } else
           c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
         if (p) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
-          const m = 0.3, y = e - this._elasticAnchorX;
-          a.style.transition = "none", a.style.transform = `translateX(${y * m}px)`;
+          const m = 0.3, f = e - this._elasticAnchorX;
+          a.style.transition = "none", a.style.transform = `translateX(${f * m}px)`;
           return;
         }
       }
@@ -4602,17 +4609,17 @@ let f = class extends S {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, g = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, u = this._config.show_pagination !== !1;
         let p = !1;
-        if (g) {
+        if (u) {
           const m = this._getTotalPages();
           c && e > 0 && this._currentPage === 0 && (p = !0), _ && e < 0 && this._currentPage >= m - 1 && (p = !0);
         } else
           c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
         if (p) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
-          const m = 0.3, y = e - this._elasticAnchorX;
-          a.style.transition = "none", a.style.transform = `translateX(${y * m}px)`;
+          const m = 0.3, f = e - this._elasticAnchorX;
+          a.style.transition = "none", a.style.transform = `translateX(${f * m}px)`;
           return;
         }
       }
@@ -4716,7 +4723,7 @@ let f = class extends S {
   setConfig(t) {
     if (!t.entity)
       throw new Error("Please define an entity");
-    this._config = { ...xe, ...t }, this._effectiveListColumns = this._config.columns || 1;
+    this._config = { ...je, ...t }, this._effectiveListColumns = this._config.columns || 1;
   }
   /**
    * Return the card editor element
@@ -4730,7 +4737,7 @@ let f = class extends S {
   static getStubConfig() {
     return {
       entity: "sensor.jellyha_library",
-      ...xe
+      ...je
     };
   }
   /**
@@ -4864,7 +4871,7 @@ let f = class extends S {
     }
     this._config.filter_favorites && (e = e.filter((s) => s.is_favorite === !0));
     const i = this._config.status_filter || "all";
-    i === "unwatched" ? e = e.filter((s) => !s.is_played) : i === "watched" && (e = e.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (e = e.filter((s) => te(s, this._config.new_badge_days || 0)));
+    i === "unwatched" ? e = e.filter((s) => !s.is_played) : i === "watched" && (e = e.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (e = e.filter((s) => ne(s, this._config.new_badge_days || 0)));
     const a = this._config.sort_option || "date_added_desc";
     e.sort((s, r) => {
       switch (a) {
@@ -4940,13 +4947,13 @@ let f = class extends S {
           class="carousel ${e ? "paginated" : "scrollable"}"
           @scroll="${e ? d : this._handleScroll}"
         >
-          ${_.map((g) => n`
+          ${_.map((u) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
-                .item=${g}
+                .item=${u}
                 .layout=${"grid"}
-                .isNextUpHighlight=${this._config.media_type === "next_up" && g.id === this._mostRecentNextUpItemId}
+                .isNextUpHighlight=${this._config.media_type === "next_up" && u.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -4960,7 +4967,7 @@ let f = class extends S {
    * Render list with optional pagination
    */
   _renderList(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, g = this._effectiveListColumns, p = g === 1;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, u = this._effectiveListColumns, p = u === 1;
     return n`
       <div 
         class="list-wrapper"
@@ -4973,7 +4980,7 @@ let f = class extends S {
       >
         <div 
           class="list ${e ? "paginated" : ""} ${p ? "single-column" : ""}"
-          style="--jf-list-columns: ${g}"
+          style="--jf-list-columns: ${u}"
         >
           ${_.map((m) => n`
             <jellyha-media-item
@@ -4994,7 +5001,7 @@ let f = class extends S {
    * Render grid with optional pagination
    */
   _renderGrid(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, g = this._config.columns || 1, p = g === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, u = this._config.columns || 1, p = u === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
     return n`
       <div class="grid-outer">
         <div 
@@ -5009,15 +5016,15 @@ let f = class extends S {
         >
           <div
             class="grid ${e ? "paginated" : ""} ${p ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
-            style="--jf-columns: ${g}; --jf-grid-rows: ${g}"
+            style="--jf-columns: ${u}; --jf-grid-rows: ${u}"
           >
-            ${_.map((y) => n`
+            ${_.map((f) => n`
                 <jellyha-media-item
                     .hass=${this.hass}
                     .config=${this._config}
-                    .item=${y}
+                    .item=${f}
                     .layout=${"grid"}
-                    .isNextUpHighlight=${this._config.media_type === "next_up" && y.id === this._mostRecentNextUpItemId}
+                    .isNextUpHighlight=${this._config.media_type === "next_up" && f.id === this._mostRecentNextUpItemId}
                     @jellyha-action=${this._handleItemAction}
                 ></jellyha-media-item>
             `)}
@@ -5066,9 +5073,9 @@ let f = class extends S {
           style="transform: translateX(${h}px); width: ${t * 16}px"
         >
           ${Array.from({ length: t }, (c, _) => {
-      const g = Math.abs(_ - this._currentPage);
+      const u = Math.abs(_ - this._currentPage);
       let p = "smart-dot";
-      return _ === this._currentPage ? p += " active" : g > 2 ? p += " hidden" : g === 2 && (p += " small"), n`
+      return _ === this._currentPage ? p += " active" : u > 2 ? p += " hidden" : u === 2 && (p += " small"), n`
               <button
                 type="button"
                 class="${p}"
@@ -5099,7 +5106,7 @@ let f = class extends S {
         this._showItemDetails(t);
         break;
       case "trailer":
-        t.trailer_url ? window.open(t.trailer_url, "_blank") : ht(this, "hass-notification", {
+        t.trailer_url ? window.open(t.trailer_url, "_blank") : vt(this, "hass-notification", {
           message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
@@ -5198,67 +5205,67 @@ let f = class extends S {
     `;
   }
 };
-f.styles = je;
-w([
-  k({ attribute: !1 })
-], f.prototype, "hass", 2);
-w([
-  u()
-], f.prototype, "_config", 2);
-w([
-  u()
-], f.prototype, "_currentPage", 2);
-w([
-  u()
-], f.prototype, "_itemsPerPage", 2);
-w([
-  u()
-], f.prototype, "_pressStartTime", 2);
-w([
-  u()
-], f.prototype, "_holdTimer", 2);
-w([
-  u()
-], f.prototype, "_isHoldActive", 2);
-w([
-  u()
-], f.prototype, "_rewindActive", 2);
-w([
-  u()
-], f.prototype, "_items", 2);
-w([
-  u()
-], f.prototype, "_error", 2);
-w([
-  u()
-], f.prototype, "_lastUpdate", 2);
-w([
-  u()
-], f.prototype, "_mostRecentNextUpItemId", 2);
-w([
-  u()
-], f.prototype, "_searchQuery", 2);
-w([
-  u()
-], f.prototype, "_searchGenre", 2);
-w([
-  et("jellyha-item-details-modal")
-], f.prototype, "_modal", 2);
-w([
-  u()
-], f.prototype, "_scrollProgress", 2);
-w([
-  u()
-], f.prototype, "_hasScrollableContent", 2);
-f = w([
-  D("jellyha-library-card")
-], f);
-var pt = Object.defineProperty, _t = Object.getOwnPropertyDescriptor, ce = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? _t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+w.styles = Ne;
+v([
+  C({ attribute: !1 })
+], w.prototype, "hass", 2);
+v([
+  g()
+], w.prototype, "_config", 2);
+v([
+  g()
+], w.prototype, "_currentPage", 2);
+v([
+  g()
+], w.prototype, "_itemsPerPage", 2);
+v([
+  g()
+], w.prototype, "_pressStartTime", 2);
+v([
+  g()
+], w.prototype, "_holdTimer", 2);
+v([
+  g()
+], w.prototype, "_isHoldActive", 2);
+v([
+  g()
+], w.prototype, "_rewindActive", 2);
+v([
+  g()
+], w.prototype, "_items", 2);
+v([
+  g()
+], w.prototype, "_error", 2);
+v([
+  g()
+], w.prototype, "_lastUpdate", 2);
+v([
+  g()
+], w.prototype, "_mostRecentNextUpItemId", 2);
+v([
+  g()
+], w.prototype, "_searchQuery", 2);
+v([
+  g()
+], w.prototype, "_searchGenre", 2);
+v([
+  lt("jellyha-item-details-modal")
+], w.prototype, "_modal", 2);
+v([
+  g()
+], w.prototype, "_scrollProgress", 2);
+v([
+  g()
+], w.prototype, "_hasScrollableContent", 2);
+w = v([
+  U("jellyha-library-card")
+], w);
+var yt = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, me = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? bt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && pt(e, i, o), o;
+  return a && o && yt(e, i, o), o;
 };
-function gt(t, e, i) {
+function xt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -5266,7 +5273,7 @@ function gt(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let H = class extends S {
+let J = class extends P {
   setConfig(t) {
     this._config = t;
   }
@@ -5303,12 +5310,21 @@ let H = class extends S {
           ></ha-textfield>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_title !== !1}
-            @change=${this._showTitleChanged}
-          ></ha-switch>
-          <span>${l(e, "editor.show_title")}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_title !== !1}
+              @change=${this._showTitleChanged}
+            ></ha-switch>
+            <span>${l(e, "editor.show_title")}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_subtitle !== !1}
+              @change=${this._showSubtitleChanged}
+            ></ha-switch>
+            <span>${l(e, "editor.show_subtitle")}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -5319,12 +5335,21 @@ let H = class extends S {
           <span>${l(e, "editor.show_media_type_badge")}</span>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_year !== !1}
-            @change=${this._showYearChanged}
-          ></ha-switch>
-          <span>${l(e, "editor.show_year")}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_year !== !1}
+              @change=${this._showYearChanged}
+            ></ha-switch>
+            <span>${l(e, "editor.show_year")}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_genres === !0}
+              @change=${this._showGenresChanged}
+            ></ha-switch>
+            <span>${l(e, "editor.show_genres")}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -5343,28 +5368,21 @@ let H = class extends S {
           <span>${l(e, "editor.show_rating")}</span>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_genres === !0}
-            @change=${this._showGenresChanged}
-          ></ha-switch>
-          <span>${l(e, "editor.show_genres")}</span>
-        </div>
-
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_client !== !1}
-            @change=${this._showClientChanged}
-          ></ha-switch>
-          <span>${l(e, "editor.show_client")}</span>
-        </div>
-
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_user !== !1}
-            @change=${this._showUserChanged}
-          ></ha-switch>
-          <span>${l(e, "editor.show_user")}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_user !== !1}
+              @change=${this._showUserChanged}
+            ></ha-switch>
+            <span>${l(e, "editor.show_user")}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_client !== !1}
+              @change=${this._showClientChanged}
+            ></ha-switch>
+            <span>${l(e, "editor.show_client")}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -5405,9 +5423,21 @@ let H = class extends S {
     const e = t.target;
     this._updateConfig("show_title", e.checked);
   }
+  _showSubtitleChanged(t) {
+    const e = t.target;
+    this._updateConfig("show_subtitle", e.checked);
+  }
   _showMediaTypeBadgeChanged(t) {
     const e = t.target;
     this._updateConfig("show_media_type_badge", e.checked);
+  }
+  _showYearChanged(t) {
+    const e = t.target;
+    this._updateConfig("show_year", e.checked);
+  }
+  _showGenresChanged(t) {
+    const e = t.target;
+    this._updateConfig("show_genres", e.checked);
   }
   _showRatingsChanged(t) {
     const e = t.target;
@@ -5417,21 +5447,13 @@ let H = class extends S {
     const e = t.target;
     this._updateConfig("show_runtime", e.checked);
   }
-  _showGenresChanged(t) {
+  _showUserChanged(t) {
     const e = t.target;
-    this._updateConfig("show_genres", e.checked);
-  }
-  _showYearChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_year", e.checked);
+    this._updateConfig("show_user", e.checked);
   }
   _showClientChanged(t) {
     const e = t.target;
     this._updateConfig("show_client", e.checked);
-  }
-  _showUserChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_user", e.checked);
   }
   _showTimeChanged(t) {
     const e = t.target;
@@ -5449,10 +5471,10 @@ let H = class extends S {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, gt(this, "config-changed", { config: i });
+    this._config = i, xt(this, "config-changed", { config: i });
   }
 };
-H.styles = F`
+J.styles = V`
     .form-row {
       margin-bottom: 16px;
     }
@@ -5468,20 +5490,29 @@ H.styles = F`
       gap: 8px;
       margin-bottom: 8px;
     }
+    .checkbox-pair {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .checkbox-pair .checkbox-row {
+      margin-bottom: 0;
+      flex: 1;
+    }
   `;
-ce([
-  k({ attribute: !1 })
-], H.prototype, "hass", 2);
-ce([
-  u()
-], H.prototype, "_config", 2);
-H = ce([
-  D("jellyha-now-playing-editor")
-], H);
-var ut = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, W = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? mt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+me([
+  C({ attribute: !1 })
+], J.prototype, "hass", 2);
+me([
+  g()
+], J.prototype, "_config", 2);
+J = me([
+  U("jellyha-now-playing-editor")
+], J);
+var $t = Object.defineProperty, kt = Object.getOwnPropertyDescriptor, T = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? kt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && ut(e, i, o), o;
+  return a && o && $t(e, i, o), o;
 };
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -5490,9 +5521,9 @@ window.customCards.push({
   description: "Display currently playing media from Jellyfin",
   preview: !0
 });
-let T = class extends S {
+let A = class extends P {
   constructor() {
-    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._phrases = [];
+    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._longPressRaf = null, this._phrases = [];
   }
   setConfig(t) {
     this._config = {
@@ -5562,10 +5593,11 @@ let T = class extends S {
     const o = i.progress_percent || 0, s = this._config.use_series_image && i.series_image_url ? i.series_image_url : i.image_url, r = i.item_id;
     if (r !== this._cachedItemId) {
       this._cachedItemId = r;
-      const g = i.backdrop_url || i.image_url;
-      this._cachedBackdropUrl = g ? Z(g, 640) : void 0;
+      const K = i.backdrop_url || i.image_url;
+      this._cachedBackdropUrl = K ? B(K, 640) : void 0;
     }
-    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused;
+    r !== this._cachedColorItemId && s && (this._cachedColorItemId = r, this._extractDominantColor(B(s, 80)));
+    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused, u = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", k = [x, E].filter(Boolean).join(" • "), D = this._config.show_user !== !1 && i.user_name || "", R = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", fe = 125.66, Oe = fe * (1 - this._longPressProgress);
     return n`
             <ha-card class="jellyha-now-playing ${c ? "has-background" : ""} ${this._config.title ? "has-title" : ""}">
                 ${c ? n`
@@ -5581,7 +5613,24 @@ let T = class extends S {
                     <div class="main-container">
                         ${s ? n`
                             <div class="poster-container" @click=${this._handlePosterRewind}>
-                                <img src="${Z(s, 160)}" alt="${i.title}" loading="eager" fetchpriority="high" />
+                                <img src="${B(s, 160)}" alt="${i.title}" loading="eager" fetchpriority="high" />
+                                
+                                ${this._config.show_media_type_badge !== !1 && Z ? n`
+                                    <span class="poster-badge media-type-badge ${p}">${Z}</span>
+                                ` : d}
+                                ${this._config.show_ratings && i.community_rating ? n`
+                                    <span class="poster-badge rating-badge">
+                                        <ha-icon icon="mdi:star"></ha-icon>
+                                        ${i.community_rating.toFixed(1)}
+                                    </span>
+                                ` : d}
+                                ${this._config.show_runtime && i.runtime_minutes ? n`
+                                    <span class="poster-badge runtime-badge">
+                                        <ha-icon icon="mdi:clock-outline"></ha-icon>
+                                        ${p === "audio" && i.duration_ticks ? `${Math.floor(i.duration_ticks / 1e7 / 60)}m ${Math.floor(i.duration_ticks / 1e7 % 60)}s` : le(i.runtime_minutes)}
+                                    </span>
+                                ` : d}
+
                                 ${this._rewindActive ? n`
                                     <div class="rewind-overlay">
                                         <span>${l(this.hass.locale?.language || this.hass.language, "rewinding")}</span>
@@ -5593,88 +5642,86 @@ let T = class extends S {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== !1 ? n`<div class="title">${i.title}</div>` : d}
-                                    ${i.series_title ? n`<div class="series">${i.series_title}</div>` : d}
-                                    ${this._config.show_client !== !1 ? n`
-                                        <div class="device-info">
-                                            <span>${i.device_name} (${i.client})</span>
-                                        </div>
-                                    ` : d}
+                                    ${this._config.show_title !== !1 ? n`<div class="title" style="color: ${this._dominantColor}">${i.title}</div>` : d}
+                                    ${f ? n`<div class="subtitle" style="color: ${this._dominantColor}">${f}</div>` : d}
+                                    ${this._overflowState < 1 && k ? n`<div class="meta-line">${k}</div>` : d}
+                                    ${this._overflowState < 1 && (D || R) ? n`<div class="client-line">${D ? n`<strong>${D}</strong>` : d}${D && R ? " " : ""}${R || d}</div>` : d}
                                 </div>
-
-                                ${this._overflowState < 2 ? n`
-                                    <div class="meta-container">
-                                        ${this._config.show_media_type_badge !== !1 ? n`
-                                            <span class="badge meta-priority-4 ${i.media_type?.toLowerCase()}">
-                                                ${i.media_type?.toLowerCase() === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type}
-                                            </span>
-                                        ` : d}
-                                        ${this._config.show_year !== !1 && i.year ? n`
-                                            <span class="meta-item meta-priority-3">${i.year}</span>
-                                        ` : d}
-                                        ${this._config.show_runtime && i.runtime_minutes ? n`
-                                            <span class="meta-item meta-priority-2">${ie(i.runtime_minutes)}</span>
-                                        ` : d}
-                                        ${this._config.show_ratings && i.community_rating ? n`
-                                            <span class="meta-item external-rating meta-priority-1">
-                                                <ha-icon icon="mdi:star"></ha-icon>
-                                                <span>${i.community_rating.toFixed(1)}</span>
-                                            </span>
-                                        ` : d}
-                                    </div>
-                                ` : d}
-
-                                ${this._overflowState < 1 && this._config.show_genres && i.genres?.length ? n`
-                                    <div class="genres-container meta-priority-0">
-                                        <div class="genres">${i.genres.join(", ")}</div>
-                                    </div>
-                                ` : d}
                             </div>
 
                             <div class="info-bottom">
-                                <div class="controls-container">
-                                    <div class="controls-left">
-                                        ${this._config.show_user !== !1 && this._overflowState < 1 && i.user_name ? n`
-                                            <div class="bottom-user-info">${i.user_name}</div>
-                                        ` : d}
-                                        ${this._config.show_client !== !1 ? n`
-                                            <div class="device-info bottom-device-info">
-                                                <span>${i.device_name} (${i.client})</span>
-                                            </div>
-                                        ` : d}
-                                    </div>
+                                <div class="playback-controls">
+                                    ${u ? n`
+                                        <ha-icon-button class="music-subtle-btn" .label=${"Shuffle"} @click=${() => this._handleControl("Shuffle")}>
+                                            <ha-icon icon="mdi:shuffle-variant"></ha-icon>
+                                        </ha-icon-button>
+                                        <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "previous") || "Previous"} @click=${() => this._handleControl("PreviousTrack")}>
+                                            <ha-icon icon="mdi:skip-previous"></ha-icon>
+                                        </ha-icon-button>
+                                    ` : n`
+                                        <ha-icon-button class="seek-btn" .label=${"Rewind 10s"} @click=${() => this._handleSeekRelative(-10)}>
+                                            <ha-icon icon="mdi:rewind-10"></ha-icon>
+                                        </ha-icon-button>
+                                    `}
 
-                                    <div class="playback-controls">
-                                                                    ${this._rewindActive ? n`
+                                    <div class="play-pause-wrapper ${this._stopPulse ? "stop-pulse" : ""}"
+                                        @pointerdown=${this._startLongPress}
+                                        @pointerup=${this._endLongPress}
+                                        @pointerleave=${this._endLongPress}
+                                        @contextmenu=${(K) => K.preventDefault()}
+                                    >
+                                        ${this._rewindActive ? n`
                                             <ha-icon-button class="spinning" .label=${l(this.hass.locale?.language || this.hass.language, "loading")}>
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : _ ? n`
-                                            <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl("Unpause")}>
+                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl("Unpause")}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : n`
-                                            <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "pause")} @click=${() => this._handleControl("Pause")}>
+                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "pause")} @click=${() => this._handleControl("Pause")}>
                                                 <ha-icon icon="mdi:pause"></ha-icon>
                                             </ha-icon-button>
                                         `}
-                                        <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "stop")} @click=${() => this._handleControl("Stop")}>
-                                            <ha-icon icon="mdi:stop"></ha-icon>
-                                        </ha-icon-button>
+                                        ${this._longPressProgress > 0 ? n`
+                                            <svg class="stop-ring" viewBox="0 0 44 44">
+                                                <circle cx="22" cy="22" r="20"
+                                                    stroke="#ef4444" stroke-width="3" fill="none"
+                                                    stroke-dasharray="${fe}"
+                                                    stroke-dashoffset="${Oe}"
+                                                    stroke-linecap="round"
+                                                    transform="rotate(-90 22 22)" />
+                                            </svg>
+                                        ` : d}
                                     </div>
+
+                                    ${u ? n`
+                                        <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
+                                            <ha-icon icon="mdi:skip-next"></ha-icon>
+                                        </ha-icon-button>
+                                        <ha-icon-button class="music-subtle-btn" .label=${"Repeat"} @click=${() => this._handleControl("SetRepeatMode")}>
+                                            <ha-icon icon="mdi:repeat"></ha-icon>
+                                        </ha-icon-button>
+                                    ` : n`
+                                        <ha-icon-button class="seek-btn" .label=${"Forward 30s"} @click=${() => this._handleSeekRelative(30)}>
+                                            <ha-icon icon="mdi:fast-forward-30"></ha-icon>
+                                        </ha-icon-button>
+                                    `}
                                 </div>
 
                                 <div class="progress-container" @click=${this._handleSeek}>
-                                    ${this._config.show_time && this._overflowState < 1 && i.duration_ticks ? n`
-                                        <span class="time-elapsed">${this._formatTicks(i.position_ticks || 0)}</span>
-                                    ` : d}
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${o}%"></div>
+                                        <div class="progress-fill" style="width: ${o}%; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${o}%; background: ${this._dominantColor}"></div>
                                     </div>
-                                    ${this._config.show_time && this._overflowState < 1 && i.duration_ticks ? n`
-                                        <span class="time-remaining">${this._formatTicks(-((i.duration_ticks || 0) - (i.position_ticks || 0)))}</span>
-                                    ` : d}
                                 </div>
+
+                                ${this._config.show_time && i.duration_ticks ? n`
+                                    <div class="timestamps">
+                                        <span class="time-elapsed">${this._formatTicks(i.position_ticks || 0)}</span>
+                                        <span class="time-remaining">${this._formatTicks(-((i.duration_ticks || 0) - (i.position_ticks || 0)))}</span>
+                                    </div>
+                                ` : d}
                             </div>
                         </div>
                     </div>
@@ -5732,14 +5779,27 @@ let T = class extends S {
     });
   }
   async _handleSeek(t) {
-    const e = t.currentTarget.getBoundingClientRect(), i = (t.clientX - e.left) / e.width, a = this.hass.states[this._config.entity];
-    if (!a) return;
-    const o = a.attributes, s = o.session_id, r = o.position_ticks || 0, h = o.progress_percent || 1, c = r / h * 100;
-    if (!s || !c) return;
-    const _ = Math.round(c * i);
+    const e = t.currentTarget.querySelector(".progress-bar");
+    if (!e) return;
+    const i = e.getBoundingClientRect(), a = Math.max(0, Math.min(1, (t.clientX - i.left) / i.width)), o = this.hass.states[this._config.entity];
+    if (!o) return;
+    const s = o.attributes, r = s.session_id, h = s.position_ticks || 0, c = s.progress_percent || 1, _ = h / c * 100;
+    if (!r || !_) return;
+    const u = Math.round(_ * a);
     await this.hass.callService("jellyha", "session_seek", {
-      session_id: s,
-      position_ticks: _
+      session_id: r,
+      position_ticks: u
+    });
+  }
+  async _handleSeekRelative(t) {
+    const e = this.hass.states[this._config.entity];
+    if (!e) return;
+    const i = e.attributes, a = i.session_id, o = i.position_ticks || 0;
+    if (!a) return;
+    const s = t * 1e7, r = Math.max(0, o + s);
+    await this.hass.callService("jellyha", "session_seek", {
+      session_id: a,
+      position_ticks: r
     });
   }
   async _handlePosterRewind() {
@@ -5762,13 +5822,66 @@ let T = class extends S {
       position_ticks: r
     });
   }
+  _startLongPress() {
+    const t = Date.now(), e = 800, i = () => {
+      const a = Date.now() - t;
+      if (this._longPressProgress = Math.min(a / e, 1), this._longPressProgress >= 1) {
+        this._handleControl("Stop");
+        const o = new CustomEvent("haptic", {
+          detail: "success",
+          bubbles: !0,
+          composed: !0
+        });
+        this.dispatchEvent(o), navigator.vibrate && navigator.vibrate(50), this._stopPulse = !0, setTimeout(() => {
+          this._stopPulse = !1;
+        }, 600), this._endLongPress();
+        return;
+      }
+      this._longPressRaf = requestAnimationFrame(i);
+    };
+    this._longPressRaf = requestAnimationFrame(i);
+  }
+  _endLongPress() {
+    this._longPressRaf && (cancelAnimationFrame(this._longPressRaf), this._longPressRaf = null), this._longPressProgress = 0;
+  }
+  _extractDominantColor(t) {
+    const e = new Image();
+    e.crossOrigin = "anonymous", e.onload = () => {
+      try {
+        const i = document.createElement("canvas");
+        i.width = 50, i.height = 50;
+        const a = i.getContext("2d");
+        if (!a) return;
+        a.drawImage(e, 0, 0, 50, 50);
+        const o = a.getImageData(0, 0, 50, 50).data;
+        let s = 0, r = 0, h = 0, c = 0;
+        for (let _ = 0; _ < o.length; _ += 16) {
+          const u = o[_], p = o[_ + 1], m = o[_ + 2], f = Math.max(u, p, m), x = Math.min(u, p, m), E = f === 0 ? 0 : (f - x) / f, k = f / 255;
+          E > c && k > 0.15 && k < 0.95 && (c = E, s = u, r = p, h = m);
+        }
+        if (c > 0.1) {
+          const _ = s / 255, u = r / 255, p = h / 255, m = Math.max(_, u, p), f = Math.min(_, u, p);
+          let x = 0;
+          const E = (m + f) / 2, k = m - f, D = k === 0 ? 0 : k / (1 - Math.abs(2 * E - 1));
+          k !== 0 && (m === _ ? x = ((u - p) / k + (u < p ? 6 : 0)) * 60 : m === u ? x = ((p - _) / k + 2) * 60 : x = ((_ - u) / k + 4) * 60);
+          const R = Math.max(E * 100, 55), Z = Math.max(D * 100, 60);
+          this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(Z)}%, ${Math.round(R)}%)`;
+        } else
+          this._dominantColor = "var(--primary-color)";
+      } catch {
+        this._dominantColor = "var(--primary-color)";
+      }
+    }, e.onerror = () => {
+      this._dominantColor = "var(--primary-color)";
+    }, e.src = t;
+  }
   connectedCallback() {
     super.connectedCallback(), this._resizeObserver = new ResizeObserver(() => {
       this._checkLayout();
     }), this._resizeObserver.observe(this);
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect();
+    super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect(), this._endLongPress();
   }
   updated(t) {
     super.updated(t), t.has("hass") && this._checkLayout();
@@ -5781,23 +5894,23 @@ let T = class extends S {
   _doLayoutCheck() {
     const t = this.shadowRoot?.querySelector(".title"), e = this.shadowRoot?.querySelector(".info-bottom");
     if (!t || !e) return;
-    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 28, c = 22, g = a.bottom - i.top + h, p = g + c;
-    let m = 0;
-    p > r && (m = 1), g > r && (m = 2), this._overflowState !== m && (this._overflowState = m);
+    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 20, c = 18, u = a.bottom - i.top + 22, m = u + h + c;
+    let f = 0;
+    m > r && (f = 1), u > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
   }
   _formatTicks(t) {
     const e = t < 0, i = Math.floor(Math.abs(t) / 1e7), a = Math.floor(i / 3600), o = Math.floor(i % 3600 / 60), s = i % 60, r = e ? "-" : "";
     return a > 0 ? `${r}${a}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
   }
 };
-T.styles = F`
+A.styles = V`
         :host {
             display: block;
             height: 100%;
             width: 100%;
             background: none !important;
             position: relative;
-            z-index: 2; /* Now playing should be slightly above library to avoid its shadow bleed */
+            z-index: 2;
         }
         ha-card {
             height: 100%;
@@ -5819,27 +5932,22 @@ T.styles = F`
             margin: 0;
         }
 
-        .jellyha-now-playing {
-            /* Inherits from ha-card, additional unique classes can go here if needed */
-        }
         .jellyha-now-playing.has-background {
             background: transparent;
             color: white;
         }
         .jellyha-now-playing.has-background .title,
-        .jellyha-now-playing.has-background .series,
-        .jellyha-now-playing.has-background .device-info,
-        .jellyha-now-playing.has-background .bottom-user-info,
+        .jellyha-now-playing.has-background .subtitle,
+        .jellyha-now-playing.has-background .meta-line,
+        .jellyha-now-playing.has-background .client-line,
         .jellyha-now-playing.has-background .time-elapsed,
         .jellyha-now-playing.has-background .time-remaining,
-        .jellyha-now-playing.has-background .meta-item,
-        .jellyha-now-playing.has-background .genres,
         .jellyha-now-playing.has-background .card-header,
         .jellyha-now-playing.has-background ha-icon-button {
             color: #fff !important;
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
-        .jellyha-now-playing.has-background .badge {
+        .jellyha-now-playing.has-background .poster-badge {
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .jellyha-now-playing.has-background .playback-controls ha-icon-button {
@@ -5848,7 +5956,6 @@ T.styles = F`
         .jellyha-now-playing.has-background .playback-controls ha-icon-button:hover {
             background: rgba(255, 255, 255, 0.25);
         }
-        /* Further increase padding when background is on for better balance */
         .jellyha-now-playing.has-background .card-content {
             padding: 24px 20px 12px !important;
         }
@@ -5883,7 +5990,7 @@ T.styles = F`
             gap: 16px;
             height: 100%;
             box-sizing: border-box;
-            overflow: visible; /* Allow poster pop-out */
+            overflow: visible;
         }
         .card-header {
             font-size: 1.25rem;
@@ -5897,9 +6004,11 @@ T.styles = F`
             gap: 20px;
             align-items: flex-start;
             flex: 1;
-            min-height: 0; /* Crucial for nested flex scrolling/hiding */
+            min-height: 0;
             overflow: visible;
         }
+
+        /* --- Poster with overlay badges --- */
         .poster-container {
             flex: 0 0 auto;
             height: 100%;
@@ -5920,6 +6029,68 @@ T.styles = F`
             height: 100%;
             object-fit: cover;
         }
+
+        /* Poster overlay badges — matches Library Card style */
+        .poster-badge {
+            position: absolute;
+            border-radius: 4px;
+            color: #fff;
+            z-index: 5;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .media-type-badge {
+            top: 6px;
+            left: 6px;
+            padding: 2px 8px 1px 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            background: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .media-type-badge.movie { background-color: #AA5CC3; }
+        .media-type-badge.series { background-color: #F2A218; }
+        .media-type-badge.episode { background-color: #F59E0B; }
+        .media-type-badge.audio { background-color: #10B981; }
+
+        .rating-badge {
+            bottom: 6px;
+            right: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #F59E0B;
+            padding: 3px 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .rating-badge ha-icon {
+            --mdc-icon-size: 13px;
+            color: #F59E0B;
+            margin-top: -1px;
+        }
+        .runtime-badge {
+            bottom: 6px;
+            left: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.6);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 3px 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .runtime-badge ha-icon {
+            --mdc-icon-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: -1px;
+        }
+
+        /* Rewind overlay */
         .rewind-overlay {
             position: absolute;
             top: 0;
@@ -5936,14 +6107,14 @@ T.styles = F`
         .rewind-overlay span {
             color: white;
             font-weight: 700;
-            font-size: 0.8rem; /* Small fixed size */
+            font-size: 0.8rem;
             letter-spacing: 0.5px;
             background: var(--primary-color);
             padding: 2px 6px;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             transform: translateY(-8px);
-            white-space: nowrap; /* Prevent wrapping */
+            white-space: nowrap;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -5956,262 +6127,100 @@ T.styles = F`
         .playback-controls .spinning ha-icon {
             animation: spin 1s linear infinite;
         }
+
+        /* --- Info container --- */
         .info-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             height: 100%;
-            min-height: 0; /* Crucial */
+            min-height: 0;
             min-width: 0;
             overflow: hidden;
         }
         .info-top {
-            flex: 1 1 auto; /* Can shrink and grow */
-            min-height: 0; /* Allows shrinking below content size */
-            overflow: visible; /* Hide overflow content */
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: visible;
             display: flex;
             flex-direction: column;
             margin-bottom: 0;
-            padding-bottom: 4px; /* Prevent text clipping at bottom */
+            padding-bottom: 4px;
         }
         .header {
             margin-bottom: 0px;
-            flex-shrink: 0; /* Don't squash the title too easily if possible */
+            flex-shrink: 0;
         }
+
+        /* 4-line text structure */
         .title {
             font-size: 1.4rem;
             font-weight: 700;
             line-height: 1.2;
             color: var(--primary-text-color);
             margin-bottom: 2px;
-        }
-        .series {
-            font-size: 1.1rem;
-            color: var(--secondary-text-color);
-            font-weight: 500;
-        }
-        .device-info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.95rem;
-            color: var(--secondary-text-color);
-            margin-top: 8px;
-            opacity: 0.8;
-        }
-        .device-info ha-icon {
-            --mdc-icon-size: 18px;
-        }
-        .bottom-user-info {
-            font-size: 0.8rem;
-            color: var(--secondary-text-color);
-            opacity: 0.85;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            filter: brightness(1.1);
         }
-        .bottom-device-info {
-            margin-top: 0;
+        .has-background .title {
+            text-shadow: 0 0 20px currentColor;
+            filter: brightness(1.2) saturate(1.3);
         }
-        .meta-container {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 12px;
-            align-items: center;
+        .subtitle {
+            font-size: 1.05rem;
+            color: var(--secondary-text-color);
+            font-weight: 400;
+            opacity: 0.75;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 6px;
+            filter: brightness(1.05);
         }
-
-        .bottom-device-info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
+        .has-background .subtitle {
+            text-shadow: 0 0 16px currentColor;
+            filter: brightness(1.15) saturate(1.2);
+        }
+        .meta-line {
+            font-size: 0.85rem;
             color: var(--secondary-text-color);
-            margin-right: auto; /* Push controls to right */
-            opacity: 0.8;
-        }
-
-        /* Default: Hide top device info, show bottom device info */
-        .info-top .device-info {
-            display: none;
-        }
-        
-        /* Ensure controls spread out when bottom info is present */
-        .controls-container {
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        /* When card is too narrow, HIDE bottom device info to prevent crowding */
-        @container now-playing (max-width: 350px) {
-            .controls-left {
-                display: none !important;
-            }
-            .controls-container {
-                justify-content: center;
-            }
-        }
-        
-        /* For 5+ row cards, hide device info sooner to prevent overflow */
-        @container now-playing (min-height: 300px) and (max-width: 430px) {
-            .controls-left {
-                display: none !important;
-            }
-        }
-        
-        /* Progressive metadata hiding based on priority */
-        /* Hide genres first (priority 0) */
-        @container now-playing (max-width: 400px) {
-            .meta-priority-0 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide rating (priority 1) */
-        @container now-playing (max-width: 370px) {
-            .meta-priority-1 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide runtime (priority 2) */
-        @container now-playing (max-width: 320px) {
-            .meta-priority-2 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide year (priority 3) */
-        @container now-playing (max-width: 260px) {
-            .meta-priority-3 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide badge last (priority 4) - only in ultra-compact mode */
-        @container now-playing (max-width: 220px) {
-            .meta-priority-4 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide badge when card has title AND is short AND narrow (3 rows × 6 columns) to prevent overlap with controls */
-        .has-title .meta-priority-4 {
-            /* Default: show the badge */
-        }
-        @container now-playing (max-height: 180px) and (max-width: 320px) {
-            .has-title .meta-priority-4 {
-                display: none !important;
-            }
-        }
-
-        /* When card is tall enough (4+ rows ≈ 240px), enable wrapping instead of hiding */
-        @container now-playing (min-height: 240px) {
-            .meta-container {
-                flex-wrap: wrap;
-                white-space: normal;
-            }
-            .info-top {
-                overflow: visible;
-            }
-        }
-        
-        /* When tall AND narrow, show items that would normally hide (they'll wrap instead) */
-        @container now-playing (min-height: 240px) and (max-width: 400px) {
-            .meta-priority-0 {
-                display: block !important;
-            }
-        }
-        @container now-playing (min-height: 240px) and (max-width: 370px) {
-            .meta-priority-1 {
-                display: flex !important;
-            }
-        }
-        @container now-playing (min-height: 240px) and (max-width: 320px) {
-            .meta-priority-2 {
-                display: flex !important;
-            }
-        }
-        @container now-playing (min-height: 240px) and (max-width: 260px) {
-            .meta-priority-3 {
-                display: flex !important;
-            }
-        }
-        .badge {
-            padding: 2px 8px 1px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            background: var(--primary-color);
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            flex-shrink: 0; /* Prevent badge from shrinking */
-            overflow: visible; /* Ensure rounded corners aren't clipped */
-        }
-        .badge.movie { background-color: #AA5CC3; }
-        .badge.series { background-color: #F2A218; }
-        .badge.episode { background-color: #F59E0B; }
-
-        .meta-item {
-            color: var(--secondary-text-color);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .meta-item.external-rating {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .meta-item.external-rating ha-icon {
-            --mdc-icon-size: 14px;
-            color: #F59E0B;
-        }
-        .genres-container {
-            flex-shrink: 0;
-            overflow: visible;
-            margin-bottom: -4px;
-            position: relative;
-            z-index: 4; /* Ensure it stays above other elements if needed */
-        }
-        .genres {
-            font-size: 0.95rem;
-            color: var(--secondary-text-color);
-            margin: 0;
-            font-style: italic;
             opacity: 0.7;
+            font-style: italic;
             white-space: nowrap;
-            text-overflow: ellipsis;
             overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 1px;
         }
+        .client-line {
+            font-size: 0.75rem;
+            color: var(--secondary-text-color);
+            opacity: 0.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- Info Bottom: Controls + Progress --- */
         .info-bottom {
-            flex: 0 0 auto; /* Never shrink */
+            flex: 0 0 auto;
             width: 100%;
             margin-top: auto;
             z-index: 5;
         }
-        .controls-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-        .controls-left {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-        }
+
+        /* Playback controls (centered) */
         .playback-controls {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
         }
         .playback-controls ha-icon-button {
-            --mdc-icon-button-size: 40px;
-            --mdc-icon-size: 28px;
+            --mdc-icon-button-size: 36px;
+            --mdc-icon-size: 22px;
             color: var(--primary-text-color);
             background: rgba(var(--rgb-primary-text-color), 0.05);
             border-radius: 50%;
@@ -6225,43 +6234,106 @@ T.styles = F`
             align-items: center;
             justify-content: center;
         }
-        .progress-container {
+
+        /* Play/Pause button slightly larger */
+        .play-pause-wrapper {
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: transparent;
+            justify-content: center;
+        }
+        .play-pause-btn {
+            --mdc-icon-button-size: 44px !important;
+            --mdc-icon-size: 30px !important;
+        }
+
+        /* Stop ring SVG */
+        .stop-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 44px;
+            height: 44px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Subtle music controls (shuffle/repeat) */
+        .music-subtle-btn {
+            --mdc-icon-button-size: 30px !important;
+            --mdc-icon-size: 16px !important;
+            opacity: 0.35;
+            background: transparent !important;
+            transition: opacity 0.2s;
+        }
+        .music-subtle-btn:hover {
+            opacity: 0.7;
+        }
+
+        /* Stop confirmed pulse animation */
+        .play-pause-wrapper.stop-pulse {
+            animation: stopPulse 0.5s ease-out;
+        }
+        @keyframes stopPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            50% { transform: scale(1.15); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* --- Progress bar with seek handle --- */
+        .progress-container {
             cursor: pointer;
             position: relative;
             width: 100%;
+            padding: 4px 6px;
         }
-        .has-background .progress-container {
-            background: transparent;
+        .progress-bar {
+            height: 6px;
+            background: rgba(var(--rgb-primary-text-color), 0.12);
+            border-radius: 3px;
+            overflow: visible;
+            position: relative;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .has-background .progress-bar {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 0 3px 3px 0;
+            transition: width 1s linear;
+        }
+        .seek-handle {
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            pointer-events: none;
+            transition: left 1s linear;
+        }
+
+        /* --- Timestamps below progress bar --- */
+        .timestamps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2px;
+            padding: 0 6px;
         }
         .time-elapsed,
         .time-remaining {
-            flex-shrink: 0;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--secondary-text-color);
             opacity: 0.85;
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
 
-        .progress-bar {
-            flex: 1;
-            height: 6px;
-            background: rgba(var(--rgb-primary-text-color), 0.15);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .has-background .progress-bar {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--primary-color);
-            transition: width 1s linear;
-        }
+        /* --- Empty & Error states --- */
         .empty-state, .error-state {
             text-align: center;
             padding: 20px;
@@ -6302,7 +6374,9 @@ T.styles = F`
             opacity: 0.7;
         }
 
-        /* Container Queries for Responsive Information Throttling */
+        /* ===== Container Query Responsive Tiers ===== */
+
+        /* Compact empty state */
         @container now-playing (max-width: 250px) {
             .empty-state .logo-container.full-logo {
                 display: none;
@@ -6320,9 +6394,9 @@ T.styles = F`
             }
         }
 
-        /* Standard Tier Hiding (Width based) */
+        /* Hide meta/client lines when narrow */
         @container now-playing (max-width: 320px) {
-            .genres, .device-info {
+            .meta-line, .client-line {
                 display: none !important;
             }
             .title {
@@ -6331,16 +6405,31 @@ T.styles = F`
             }
         }
 
-        /* Vertical Tier Hiding (Height based - for very short cards) */
+        /* Hide poster badges when very narrow */
+        @container now-playing (max-width: 280px) {
+            .poster-badge {
+                display: none !important;
+            }
+            .main-container {
+                gap: 12px;
+            }
+            .title {
+                font-size: 1.1rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                white-space: normal;
+            }
+        }
+
+        /* Very short cards: hide extra text */
         @container now-playing (max-height: 160px) {
-            .genres, .device-info {
+            .meta-line, .client-line, .subtitle {
                 display: none !important;
             }
-            .meta-container, .card-header {
+            .card-header {
                 display: none !important;
-            }
-            .meta-container {
-                margin-top: 4px;
             }
             .title {
                 font-size: 1.2rem;
@@ -6358,25 +6447,8 @@ T.styles = F`
             }
         }
 
-        @container now-playing (max-width: 280px) {
-           .main-container {
-                gap: 12px;
-            }
-            .poster-container {
-                flex: 0 0 80px;
-                height: 120px;
-            }
-            .title {
-                font-size: 1.1rem;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-        }
-
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
-        @container now-playing (max-width: 220px) {
+        @container now-playing (max-width: 350px) {
             .card-header, .info-top {
                 display: none !important;
             }
@@ -6420,22 +6492,30 @@ T.styles = F`
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
+            }
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
@@ -6444,7 +6524,7 @@ T.styles = F`
             }
         }
 
-        /* Height-Based Compact Mode (Overlay controls when vertically constrained) */
+        /* Height-Based Compact Mode */
         @container now-playing (max-height: 180px) {
             .card-header, .info-top {
                 display: none !important;
@@ -6489,22 +6569,30 @@ T.styles = F`
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
+            }
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
@@ -6513,8 +6601,8 @@ T.styles = F`
             }
         }
 
-        /* Tall but Narrow Mode - When card is 4+ rows but too narrow for side layout */
-        @container now-playing (min-height: 240px) and (max-width: 300px) {
+        /* Tall but Narrow Mode */
+        @container now-playing (min-height: 240px) and (max-width: 400px) {
             .card-header, .info-top {
                 display: none !important;
             }
@@ -6558,22 +6646,30 @@ T.styles = F`
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
+            }
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
@@ -6582,8 +6678,8 @@ T.styles = F`
             }
         }
 
-        /* Very Tall but Narrow Mode - When card is 5+ rows and < 9 columns */
-        @container now-playing (min-height: 300px) and (max-width: 350px) {
+        /* Very Tall but Narrow Mode */
+        @container now-playing (min-height: 300px) and (max-width: 450px) {
             .card-header, .info-top {
                 display: none !important;
             }
@@ -6627,44 +6723,67 @@ T.styles = F`
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
             }
-            /* Scale down rewind overlay for compact mode */
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
+            }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
                 padding: 2px 5px !important;
                 white-space: nowrap;
+            }
+        }
+
+        /* Hide badge when card has title AND is short AND narrow */
+        @container now-playing (max-height: 180px) and (max-width: 320px) {
+            .has-title .poster-badge {
+                display: none !important;
             }
         }
     `;
-W([
-  k({ attribute: !1 })
-], T.prototype, "hass", 2);
-W([
-  u()
-], T.prototype, "_config", 2);
-W([
-  u()
-], T.prototype, "_rewindActive", 2);
-W([
-  u()
-], T.prototype, "_overflowState", 2);
-T = W([
-  D("jellyha-now-playing-card")
-], T);
+T([
+  C({ attribute: !1 })
+], A.prototype, "hass", 2);
+T([
+  g()
+], A.prototype, "_config", 2);
+T([
+  g()
+], A.prototype, "_rewindActive", 2);
+T([
+  g()
+], A.prototype, "_overflowState", 2);
+T([
+  g()
+], A.prototype, "_dominantColor", 2);
+T([
+  g()
+], A.prototype, "_longPressProgress", 2);
+T([
+  g()
+], A.prototype, "_stopPulse", 2);
+A = T([
+  U("jellyha-now-playing-card")
+], A);
 //# sourceMappingURL=jellyha-cards.js.map

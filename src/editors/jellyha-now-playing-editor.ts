@@ -42,6 +42,15 @@ export class JellyHANowPlayingEditor extends LitElement {
       gap: 8px;
       margin-bottom: 8px;
     }
+    .checkbox-pair {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .checkbox-pair .checkbox-row {
+      margin-bottom: 0;
+      flex: 1;
+    }
   `;
 
   public setConfig(config: JellyHANowPlayingCardConfig): void {
@@ -87,12 +96,21 @@ export class JellyHANowPlayingEditor extends LitElement {
           ></ha-textfield>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_title !== false}
-            @change=${this._showTitleChanged}
-          ></ha-switch>
-          <span>${localize(lang, 'editor.show_title')}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_title !== false}
+              @change=${this._showTitleChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_title')}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_subtitle !== false}
+              @change=${this._showSubtitleChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_subtitle')}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -103,12 +121,21 @@ export class JellyHANowPlayingEditor extends LitElement {
           <span>${localize(lang, 'editor.show_media_type_badge')}</span>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_year !== false}
-            @change=${this._showYearChanged}
-          ></ha-switch>
-          <span>${localize(lang, 'editor.show_year')}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_year !== false}
+              @change=${this._showYearChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_year')}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_genres === true}
+              @change=${this._showGenresChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_genres')}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -127,28 +154,21 @@ export class JellyHANowPlayingEditor extends LitElement {
           <span>${localize(lang, 'editor.show_rating')}</span>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_genres === true}
-            @change=${this._showGenresChanged}
-          ></ha-switch>
-          <span>${localize(lang, 'editor.show_genres')}</span>
-        </div>
-
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_client !== false}
-            @change=${this._showClientChanged}
-          ></ha-switch>
-          <span>${localize(lang, 'editor.show_client')}</span>
-        </div>
-
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_user !== false}
-            @change=${this._showUserChanged}
-          ></ha-switch>
-          <span>${localize(lang, 'editor.show_user')}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_user !== false}
+              @change=${this._showUserChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_user')}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_client !== false}
+              @change=${this._showClientChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_client')}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -193,9 +213,24 @@ export class JellyHANowPlayingEditor extends LitElement {
     this._updateConfig('show_title', target.checked);
   }
 
+  private _showSubtitleChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_subtitle', target.checked);
+  }
+
   private _showMediaTypeBadgeChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_media_type_badge', target.checked);
+  }
+
+  private _showYearChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_year', target.checked);
+  }
+
+  private _showGenresChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_genres', target.checked);
   }
 
   private _showRatingsChanged(e: Event): void {
@@ -208,24 +243,14 @@ export class JellyHANowPlayingEditor extends LitElement {
     this._updateConfig('show_runtime', target.checked);
   }
 
-  private _showGenresChanged(e: Event): void {
+  private _showUserChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
-    this._updateConfig('show_genres', target.checked);
-  }
-
-  private _showYearChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._updateConfig('show_year', target.checked);
+    this._updateConfig('show_user', target.checked);
   }
 
   private _showClientChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_client', target.checked);
-  }
-
-  private _showUserChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._updateConfig('show_user', target.checked);
   }
 
   private _showTimeChanged(e: Event): void {

@@ -18,7 +18,8 @@ Jellyfin for Home Assistant
 
 - 🎬 Display movies and TV shows from your library
 - 📺 Cast media directly to Chromecast (Gen 1 supported)
-- ⏯️ Full playback control: Play, Pause, Stop, Seek, Next/Previous Track
+- ⏯️ Full playback control: Play, Pause, Stop, Seek, Next/Previous Track, Shuffle, Repeat
+- ⏳ Accurate playback tracking: Elapsed/remaining time, +30s/-10s skip controls
 - 🎮 **Per-user media players** with transport and volume controls
 - ⏭️ "Next Up" support to resume TV shows
 - 🎨 Three layouts: Carousel, Grid, List
@@ -34,6 +35,7 @@ Jellyfin for Home Assistant
 - ⚡ Instant loading via WebSocket
 - 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
 - 🎛️ Graphical card editor (no YAML required)
+- ⏱️ Configurable API Refresh Interval (Integration options)
 
 ## Installation
 
@@ -189,7 +191,10 @@ show_background: true
 | `title` | string | `Jellyfin` | Optional title header |
 | `show_background` | boolean | `true` | Show blurred backdrop fanart as background |
 | `show_title` | boolean | `true` | Show media title text |
+| `show_subtitle` | boolean | `true` | Show artist/series subtitle |
 | `show_client` | boolean | `true` | Show client device name (e.g. "Chrome") |
+| `show_user` | boolean | `true` | Show user name in client info |
+| `show_time` | boolean | `false` | Show elapsed / remaining time |
 | `show_media_type_badge` | boolean | `true` | Show badge (MOVIE, SERIES, EPISODE) |
 | `show_genres` | boolean | `true` | Show genres list |
 | `show_ratings` | boolean | `true` | Show community rating |

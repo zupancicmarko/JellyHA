@@ -144,6 +144,7 @@ export interface NowPlayingSensorData {
     backdrop_url?: string;
     community_rating?: number;
     critic_rating?: number;
+    artist_name?: string;
 }
 
 export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
@@ -157,6 +158,7 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     show_year?: boolean;
     show_client?: boolean;
     show_user?: boolean;
+    show_subtitle?: boolean;
     show_time?: boolean;
     show_background?: boolean;
     use_series_image?: boolean;

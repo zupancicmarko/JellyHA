@@ -90,6 +90,14 @@ session_control:
               value: TogglePause
             - label: Stop
               value: Stop
+            - label: Next Track
+              value: NextTrack
+            - label: Previous Track
+              value: PreviousTrack
+            - label: Shuffle
+              value: Shuffle
+            - label: Set Repeat Mode
+              value: SetRepeatMode
 
 session_seek:
   name: Session Seek

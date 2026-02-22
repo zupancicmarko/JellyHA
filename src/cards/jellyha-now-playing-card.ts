@@ -11,8 +11,6 @@ import { formatRuntime, addImageParams } from '../shared/utils';
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
 
-import '../editors/jellyha-now-playing-editor';
-
 // Register card in the custom cards array
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -27,12 +25,17 @@ export class JellyHANowPlayingCard extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private _config!: JellyHANowPlayingCardConfig;
     @state() private _rewindActive: boolean = false;
-    @state() private _overflowState: number = 0; // 0=All, 1=Hide Genres, 2=Hide Meta
+    @state() private _overflowState: number = 0; // 0=All, 1=Hide line3/4, 2=Hide all text
+    @state() private _dominantColor: string = 'var(--primary-color)';
+    @state() private _longPressProgress: number = 0;
+    @state() private _stopPulse: boolean = false;
+    private _longPressRaf: number | null = null;
     private _resizeObserver?: ResizeObserver;
 
     // Cache backdrop URL to prevent flicker on every update
     private _cachedBackdropUrl: string | undefined;
     private _cachedItemId: string | undefined;
+    private _cachedColorItemId: string | undefined;
 
     public setConfig(config: JellyHANowPlayingCardConfig): void {
         this._config = {
@@ -132,9 +135,34 @@ export class JellyHANowPlayingCard extends LitElement {
             this._cachedBackdropUrl = rawBackdropUrl ? addImageParams(rawBackdropUrl, 640) : undefined;
         }
 
+        // Extract dominant color when item changes
+        if (currentItemId !== this._cachedColorItemId && imageUrl) {
+            this._cachedColorItemId = currentItemId;
+            this._extractDominantColor(addImageParams(imageUrl, 80));
+        }
+
         const backdropUrl = this._cachedBackdropUrl;
         const showBackground = this._config.show_background && backdropUrl;
         const isPaused = attributes.is_paused;
+        const isMusic = attributes.media_type?.toLowerCase() === 'audio';
+        const mediaType = attributes.media_type?.toLowerCase() || '';
+
+        const showSubtitle = this._config.show_subtitle !== false;
+        const subtitle = showSubtitle ? (attributes.artist_name || attributes.series_title || '') : '';
+        const yearStr = (this._config.show_year !== false && attributes.year) ? String(attributes.year) : '';
+        const genreStr = (this._config.show_genres && attributes.genres?.length) ? attributes.genres.slice(0, 2).join(', ') : '';
+        const metaLine = [yearStr, genreStr].filter(Boolean).join(' • ');
+        const userName = (this._config.show_user !== false) ? (attributes.user_name || '') : '';
+        const clientInfo = (this._config.show_client !== false) ? (attributes.client || '') : '';
+
+        // Media type badge text
+        const badgeText = (mediaType === 'episode' && attributes.season !== undefined && attributes.episode !== undefined)
+            ? `S${String(attributes.season).padStart(2, '0')}E${String(attributes.episode).padStart(2, '0')}`
+            : attributes.media_type || '';
+
+        // SVG ring circumference for stop animation (r=20 => C=2*PI*20 ≈ 125.66)
+        const ringCircumference = 125.66;
+        const ringOffset = ringCircumference * (1 - this._longPressProgress);
 
         return html`
             <ha-card class="jellyha-now-playing ${showBackground ? 'has-background' : ''} ${this._config.title ? 'has-title' : ''}">
@@ -152,6 +180,25 @@ export class JellyHANowPlayingCard extends LitElement {
                         ${imageUrl ? html`
                             <div class="poster-container" @click=${this._handlePosterRewind}>
                                 <img src="${addImageParams(imageUrl, 160)}" alt="${attributes.title}" loading="eager" fetchpriority="high" />
+                                
+                                ${this._config.show_media_type_badge !== false && badgeText ? html`
+                                    <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
+                                ` : nothing}
+                                ${this._config.show_ratings && attributes.community_rating ? html`
+                                    <span class="poster-badge rating-badge">
+                                        <ha-icon icon="mdi:star"></ha-icon>
+                                        ${attributes.community_rating.toFixed(1)}
+                                    </span>
+                                ` : nothing}
+                                ${this._config.show_runtime && attributes.runtime_minutes ? html`
+                                    <span class="poster-badge runtime-badge">
+                                        <ha-icon icon="mdi:clock-outline"></ha-icon>
+                                        ${mediaType === 'audio' && attributes.duration_ticks
+                        ? `${Math.floor(attributes.duration_ticks / 10000000 / 60)}m ${Math.floor((attributes.duration_ticks / 10000000) % 60)}s`
+                        : formatRuntime(attributes.runtime_minutes)}
+                                    </span>
+                                ` : nothing}
+
                                 ${this._rewindActive ? html`
                                     <div class="rewind-overlay">
                                         <span>${localize(this.hass.locale?.language || this.hass.language, 'rewinding')}</span>
@@ -163,90 +210,86 @@ export class JellyHANowPlayingCard extends LitElement {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== false ? html`<div class="title">${attributes.title}</div>` : nothing}
-                                    ${attributes.series_title ? html`<div class="series">${attributes.series_title}</div>` : nothing}
-                                    ${this._config.show_client !== false ? html`
-                                        <div class="device-info">
-                                            <span>${attributes.device_name} (${attributes.client})</span>
-                                        </div>
-                                    ` : nothing}
+                                    ${this._config.show_title !== false ? html`<div class="title" style="color: ${this._dominantColor}">${attributes.title}</div>` : nothing}
+                                    ${subtitle ? html`<div class="subtitle" style="color: ${this._dominantColor}">${subtitle}</div>` : nothing}
+                                    ${this._overflowState < 1 && metaLine ? html`<div class="meta-line">${metaLine}</div>` : nothing}
+                                    ${this._overflowState < 1 && (userName || clientInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && clientInfo ? ' ' : ''}${clientInfo || nothing}</div>` : nothing}
                                 </div>
-
-                                ${this._overflowState < 2 ? html`
-                                    <div class="meta-container">
-                                        ${this._config.show_media_type_badge !== false ? html`
-                                            <span class="badge meta-priority-4 ${attributes.media_type?.toLowerCase()}">
-                                                ${(attributes.media_type?.toLowerCase() === 'episode' && attributes.season !== undefined && attributes.episode !== undefined)
-                        ? `S${String(attributes.season).padStart(2, '0')}E${String(attributes.episode).padStart(2, '0')}`
-                        : attributes.media_type}
-                                            </span>
-                                        ` : nothing}
-                                        ${this._config.show_year !== false && attributes.year ? html`
-                                            <span class="meta-item meta-priority-3">${attributes.year}</span>
-                                        ` : nothing}
-                                        ${this._config.show_runtime && attributes.runtime_minutes ? html`
-                                            <span class="meta-item meta-priority-2">${formatRuntime(attributes.runtime_minutes)}</span>
-                                        ` : nothing}
-                                        ${this._config.show_ratings && attributes.community_rating ? html`
-                                            <span class="meta-item external-rating meta-priority-1">
-                                                <ha-icon icon="mdi:star"></ha-icon>
-                                                <span>${attributes.community_rating.toFixed(1)}</span>
-                                            </span>
-                                        ` : nothing}
-                                    </div>
-                                ` : nothing}
-
-                                ${this._overflowState < 1 && this._config.show_genres && attributes.genres?.length ? html`
-                                    <div class="genres-container meta-priority-0">
-                                        <div class="genres">${attributes.genres.join(', ')}</div>
-                                    </div>
-                                ` : nothing}
                             </div>
 
                             <div class="info-bottom">
-                                <div class="controls-container">
-                                    <div class="controls-left">
-                                        ${this._config.show_user !== false && this._overflowState < 1 && attributes.user_name ? html`
-                                            <div class="bottom-user-info">${attributes.user_name}</div>
-                                        ` : nothing}
-                                        ${this._config.show_client !== false ? html`
-                                            <div class="device-info bottom-device-info">
-                                                <span>${attributes.device_name} (${attributes.client})</span>
-                                            </div>
-                                        ` : nothing}
-                                    </div>
+                                <div class="playback-controls">
+                                    ${isMusic ? html`
+                                        <ha-icon-button class="music-subtle-btn" .label=${'Shuffle'} @click=${() => this._handleControl('Shuffle')}>
+                                            <ha-icon icon="mdi:shuffle-variant"></ha-icon>
+                                        </ha-icon-button>
+                                        <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'previous') || 'Previous'} @click=${() => this._handleControl('PreviousTrack')}>
+                                            <ha-icon icon="mdi:skip-previous"></ha-icon>
+                                        </ha-icon-button>
+                                    ` : html`
+                                        <ha-icon-button class="seek-btn" .label=${'Rewind 10s'} @click=${() => this._handleSeekRelative(-10)}>
+                                            <ha-icon icon="mdi:rewind-10"></ha-icon>
+                                        </ha-icon-button>
+                                    `}
 
-                                    <div class="playback-controls">
-                                                                    ${this._rewindActive ? html`
+                                    <div class="play-pause-wrapper ${this._stopPulse ? 'stop-pulse' : ''}"
+                                        @pointerdown=${this._startLongPress}
+                                        @pointerup=${this._endLongPress}
+                                        @pointerleave=${this._endLongPress}
+                                        @contextmenu=${(e: Event) => e.preventDefault()}
+                                    >
+                                        ${this._rewindActive ? html`
                                             <ha-icon-button class="spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : isPaused ? html`
-                                            <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => this._handleControl('Unpause')}>
+                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => this._handleControl('Unpause')}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : html`
-                                            <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => this._handleControl('Pause')}>
+                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => this._handleControl('Pause')}>
                                                 <ha-icon icon="mdi:pause"></ha-icon>
                                             </ha-icon-button>
                                         `}
-                                        <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'stop')} @click=${() => this._handleControl('Stop')}>
-                                            <ha-icon icon="mdi:stop"></ha-icon>
-                                        </ha-icon-button>
+                                        ${this._longPressProgress > 0 ? html`
+                                            <svg class="stop-ring" viewBox="0 0 44 44">
+                                                <circle cx="22" cy="22" r="20"
+                                                    stroke="#ef4444" stroke-width="3" fill="none"
+                                                    stroke-dasharray="${ringCircumference}"
+                                                    stroke-dashoffset="${ringOffset}"
+                                                    stroke-linecap="round"
+                                                    transform="rotate(-90 22 22)" />
+                                            </svg>
+                                        ` : nothing}
                                     </div>
+
+                                    ${isMusic ? html`
+                                        <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'next') || 'Next'} @click=${() => this._handleControl('NextTrack')}>
+                                            <ha-icon icon="mdi:skip-next"></ha-icon>
+                                        </ha-icon-button>
+                                        <ha-icon-button class="music-subtle-btn" .label=${'Repeat'} @click=${() => this._handleControl('SetRepeatMode')}>
+                                            <ha-icon icon="mdi:repeat"></ha-icon>
+                                        </ha-icon-button>
+                                    ` : html`
+                                        <ha-icon-button class="seek-btn" .label=${'Forward 30s'} @click=${() => this._handleSeekRelative(30)}>
+                                            <ha-icon icon="mdi:fast-forward-30"></ha-icon>
+                                        </ha-icon-button>
+                                    `}
                                 </div>
 
                                 <div class="progress-container" @click=${this._handleSeek}>
-                                    ${this._config.show_time && this._overflowState < 1 && attributes.duration_ticks ? html`
-                                        <span class="time-elapsed">${this._formatTicks(attributes.position_ticks || 0)}</span>
-                                    ` : nothing}
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                                        <div class="progress-fill" style="width: ${progressPercent}%; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${progressPercent}%; background: ${this._dominantColor}"></div>
                                     </div>
-                                    ${this._config.show_time && this._overflowState < 1 && attributes.duration_ticks ? html`
-                                        <span class="time-remaining">${this._formatTicks(-((attributes.duration_ticks || 0) - (attributes.position_ticks || 0)))}</span>
-                                    ` : nothing}
                                 </div>
+
+                                ${this._config.show_time && attributes.duration_ticks ? html`
+                                    <div class="timestamps">
+                                        <span class="time-elapsed">${this._formatTicks(attributes.position_ticks || 0)}</span>
+                                        <span class="time-remaining">${this._formatTicks(-((attributes.duration_ticks || 0) - (attributes.position_ticks || 0)))}</span>
+                                    </div>
+                                ` : nothing}
                             </div>
                         </div>
                     </div>
@@ -330,8 +373,10 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private async _handleSeek(e: MouseEvent): Promise<void> {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
+        const progressBar = (e.currentTarget as HTMLElement).querySelector('.progress-bar') as HTMLElement;
+        if (!progressBar) return;
+        const rect = progressBar.getBoundingClientRect();
+        const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
 
         const stateObj = this.hass.states[this._config.entity];
         if (!stateObj) return;
@@ -349,6 +394,25 @@ export class JellyHANowPlayingCard extends LitElement {
         await this.hass.callService('jellyha', 'session_seek', {
             session_id: sessionId,
             position_ticks: seekTicks
+        });
+    }
+
+    private async _handleSeekRelative(seconds: number): Promise<void> {
+        const stateObj = this.hass.states[this._config.entity];
+        if (!stateObj) return;
+
+        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
+        const sessionId = attributes.session_id;
+        const positionTicks = attributes.position_ticks || 0;
+
+        if (!sessionId) return;
+
+        const seekTicks = seconds * 10000000; // Convert seconds to ticks
+        const newPositionTicks = Math.max(0, positionTicks + seekTicks);
+
+        await this.hass.callService('jellyha', 'session_seek', {
+            session_id: sessionId,
+            position_ticks: newPositionTicks
         });
     }
 
@@ -386,6 +450,105 @@ export class JellyHANowPlayingCard extends LitElement {
         });
     }
 
+    private _startLongPress(): void {
+        const start = Date.now();
+        const duration = 800; // ms to hold before stopping
+
+        const animate = () => {
+            const elapsed = Date.now() - start;
+            this._longPressProgress = Math.min(elapsed / duration, 1);
+
+            if (this._longPressProgress >= 1) {
+                this._handleControl('Stop');
+                // Haptic feedback
+                const event = new CustomEvent('haptic', {
+                    detail: 'success',
+                    bubbles: true,
+                    composed: true,
+                });
+                this.dispatchEvent(event);
+                // Mobile haptic vibration fallback
+                if (navigator.vibrate) navigator.vibrate(50);
+                // Trigger stop pulse animation
+                this._stopPulse = true;
+                setTimeout(() => { this._stopPulse = false; }, 600);
+                this._endLongPress();
+                return;
+            }
+            this._longPressRaf = requestAnimationFrame(animate);
+        };
+
+        this._longPressRaf = requestAnimationFrame(animate);
+    }
+
+    private _endLongPress(): void {
+        if (this._longPressRaf) {
+            cancelAnimationFrame(this._longPressRaf);
+            this._longPressRaf = null;
+        }
+        this._longPressProgress = 0;
+    }
+
+    private _extractDominantColor(imgUrl: string): void {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 50;
+                canvas.height = 50;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+                ctx.drawImage(img, 0, 0, 50, 50);
+                const data = ctx.getImageData(0, 0, 50, 50).data;
+
+                let bestR = 0, bestG = 0, bestB = 0;
+                let bestSaturation = 0;
+
+                for (let i = 0; i < data.length; i += 16) {
+                    const r = data[i], g = data[i + 1], b = data[i + 2];
+                    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                    const saturation = max === 0 ? 0 : (max - min) / max;
+                    const brightness = max / 255;
+
+                    if (saturation > bestSaturation && brightness > 0.15 && brightness < 0.95) {
+                        bestSaturation = saturation;
+                        bestR = r; bestG = g; bestB = b;
+                    }
+                }
+
+                if (bestSaturation > 0.1) {
+                    // Convert to HSL and boost lightness for visibility on dark backgrounds
+                    const rn = bestR / 255, gn = bestG / 255, bn = bestB / 255;
+                    const max = Math.max(rn, gn, bn), min = Math.min(rn, gn, bn);
+                    let h = 0;
+                    const l = (max + min) / 2;
+                    const d = max - min;
+                    const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+
+                    if (d !== 0) {
+                        if (max === rn) h = ((gn - bn) / d + (gn < bn ? 6 : 0)) * 60;
+                        else if (max === gn) h = ((bn - rn) / d + 2) * 60;
+                        else h = ((rn - gn) / d + 4) * 60;
+                    }
+
+                    // Clamp lightness to at least 55% and saturation to at least 60%
+                    const boostedL = Math.max(l * 100, 55);
+                    const boostedS = Math.max(s * 100, 60);
+                    this._dominantColor = `hsl(${Math.round(h)}, ${Math.round(boostedS)}%, ${Math.round(boostedL)}%)`;
+                } else {
+                    this._dominantColor = 'var(--primary-color)';
+                }
+            } catch {
+                this._dominantColor = 'var(--primary-color)';
+            }
+        };
+        img.onerror = () => {
+            this._dominantColor = 'var(--primary-color)';
+        };
+        img.src = imgUrl;
+    }
+
     public connectedCallback(): void {
         super.connectedCallback();
         this._resizeObserver = new ResizeObserver(() => {
@@ -399,6 +562,7 @@ export class JellyHANowPlayingCard extends LitElement {
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
         }
+        this._endLongPress();
     }
 
     protected updated(changedProps: PropertyValues): void {
@@ -409,7 +573,6 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private _checkLayout(): void {
-        // Use requestAnimationFrame to ensure DOM is rendered
         requestAnimationFrame(() => {
             this._doLayoutCheck();
         });
@@ -425,31 +588,28 @@ export class JellyHANowPlayingCard extends LitElement {
         const titleRect = titleEl.getBoundingClientRect();
         const bottomRect = bottomEl.getBoundingClientRect();
 
-        // Calculate dynamic threshold based on where controls actually start
         const bottomSectionTop = bottomRect.top - cardRect.top;
-
-        // Add a small buffer to ensure visual separation
         const SAFE_THRESHOLD = bottomSectionTop - 8;
 
-        // Estimated heights
-        const PROJECTED_META_HEIGHT = 28;
-        const PROJECTED_GENRE_HEIGHT = 22;
+        // Estimated heights for meta-line and client-line
+        const PROJECTED_META_HEIGHT = 20;
+        const PROJECTED_CLIENT_HEIGHT = 18;
 
         const titleBottomRel = titleRect.bottom - cardRect.top;
 
-        const projectedMetaBottom = titleBottomRel + PROJECTED_META_HEIGHT;
-        const projectedGenreBottom = projectedMetaBottom + PROJECTED_GENRE_HEIGHT;
+        // Check if subtitle + meta-line + client-line would overflow
+        const projectedSubtitleBottom = titleBottomRel + 22; // subtitle height
+        const projectedMetaBottom = projectedSubtitleBottom + PROJECTED_META_HEIGHT;
+        const projectedClientBottom = projectedMetaBottom + PROJECTED_CLIENT_HEIGHT;
 
         let newState = 0;
 
-        // Check Logic (Applies to ALL card sizes):
-        if (projectedGenreBottom > SAFE_THRESHOLD) {
-            newState = 1; // Hide Genre
+        if (projectedClientBottom > SAFE_THRESHOLD) {
+            newState = 1; // Hide meta-line and client-line
         }
 
-        // If even meta row overlaps, hide it too
-        if (projectedMetaBottom > SAFE_THRESHOLD) {
-            newState = 2; // Hide Meta + Genre
+        if (projectedSubtitleBottom > SAFE_THRESHOLD) {
+            newState = 2; // Hide subtitle too
         }
 
         if (this._overflowState !== newState) {
@@ -477,7 +637,7 @@ export class JellyHANowPlayingCard extends LitElement {
             width: 100%;
             background: none !important;
             position: relative;
-            z-index: 2; /* Now playing should be slightly above library to avoid its shadow bleed */
+            z-index: 2;
         }
         ha-card {
             height: 100%;
@@ -499,27 +659,22 @@ export class JellyHANowPlayingCard extends LitElement {
             margin: 0;
         }
 
-        .jellyha-now-playing {
-            /* Inherits from ha-card, additional unique classes can go here if needed */
-        }
         .jellyha-now-playing.has-background {
             background: transparent;
             color: white;
         }
         .jellyha-now-playing.has-background .title,
-        .jellyha-now-playing.has-background .series,
-        .jellyha-now-playing.has-background .device-info,
-        .jellyha-now-playing.has-background .bottom-user-info,
+        .jellyha-now-playing.has-background .subtitle,
+        .jellyha-now-playing.has-background .meta-line,
+        .jellyha-now-playing.has-background .client-line,
         .jellyha-now-playing.has-background .time-elapsed,
         .jellyha-now-playing.has-background .time-remaining,
-        .jellyha-now-playing.has-background .meta-item,
-        .jellyha-now-playing.has-background .genres,
         .jellyha-now-playing.has-background .card-header,
         .jellyha-now-playing.has-background ha-icon-button {
             color: #fff !important;
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
-        .jellyha-now-playing.has-background .badge {
+        .jellyha-now-playing.has-background .poster-badge {
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .jellyha-now-playing.has-background .playback-controls ha-icon-button {
@@ -528,7 +683,6 @@ export class JellyHANowPlayingCard extends LitElement {
         .jellyha-now-playing.has-background .playback-controls ha-icon-button:hover {
             background: rgba(255, 255, 255, 0.25);
         }
-        /* Further increase padding when background is on for better balance */
         .jellyha-now-playing.has-background .card-content {
             padding: 24px 20px 12px !important;
         }
@@ -563,7 +717,7 @@ export class JellyHANowPlayingCard extends LitElement {
             gap: 16px;
             height: 100%;
             box-sizing: border-box;
-            overflow: visible; /* Allow poster pop-out */
+            overflow: visible;
         }
         .card-header {
             font-size: 1.25rem;
@@ -577,9 +731,11 @@ export class JellyHANowPlayingCard extends LitElement {
             gap: 20px;
             align-items: flex-start;
             flex: 1;
-            min-height: 0; /* Crucial for nested flex scrolling/hiding */
+            min-height: 0;
             overflow: visible;
         }
+
+        /* --- Poster with overlay badges --- */
         .poster-container {
             flex: 0 0 auto;
             height: 100%;
@@ -600,6 +756,68 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             object-fit: cover;
         }
+
+        /* Poster overlay badges — matches Library Card style */
+        .poster-badge {
+            position: absolute;
+            border-radius: 4px;
+            color: #fff;
+            z-index: 5;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .media-type-badge {
+            top: 6px;
+            left: 6px;
+            padding: 2px 8px 1px 8px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            background: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .media-type-badge.movie { background-color: #AA5CC3; }
+        .media-type-badge.series { background-color: #F2A218; }
+        .media-type-badge.episode { background-color: #F59E0B; }
+        .media-type-badge.audio { background-color: #10B981; }
+
+        .rating-badge {
+            bottom: 6px;
+            right: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #F59E0B;
+            padding: 3px 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .rating-badge ha-icon {
+            --mdc-icon-size: 13px;
+            color: #F59E0B;
+            margin-top: -1px;
+        }
+        .runtime-badge {
+            bottom: 6px;
+            left: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.6);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 3px 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .runtime-badge ha-icon {
+            --mdc-icon-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: -1px;
+        }
+
+        /* Rewind overlay */
         .rewind-overlay {
             position: absolute;
             top: 0;
@@ -616,14 +834,14 @@ export class JellyHANowPlayingCard extends LitElement {
         .rewind-overlay span {
             color: white;
             font-weight: 700;
-            font-size: 0.8rem; /* Small fixed size */
+            font-size: 0.8rem;
             letter-spacing: 0.5px;
             background: var(--primary-color);
             padding: 2px 6px;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             transform: translateY(-8px);
-            white-space: nowrap; /* Prevent wrapping */
+            white-space: nowrap;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -636,262 +854,100 @@ export class JellyHANowPlayingCard extends LitElement {
         .playback-controls .spinning ha-icon {
             animation: spin 1s linear infinite;
         }
+
+        /* --- Info container --- */
         .info-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             height: 100%;
-            min-height: 0; /* Crucial */
+            min-height: 0;
             min-width: 0;
             overflow: hidden;
         }
         .info-top {
-            flex: 1 1 auto; /* Can shrink and grow */
-            min-height: 0; /* Allows shrinking below content size */
-            overflow: visible; /* Hide overflow content */
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: visible;
             display: flex;
             flex-direction: column;
             margin-bottom: 0;
-            padding-bottom: 4px; /* Prevent text clipping at bottom */
+            padding-bottom: 4px;
         }
         .header {
             margin-bottom: 0px;
-            flex-shrink: 0; /* Don't squash the title too easily if possible */
+            flex-shrink: 0;
         }
+
+        /* 4-line text structure */
         .title {
             font-size: 1.4rem;
             font-weight: 700;
             line-height: 1.2;
             color: var(--primary-text-color);
             margin-bottom: 2px;
-        }
-        .series {
-            font-size: 1.1rem;
-            color: var(--secondary-text-color);
-            font-weight: 500;
-        }
-        .device-info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.95rem;
-            color: var(--secondary-text-color);
-            margin-top: 8px;
-            opacity: 0.8;
-        }
-        .device-info ha-icon {
-            --mdc-icon-size: 18px;
-        }
-        .bottom-user-info {
-            font-size: 0.8rem;
-            color: var(--secondary-text-color);
-            opacity: 0.85;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            filter: brightness(1.1);
         }
-        .bottom-device-info {
-            margin-top: 0;
+        .has-background .title {
+            text-shadow: 0 0 20px currentColor;
+            filter: brightness(1.2) saturate(1.3);
         }
-        .meta-container {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 12px;
-            align-items: center;
+        .subtitle {
+            font-size: 1.05rem;
+            color: var(--secondary-text-color);
+            font-weight: 400;
+            opacity: 0.75;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 6px;
+            filter: brightness(1.05);
         }
-
-        .bottom-device-info {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
+        .has-background .subtitle {
+            text-shadow: 0 0 16px currentColor;
+            filter: brightness(1.15) saturate(1.2);
+        }
+        .meta-line {
+            font-size: 0.85rem;
             color: var(--secondary-text-color);
-            margin-right: auto; /* Push controls to right */
-            opacity: 0.8;
-        }
-
-        /* Default: Hide top device info, show bottom device info */
-        .info-top .device-info {
-            display: none;
-        }
-        
-        /* Ensure controls spread out when bottom info is present */
-        .controls-container {
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        /* When card is too narrow, HIDE bottom device info to prevent crowding */
-        @container now-playing (max-width: 350px) {
-            .controls-left {
-                display: none !important;
-            }
-            .controls-container {
-                justify-content: center;
-            }
-        }
-        
-        /* For 5+ row cards, hide device info sooner to prevent overflow */
-        @container now-playing (min-height: 300px) and (max-width: 430px) {
-            .controls-left {
-                display: none !important;
-            }
-        }
-        
-        /* Progressive metadata hiding based on priority */
-        /* Hide genres first (priority 0) */
-        @container now-playing (max-width: 400px) {
-            .meta-priority-0 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide rating (priority 1) */
-        @container now-playing (max-width: 370px) {
-            .meta-priority-1 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide runtime (priority 2) */
-        @container now-playing (max-width: 320px) {
-            .meta-priority-2 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide year (priority 3) */
-        @container now-playing (max-width: 260px) {
-            .meta-priority-3 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide badge last (priority 4) - only in ultra-compact mode */
-        @container now-playing (max-width: 220px) {
-            .meta-priority-4 {
-                display: none !important;
-            }
-        }
-        
-        /* Hide badge when card has title AND is short AND narrow (3 rows × 6 columns) to prevent overlap with controls */
-        .has-title .meta-priority-4 {
-            /* Default: show the badge */
-        }
-        @container now-playing (max-height: 180px) and (max-width: 320px) {
-            .has-title .meta-priority-4 {
-                display: none !important;
-            }
-        }
-
-        /* When card is tall enough (4+ rows ≈ 240px), enable wrapping instead of hiding */
-        @container now-playing (min-height: 240px) {
-            .meta-container {
-                flex-wrap: wrap;
-                white-space: normal;
-            }
-            .info-top {
-                overflow: visible;
-            }
-        }
-        
-        /* When tall AND narrow, show items that would normally hide (they'll wrap instead) */
-        @container now-playing (min-height: 240px) and (max-width: 400px) {
-            .meta-priority-0 {
-                display: block !important;
-            }
-        }
-        @container now-playing (min-height: 240px) and (max-width: 370px) {
-            .meta-priority-1 {
-                display: flex !important;
-            }
-        }
-        @container now-playing (min-height: 240px) and (max-width: 320px) {
-            .meta-priority-2 {
-                display: flex !important;
-            }
-        }
-        @container now-playing (min-height: 240px) and (max-width: 260px) {
-            .meta-priority-3 {
-                display: flex !important;
-            }
-        }
-        .badge {
-            padding: 2px 8px 1px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            background: var(--primary-color);
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            flex-shrink: 0; /* Prevent badge from shrinking */
-            overflow: visible; /* Ensure rounded corners aren't clipped */
-        }
-        .badge.movie { background-color: #AA5CC3; }
-        .badge.series { background-color: #F2A218; }
-        .badge.episode { background-color: #F59E0B; }
-
-        .meta-item {
-            color: var(--secondary-text-color);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .meta-item.external-rating {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .meta-item.external-rating ha-icon {
-            --mdc-icon-size: 14px;
-            color: #F59E0B;
-        }
-        .genres-container {
-            flex-shrink: 0;
-            overflow: visible;
-            margin-bottom: -4px;
-            position: relative;
-            z-index: 4; /* Ensure it stays above other elements if needed */
-        }
-        .genres {
-            font-size: 0.95rem;
-            color: var(--secondary-text-color);
-            margin: 0;
-            font-style: italic;
             opacity: 0.7;
+            font-style: italic;
             white-space: nowrap;
-            text-overflow: ellipsis;
             overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 1px;
         }
+        .client-line {
+            font-size: 0.75rem;
+            color: var(--secondary-text-color);
+            opacity: 0.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- Info Bottom: Controls + Progress --- */
         .info-bottom {
-            flex: 0 0 auto; /* Never shrink */
+            flex: 0 0 auto;
             width: 100%;
             margin-top: auto;
             z-index: 5;
         }
-        .controls-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 6px;
-        }
-        .controls-left {
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-        }
+
+        /* Playback controls (centered) */
         .playback-controls {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
         }
         .playback-controls ha-icon-button {
-            --mdc-icon-button-size: 40px;
-            --mdc-icon-size: 28px;
+            --mdc-icon-button-size: 36px;
+            --mdc-icon-size: 22px;
             color: var(--primary-text-color);
             background: rgba(var(--rgb-primary-text-color), 0.05);
             border-radius: 50%;
@@ -905,43 +961,106 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             justify-content: center;
         }
-        .progress-container {
+
+        /* Play/Pause button slightly larger */
+        .play-pause-wrapper {
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: transparent;
+            justify-content: center;
+        }
+        .play-pause-btn {
+            --mdc-icon-button-size: 44px !important;
+            --mdc-icon-size: 30px !important;
+        }
+
+        /* Stop ring SVG */
+        .stop-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 44px;
+            height: 44px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Subtle music controls (shuffle/repeat) */
+        .music-subtle-btn {
+            --mdc-icon-button-size: 30px !important;
+            --mdc-icon-size: 16px !important;
+            opacity: 0.35;
+            background: transparent !important;
+            transition: opacity 0.2s;
+        }
+        .music-subtle-btn:hover {
+            opacity: 0.7;
+        }
+
+        /* Stop confirmed pulse animation */
+        .play-pause-wrapper.stop-pulse {
+            animation: stopPulse 0.5s ease-out;
+        }
+        @keyframes stopPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            50% { transform: scale(1.15); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* --- Progress bar with seek handle --- */
+        .progress-container {
             cursor: pointer;
             position: relative;
             width: 100%;
+            padding: 4px 6px;
         }
-        .has-background .progress-container {
-            background: transparent;
+        .progress-bar {
+            height: 6px;
+            background: rgba(var(--rgb-primary-text-color), 0.12);
+            border-radius: 3px;
+            overflow: visible;
+            position: relative;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .has-background .progress-bar {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 0 3px 3px 0;
+            transition: width 1s linear;
+        }
+        .seek-handle {
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            pointer-events: none;
+            transition: left 1s linear;
+        }
+
+        /* --- Timestamps below progress bar --- */
+        .timestamps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2px;
+            padding: 0 6px;
         }
         .time-elapsed,
         .time-remaining {
-            flex-shrink: 0;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--secondary-text-color);
             opacity: 0.85;
             font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
 
-        .progress-bar {
-            flex: 1;
-            height: 6px;
-            background: rgba(var(--rgb-primary-text-color), 0.15);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .has-background .progress-bar {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--primary-color);
-            transition: width 1s linear;
-        }
+        /* --- Empty & Error states --- */
         .empty-state, .error-state {
             text-align: center;
             padding: 20px;
@@ -982,7 +1101,9 @@ export class JellyHANowPlayingCard extends LitElement {
             opacity: 0.7;
         }
 
-        /* Container Queries for Responsive Information Throttling */
+        /* ===== Container Query Responsive Tiers ===== */
+
+        /* Compact empty state */
         @container now-playing (max-width: 250px) {
             .empty-state .logo-container.full-logo {
                 display: none;
@@ -1000,9 +1121,9 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Standard Tier Hiding (Width based) */
+        /* Hide meta/client lines when narrow */
         @container now-playing (max-width: 320px) {
-            .genres, .device-info {
+            .meta-line, .client-line {
                 display: none !important;
             }
             .title {
@@ -1011,16 +1132,31 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Vertical Tier Hiding (Height based - for very short cards) */
+        /* Hide poster badges when very narrow */
+        @container now-playing (max-width: 280px) {
+            .poster-badge {
+                display: none !important;
+            }
+            .main-container {
+                gap: 12px;
+            }
+            .title {
+                font-size: 1.1rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                white-space: normal;
+            }
+        }
+
+        /* Very short cards: hide extra text */
         @container now-playing (max-height: 160px) {
-            .genres, .device-info {
+            .meta-line, .client-line, .subtitle {
                 display: none !important;
             }
-            .meta-container, .card-header {
+            .card-header {
                 display: none !important;
-            }
-            .meta-container {
-                margin-top: 4px;
             }
             .title {
                 font-size: 1.2rem;
@@ -1038,25 +1174,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        @container now-playing (max-width: 280px) {
-           .main-container {
-                gap: 12px;
-            }
-            .poster-container {
-                flex: 0 0 80px;
-                height: 120px;
-            }
-            .title {
-                font-size: 1.1rem;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-        }
-
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
-        @container now-playing (max-width: 220px) {
+        @container now-playing (max-width: 350px) {
             .card-header, .info-top {
                 display: none !important;
             }
@@ -1100,22 +1219,30 @@ export class JellyHANowPlayingCard extends LitElement {
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
+            }
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
@@ -1124,7 +1251,7 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Height-Based Compact Mode (Overlay controls when vertically constrained) */
+        /* Height-Based Compact Mode */
         @container now-playing (max-height: 180px) {
             .card-header, .info-top {
                 display: none !important;
@@ -1169,22 +1296,30 @@ export class JellyHANowPlayingCard extends LitElement {
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
+            }
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
@@ -1193,8 +1328,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Tall but Narrow Mode - When card is 4+ rows but too narrow for side layout */
-        @container now-playing (min-height: 240px) and (max-width: 300px) {
+        /* Tall but Narrow Mode */
+        @container now-playing (min-height: 240px) and (max-width: 400px) {
             .card-header, .info-top {
                 display: none !important;
             }
@@ -1238,22 +1373,30 @@ export class JellyHANowPlayingCard extends LitElement {
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
+            }
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
@@ -1262,8 +1405,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Very Tall but Narrow Mode - When card is 5+ rows and < 9 columns */
-        @container now-playing (min-height: 300px) and (max-width: 350px) {
+        /* Very Tall but Narrow Mode */
+        @container now-playing (min-height: 300px) and (max-width: 450px) {
             .card-header, .info-top {
                 display: none !important;
             }
@@ -1307,28 +1450,42 @@ export class JellyHANowPlayingCard extends LitElement {
                 pointer-events: auto;
                 flex: 0 0 auto;
             }
-            .controls-container {
-                justify-content: center;
+            .playback-controls {
                 margin-bottom: 8px;
             }
             .playback-controls ha-icon-button {
-                --mdc-icon-button-size: 40px;
-                --mdc-icon-size: 28px;
+                --mdc-icon-button-size: 36px;
+                --mdc-icon-size: 24px;
                 background: rgba(255, 255, 255, 0.2);
                 color: white !important;
             }
-            .progress-container {
+            .progress-bar {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.3);
             }
-            .progress-fill {
-                background: #18BCF2;
+            .seek-handle {
+                width: 8px;
+                height: 8px;
             }
-            /* Scale down rewind overlay for compact mode */
+            .timestamps {
+                margin-top: 4px;
+            }
+            .time-elapsed,
+            .time-remaining {
+                color: rgba(255, 255, 255, 0.8);
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                font-size: 0.7rem;
+            }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
                 padding: 2px 5px !important;
                 white-space: nowrap;
+            }
+        }
+
+        /* Hide badge when card has title AND is short AND narrow */
+        @container now-playing (max-height: 180px) and (max-width: 320px) {
+            .has-title .poster-badge {
+                display: none !important;
             }
         }
     `;

@@ -451,6 +451,13 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
                 attributes["season"] = item.get("ParentIndexNumber")
                 attributes["episode"] = item.get("IndexNumber")
                 attributes["series_image_url"] = session.get("jellyha_series_poster_url")
+            elif item_type == "Audio":
+                attributes["title"] = item.get("Name")
+                # Extract artist name from AlbumArtist or Artists array
+                album_artist = item.get("AlbumArtist")
+                artists = item.get("Artists", [])
+                attributes["artist_name"] = album_artist or (artists[0] if artists else None)
+                attributes["year"] = item.get("ProductionYear")
             else:
                 # Movie, etc.
                 attributes["title"] = item.get("Name")

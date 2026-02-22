@@ -5,6 +5,21 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-02-22
+
+### Added
+- **Now Playing Card Updates**:
+  - Added elapsed/remaining time display.
+  - Added user name information and client details formatting.
+  - Added specific Artist and Series name support for Music and TV shows.
+  - Added Shuffle and Repeat buttons for music playback directly in the UI.
+  - Added visual `-10s` rewind and `+30s` fast-forward controls for video media.
+  - Added stop-pulse animation and haptic vibration feedback for mobile.
+- **Refresh Interval Update**: Configurable API refresh interval added to integration options.
+
+### Changed
+- Improved Now Playing card visuals with dot separators, dynamic colors extracted from posters, glassmorphic progress bar, and refined spacing.
+
 ## [1.1.0] - 2026-02-15
 
 ### Added

@@ -72,7 +72,7 @@ DELETE_ITEM_SCHEMA = vol.Schema(
 SESSION_CONTROL_SCHEMA = vol.Schema(
     {
         vol.Required("session_id"): cv.string,
-        vol.Required("command"): vol.In(["Pause", "Unpause", "TogglePause", "Stop"]),
+        vol.Required("command"): vol.In(["Pause", "Unpause", "TogglePause", "Stop", "NextTrack", "PreviousTrack", "Shuffle", "SetRepeatMode"]),
         vol.Optional("config_entry_id"): cv.string,
     }
 )
