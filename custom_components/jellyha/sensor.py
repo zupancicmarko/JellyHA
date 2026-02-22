@@ -475,6 +475,10 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             if duration_ticks and duration_ticks > 0:
                 attributes["progress_percent"] = int((position_ticks / duration_ticks) * 100)
 
+            attributes["repeat_mode"] = play_state.get("RepeatMode", "RepeatNone")
+            attributes["shuffle_mode"] = "Shuffle" if play_state.get("ShuffleMethod") == "Shuffle" or play_state.get("ShuffleMode") == "Shuffle" else "Sorted"
+            attributes["is_favorite"] = item.get("UserData", {}).get("IsFavorite", False)
+
             # Image Proxy URL (Signed URL from coordinator)
             attributes["image_url"] = session.get("jellyha_poster_url")
             

@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Improved Now Playing card visuals with dot separators, dynamic colors extracted from posters, glassmorphic progress bar, and refined spacing.
+- **Improved Alignment**: Progress bar timestamps now perfectly align with the bar edges.
+- **Card Styling**: Removed title/subtitle text shadows and flattened progress bar edges for a cleaner look.
+- **Better Text Handling**: Allowed long titles to wrap to multiple lines instead of using ellipsis.
+
+### Fixed
+- **Item Details Modal**: Fixed a bug where favorited status was not correctly displayed in the "More Information" card when opened from lists.
 
 ## [1.1.0] - 2026-02-15
 

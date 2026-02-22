@@ -393,6 +393,21 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
 
         try:
             sessions = await self._api.get_sessions()
+            
+            # Fetch UserData for playing items since /Sessions endpoint omits it
+            for s in sessions:
+                user_id = s.get("UserId")
+                if user_id and "NowPlayingItem" in s:
+                    item_id = s["NowPlayingItem"].get("Id")
+                    if item_id:
+                        try:
+                            item_details = await self._api.get_item(user_id, item_id)
+                            user_data = item_details.get("UserData")
+                            if user_data:
+                                s["NowPlayingItem"]["UserData"] = user_data
+                        except JellyfinApiError as err:
+                            _LOGGER.debug("Failed to fetch UserData for item %s: %s", item_id, err)
+
             self._enrich_sessions(sessions)
             
             # Fire events even during polling to ensure automation triggers work
@@ -460,6 +475,20 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         """Handle session updates from WebSocket."""
         _LOGGER.debug("Coordinator received %d sessions from WS", len(sessions))
         
+        # Fetch UserData for playing items since WS sessions payload omits it
+        for s in sessions:
+            user_id = s.get("UserId")
+            if user_id and "NowPlayingItem" in s:
+                item_id = s["NowPlayingItem"].get("Id")
+                if item_id:
+                    try:
+                        item_details = await self._api.get_item(user_id, item_id)
+                        user_data = item_details.get("UserData")
+                        if user_data:
+                            s["NowPlayingItem"]["UserData"] = user_data
+                    except JellyfinApiError as err:
+                        _LOGGER.debug("Failed to fetch UserData for WS item %s: %s", item_id, err)
+
         # Enrich with signed URLs (same as polling path)
         self._enrich_sessions(sessions)
         

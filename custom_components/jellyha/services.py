@@ -72,7 +72,7 @@ DELETE_ITEM_SCHEMA = vol.Schema(
 SESSION_CONTROL_SCHEMA = vol.Schema(
     {
         vol.Required("session_id"): cv.string,
-        vol.Required("command"): vol.In(["Pause", "Unpause", "TogglePause", "Stop", "NextTrack", "PreviousTrack", "Shuffle", "SetRepeatMode"]),
+        vol.Required("command"): vol.In(["Pause", "Unpause", "PlayPause", "TogglePause", "Stop", "NextTrack", "PreviousTrack", "Shuffle", "SetRepeatMode"]),
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -81,6 +81,15 @@ SESSION_SEEK_SCHEMA = vol.Schema(
     {
         vol.Required("session_id"): cv.string,
         vol.Required("position_ticks"): cv.positive_int,
+        vol.Optional("config_entry_id"): cv.string,
+    }
+)
+
+SESSION_GENERAL_COMMAND_SCHEMA = vol.Schema(
+    {
+        vol.Required("session_id"): cv.string,
+        vol.Required("command"): cv.string,
+        vol.Optional("arguments"): dict,
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -170,6 +179,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
         results = []
         for item in items:
+            user_data = item.get("UserData", {})
             results.append({
                 "id": item.get("Id"),
                 "name": item.get("Name"),
@@ -179,6 +189,9 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 "series_name": item.get("SeriesName"),
                 "season": item.get("ParentIndexNumber"),
                 "episode": item.get("IndexNumber"),
+                "is_favorite": user_data.get("IsFavorite", False),
+                "is_played": user_data.get("Played", False),
+                "unplayed_count": user_data.get("UnplayedItemCount", 0),
                 "image_url": coordinator._api.get_image_url(item.get("Id"), "Primary"),
             })
 
@@ -475,6 +488,33 @@ async def async_register_services(hass: HomeAssistant) -> None:
             schema=SESSION_SEEK_SCHEMA,
         )
 
+    async def async_session_general_command(call: ServiceCall) -> None:
+        """Send a general command (with optional arguments) to session."""
+        session_id = call.data["session_id"]
+        command = call.data["command"]
+        arguments = call.data.get("arguments")
+        config_entry_id = call.data.get("config_entry_id")
+        
+        try:
+            coordinator = _get_coordinator(hass, config_entry_id)
+        except ValueError:
+             _LOGGER.error("No JellyHA integration found")
+             return
+        
+        if not coordinator or not coordinator._api:
+            _LOGGER.error("No JellyHA API client found")
+            return
+            
+        await coordinator._api.session_general_command(session_id, command, arguments)
+
+    if not hass.services.has_service(DOMAIN, "session_general_command"):
+        hass.services.async_register(
+            DOMAIN,
+            "session_general_command",
+            async_session_general_command,
+            schema=SESSION_GENERAL_COMMAND_SCHEMA,
+        )
+
     async def async_mark_watched(call: ServiceCall) -> None:
         """Update watched status for an item."""
         item_id = call.data["item_id"]
@@ -677,6 +717,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         elif "MediaStreams" in item:
              item["media_streams"] = item["MediaStreams"]
              
+        # Extract UserData fields for top-level access in frontend
+        user_data = item.get("UserData", {})
+        item["is_favorite"] = user_data.get("IsFavorite", False)
+        item["is_played"] = user_data.get("Played", False)
+
         # Map other potential missing fields if necessary, but start with streams
         return {"item": item}
 

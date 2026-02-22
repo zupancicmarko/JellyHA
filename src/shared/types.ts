@@ -145,6 +145,9 @@ export interface NowPlayingSensorData {
     community_rating?: number;
     critic_rating?: number;
     artist_name?: string;
+    repeat_mode?: string;
+    shuffle_mode?: string;
+    is_favorite?: boolean;
 }
 
 export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {

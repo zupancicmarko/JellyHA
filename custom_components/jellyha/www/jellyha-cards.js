@@ -3,18 +3,18 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const te = globalThis, de = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ce = Symbol(), we = /* @__PURE__ */ new WeakMap();
-let Te = class {
+const te = globalThis, ce = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, he = Symbol(), ve = /* @__PURE__ */ new WeakMap();
+let Ee = class {
   constructor(e, i, a) {
-    if (this._$cssResult$ = !0, a !== ce) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, a !== he) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = e, this.t = i;
   }
   get styleSheet() {
     let e = this.o;
     const i = this.t;
-    if (de && e === void 0) {
+    if (ce && e === void 0) {
       const a = i !== void 0 && i.length === 1;
-      a && (e = we.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && we.set(i, e));
+      a && (e = ve.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && ve.set(i, e));
     }
     return e;
   }
@@ -22,20 +22,20 @@ let Te = class {
     return this.cssText;
   }
 };
-const Le = (t) => new Te(typeof t == "string" ? t : t + "", void 0, ce), V = (t, ...e) => {
+const Le = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), q = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((a, o, s) => a + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(o) + t[s + 1], t[0]);
-  return new Te(i, t, ce);
+  return new Ee(i, t, he);
 }, Ue = (t, e) => {
-  if (de) t.adoptedStyleSheets = e.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
+  if (ce) t.adoptedStyleSheets = e.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of e) {
     const a = document.createElement("style"), o = te.litNonce;
     o !== void 0 && a.setAttribute("nonce", o), a.textContent = i.cssText, t.appendChild(a);
   }
-}, ve = de ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
+}, ye = ce ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let i = "";
   for (const a of e.cssRules) i += a.cssText;
   return Le(i);
@@ -45,10 +45,10 @@ const Le = (t) => new Te(typeof t == "string" ? t : t + "", void 0, ce), V = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Re, defineProperty: He, getOwnPropertyDescriptor: Fe, getOwnPropertyNames: Be, getOwnPropertySymbols: We, getPrototypeOf: Ge } = Object, oe = globalThis, ye = oe.trustedTypes, Xe = ye ? ye.emptyScript : "", Ye = oe.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
+const { is: He, defineProperty: Fe, getOwnPropertyDescriptor: Be, getOwnPropertyNames: We, getOwnPropertySymbols: Ge, getPrototypeOf: Xe } = Object, oe = globalThis, be = oe.trustedTypes, Ye = be ? be.emptyScript : "", Je = oe.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
-      t = t ? Xe : null;
+      t = t ? Ye : null;
       break;
     case Object:
     case Array:
@@ -73,7 +73,7 @@ const { is: Re, defineProperty: He, getOwnPropertyDescriptor: Fe, getOwnProperty
       }
   }
   return i;
-} }, he = (t, e) => !Re(t, e), be = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: he };
+} }, pe = (t, e) => !He(t, e), xe = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: pe };
 Symbol.metadata ??= Symbol("metadata"), oe.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let N = class extends HTMLElement {
   static addInitializer(e) {
@@ -82,14 +82,14 @@ let N = class extends HTMLElement {
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, i = be) {
+  static createProperty(e, i = xe) {
     if (i.state && (i.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((i = Object.create(i)).wrapped = !0), this.elementProperties.set(e, i), !i.noAccessor) {
       const a = Symbol(), o = this.getPropertyDescriptor(e, a, i);
-      o !== void 0 && He(this.prototype, e, o);
+      o !== void 0 && Fe(this.prototype, e, o);
     }
   }
   static getPropertyDescriptor(e, i, a) {
-    const { get: o, set: s } = Fe(this.prototype, e) ?? { get() {
+    const { get: o, set: s } = Be(this.prototype, e) ?? { get() {
       return this[i];
     }, set(r) {
       this[i] = r;
@@ -100,17 +100,17 @@ let N = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? be;
+    return this.elementProperties.get(e) ?? xe;
   }
   static _$Ei() {
     if (this.hasOwnProperty(F("elementProperties"))) return;
-    const e = Ge(this);
+    const e = Xe(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(F("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(F("properties"))) {
-      const i = this.properties, a = [...Be(i), ...We(i)];
+      const i = this.properties, a = [...We(i), ...Ge(i)];
       for (const o of a) this.createProperty(o, i[o]);
     }
     const e = this[Symbol.metadata];
@@ -129,8 +129,8 @@ let N = class extends HTMLElement {
     const i = [];
     if (Array.isArray(e)) {
       const a = new Set(e.flat(1 / 0).reverse());
-      for (const o of a) i.unshift(ve(o));
-    } else e !== void 0 && i.push(ve(e));
+      for (const o of a) i.unshift(ye(o));
+    } else e !== void 0 && i.push(ye(e));
     return i;
   }
   static _$Eu(e, i) {
@@ -188,7 +188,7 @@ let N = class extends HTMLElement {
   requestUpdate(e, i, a, o = !1, s) {
     if (e !== void 0) {
       const r = this.constructor;
-      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? he)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
+      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? pe)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
       this.C(e, i, a);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -256,48 +256,48 @@ let N = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-N.elementStyles = [], N.shadowRootOptions = { mode: "open" }, N[F("elementProperties")] = /* @__PURE__ */ new Map(), N[F("finalized")] = /* @__PURE__ */ new Map(), Ye?.({ ReactiveElement: N }), (oe.reactiveElementVersions ??= []).push("2.1.2");
+N.elementStyles = [], N.shadowRootOptions = { mode: "open" }, N[F("elementProperties")] = /* @__PURE__ */ new Map(), N[F("finalized")] = /* @__PURE__ */ new Map(), Je?.({ ReactiveElement: N }), (oe.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const pe = globalThis, xe = (t) => t, ae = pe.trustedTypes, $e = ae ? ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ee = "$lit$", j = `lit$${Math.random().toFixed(9).slice(2)}$`, Me = "?" + j, Je = `<${Me}>`, I = document, W = () => I.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", _e = Array.isArray, Ve = (t) => _e(t) || typeof t?.[Symbol.iterator] == "function", re = `[ 	
-\f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ke = /-->/g, Se = />/g, M = RegExp(`>|${re}(?:([^\\s"'>=/]+)(${re}*=${re}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Ce = /'/g, Pe = /"/g, ze = /^(?:script|style|textarea|title)$/i, qe = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = qe(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
-function Ie(t, e) {
-  if (!_e(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return $e !== void 0 ? $e.createHTML(e) : e;
+const _e = globalThis, $e = (t) => t, ae = _e.trustedTypes, ke = ae ? ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Me = "$lit$", j = `lit$${Math.random().toFixed(9).slice(2)}$`, ze = "?" + j, qe = `<${ze}>`, I = document, W = () => I.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", ue = Array.isArray, Ve = (t) => ue(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
+\f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Se = /-->/g, Ce = />/g, M = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Pe = /'/g, Ae = /"/g, Ie = /^(?:script|style|textarea|title)$/i, Ze = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Ze(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), je = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
+function De(t, e) {
+  if (!ue(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return ke !== void 0 ? ke.createHTML(e) : e;
 }
-const Ze = (t, e) => {
+const Ke = (t, e) => {
   const i = t.length - 1, a = [];
   let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = H;
   for (let h = 0; h < i; h++) {
     const c = t[h];
     let _, u, p = -1, m = 0;
-    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === H ? u[1] === "!--" ? r = ke : u[1] !== void 0 ? r = Se : u[2] !== void 0 ? (ze.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? H, p = -1) : u[1] === void 0 ? p = -2 : (p = r.lastIndex - u[2].length, _ = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Pe : Ce) : r === Pe || r === Ce ? r = M : r === ke || r === Se ? r = H : (r = M, o = void 0);
+    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === H ? u[1] === "!--" ? r = Se : u[1] !== void 0 ? r = Ce : u[2] !== void 0 ? (Ie.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? H, p = -1) : u[1] === void 0 ? p = -2 : (p = r.lastIndex - u[2].length, _ = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Ae : Pe) : r === Ae || r === Pe ? r = M : r === Se || r === Ce ? r = H : (r = M, o = void 0);
     const f = r === M && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === H ? c + Je : p >= 0 ? (a.push(_), c.slice(0, p) + Ee + c.slice(p) + j + f) : c + j + (p === -2 ? h : f);
+    s += r === H ? c + qe : p >= 0 ? (a.push(_), c.slice(0, p) + Me + c.slice(p) + j + f) : c + j + (p === -2 ? h : f);
   }
-  return [Ie(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
+  return [De(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
 class X {
   constructor({ strings: e, _$litType$: i }, a) {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = e.length - 1, c = this.parts, [_, u] = Ze(e, i);
+    const h = e.length - 1, c = this.parts, [_, u] = Ke(e, i);
     if (this.el = X.createElement(_, a), z.currentNode = this.el.content, i === 2 || i === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
     for (; (o = z.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(Ee)) {
+        if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(Me)) {
           const m = u[r++], f = o.getAttribute(p).split(j), x = /([.?@])?(.*)/.exec(m);
-          c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? Qe : x[1] === "?" ? et : x[1] === "@" ? tt : se }), o.removeAttribute(p);
+          c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? et : x[1] === "?" ? tt : x[1] === "@" ? it : se }), o.removeAttribute(p);
         } else p.startsWith(j) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
-        if (ze.test(o.tagName)) {
+        if (Ie.test(o.tagName)) {
           const p = o.textContent.split(j), m = p.length - 1;
           if (m > 0) {
             o.textContent = ae ? ae.emptyScript : "";
@@ -305,7 +305,7 @@ class X {
             o.append(p[m], W());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === Me) c.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === ze) c.push({ type: 2, index: s });
       else {
         let p = -1;
         for (; (p = o.data.indexOf(j, p + 1)) !== -1; ) c.push({ type: 7, index: s }), p += j.length - 1;
@@ -318,13 +318,13 @@ class X {
     return a.innerHTML = e, a;
   }
 }
-function L(t, e, i = t, a) {
+function R(t, e, i = t, a) {
   if (e === O) return e;
   let o = a !== void 0 ? i._$Co?.[a] : i._$Cl;
   const s = G(e) ? void 0 : e._$litDirective$;
-  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = L(t, o._$AS(t, e.values), o, a)), e;
+  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = R(t, o._$AS(t, e.values), o, a)), e;
 }
-class Ke {
+class Qe {
   constructor(e, i) {
     this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = i;
   }
@@ -341,7 +341,7 @@ class Ke {
     for (; c !== void 0; ) {
       if (r === c.index) {
         let _;
-        c.type === 2 ? _ = new q(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new it(s, this, e)), this._$AV.push(_), c = a[++h];
+        c.type === 2 ? _ = new V(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new at(s, this, e)), this._$AV.push(_), c = a[++h];
       }
       r !== c?.index && (s = z.nextNode(), r++);
     }
@@ -352,7 +352,7 @@ class Ke {
     for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(e, a, i), i += a.strings.length - 2) : a._$AI(e[i])), i++;
   }
 }
-class q {
+class V {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -371,7 +371,7 @@ class q {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = L(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Ve(e) ? this.k(e) : this._(e);
+    e = R(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Ve(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -383,28 +383,28 @@ class q {
     this._$AH !== d && G(this._$AH) ? this._$AA.nextSibling.data = e : this.T(I.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = X.createElement(Ie(a.h, a.h[0]), this.options)), a);
+    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = X.createElement(De(a.h, a.h[0]), this.options)), a);
     if (this._$AH?._$AD === o) this._$AH.p(i);
     else {
-      const s = new Ke(o, this), r = s.u(this.options);
+      const s = new Qe(o, this), r = s.u(this.options);
       s.p(i), this.T(r), this._$AH = s;
     }
   }
   _$AC(e) {
-    let i = Ae.get(e.strings);
-    return i === void 0 && Ae.set(e.strings, i = new X(e)), i;
+    let i = je.get(e.strings);
+    return i === void 0 && je.set(e.strings, i = new X(e)), i;
   }
   k(e) {
-    _e(this._$AH) || (this._$AH = [], this._$AR());
+    ue(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let a, o = 0;
-    for (const s of e) o === i.length ? i.push(a = new q(this.O(W()), this.O(W()), this, this.options)) : a = i[o], a._$AI(s), o++;
+    for (const s of e) o === i.length ? i.push(a = new V(this.O(W()), this.O(W()), this, this.options)) : a = i[o], a._$AI(s), o++;
     o < i.length && (this._$AR(a && a._$AB.nextSibling, o), i.length = o);
   }
   _$AR(e = this._$AA.nextSibling, i) {
     for (this._$AP?.(!1, !0, i); e !== this._$AB; ) {
-      const a = xe(e).nextSibling;
-      xe(e).remove(), e = a;
+      const a = $e(e).nextSibling;
+      $e(e).remove(), e = a;
     }
   }
   setConnected(e) {
@@ -424,11 +424,11 @@ class se {
   _$AI(e, i = this, a, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) e = L(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
+    if (s === void 0) e = R(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
     else {
       const h = e;
       let c, _;
-      for (e = s[0], c = 0; c < s.length - 1; c++) _ = L(this, h[a + c], i, c), _ === O && (_ = this._$AH[c]), r ||= !G(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
+      for (e = s[0], c = 0; c < s.length - 1; c++) _ = R(this, h[a + c], i, c), _ === O && (_ = this._$AH[c]), r ||= !G(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
     }
     r && !o && this.j(e);
   }
@@ -436,7 +436,7 @@ class se {
     e === d ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
   }
 }
-class Qe extends se {
+class et extends se {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -444,7 +444,7 @@ class Qe extends se {
     this.element[this.name] = e === d ? void 0 : e;
   }
 }
-class et extends se {
+class tt extends se {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -452,12 +452,12 @@ class et extends se {
     this.element.toggleAttribute(this.name, !!e && e !== d);
   }
 }
-class tt extends se {
+class it extends se {
   constructor(e, i, a, o, s) {
     super(e, i, a, o, s), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = L(this, e, i, 0) ?? d) === O) return;
+    if ((e = R(this, e, i, 0) ?? d) === O) return;
     const a = this._$AH, o = e === d && a !== d || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== d && (a === d || o);
     o && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -465,7 +465,7 @@ class tt extends se {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
   }
 }
-class it {
+class at {
   constructor(e, i, a) {
     this.element = e, this.type = 6, this._$AN = void 0, this._$AM = i, this.options = a;
   }
@@ -473,17 +473,17 @@ class it {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    L(this, e);
+    R(this, e);
   }
 }
-const at = pe.litHtmlPolyfillSupport;
-at?.(X, q), (pe.litHtmlVersions ??= []).push("3.3.2");
-const De = (t, e, i) => {
+const ot = _e.litHtmlPolyfillSupport;
+ot?.(X, V), (_e.litHtmlVersions ??= []).push("3.3.2");
+const Ne = (t, e, i) => {
   const a = i?.renderBefore ?? e;
   let o = a._$litPart$;
   if (o === void 0) {
     const s = i?.renderBefore ?? null;
-    a._$litPart$ = o = new q(e.insertBefore(W(), s), s, void 0, i ?? {});
+    a._$litPart$ = o = new V(e.insertBefore(W(), s), s, void 0, i ?? {});
   }
   return o._$AI(t), o;
 };
@@ -492,7 +492,7 @@ const De = (t, e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ue = globalThis;
+const ge = globalThis;
 class P extends N {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
@@ -503,7 +503,7 @@ class P extends N {
   }
   update(e) {
     const i = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = De(i, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ne(i, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -515,16 +515,16 @@ class P extends N {
     return O;
   }
 }
-P._$litElement$ = !0, P.finalized = !0, ue.litElementHydrateSupport?.({ LitElement: P });
-const ot = ue.litElementPolyfillSupport;
-ot?.({ LitElement: P });
-(ue.litElementVersions ??= []).push("4.2.2");
+P._$litElement$ = !0, P.finalized = !0, ge.litElementHydrateSupport?.({ LitElement: P });
+const st = ge.litElementPolyfillSupport;
+st?.({ LitElement: P });
+(ge.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const U = (t) => (e, i) => {
+const L = (t) => (e, i) => {
   i !== void 0 ? i.addInitializer(() => {
     customElements.define(t, e);
   }) : customElements.define(t, e);
@@ -534,7 +534,7 @@ const U = (t) => (e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const st = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged: he }, rt = (t = st, e, i) => {
+const rt = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged: pe }, nt = (t = rt, e, i) => {
   const { kind: a, metadata: o } = i;
   let s = globalThis.litPropertyMetadata.get(o);
   if (s === void 0 && globalThis.litPropertyMetadata.set(o, s = /* @__PURE__ */ new Map()), a === "setter" && ((t = Object.create(t)).wrapped = !0), s.set(i.name, t), a === "accessor") {
@@ -556,7 +556,7 @@ const st = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged
   throw Error("Unsupported decorator location: " + a);
 };
 function C(t) {
-  return (e, i) => typeof i == "object" ? rt(t, e, i) : ((a, o, s) => {
+  return (e, i) => typeof i == "object" ? nt(t, e, i) : ((a, o, s) => {
     const r = o.hasOwnProperty(s);
     return o.constructor.createProperty(s, a), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
   })(t, e, i);
@@ -574,21 +574,21 @@ function g(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const nt = (t, e, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof e != "object" && Object.defineProperty(t, e, i), i);
+const lt = (t, e, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof e != "object" && Object.defineProperty(t, e, i), i);
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function lt(t, e) {
+function dt(t, e) {
   return (i, a, o) => {
     const s = (r) => r.renderRoot?.querySelector(t) ?? null;
-    return nt(i, a, { get() {
+    return lt(i, a, { get() {
       return s(this);
     } });
   };
 }
-function ne(t, e) {
+function le(t, e) {
   if (!e || !t.date_added)
     return !1;
   const i = new Date(t.date_added);
@@ -606,7 +606,7 @@ function Q(t, e = "en") {
     return t;
   }
 }
-function le(t) {
+function de(t) {
   if (t < 60)
     return `${t}m`;
   const e = Math.floor(t / 60), i = t % 60;
@@ -615,7 +615,7 @@ function le(t) {
 function B(t, e) {
   return t && `${t}&width=${e}`;
 }
-const Ne = V`
+const Oe = q`
   :host {
     display: block;
     height: 100%;
@@ -2510,10 +2510,10 @@ function l(t, e) {
   const i = t.split("-")[0].toLowerCase();
   return ee[i]?.[e] ? ee[i][e] : ee.en?.[e] ? ee.en[e] : e;
 }
-var dt = Object.defineProperty, ct = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? ct(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var ct = Object.defineProperty, ht = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? ht(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && dt(e, i, o), o;
+  return a && o && ct(e, i, o), o;
 };
 let b = class extends P {
   constructor() {
@@ -2708,7 +2708,7 @@ let b = class extends P {
   }
   updated() {
     if (this._portalContainer) {
-      De(this._renderDialogContent(), this._portalContainer);
+      Ne(this._renderDialogContent(), this._portalContainer);
       const t = this._portalContainer.querySelector(".content");
       t && (t.removeEventListener("touchstart", this._handleModalTouchStart), t.removeEventListener("touchmove", this._handleModalTouchMove), t.removeEventListener("touchend", this._handleModalTouchEnd), t.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), t.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), t.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
     }
@@ -3405,7 +3405,7 @@ let b = class extends P {
     return null;
   }
 };
-b.styles = V`
+b.styles = q`
         /* Styles handled in _getPortalStyles */
     `;
 S([
@@ -3442,14 +3442,14 @@ S([
   g()
 ], b.prototype, "_isDragging", 2);
 b = S([
-  U("jellyha-item-details-modal")
+  L("jellyha-item-details-modal")
 ], b);
-var ht = Object.defineProperty, pt = Object.getOwnPropertyDescriptor, ge = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? pt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var pt = Object.defineProperty, _t = Object.getOwnPropertyDescriptor, me = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? _t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && ht(e, i, o), o;
+  return a && o && pt(e, i, o), o;
 };
-function _t(t, e, i) {
+function ut(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -3956,10 +3956,10 @@ let Y = class extends P {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, _t(this, "config-changed", { config: i });
+    this._config = i, ut(this, "config-changed", { config: i });
   }
 };
-Y.styles = V`
+Y.styles = q`
     .form-row {
       margin-bottom: 16px;
     }
@@ -3985,19 +3985,19 @@ Y.styles = V`
       margin-bottom: 0;
     }
   `;
-ge([
+me([
   C({ attribute: !1 })
 ], Y.prototype, "hass", 2);
-ge([
+me([
   g()
 ], Y.prototype, "_config", 2);
-Y = ge([
-  U("jellyha-library-editor")
+Y = me([
+  L("jellyha-library-editor")
 ], Y);
-var ut = Object.defineProperty, gt = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? gt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var gt = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? mt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && ut(e, i, o), o;
+  return a && o && gt(e, i, o), o;
 };
 let y = class extends P {
   constructor() {
@@ -4007,7 +4007,7 @@ let y = class extends P {
     return !this.item || !this.config || !this.hass ? n`` : this.layout === "list" ? this._renderListItem() : this._renderMediaItem();
   }
   _renderListItem() {
-    const t = this.item, e = ne(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
+    const t = this.item, e = le(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
     return n`
       <div
         class="media-item list-item ${o ? "playing" : ""} ${this.config.show_title ? "" : "no-title"} ${this.config.metadata_position === "above" ? "metadata-above" : ""}"
@@ -4074,7 +4074,7 @@ let y = class extends P {
                 </span>` : d}
             ${this.config.show_runtime && t.runtime_minutes ? n`<span class="list-runtime">
                   <ha-icon icon="mdi:clock-outline"></ha-icon>
-                  ${le(t.runtime_minutes)}
+                  ${de(t.runtime_minutes)}
                 </span>` : d}
           </div>
           
@@ -4086,7 +4086,7 @@ let y = class extends P {
     `;
   }
   _renderMediaItem() {
-    const t = this.item, e = ne(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
+    const t = this.item, e = le(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
     return n`
       <div
         class="media-item ${o ? "playing" : ""}"
@@ -4151,7 +4151,7 @@ let y = class extends P {
             ${this.config.show_runtime && t.runtime_minutes && !o ? n`
                   <span class="runtime">
                     <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${le(t.runtime_minutes)}
+                    ${de(t.runtime_minutes)}
                   </span>
                 ` : d}
             
@@ -4352,7 +4352,7 @@ let y = class extends P {
     this.dispatchEvent(e);
   }
 };
-y.styles = Ne;
+y.styles = Oe;
 $([
   C({ attribute: !1 })
 ], y.prototype, "hass", 2);
@@ -4390,16 +4390,16 @@ $([
   g()
 ], y.prototype, "_rewindActive", 2);
 y = $([
-  U("jellyha-media-item")
+  L("jellyha-media-item")
 ], y);
-var mt = Object.defineProperty, ft = Object.getOwnPropertyDescriptor, v = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? ft(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var ft = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, v = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? wt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && mt(e, i, o), o;
+  return a && o && ft(e, i, o), o;
 };
-const wt = "1.0.0";
+const vt = "1.0.0";
 console.info(
-  `%c JELLYHA-LIBRARY-CARD %c v${wt} `,
+  `%c JELLYHA-LIBRARY-CARD %c v${vt} `,
   "color: white; background: #00a4dc; font-weight: bold;",
   "color: #00a4dc; background: white; font-weight: bold;"
 );
@@ -4410,7 +4410,7 @@ window.customCards.push({
   description: "Display media from Jellyfin",
   preview: !0
 });
-const je = {
+const Te = {
   title: "",
   layout: "carousel",
   media_type: "both",
@@ -4442,7 +4442,7 @@ const je = {
   filter_newly_added: !1,
   sort_option: "date_added_desc"
 };
-function vt(t, e, i) {
+function yt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -4723,7 +4723,7 @@ let w = class extends P {
   setConfig(t) {
     if (!t.entity)
       throw new Error("Please define an entity");
-    this._config = { ...je, ...t }, this._effectiveListColumns = this._config.columns || 1;
+    this._config = { ...Te, ...t }, this._effectiveListColumns = this._config.columns || 1;
   }
   /**
    * Return the card editor element
@@ -4737,7 +4737,7 @@ let w = class extends P {
   static getStubConfig() {
     return {
       entity: "sensor.jellyha_library",
-      ...je
+      ...Te
     };
   }
   /**
@@ -4871,7 +4871,7 @@ let w = class extends P {
     }
     this._config.filter_favorites && (e = e.filter((s) => s.is_favorite === !0));
     const i = this._config.status_filter || "all";
-    i === "unwatched" ? e = e.filter((s) => !s.is_played) : i === "watched" && (e = e.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (e = e.filter((s) => ne(s, this._config.new_badge_days || 0)));
+    i === "unwatched" ? e = e.filter((s) => !s.is_played) : i === "watched" && (e = e.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (e = e.filter((s) => le(s, this._config.new_badge_days || 0)));
     const a = this._config.sort_option || "date_added_desc";
     e.sort((s, r) => {
       switch (a) {
@@ -5106,7 +5106,7 @@ let w = class extends P {
         this._showItemDetails(t);
         break;
       case "trailer":
-        t.trailer_url ? window.open(t.trailer_url, "_blank") : vt(this, "hass-notification", {
+        t.trailer_url ? window.open(t.trailer_url, "_blank") : yt(this, "hass-notification", {
           message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
@@ -5205,7 +5205,7 @@ let w = class extends P {
     `;
   }
 };
-w.styles = Ne;
+w.styles = Oe;
 v([
   C({ attribute: !1 })
 ], w.prototype, "hass", 2);
@@ -5249,7 +5249,7 @@ v([
   g()
 ], w.prototype, "_searchGenre", 2);
 v([
-  lt("jellyha-item-details-modal")
+  dt("jellyha-item-details-modal")
 ], w.prototype, "_modal", 2);
 v([
   g()
@@ -5258,14 +5258,14 @@ v([
   g()
 ], w.prototype, "_hasScrollableContent", 2);
 w = v([
-  U("jellyha-library-card")
+  L("jellyha-library-card")
 ], w);
-var yt = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, me = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? bt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var bt = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, fe = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? xt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && yt(e, i, o), o;
+  return a && o && bt(e, i, o), o;
 };
-function xt(t, e, i) {
+function $t(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -5471,10 +5471,10 @@ let J = class extends P {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, xt(this, "config-changed", { config: i });
+    this._config = i, $t(this, "config-changed", { config: i });
   }
 };
-J.styles = V`
+J.styles = q`
     .form-row {
       margin-bottom: 16px;
     }
@@ -5500,19 +5500,19 @@ J.styles = V`
       flex: 1;
     }
   `;
-me([
+fe([
   C({ attribute: !1 })
 ], J.prototype, "hass", 2);
-me([
+fe([
   g()
 ], J.prototype, "_config", 2);
-J = me([
-  U("jellyha-now-playing-editor")
+J = fe([
+  L("jellyha-now-playing-editor")
 ], J);
-var $t = Object.defineProperty, kt = Object.getOwnPropertyDescriptor, T = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? kt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, T = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? St(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && $t(e, i, o), o;
+  return a && o && kt(e, i, o), o;
 };
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -5523,7 +5523,7 @@ window.customCards.push({
 });
 let A = class extends P {
   constructor() {
-    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._longPressRaf = null, this._phrases = [];
+    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._longPressRaf = null, this._optimisticFavorites = {}, this._phrases = [];
   }
   setConfig(t) {
     this._config = {
@@ -5597,9 +5597,9 @@ let A = class extends P {
       this._cachedBackdropUrl = K ? B(K, 640) : void 0;
     }
     r !== this._cachedColorItemId && s && (this._cachedColorItemId = r, this._extractDominantColor(B(s, 80)));
-    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused, u = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", k = [x, E].filter(Boolean).join(" • "), D = this._config.show_user !== !1 && i.user_name || "", R = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", fe = 125.66, Oe = fe * (1 - this._longPressProgress);
+    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused, u = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", k = [x, E].filter(Boolean).join(" • "), D = this._config.show_user !== !1 && i.user_name || "", U = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", re = i.item_id && this._optimisticFavorites[i.item_id] !== void 0 ? this._optimisticFavorites[i.item_id] : i.is_favorite || !1, we = 125.66, Re = we * (1 - this._longPressProgress);
     return n`
-            <ha-card class="jellyha-now-playing ${c ? "has-background" : ""} ${this._config.title ? "has-title" : ""}">
+            <ha-card class="jellyha-now-playing ${c ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${c ? n`
                     <div class="card-background" style="background-image: url('${h}')"></div>
                     <div class="card-overlay"></div>
@@ -5627,7 +5627,7 @@ let A = class extends P {
                                 ${this._config.show_runtime && i.runtime_minutes ? n`
                                     <span class="poster-badge runtime-badge">
                                         <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${p === "audio" && i.duration_ticks ? `${Math.floor(i.duration_ticks / 1e7 / 60)}m ${Math.floor(i.duration_ticks / 1e7 % 60)}s` : le(i.runtime_minutes)}
+                                        ${p === "audio" && i.duration_ticks ? `${Math.floor(i.duration_ticks / 1e7 / 60)}m ${Math.floor(i.duration_ticks / 1e7 % 60)}s` : de(i.runtime_minutes)}
                                     </span>
                                 ` : d}
 
@@ -5642,18 +5642,18 @@ let A = class extends P {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== !1 ? n`<div class="title" style="color: ${this._dominantColor}">${i.title}</div>` : d}
-                                    ${f ? n`<div class="subtitle" style="color: ${this._dominantColor}">${f}</div>` : d}
+                                    ${this._config.show_title !== !1 ? n`<div class="title">${i.title}</div>` : d}
+                                    ${f ? n`<div class="subtitle">${f}</div>` : d}
                                     ${this._overflowState < 1 && k ? n`<div class="meta-line">${k}</div>` : d}
-                                    ${this._overflowState < 1 && (D || R) ? n`<div class="client-line">${D ? n`<strong>${D}</strong>` : d}${D && R ? " " : ""}${R || d}</div>` : d}
+                                    ${this._overflowState < 1 && (D || U) ? n`<div class="client-line">${D ? n`<strong>${D}</strong>` : d}${D && U ? " " : ""}${U || d}</div>` : d}
                                 </div>
                             </div>
 
                             <div class="info-bottom">
                                 <div class="playback-controls">
                                     ${u ? n`
-                                        <ha-icon-button class="music-subtle-btn" .label=${"Shuffle"} @click=${() => this._handleControl("Shuffle")}>
-                                            <ha-icon icon="mdi:shuffle-variant"></ha-icon>
+                                        <ha-icon-button class="music-subtle-btn ${re ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(i.item_id, re)}>
+                                            <ha-icon icon="${re ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
                                         </ha-icon-button>
                                         <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "previous") || "Previous"} @click=${() => this._handleControl("PreviousTrack")}>
                                             <ha-icon icon="mdi:skip-previous"></ha-icon>
@@ -5675,7 +5675,7 @@ let A = class extends P {
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : _ ? n`
-                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl("Unpause")}>
+                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl(u ? "PlayPause" : "Unpause")}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : n`
@@ -5687,8 +5687,8 @@ let A = class extends P {
                                             <svg class="stop-ring" viewBox="0 0 44 44">
                                                 <circle cx="22" cy="22" r="20"
                                                     stroke="#ef4444" stroke-width="3" fill="none"
-                                                    stroke-dasharray="${fe}"
-                                                    stroke-dashoffset="${Oe}"
+                                                    stroke-dasharray="${we}"
+                                                    stroke-dashoffset="${Re}"
                                                     stroke-linecap="round"
                                                     transform="rotate(-90 22 22)" />
                                             </svg>
@@ -5699,8 +5699,8 @@ let A = class extends P {
                                         <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
                                             <ha-icon icon="mdi:skip-next"></ha-icon>
                                         </ha-icon-button>
-                                        <ha-icon-button class="music-subtle-btn" .label=${"Repeat"} @click=${() => this._handleControl("SetRepeatMode")}>
-                                            <ha-icon icon="mdi:repeat"></ha-icon>
+                                        <ha-icon-button class="music-subtle-btn ${i.repeat_mode && i.repeat_mode !== "RepeatNone" ? "active" : ""}" .label=${"Repeat"} @click=${() => this._handleRepeatMode(i.session_id, i.repeat_mode || "RepeatNone")}>
+                                            <ha-icon icon="${i.repeat_mode === "RepeatOne" ? "mdi:repeat-once" : "mdi:repeat"}"></ha-icon>
                                         </ha-icon-button>
                                     ` : n`
                                         <ha-icon-button class="seek-btn" .label=${"Forward 30s"} @click=${() => this._handleSeekRelative(30)}>
@@ -5711,8 +5711,8 @@ let A = class extends P {
 
                                 <div class="progress-container" @click=${this._handleSeek}>
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${o}%; background: ${this._dominantColor}"></div>
-                                        <div class="seek-handle" style="left: ${o}%; background: ${this._dominantColor}"></div>
+                                        <div class="progress-fill" style="width: ${o}%;"></div>
+                                        <div class="seek-handle" style="left: ${o}%;"></div>
                                     </div>
                                 </div>
 
@@ -5776,6 +5776,30 @@ let A = class extends P {
     i && await this.hass.callService("jellyha", "session_control", {
       session_id: i,
       command: t
+    });
+  }
+  async _handleRepeatMode(t, e) {
+    let i = "RepeatAll";
+    e === "RepeatAll" ? i = "RepeatOne" : e === "RepeatOne" && (i = "RepeatNone"), await this.hass.callService("jellyha", "session_general_command", {
+      session_id: t,
+      command: "SetRepeatMode",
+      arguments: { RepeatMode: i }
+    });
+  }
+  _haptic(t = "selection") {
+    const e = new CustomEvent("haptic", {
+      detail: t,
+      bubbles: !0,
+      composed: !0
+    });
+    this.dispatchEvent(e);
+  }
+  async _handleFavoriteToggle(t, e) {
+    this._haptic();
+    const i = !e;
+    this._optimisticFavorites[t] = i, this.requestUpdate(), await this.hass.callService("jellyha", "update_favorite", {
+      item_id: t,
+      is_favorite: i
     });
   }
   async _handleSeek(t) {
@@ -5864,8 +5888,8 @@ let A = class extends P {
           let x = 0;
           const E = (m + f) / 2, k = m - f, D = k === 0 ? 0 : k / (1 - Math.abs(2 * E - 1));
           k !== 0 && (m === _ ? x = ((u - p) / k + (u < p ? 6 : 0)) * 60 : m === u ? x = ((p - _) / k + 2) * 60 : x = ((_ - u) / k + 4) * 60);
-          const R = Math.max(E * 100, 55), Z = Math.max(D * 100, 60);
-          this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(Z)}%, ${Math.round(R)}%)`;
+          const U = Math.max(E * 100, 55), Z = Math.max(D * 100, 60);
+          this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(Z)}%, ${Math.round(U)}%)`;
         } else
           this._dominantColor = "var(--primary-color)";
       } catch {
@@ -5903,7 +5927,7 @@ let A = class extends P {
     return a > 0 ? `${r}${a}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
   }
 };
-A.styles = V`
+A.styles = q`
         :host {
             display: block;
             height: 100%;
@@ -5936,14 +5960,12 @@ A.styles = V`
             background: transparent;
             color: white;
         }
-        .jellyha-now-playing.has-background .title,
-        .jellyha-now-playing.has-background .subtitle,
         .jellyha-now-playing.has-background .meta-line,
         .jellyha-now-playing.has-background .client-line,
         .jellyha-now-playing.has-background .time-elapsed,
         .jellyha-now-playing.has-background .time-remaining,
         .jellyha-now-playing.has-background .card-header,
-        .jellyha-now-playing.has-background ha-icon-button {
+        .jellyha-now-playing.has-background ha-icon-button:not(.music-subtle-btn) {
             color: #fff !important;
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
@@ -6157,31 +6179,18 @@ A.styles = V`
             font-size: 1.4rem;
             font-weight: 700;
             line-height: 1.2;
-            color: var(--primary-text-color);
+            color: var(--card-dominant-color, var(--primary-text-color));
             margin-bottom: 2px;
-            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
-            filter: brightness(1.1);
-        }
-        .has-background .title {
-            text-shadow: 0 0 20px currentColor;
-            filter: brightness(1.2) saturate(1.3);
         }
         .subtitle {
             font-size: 1.05rem;
-            color: var(--secondary-text-color);
+            color: var(--card-dominant-color, var(--secondary-text-color));
             font-weight: 400;
-            opacity: 0.75;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 6px;
-            filter: brightness(1.05);
-        }
-        .has-background .subtitle {
-            text-shadow: 0 0 16px currentColor;
-            filter: brightness(1.15) saturate(1.2);
         }
         .meta-line {
             font-size: 0.85rem;
@@ -6218,7 +6227,7 @@ A.styles = V`
             justify-content: center;
             margin-bottom: 6px;
         }
-        .playback-controls ha-icon-button {
+        .playback-controls ha-icon-button:not(.music-subtle-btn) {
             --mdc-icon-button-size: 36px;
             --mdc-icon-size: 22px;
             color: var(--primary-text-color);
@@ -6226,7 +6235,7 @@ A.styles = V`
             border-radius: 50%;
             transition: background 0.2s;
         }
-        .playback-controls ha-icon-button:hover {
+        .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
             background: rgba(var(--rgb-primary-text-color), 0.1);
         }
         .playback-controls ha-icon-button ha-icon {
@@ -6261,14 +6270,20 @@ A.styles = V`
 
         /* Subtle music controls (shuffle/repeat) */
         .music-subtle-btn {
-            --mdc-icon-button-size: 30px !important;
-            --mdc-icon-size: 16px !important;
+            --mdc-icon-button-size: 36px !important;
+            --mdc-icon-size: 20px !important;
             opacity: 0.35;
             background: transparent !important;
-            transition: opacity 0.2s;
+            border-radius: 50%;
+            transition: opacity 0.2s, color 0.2s;
         }
         .music-subtle-btn:hover {
             opacity: 0.7;
+        }
+        .music-subtle-btn.active {
+            color: var(--card-dominant-color, var(--primary-color)) !important;
+            opacity: 1 !important;
+            background: transparent !important;
         }
 
         /* Stop confirmed pulse animation */
@@ -6286,12 +6301,13 @@ A.styles = V`
             cursor: pointer;
             position: relative;
             width: 100%;
-            padding: 4px 6px;
+            padding: 4px 10px;
+            box-sizing: border-box;
         }
         .progress-bar {
             height: 6px;
             background: rgba(var(--rgb-primary-text-color), 0.12);
-            border-radius: 3px;
+            border-radius: 0;
             overflow: visible;
             position: relative;
             backdrop-filter: blur(8px);
@@ -6302,8 +6318,10 @@ A.styles = V`
         }
         .progress-fill {
             height: 100%;
-            border-radius: 0 3px 3px 0;
+            border-radius: 0;
             transition: width 1s linear;
+            background: var(--card-dominant-color, var(--primary-color));
+            opacity: 0.65;
         }
         .seek-handle {
             position: absolute;
@@ -6312,7 +6330,8 @@ A.styles = V`
             height: 12px;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            background: var(--card-dominant-color, var(--primary-color));
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
             pointer-events: none;
             transition: left 1s linear;
         }
@@ -6322,7 +6341,7 @@ A.styles = V`
             display: flex;
             justify-content: space-between;
             margin-top: 2px;
-            padding: 0 6px;
+            padding: 0 10px;
         }
         .time-elapsed,
         .time-remaining {
@@ -6784,6 +6803,6 @@ T([
   g()
 ], A.prototype, "_stopPulse", 2);
 A = T([
-  U("jellyha-now-playing-card")
+  L("jellyha-now-playing-card")
 ], A);
 //# sourceMappingURL=jellyha-cards.js.map

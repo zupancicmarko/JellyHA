@@ -32,10 +32,10 @@ export class JellyHANowPlayingCard extends LitElement {
     private _longPressRaf: number | null = null;
     private _resizeObserver?: ResizeObserver;
 
-    // Cache backdrop URL to prevent flicker on every update
     private _cachedBackdropUrl: string | undefined;
     private _cachedItemId: string | undefined;
     private _cachedColorItemId: string | undefined;
+    private _optimisticFavorites: Record<string, boolean> = {};
 
     public setConfig(config: JellyHANowPlayingCardConfig): void {
         this._config = {
@@ -160,12 +160,17 @@ export class JellyHANowPlayingCard extends LitElement {
             ? `S${String(attributes.season).padStart(2, '0')}E${String(attributes.episode).padStart(2, '0')}`
             : attributes.media_type || '';
 
+        // Determine effective favorite status using optimistic override if available
+        const isFavorite = attributes.item_id && this._optimisticFavorites[attributes.item_id] !== undefined
+            ? this._optimisticFavorites[attributes.item_id]
+            : (attributes.is_favorite || false);
+
         // SVG ring circumference for stop animation (r=20 => C=2*PI*20 ≈ 125.66)
         const ringCircumference = 125.66;
         const ringOffset = ringCircumference * (1 - this._longPressProgress);
 
         return html`
-            <ha-card class="jellyha-now-playing ${showBackground ? 'has-background' : ''} ${this._config.title ? 'has-title' : ''}">
+            <ha-card class="jellyha-now-playing ${showBackground ? 'has-background' : ''} ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
                 ${showBackground ? html`
                     <div class="card-background" style="background-image: url('${backdropUrl}')"></div>
                     <div class="card-overlay"></div>
@@ -210,8 +215,8 @@ export class JellyHANowPlayingCard extends LitElement {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== false ? html`<div class="title" style="color: ${this._dominantColor}">${attributes.title}</div>` : nothing}
-                                    ${subtitle ? html`<div class="subtitle" style="color: ${this._dominantColor}">${subtitle}</div>` : nothing}
+                                    ${this._config.show_title !== false ? html`<div class="title">${attributes.title}</div>` : nothing}
+                                    ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
                                     ${this._overflowState < 1 && metaLine ? html`<div class="meta-line">${metaLine}</div>` : nothing}
                                     ${this._overflowState < 1 && (userName || clientInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && clientInfo ? ' ' : ''}${clientInfo || nothing}</div>` : nothing}
                                 </div>
@@ -220,8 +225,8 @@ export class JellyHANowPlayingCard extends LitElement {
                             <div class="info-bottom">
                                 <div class="playback-controls">
                                     ${isMusic ? html`
-                                        <ha-icon-button class="music-subtle-btn" .label=${'Shuffle'} @click=${() => this._handleControl('Shuffle')}>
-                                            <ha-icon icon="mdi:shuffle-variant"></ha-icon>
+                                        <ha-icon-button class="music-subtle-btn ${isFavorite ? 'active' : ''}" .label=${'Favorite'} @click=${() => this._handleFavoriteToggle(attributes.item_id!, isFavorite)}>
+                                            <ha-icon icon="${isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
                                         </ha-icon-button>
                                         <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'previous') || 'Previous'} @click=${() => this._handleControl('PreviousTrack')}>
                                             <ha-icon icon="mdi:skip-previous"></ha-icon>
@@ -243,7 +248,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : isPaused ? html`
-                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => this._handleControl('Unpause')}>
+                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => this._handleControl(isMusic ? 'PlayPause' : 'Unpause')}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : html`
@@ -267,8 +272,8 @@ export class JellyHANowPlayingCard extends LitElement {
                                         <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'next') || 'Next'} @click=${() => this._handleControl('NextTrack')}>
                                             <ha-icon icon="mdi:skip-next"></ha-icon>
                                         </ha-icon-button>
-                                        <ha-icon-button class="music-subtle-btn" .label=${'Repeat'} @click=${() => this._handleControl('SetRepeatMode')}>
-                                            <ha-icon icon="mdi:repeat"></ha-icon>
+                                        <ha-icon-button class="music-subtle-btn ${(attributes.repeat_mode && attributes.repeat_mode !== 'RepeatNone') ? 'active' : ''}" .label=${'Repeat'} @click=${() => this._handleRepeatMode(attributes.session_id!, attributes.repeat_mode || 'RepeatNone')}>
+                                            <ha-icon icon="${attributes.repeat_mode === 'RepeatOne' ? 'mdi:repeat-once' : 'mdi:repeat'}"></ha-icon>
                                         </ha-icon-button>
                                     ` : html`
                                         <ha-icon-button class="seek-btn" .label=${'Forward 30s'} @click=${() => this._handleSeekRelative(30)}>
@@ -279,8 +284,8 @@ export class JellyHANowPlayingCard extends LitElement {
 
                                 <div class="progress-container" @click=${this._handleSeek}>
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${progressPercent}%; background: ${this._dominantColor}"></div>
-                                        <div class="seek-handle" style="left: ${progressPercent}%; background: ${this._dominantColor}"></div>
+                                        <div class="progress-fill" style="width: ${progressPercent}%;"></div>
+                                        <div class="seek-handle" style="left: ${progressPercent}%;"></div>
                                     </div>
                                 </div>
 
@@ -369,6 +374,41 @@ export class JellyHANowPlayingCard extends LitElement {
         await this.hass.callService('jellyha', 'session_control', {
             session_id: sessionId,
             command: command
+        });
+    }
+
+    private async _handleRepeatMode(sessionId: string, currentMode: string): Promise<void> {
+        let nextMode = 'RepeatAll';
+        if (currentMode === 'RepeatAll') nextMode = 'RepeatOne';
+        else if (currentMode === 'RepeatOne') nextMode = 'RepeatNone';
+
+        await this.hass.callService('jellyha', 'session_general_command', {
+            session_id: sessionId,
+            command: 'SetRepeatMode',
+            arguments: { RepeatMode: nextMode }
+        });
+    }
+
+    private _haptic(type: 'selection' | 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'failure' = 'selection') {
+        const event = new CustomEvent('haptic', {
+            detail: type,
+            bubbles: true,
+            composed: true
+        });
+        this.dispatchEvent(event);
+    }
+
+    private async _handleFavoriteToggle(itemId: string, currentStatus: boolean): Promise<void> {
+        this._haptic();
+        const newStatus = !currentStatus;
+
+        // Apply optimistic update immediately
+        this._optimisticFavorites[itemId] = newStatus;
+        this.requestUpdate();
+
+        await this.hass.callService('jellyha', 'update_favorite', {
+            item_id: itemId,
+            is_favorite: newStatus
         });
     }
 
@@ -663,14 +703,12 @@ export class JellyHANowPlayingCard extends LitElement {
             background: transparent;
             color: white;
         }
-        .jellyha-now-playing.has-background .title,
-        .jellyha-now-playing.has-background .subtitle,
         .jellyha-now-playing.has-background .meta-line,
         .jellyha-now-playing.has-background .client-line,
         .jellyha-now-playing.has-background .time-elapsed,
         .jellyha-now-playing.has-background .time-remaining,
         .jellyha-now-playing.has-background .card-header,
-        .jellyha-now-playing.has-background ha-icon-button {
+        .jellyha-now-playing.has-background ha-icon-button:not(.music-subtle-btn) {
             color: #fff !important;
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
@@ -884,31 +922,18 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 1.4rem;
             font-weight: 700;
             line-height: 1.2;
-            color: var(--primary-text-color);
+            color: var(--card-dominant-color, var(--primary-text-color));
             margin-bottom: 2px;
-            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
-            filter: brightness(1.1);
-        }
-        .has-background .title {
-            text-shadow: 0 0 20px currentColor;
-            filter: brightness(1.2) saturate(1.3);
         }
         .subtitle {
             font-size: 1.05rem;
-            color: var(--secondary-text-color);
+            color: var(--card-dominant-color, var(--secondary-text-color));
             font-weight: 400;
-            opacity: 0.75;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 6px;
-            filter: brightness(1.05);
-        }
-        .has-background .subtitle {
-            text-shadow: 0 0 16px currentColor;
-            filter: brightness(1.15) saturate(1.2);
         }
         .meta-line {
             font-size: 0.85rem;
@@ -945,7 +970,7 @@ export class JellyHANowPlayingCard extends LitElement {
             justify-content: center;
             margin-bottom: 6px;
         }
-        .playback-controls ha-icon-button {
+        .playback-controls ha-icon-button:not(.music-subtle-btn) {
             --mdc-icon-button-size: 36px;
             --mdc-icon-size: 22px;
             color: var(--primary-text-color);
@@ -953,7 +978,7 @@ export class JellyHANowPlayingCard extends LitElement {
             border-radius: 50%;
             transition: background 0.2s;
         }
-        .playback-controls ha-icon-button:hover {
+        .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
             background: rgba(var(--rgb-primary-text-color), 0.1);
         }
         .playback-controls ha-icon-button ha-icon {
@@ -988,14 +1013,20 @@ export class JellyHANowPlayingCard extends LitElement {
 
         /* Subtle music controls (shuffle/repeat) */
         .music-subtle-btn {
-            --mdc-icon-button-size: 30px !important;
-            --mdc-icon-size: 16px !important;
+            --mdc-icon-button-size: 36px !important;
+            --mdc-icon-size: 20px !important;
             opacity: 0.35;
             background: transparent !important;
-            transition: opacity 0.2s;
+            border-radius: 50%;
+            transition: opacity 0.2s, color 0.2s;
         }
         .music-subtle-btn:hover {
             opacity: 0.7;
+        }
+        .music-subtle-btn.active {
+            color: var(--card-dominant-color, var(--primary-color)) !important;
+            opacity: 1 !important;
+            background: transparent !important;
         }
 
         /* Stop confirmed pulse animation */
@@ -1013,12 +1044,13 @@ export class JellyHANowPlayingCard extends LitElement {
             cursor: pointer;
             position: relative;
             width: 100%;
-            padding: 4px 6px;
+            padding: 4px 10px;
+            box-sizing: border-box;
         }
         .progress-bar {
             height: 6px;
             background: rgba(var(--rgb-primary-text-color), 0.12);
-            border-radius: 3px;
+            border-radius: 0;
             overflow: visible;
             position: relative;
             backdrop-filter: blur(8px);
@@ -1029,8 +1061,10 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         .progress-fill {
             height: 100%;
-            border-radius: 0 3px 3px 0;
+            border-radius: 0;
             transition: width 1s linear;
+            background: var(--card-dominant-color, var(--primary-color));
+            opacity: 0.65;
         }
         .seek-handle {
             position: absolute;
@@ -1039,7 +1073,8 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 12px;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            background: var(--card-dominant-color, var(--primary-color));
+            box-shadow: 0 0 4px rgba(0,0,0,0.3);
             pointer-events: none;
             transition: left 1s linear;
         }
@@ -1049,7 +1084,7 @@ export class JellyHANowPlayingCard extends LitElement {
             display: flex;
             justify-content: space-between;
             margin-top: 2px;
-            padding: 0 6px;
+            padding: 0 10px;
         }
         .time-elapsed,
         .time-remaining {
