@@ -3,7 +3,7 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const te = globalThis, ce = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, he = Symbol(), ve = /* @__PURE__ */ new WeakMap();
+const te = globalThis, ce = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, he = Symbol(), be = /* @__PURE__ */ new WeakMap();
 let Ee = class {
   constructor(e, i, a) {
     if (this._$cssResult$ = !0, a !== he) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -14,7 +14,7 @@ let Ee = class {
     const i = this.t;
     if (ce && e === void 0) {
       const a = i !== void 0 && i.length === 1;
-      a && (e = ve.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && ve.set(i, e));
+      a && (e = be.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && be.set(i, e));
     }
     return e;
   }
@@ -22,7 +22,7 @@ let Ee = class {
     return this.cssText;
   }
 };
-const Le = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), q = (t, ...e) => {
+const Le = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), V = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((a, o, s) => a + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
@@ -35,7 +35,7 @@ const Le = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), q = (t,
     const a = document.createElement("style"), o = te.litNonce;
     o !== void 0 && a.setAttribute("nonce", o), a.textContent = i.cssText, t.appendChild(a);
   }
-}, ye = ce ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
+}, ve = ce ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let i = "";
   for (const a of e.cssRules) i += a.cssText;
   return Le(i);
@@ -45,10 +45,10 @@ const Le = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), q = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: He, defineProperty: Fe, getOwnPropertyDescriptor: Be, getOwnPropertyNames: We, getOwnPropertySymbols: Ge, getPrototypeOf: Xe } = Object, oe = globalThis, be = oe.trustedTypes, Ye = be ? be.emptyScript : "", Je = oe.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
+const { is: He, defineProperty: Fe, getOwnPropertyDescriptor: Be, getOwnPropertyNames: We, getOwnPropertySymbols: Ge, getPrototypeOf: Ye } = Object, oe = globalThis, ye = oe.trustedTypes, Xe = ye ? ye.emptyScript : "", Je = oe.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
-      t = t ? Ye : null;
+      t = t ? Xe : null;
       break;
     case Object:
     case Array:
@@ -75,7 +75,7 @@ const { is: He, defineProperty: Fe, getOwnPropertyDescriptor: Be, getOwnProperty
   return i;
 } }, pe = (t, e) => !He(t, e), xe = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: pe };
 Symbol.metadata ??= Symbol("metadata"), oe.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let N = class extends HTMLElement {
+let O = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ??= []).push(e);
   }
@@ -104,7 +104,7 @@ let N = class extends HTMLElement {
   }
   static _$Ei() {
     if (this.hasOwnProperty(F("elementProperties"))) return;
-    const e = Xe(this);
+    const e = Ye(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
@@ -129,8 +129,8 @@ let N = class extends HTMLElement {
     const i = [];
     if (Array.isArray(e)) {
       const a = new Set(e.flat(1 / 0).reverse());
-      for (const o of a) i.unshift(ye(o));
-    } else e !== void 0 && i.push(ye(e));
+      for (const o of a) i.unshift(ve(o));
+    } else e !== void 0 && i.push(ve(e));
     return i;
   }
   static _$Eu(e, i) {
@@ -256,17 +256,17 @@ let N = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-N.elementStyles = [], N.shadowRootOptions = { mode: "open" }, N[F("elementProperties")] = /* @__PURE__ */ new Map(), N[F("finalized")] = /* @__PURE__ */ new Map(), Je?.({ ReactiveElement: N }), (oe.reactiveElementVersions ??= []).push("2.1.2");
+O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[F("elementProperties")] = /* @__PURE__ */ new Map(), O[F("finalized")] = /* @__PURE__ */ new Map(), Je?.({ ReactiveElement: O }), (oe.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const _e = globalThis, $e = (t) => t, ae = _e.trustedTypes, ke = ae ? ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Me = "$lit$", j = `lit$${Math.random().toFixed(9).slice(2)}$`, ze = "?" + j, qe = `<${ze}>`, I = document, W = () => I.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", ue = Array.isArray, Ve = (t) => ue(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
+const ge = globalThis, $e = (t) => t, ae = ge.trustedTypes, ke = ae ? ae.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Me = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, ze = "?" + T, Ve = `<${ze}>`, D = document, W = () => D.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", _e = Array.isArray, qe = (t) => _e(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
 \f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Se = /-->/g, Ce = />/g, M = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Pe = /'/g, Ae = /"/g, Ie = /^(?:script|style|textarea|title)$/i, Ze = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Ze(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), je = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
-function De(t, e) {
-  if (!ue(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Pe = /'/g, Ae = /"/g, De = /^(?:script|style|textarea|title)$/i, Ze = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Ze(1), N = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), je = /* @__PURE__ */ new WeakMap(), z = D.createTreeWalker(D, 129);
+function Ie(t, e) {
+  if (!_e(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ke !== void 0 ? ke.createHTML(e) : e;
 }
 const Ke = (t, e) => {
@@ -274,31 +274,31 @@ const Ke = (t, e) => {
   let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = H;
   for (let h = 0; h < i; h++) {
     const c = t[h];
-    let _, u, p = -1, m = 0;
-    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === H ? u[1] === "!--" ? r = Se : u[1] !== void 0 ? r = Ce : u[2] !== void 0 ? (Ie.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? H, p = -1) : u[1] === void 0 ? p = -2 : (p = r.lastIndex - u[2].length, _ = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Ae : Pe) : r === Ae || r === Pe ? r = M : r === Se || r === Ce ? r = H : (r = M, o = void 0);
+    let g, _, p = -1, m = 0;
+    for (; m < c.length && (r.lastIndex = m, _ = r.exec(c), _ !== null); ) m = r.lastIndex, r === H ? _[1] === "!--" ? r = Se : _[1] !== void 0 ? r = Ce : _[2] !== void 0 ? (De.test(_[2]) && (o = RegExp("</" + _[2], "g")), r = M) : _[3] !== void 0 && (r = M) : r === M ? _[0] === ">" ? (r = o ?? H, p = -1) : _[1] === void 0 ? p = -2 : (p = r.lastIndex - _[2].length, g = _[1], r = _[3] === void 0 ? M : _[3] === '"' ? Ae : Pe) : r === Ae || r === Pe ? r = M : r === Se || r === Ce ? r = H : (r = M, o = void 0);
     const f = r === M && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === H ? c + qe : p >= 0 ? (a.push(_), c.slice(0, p) + Me + c.slice(p) + j + f) : c + j + (p === -2 ? h : f);
+    s += r === H ? c + Ve : p >= 0 ? (a.push(g), c.slice(0, p) + Me + c.slice(p) + T + f) : c + T + (p === -2 ? h : f);
   }
-  return [De(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
+  return [Ie(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
-class X {
+class Y {
   constructor({ strings: e, _$litType$: i }, a) {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = e.length - 1, c = this.parts, [_, u] = Ke(e, i);
-    if (this.el = X.createElement(_, a), z.currentNode = this.el.content, i === 2 || i === 3) {
+    const h = e.length - 1, c = this.parts, [g, _] = Ke(e, i);
+    if (this.el = Y.createElement(g, a), z.currentNode = this.el.content, i === 2 || i === 3) {
       const p = this.el.content.firstChild;
       p.replaceWith(...p.childNodes);
     }
     for (; (o = z.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
         if (o.hasAttributes()) for (const p of o.getAttributeNames()) if (p.endsWith(Me)) {
-          const m = u[r++], f = o.getAttribute(p).split(j), x = /([.?@])?(.*)/.exec(m);
+          const m = _[r++], f = o.getAttribute(p).split(T), x = /([.?@])?(.*)/.exec(m);
           c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? et : x[1] === "?" ? tt : x[1] === "@" ? it : se }), o.removeAttribute(p);
-        } else p.startsWith(j) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
-        if (Ie.test(o.tagName)) {
-          const p = o.textContent.split(j), m = p.length - 1;
+        } else p.startsWith(T) && (c.push({ type: 6, index: s }), o.removeAttribute(p));
+        if (De.test(o.tagName)) {
+          const p = o.textContent.split(T), m = p.length - 1;
           if (m > 0) {
             o.textContent = ae ? ae.emptyScript : "";
             for (let f = 0; f < m; f++) o.append(p[f], W()), z.nextNode(), c.push({ type: 2, index: ++s });
@@ -308,18 +308,18 @@ class X {
       } else if (o.nodeType === 8) if (o.data === ze) c.push({ type: 2, index: s });
       else {
         let p = -1;
-        for (; (p = o.data.indexOf(j, p + 1)) !== -1; ) c.push({ type: 7, index: s }), p += j.length - 1;
+        for (; (p = o.data.indexOf(T, p + 1)) !== -1; ) c.push({ type: 7, index: s }), p += T.length - 1;
       }
       s++;
     }
   }
   static createElement(e, i) {
-    const a = I.createElement("template");
+    const a = D.createElement("template");
     return a.innerHTML = e, a;
   }
 }
 function R(t, e, i = t, a) {
-  if (e === O) return e;
+  if (e === N) return e;
   let o = a !== void 0 ? i._$Co?.[a] : i._$Cl;
   const s = G(e) ? void 0 : e._$litDirective$;
   return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = R(t, o._$AS(t, e.values), o, a)), e;
@@ -335,24 +335,24 @@ class Qe {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: i }, parts: a } = this._$AD, o = (e?.creationScope ?? I).importNode(i, !0);
+    const { el: { content: i }, parts: a } = this._$AD, o = (e?.creationScope ?? D).importNode(i, !0);
     z.currentNode = o;
     let s = z.nextNode(), r = 0, h = 0, c = a[0];
     for (; c !== void 0; ) {
       if (r === c.index) {
-        let _;
-        c.type === 2 ? _ = new V(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new at(s, this, e)), this._$AV.push(_), c = a[++h];
+        let g;
+        c.type === 2 ? g = new q(s, s.nextSibling, this, e) : c.type === 1 ? g = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (g = new at(s, this, e)), this._$AV.push(g), c = a[++h];
       }
       r !== c?.index && (s = z.nextNode(), r++);
     }
-    return z.currentNode = I, o;
+    return z.currentNode = D, o;
   }
   p(e) {
     let i = 0;
     for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(e, a, i), i += a.strings.length - 2) : a._$AI(e[i])), i++;
   }
 }
-class V {
+class q {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -371,7 +371,7 @@ class V {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = R(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Ve(e) ? this.k(e) : this._(e);
+    e = R(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== N && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : qe(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -380,10 +380,10 @@ class V {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== d && G(this._$AH) ? this._$AA.nextSibling.data = e : this.T(I.createTextNode(e)), this._$AH = e;
+    this._$AH !== d && G(this._$AH) ? this._$AA.nextSibling.data = e : this.T(D.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = X.createElement(De(a.h, a.h[0]), this.options)), a);
+    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = Y.createElement(Ie(a.h, a.h[0]), this.options)), a);
     if (this._$AH?._$AD === o) this._$AH.p(i);
     else {
       const s = new Qe(o, this), r = s.u(this.options);
@@ -392,13 +392,13 @@ class V {
   }
   _$AC(e) {
     let i = je.get(e.strings);
-    return i === void 0 && je.set(e.strings, i = new X(e)), i;
+    return i === void 0 && je.set(e.strings, i = new Y(e)), i;
   }
   k(e) {
-    ue(this._$AH) || (this._$AH = [], this._$AR());
+    _e(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let a, o = 0;
-    for (const s of e) o === i.length ? i.push(a = new V(this.O(W()), this.O(W()), this, this.options)) : a = i[o], a._$AI(s), o++;
+    for (const s of e) o === i.length ? i.push(a = new q(this.O(W()), this.O(W()), this, this.options)) : a = i[o], a._$AI(s), o++;
     o < i.length && (this._$AR(a && a._$AB.nextSibling, o), i.length = o);
   }
   _$AR(e = this._$AA.nextSibling, i) {
@@ -424,11 +424,11 @@ class se {
   _$AI(e, i = this, a, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) e = R(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
+    if (s === void 0) e = R(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== N, r && (this._$AH = e);
     else {
       const h = e;
-      let c, _;
-      for (e = s[0], c = 0; c < s.length - 1; c++) _ = R(this, h[a + c], i, c), _ === O && (_ = this._$AH[c]), r ||= !G(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
+      let c, g;
+      for (e = s[0], c = 0; c < s.length - 1; c++) g = R(this, h[a + c], i, c), g === N && (g = this._$AH[c]), r ||= !G(g) || g !== this._$AH[c], g === d ? e = d : e !== d && (e += (g ?? "") + s[c + 1]), this._$AH[c] = g;
     }
     r && !o && this.j(e);
   }
@@ -457,7 +457,7 @@ class it extends se {
     super(e, i, a, o, s), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = R(this, e, i, 0) ?? d) === O) return;
+    if ((e = R(this, e, i, 0) ?? d) === N) return;
     const a = this._$AH, o = e === d && a !== d || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== d && (a === d || o);
     o && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -476,14 +476,14 @@ class at {
     R(this, e);
   }
 }
-const ot = _e.litHtmlPolyfillSupport;
-ot?.(X, V), (_e.litHtmlVersions ??= []).push("3.3.2");
-const Ne = (t, e, i) => {
+const ot = ge.litHtmlPolyfillSupport;
+ot?.(Y, q), (ge.litHtmlVersions ??= []).push("3.3.2");
+const Oe = (t, e, i) => {
   const a = i?.renderBefore ?? e;
   let o = a._$litPart$;
   if (o === void 0) {
     const s = i?.renderBefore ?? null;
-    a._$litPart$ = o = new V(e.insertBefore(W(), s), s, void 0, i ?? {});
+    a._$litPart$ = o = new q(e.insertBefore(W(), s), s, void 0, i ?? {});
   }
   return o._$AI(t), o;
 };
@@ -492,8 +492,8 @@ const Ne = (t, e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ge = globalThis;
-class P extends N {
+const ue = globalThis;
+class A extends O {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -503,7 +503,7 @@ class P extends N {
   }
   update(e) {
     const i = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Ne(i, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Oe(i, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -512,13 +512,13 @@ class P extends N {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return O;
+    return N;
   }
 }
-P._$litElement$ = !0, P.finalized = !0, ge.litElementHydrateSupport?.({ LitElement: P });
-const st = ge.litElementPolyfillSupport;
-st?.({ LitElement: P });
-(ge.litElementVersions ??= []).push("4.2.2");
+A._$litElement$ = !0, A.finalized = !0, ue.litElementHydrateSupport?.({ LitElement: A });
+const st = ue.litElementPolyfillSupport;
+st?.({ LitElement: A });
+(ue.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -555,7 +555,7 @@ const rt = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function C(t) {
+function P(t) {
   return (e, i) => typeof i == "object" ? nt(t, e, i) : ((a, o, s) => {
     const r = o.hasOwnProperty(s);
     return o.constructor.createProperty(s, a), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
@@ -566,8 +566,8 @@ function C(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function g(t) {
-  return C({ ...t, state: !0, attribute: !1 });
+function u(t) {
+  return P({ ...t, state: !0, attribute: !1 });
 }
 /**
  * @license
@@ -615,7 +615,7 @@ function de(t) {
 function B(t, e) {
   return t && `${t}&width=${e}`;
 }
-const Oe = q`
+const Ne = V`
   :host {
     display: block;
     height: 100%;
@@ -2510,12 +2510,12 @@ function l(t, e) {
   const i = t.split("-")[0].toLowerCase();
   return ee[i]?.[e] ? ee[i][e] : ee.en?.[e] ? ee.en[e] : e;
 }
-var ct = Object.defineProperty, ht = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+var ct = Object.defineProperty, ht = Object.getOwnPropertyDescriptor, C = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? ht(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && ct(e, i, o), o;
 };
-let b = class extends P {
+let y = class extends A {
   constructor() {
     super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
       this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
@@ -2708,7 +2708,7 @@ let b = class extends P {
   }
   updated() {
     if (this._portalContainer) {
-      Ne(this._renderDialogContent(), this._portalContainer);
+      Oe(this._renderDialogContent(), this._portalContainer);
       const t = this._portalContainer.querySelector(".content");
       t && (t.removeEventListener("touchstart", this._handleModalTouchStart), t.removeEventListener("touchmove", this._handleModalTouchMove), t.removeEventListener("touchend", this._handleModalTouchEnd), t.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), t.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), t.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
     }
@@ -3405,51 +3405,51 @@ let b = class extends P {
     return null;
   }
 };
-b.styles = q`
+y.styles = V`
         /* Styles handled in _getPortalStyles */
     `;
-S([
-  C({ attribute: !1 })
-], b.prototype, "hass", 2);
-S([
-  g()
-], b.prototype, "_item", 2);
-S([
-  g()
-], b.prototype, "_nextUpItem", 2);
-S([
-  g()
-], b.prototype, "_defaultCastDevice", 2);
-S([
-  g()
-], b.prototype, "_open", 2);
-S([
-  g()
-], b.prototype, "_confirmDelete", 2);
-S([
-  g()
-], b.prototype, "_viewMode", 2);
-S([
-  g()
-], b.prototype, "_episodes", 2);
-S([
-  g()
-], b.prototype, "_touchStartY", 2);
-S([
-  g()
-], b.prototype, "_currentTranslateY", 2);
-S([
-  g()
-], b.prototype, "_isDragging", 2);
-b = S([
+C([
+  P({ attribute: !1 })
+], y.prototype, "hass", 2);
+C([
+  u()
+], y.prototype, "_item", 2);
+C([
+  u()
+], y.prototype, "_nextUpItem", 2);
+C([
+  u()
+], y.prototype, "_defaultCastDevice", 2);
+C([
+  u()
+], y.prototype, "_open", 2);
+C([
+  u()
+], y.prototype, "_confirmDelete", 2);
+C([
+  u()
+], y.prototype, "_viewMode", 2);
+C([
+  u()
+], y.prototype, "_episodes", 2);
+C([
+  u()
+], y.prototype, "_touchStartY", 2);
+C([
+  u()
+], y.prototype, "_currentTranslateY", 2);
+C([
+  u()
+], y.prototype, "_isDragging", 2);
+y = C([
   L("jellyha-item-details-modal")
-], b);
-var pt = Object.defineProperty, _t = Object.getOwnPropertyDescriptor, me = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? _t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+], y);
+var pt = Object.defineProperty, gt = Object.getOwnPropertyDescriptor, me = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? gt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && pt(e, i, o), o;
 };
-function ut(t, e, i) {
+function _t(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -3457,7 +3457,7 @@ function ut(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let Y = class extends P {
+let X = class extends A {
   setConfig(t) {
     this._config = t;
   }
@@ -3956,10 +3956,10 @@ let Y = class extends P {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, ut(this, "config-changed", { config: i });
+    this._config = i, _t(this, "config-changed", { config: i });
   }
 };
-Y.styles = q`
+X.styles = V`
     .form-row {
       margin-bottom: 16px;
     }
@@ -3986,20 +3986,20 @@ Y.styles = q`
     }
   `;
 me([
-  C({ attribute: !1 })
-], Y.prototype, "hass", 2);
+  P({ attribute: !1 })
+], X.prototype, "hass", 2);
 me([
-  g()
-], Y.prototype, "_config", 2);
-Y = me([
+  u()
+], X.prototype, "_config", 2);
+X = me([
   L("jellyha-library-editor")
-], Y);
-var gt = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
+], X);
+var ut = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, $ = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? mt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && gt(e, i, o), o;
+  return a && o && ut(e, i, o), o;
 };
-let y = class extends P {
+let v = class extends A {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
@@ -4352,54 +4352,54 @@ let y = class extends P {
     this.dispatchEvent(e);
   }
 };
-y.styles = Oe;
+v.styles = Ne;
 $([
-  C({ attribute: !1 })
-], y.prototype, "hass", 2);
+  P({ attribute: !1 })
+], v.prototype, "hass", 2);
 $([
-  C({ attribute: !1 })
-], y.prototype, "config", 2);
+  P({ attribute: !1 })
+], v.prototype, "config", 2);
 $([
-  C({ attribute: !1 })
-], y.prototype, "item", 2);
+  P({ attribute: !1 })
+], v.prototype, "item", 2);
 $([
-  C({ type: String })
-], y.prototype, "layout", 2);
+  P({ type: String })
+], v.prototype, "layout", 2);
 $([
-  C({ type: Boolean })
-], y.prototype, "isNextUpHighlight", 2);
+  P({ type: Boolean })
+], v.prototype, "isNextUpHighlight", 2);
 $([
-  g()
-], y.prototype, "_pressStartTime", 2);
+  u()
+], v.prototype, "_pressStartTime", 2);
 $([
-  g()
-], y.prototype, "_holdTimer", 2);
+  u()
+], v.prototype, "_holdTimer", 2);
 $([
-  g()
-], y.prototype, "_isHoldActive", 2);
+  u()
+], v.prototype, "_isHoldActive", 2);
 $([
-  g()
-], y.prototype, "_itemTouchStartX", 2);
+  u()
+], v.prototype, "_itemTouchStartX", 2);
 $([
-  g()
-], y.prototype, "_itemTouchStartY", 2);
+  u()
+], v.prototype, "_itemTouchStartY", 2);
 $([
-  g()
-], y.prototype, "_clickTimer", 2);
+  u()
+], v.prototype, "_clickTimer", 2);
 $([
-  g()
-], y.prototype, "_rewindActive", 2);
-y = $([
+  u()
+], v.prototype, "_rewindActive", 2);
+v = $([
   L("jellyha-media-item")
-], y);
-var ft = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, v = (t, e, i, a) => {
+], v);
+var ft = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, b = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? wt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && ft(e, i, o), o;
 };
-const vt = "1.0.0";
+const bt = "1.0.0";
 console.info(
-  `%c JELLYHA-LIBRARY-CARD %c v${vt} `,
+  `%c JELLYHA-LIBRARY-CARD %c v${bt} `,
   "color: white; background: #00a4dc; font-weight: bold;",
   "color: #00a4dc; background: white; font-weight: bold;"
 );
@@ -4442,7 +4442,7 @@ const Te = {
   filter_newly_added: !1,
   sort_option: "date_added_desc"
 };
-function yt(t, e, i) {
+function vt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -4450,7 +4450,7 @@ function yt(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let w = class extends P {
+let w = class extends A {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -4490,8 +4490,8 @@ let w = class extends P {
         if (a) {
           const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a;
           Math.abs(this._scrollAccumulator - o) > 10 && (this._scrollAccumulator = o);
-          const c = r / (this._config.auto_swipe_interval * 1e3) * i, _ = s / 2;
-          this._scrollAccumulator += c, this._scrollAccumulator >= _ ? (this._scrollAccumulator = this._scrollAccumulator - _, a.scrollLeft = this._scrollAccumulator) : a.scrollLeft = this._scrollAccumulator;
+          const c = r / (this._config.auto_swipe_interval * 1e3) * i, g = s / 2;
+          this._scrollAccumulator += c, this._scrollAccumulator >= g ? (this._scrollAccumulator = this._scrollAccumulator - g, a.scrollLeft = this._scrollAccumulator) : a.scrollLeft = this._scrollAccumulator;
         }
       }
       this._animationFrameId = requestAnimationFrame(t);
@@ -4557,13 +4557,13 @@ let w = class extends P {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, u = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, g = o >= h - 5, _ = this._config.show_pagination !== !1;
         let p = !1;
-        if (u) {
+        if (_) {
           const m = this._getTotalPages();
-          c && e > 0 && this._currentPage === 0 && (p = !0), _ && e < 0 && this._currentPage >= m - 1 && (p = !0);
+          c && e > 0 && this._currentPage === 0 && (p = !0), g && e < 0 && this._currentPage >= m - 1 && (p = !0);
         } else
-          c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
+          c && e > 0 && (p = !0), g && e < 0 && (p = !0);
         if (p) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
           const m = 0.3, f = e - this._elasticAnchorX;
@@ -4609,13 +4609,13 @@ let w = class extends P {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, _ = o >= h - 5, u = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, c = o <= 5, g = o >= h - 5, _ = this._config.show_pagination !== !1;
         let p = !1;
-        if (u) {
+        if (_) {
           const m = this._getTotalPages();
-          c && e > 0 && this._currentPage === 0 && (p = !0), _ && e < 0 && this._currentPage >= m - 1 && (p = !0);
+          c && e > 0 && this._currentPage === 0 && (p = !0), g && e < 0 && this._currentPage >= m - 1 && (p = !0);
         } else
-          c && e > 0 && (p = !0), _ && e < 0 && (p = !0);
+          c && e > 0 && (p = !0), g && e < 0 && (p = !0);
         if (p) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
           const m = 0.3, f = e - this._elasticAnchorX;
@@ -4932,7 +4932,7 @@ let w = class extends P {
    * Render carousel with optional pagination
    */
   _renderCarousel(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, g = e ? t.slice(h, h + i) : c ? [...t, ...t] : t;
     return n`
       <div 
         class="carousel-wrapper ${this._config.horizontal_alignment !== "left" ? "align-center" : ""}"
@@ -4947,13 +4947,13 @@ let w = class extends P {
           class="carousel ${e ? "paginated" : "scrollable"}"
           @scroll="${e ? d : this._handleScroll}"
         >
-          ${_.map((u) => n`
+          ${g.map((_) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
-                .item=${u}
+                .item=${_}
                 .layout=${"grid"}
-                .isNextUpHighlight=${this._config.media_type === "next_up" && u.id === this._mostRecentNextUpItemId}
+                .isNextUpHighlight=${this._config.media_type === "next_up" && _.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -4967,7 +4967,7 @@ let w = class extends P {
    * Render list with optional pagination
    */
   _renderList(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, u = this._effectiveListColumns, p = u === 1;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, g = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, _ = this._effectiveListColumns, p = _ === 1;
     return n`
       <div 
         class="list-wrapper"
@@ -4980,9 +4980,9 @@ let w = class extends P {
       >
         <div 
           class="list ${e ? "paginated" : ""} ${p ? "single-column" : ""}"
-          style="--jf-list-columns: ${u}"
+          style="--jf-list-columns: ${_}"
         >
-          ${_.map((m) => n`
+          ${g.map((m) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
@@ -5001,7 +5001,7 @@ let w = class extends P {
    * Render grid with optional pagination
    */
   _renderGrid(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, _ = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, u = this._config.columns || 1, p = u === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, c = !e && (this._config.auto_swipe_interval || 0) > 0, g = e ? t.slice(h, h + i) : c ? [...t, ...t] : t, _ = this._config.columns || 1, p = _ === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
     return n`
       <div class="grid-outer">
         <div 
@@ -5016,9 +5016,9 @@ let w = class extends P {
         >
           <div
             class="grid ${e ? "paginated" : ""} ${p ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
-            style="--jf-columns: ${u}; --jf-grid-rows: ${u}"
+            style="--jf-columns: ${_}; --jf-grid-rows: ${_}"
           >
-            ${_.map((f) => n`
+            ${g.map((f) => n`
                 <jellyha-media-item
                     .hass=${this.hass}
                     .config=${this._config}
@@ -5072,17 +5072,17 @@ let w = class extends P {
           class="pagination-track" 
           style="transform: translateX(${h}px); width: ${t * 16}px"
         >
-          ${Array.from({ length: t }, (c, _) => {
-      const u = Math.abs(_ - this._currentPage);
+          ${Array.from({ length: t }, (c, g) => {
+      const _ = Math.abs(g - this._currentPage);
       let p = "smart-dot";
-      return _ === this._currentPage ? p += " active" : u > 2 ? p += " hidden" : u === 2 && (p += " small"), n`
+      return g === this._currentPage ? p += " active" : _ > 2 ? p += " hidden" : _ === 2 && (p += " small"), n`
               <button
                 type="button"
                 class="${p}"
-                data-page="${_}"
+                data-page="${g}"
                 @click="${this._onDotClick}"
-                aria-label="${_ === this._currentPage ? `Page ${_ + 1} of ${t}, current page` : `Go to page ${_ + 1} of ${t}`}"
-                aria-current="${_ === this._currentPage ? "true" : "false"}"
+                aria-label="${g === this._currentPage ? `Page ${g + 1} of ${t}, current page` : `Go to page ${g + 1} of ${t}`}"
+                aria-current="${g === this._currentPage ? "true" : "false"}"
               ></button>
             `;
     })}
@@ -5106,7 +5106,7 @@ let w = class extends P {
         this._showItemDetails(t);
         break;
       case "trailer":
-        t.trailer_url ? window.open(t.trailer_url, "_blank") : yt(this, "hass-notification", {
+        t.trailer_url ? window.open(t.trailer_url, "_blank") : vt(this, "hass-notification", {
           message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
@@ -5205,65 +5205,65 @@ let w = class extends P {
     `;
   }
 };
-w.styles = Oe;
-v([
-  C({ attribute: !1 })
+w.styles = Ne;
+b([
+  P({ attribute: !1 })
 ], w.prototype, "hass", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_config", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_currentPage", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_itemsPerPage", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_pressStartTime", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_holdTimer", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_isHoldActive", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_rewindActive", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_items", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_error", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_lastUpdate", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_mostRecentNextUpItemId", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_searchQuery", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_searchGenre", 2);
-v([
+b([
   dt("jellyha-item-details-modal")
 ], w.prototype, "_modal", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_scrollProgress", 2);
-v([
-  g()
+b([
+  u()
 ], w.prototype, "_hasScrollableContent", 2);
-w = v([
+w = b([
   L("jellyha-library-card")
 ], w);
-var bt = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, fe = (t, e, i, a) => {
+var yt = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, fe = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? xt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && bt(e, i, o), o;
+  return a && o && yt(e, i, o), o;
 };
 function $t(t, e, i) {
   const a = new CustomEvent(e, {
@@ -5273,7 +5273,7 @@ function $t(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let J = class extends P {
+let J = class extends A {
   setConfig(t) {
     this._config = t;
   }
@@ -5474,7 +5474,7 @@ let J = class extends P {
     this._config = i, $t(this, "config-changed", { config: i });
   }
 };
-J.styles = q`
+J.styles = V`
     .form-row {
       margin-bottom: 16px;
     }
@@ -5501,15 +5501,15 @@ J.styles = q`
     }
   `;
 fe([
-  C({ attribute: !1 })
+  P({ attribute: !1 })
 ], J.prototype, "hass", 2);
 fe([
-  g()
+  u()
 ], J.prototype, "_config", 2);
 J = fe([
   L("jellyha-now-playing-editor")
 ], J);
-var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, T = (t, e, i, a) => {
+var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, j = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? St(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && kt(e, i, o), o;
@@ -5521,9 +5521,9 @@ window.customCards.push({
   description: "Display currently playing media from Jellyfin",
   preview: !0
 });
-let A = class extends P {
+let S = class extends A {
   constructor() {
-    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._longPressRaf = null, this._optimisticFavorites = {}, this._phrases = [];
+    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._longPressRaf = null, this._optimisticFavorites = {}, this._phrases = [];
   }
   setConfig(t) {
     this._config = {
@@ -5597,7 +5597,7 @@ let A = class extends P {
       this._cachedBackdropUrl = K ? B(K, 640) : void 0;
     }
     r !== this._cachedColorItemId && s && (this._cachedColorItemId = r, this._extractDominantColor(B(s, 80)));
-    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused, u = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", k = [x, E].filter(Boolean).join(" • "), D = this._config.show_user !== !1 && i.user_name || "", U = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", re = i.item_id && this._optimisticFavorites[i.item_id] !== void 0 ? this._optimisticFavorites[i.item_id] : i.is_favorite || !1, we = 125.66, Re = we * (1 - this._longPressProgress);
+    const h = this._cachedBackdropUrl, c = this._config.show_background && h, g = i.is_paused, _ = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", k = [x, E].filter(Boolean).join(" • "), I = this._config.show_user !== !1 && i.user_name || "", U = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", re = i.item_id && this._optimisticFavorites[i.item_id] !== void 0 ? this._optimisticFavorites[i.item_id] : i.is_favorite || !1, we = 125.66, Re = we * (1 - this._longPressProgress);
     return n`
             <ha-card class="jellyha-now-playing ${c ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${c ? n`
@@ -5645,13 +5645,13 @@ let A = class extends P {
                                     ${this._config.show_title !== !1 ? n`<div class="title">${i.title}</div>` : d}
                                     ${f ? n`<div class="subtitle">${f}</div>` : d}
                                     ${this._overflowState < 1 && k ? n`<div class="meta-line">${k}</div>` : d}
-                                    ${this._overflowState < 1 && (D || U) ? n`<div class="client-line">${D ? n`<strong>${D}</strong>` : d}${D && U ? " " : ""}${U || d}</div>` : d}
+                                    ${this._overflowState < 1 && (I || U) ? n`<div class="client-line">${I ? n`<strong>${I}</strong>` : d}${I && U ? " " : ""}${U || d}</div>` : d}
                                 </div>
                             </div>
 
                             <div class="info-bottom">
                                 <div class="playback-controls">
-                                    ${u ? n`
+                                    ${_ ? n`
                                         <ha-icon-button class="music-subtle-btn ${re ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(i.item_id, re)}>
                                             <ha-icon icon="${re ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
                                         </ha-icon-button>
@@ -5674,8 +5674,8 @@ let A = class extends P {
                                             <ha-icon-button class="spinning" .label=${l(this.hass.locale?.language || this.hass.language, "loading")}>
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
-                                        ` : _ ? n`
-                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl(u ? "PlayPause" : "Unpause")}>
+                                        ` : g ? n`
+                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl(_ ? "PlayPause" : "Unpause")}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : n`
@@ -5695,7 +5695,7 @@ let A = class extends P {
                                         ` : d}
                                     </div>
 
-                                    ${u ? n`
+                                    ${_ ? n`
                                         <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
                                             <ha-icon icon="mdi:skip-next"></ha-icon>
                                         </ha-icon-button>
@@ -5709,10 +5709,15 @@ let A = class extends P {
                                     `}
                                 </div>
 
-                                <div class="progress-container" @click=${this._handleSeek}>
+                                <div class="progress-container"
+                                    @pointerdown=${this._startDrag}
+                                    @pointermove=${this._handleDrag}
+                                    @pointerup=${this._endDrag}
+                                    @pointercancel=${this._cancelDrag}
+                                >
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${o}%;"></div>
-                                        <div class="seek-handle" style="left: ${o}%;"></div>
+                                        <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : o}%; transition: ${this._isDragging ? "none" : "width 1s linear"}; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${this._isDragging ? this._dragPercentage : o}%; transition: ${this._isDragging ? "none" : "left 1s linear"}; transform: translate(-50%, -50%) ${this._isDragging ? "scale(1.3)" : "scale(1)"}; background: ${this._dominantColor}"></div>
                                     </div>
                                 </div>
 
@@ -5802,17 +5807,32 @@ let A = class extends P {
       is_favorite: i
     });
   }
-  async _handleSeek(t) {
-    const e = t.currentTarget.querySelector(".progress-bar");
-    if (!e) return;
-    const i = e.getBoundingClientRect(), a = Math.max(0, Math.min(1, (t.clientX - i.left) / i.width)), o = this.hass.states[this._config.entity];
-    if (!o) return;
-    const s = o.attributes, r = s.session_id, h = s.position_ticks || 0, c = s.progress_percent || 1, _ = h / c * 100;
-    if (!r || !_) return;
-    const u = Math.round(_ * a);
+  _getDragPercent(t) {
+    const i = t.currentTarget.getBoundingClientRect();
+    let a = t.clientX - i.left;
+    return a < 10 && (a = 0), a > i.width - 10 && (a = i.width), Math.max(0, Math.min(100, a / i.width * 100));
+  }
+  _startDrag(t) {
+    t.currentTarget.setPointerCapture(t.pointerId), this._isDragging = !0, this._dragPercentage = this._getDragPercent(t), this._haptic("light");
+  }
+  _handleDrag(t) {
+    this._isDragging && (this._dragPercentage = this._getDragPercent(t));
+  }
+  _cancelDrag(t) {
+    if (!this._isDragging) return;
+    t.currentTarget.releasePointerCapture(t.pointerId), this._isDragging = !1;
+  }
+  async _endDrag(t) {
+    if (!this._isDragging) return;
+    t.currentTarget.releasePointerCapture(t.pointerId), this._isDragging = !1;
+    const i = this._getDragPercent(t) / 100, a = this.hass.states[this._config.entity];
+    if (!a) return;
+    const o = a.attributes, s = o.session_id, r = o.position_ticks || 0, h = o.progress_percent || 1, c = r / h * 100;
+    if (!s || !c) return;
+    const g = Math.round(c * i);
     await this.hass.callService("jellyha", "session_seek", {
-      session_id: r,
-      position_ticks: u
+      session_id: s,
+      position_ticks: g
     });
   }
   async _handleSeekRelative(t) {
@@ -5879,16 +5899,16 @@ let A = class extends P {
         a.drawImage(e, 0, 0, 50, 50);
         const o = a.getImageData(0, 0, 50, 50).data;
         let s = 0, r = 0, h = 0, c = 0;
-        for (let _ = 0; _ < o.length; _ += 16) {
-          const u = o[_], p = o[_ + 1], m = o[_ + 2], f = Math.max(u, p, m), x = Math.min(u, p, m), E = f === 0 ? 0 : (f - x) / f, k = f / 255;
-          E > c && k > 0.15 && k < 0.95 && (c = E, s = u, r = p, h = m);
+        for (let g = 0; g < o.length; g += 16) {
+          const _ = o[g], p = o[g + 1], m = o[g + 2], f = Math.max(_, p, m), x = Math.min(_, p, m), E = f === 0 ? 0 : (f - x) / f, k = f / 255;
+          E > c && k > 0.15 && k < 0.95 && (c = E, s = _, r = p, h = m);
         }
         if (c > 0.1) {
-          const _ = s / 255, u = r / 255, p = h / 255, m = Math.max(_, u, p), f = Math.min(_, u, p);
+          const g = s / 255, _ = r / 255, p = h / 255, m = Math.max(g, _, p), f = Math.min(g, _, p);
           let x = 0;
-          const E = (m + f) / 2, k = m - f, D = k === 0 ? 0 : k / (1 - Math.abs(2 * E - 1));
-          k !== 0 && (m === _ ? x = ((u - p) / k + (u < p ? 6 : 0)) * 60 : m === u ? x = ((p - _) / k + 2) * 60 : x = ((_ - u) / k + 4) * 60);
-          const U = Math.max(E * 100, 55), Z = Math.max(D * 100, 60);
+          const E = (m + f) / 2, k = m - f, I = k === 0 ? 0 : k / (1 - Math.abs(2 * E - 1));
+          k !== 0 && (m === g ? x = ((_ - p) / k + (_ < p ? 6 : 0)) * 60 : m === _ ? x = ((p - g) / k + 2) * 60 : x = ((g - _) / k + 4) * 60);
+          const U = Math.max(E * 100, 55), Z = Math.max(I * 100, 60);
           this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(Z)}%, ${Math.round(U)}%)`;
         } else
           this._dominantColor = "var(--primary-color)";
@@ -5918,16 +5938,16 @@ let A = class extends P {
   _doLayoutCheck() {
     const t = this.shadowRoot?.querySelector(".title"), e = this.shadowRoot?.querySelector(".info-bottom");
     if (!t || !e) return;
-    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 20, c = 18, u = a.bottom - i.top + 22, m = u + h + c;
+    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 20, c = 18, _ = a.bottom - i.top + 22, m = _ + h + c;
     let f = 0;
-    m > r && (f = 1), u > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
+    m > r && (f = 1), _ > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
   }
   _formatTicks(t) {
     const e = t < 0, i = Math.floor(Math.abs(t) / 1e7), a = Math.floor(i / 3600), o = Math.floor(i % 3600 / 60), s = i % 60, r = e ? "-" : "";
     return a > 0 ? `${r}${a}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
   }
 };
-A.styles = q`
+S.styles = V`
         :host {
             display: block;
             height: 100%;
@@ -5979,7 +5999,7 @@ A.styles = q`
             background: rgba(255, 255, 255, 0.25);
         }
         .jellyha-now-playing.has-background .card-content {
-            padding: 24px 20px 12px !important;
+            padding: 18px 20px 14px !important;
         }
         .card-background {
             position: absolute;
@@ -6085,7 +6105,7 @@ A.styles = q`
             gap: 2px;
             background: rgba(0, 0, 0, 0.6);
             color: #F59E0B;
-            padding: 3px 6px;
+            padding: var(--short-badge-padding, 3px 6px);
             font-weight: 600;
             font-size: 0.8rem;
         }
@@ -6102,7 +6122,7 @@ A.styles = q`
             gap: 2px;
             background: rgba(0, 0, 0, 0.6);
             color: rgba(255, 255, 255, 0.85);
-            padding: 3px 6px;
+            padding: var(--short-badge-padding, 3px 6px);
             font-weight: 600;
             font-size: 0.8rem;
         }
@@ -6158,7 +6178,7 @@ A.styles = q`
             height: 100%;
             min-height: 0;
             min-width: 0;
-            overflow: hidden;
+            overflow: visible;
         }
         .info-top {
             flex: 1 1 auto;
@@ -6176,10 +6196,11 @@ A.styles = q`
 
         /* 4-line text structure */
         .title {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             line-height: 1.2;
             color: var(--card-dominant-color, var(--primary-text-color));
+            margin-top: 6px;
             margin-bottom: 2px;
             overflow: hidden;
         }
@@ -6195,12 +6216,12 @@ A.styles = q`
         .meta-line {
             font-size: 0.85rem;
             color: var(--secondary-text-color);
-            opacity: 0.7;
-            font-style: italic;
+            opacity: 0.8;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 1px;
+            margin-top: 5px;
         }
         .client-line {
             font-size: 0.75rem;
@@ -6301,8 +6322,9 @@ A.styles = q`
             cursor: pointer;
             position: relative;
             width: 100%;
-            padding: 4px 10px;
+            padding: 4px 0;
             box-sizing: border-box;
+            touch-action: none;
         }
         .progress-bar {
             height: 6px;
@@ -6319,7 +6341,7 @@ A.styles = q`
         .progress-fill {
             height: 100%;
             border-radius: 0;
-            transition: width 1s linear;
+            transition: background-color 0.5s ease;
             background: var(--card-dominant-color, var(--primary-color));
             opacity: 0.65;
         }
@@ -6333,7 +6355,7 @@ A.styles = q`
             background: var(--card-dominant-color, var(--primary-color));
             box-shadow: 0 0 4px rgba(0,0,0,0.3);
             pointer-events: none;
-            transition: left 1s linear;
+            transition: background-color 0.5s ease, transform 0.2s ease;
         }
 
         /* --- Timestamps below progress bar --- */
@@ -6341,7 +6363,7 @@ A.styles = q`
             display: flex;
             justify-content: space-between;
             margin-top: 2px;
-            padding: 0 10px;
+            padding: 0;
         }
         .time-elapsed,
         .time-remaining {
@@ -6393,7 +6415,6 @@ A.styles = q`
             opacity: 0.7;
         }
 
-        /* ===== Container Query Responsive Tiers ===== */
 
         /* Compact empty state */
         @container now-playing (max-width: 250px) {
@@ -6424,11 +6445,8 @@ A.styles = q`
             }
         }
 
-        /* Hide poster badges when very narrow */
+        /* Adjust layout when very narrow */
         @container now-playing (max-width: 280px) {
-            .poster-badge {
-                display: none !important;
-            }
             .main-container {
                 gap: 12px;
             }
@@ -6443,8 +6461,8 @@ A.styles = q`
         }
 
         /* Very short cards: hide extra text */
-        @container now-playing (max-height: 160px) {
-            .meta-line, .client-line, .subtitle {
+        @container now-playing (max-height: 195px) {
+            .meta-line, .client-line {
                 display: none !important;
             }
             .card-header {
@@ -6461,15 +6479,48 @@ A.styles = q`
             .card-content {
                 gap: 8px;
             }
-            .info-top {
-                justify-content: center;
+            .poster-container {
+                --short-badge-padding: 1px !important;
             }
         }
 
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
         @container now-playing (max-width: 350px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.10rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -6480,7 +6531,13 @@ A.styles = q`
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -6488,20 +6545,22 @@ A.styles = q`
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 20%, transparent 50%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px 10px 4px 10px;
                 box-sizing: border-box;
                 pointer-events: none;
                 z-index: 5;
@@ -6512,23 +6571,38 @@ A.styles = q`
                 flex: 0 0 auto;
             }
             .playback-controls {
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px; /* Thicker bar */
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 2px;
+                padding: 0;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -6545,8 +6619,41 @@ A.styles = q`
 
         /* Height-Based Compact Mode */
         @container now-playing (max-height: 180px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.25rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -6557,7 +6664,13 @@ A.styles = q`
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -6565,20 +6678,22 @@ A.styles = q`
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 20%, transparent 50%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px 10px 4px 10px;
                 box-sizing: border-box;
                 pointer-events: none;
                 z-index: 5;
@@ -6589,23 +6704,38 @@ A.styles = q`
                 flex: 0 0 auto;
             }
             .playback-controls {
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0 4px;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px;
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 2px;
+                padding: 0 4px;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -6622,8 +6752,41 @@ A.styles = q`
 
         /* Tall but Narrow Mode */
         @container now-playing (min-height: 240px) and (max-width: 400px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.25rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -6634,7 +6797,13 @@ A.styles = q`
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -6642,20 +6811,22 @@ A.styles = q`
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 20%, transparent 50%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px 10px 4px 10px;
                 box-sizing: border-box;
                 pointer-events: none;
                 z-index: 5;
@@ -6666,23 +6837,38 @@ A.styles = q`
                 flex: 0 0 auto;
             }
             .playback-controls {
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0 4px;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px;
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 2px;
+                padding: 0 4px;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -6699,8 +6885,41 @@ A.styles = q`
 
         /* Very Tall but Narrow Mode */
         @container now-playing (min-height: 300px) and (max-width: 450px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.25rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -6711,7 +6930,13 @@ A.styles = q`
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -6719,18 +6944,20 @@ A.styles = q`
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 25%, transparent 45%, transparent 55%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
                 padding: 10px;
                 box-sizing: border-box;
@@ -6745,21 +6972,36 @@ A.styles = q`
             .playback-controls {
                 margin-bottom: 8px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0 4px;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px;
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 5px;
+                padding: 0 4px;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -6774,35 +7016,35 @@ A.styles = q`
             }
         }
 
-        /* Hide badge when card has title AND is short AND narrow */
-        @container now-playing (max-height: 180px) and (max-width: 320px) {
-            .has-title .poster-badge {
-                display: none !important;
-            }
-        }
     `;
-T([
-  C({ attribute: !1 })
-], A.prototype, "hass", 2);
-T([
-  g()
-], A.prototype, "_config", 2);
-T([
-  g()
-], A.prototype, "_rewindActive", 2);
-T([
-  g()
-], A.prototype, "_overflowState", 2);
-T([
-  g()
-], A.prototype, "_dominantColor", 2);
-T([
-  g()
-], A.prototype, "_longPressProgress", 2);
-T([
-  g()
-], A.prototype, "_stopPulse", 2);
-A = T([
+j([
+  P({ attribute: !1 })
+], S.prototype, "hass", 2);
+j([
+  u()
+], S.prototype, "_config", 2);
+j([
+  u()
+], S.prototype, "_rewindActive", 2);
+j([
+  u()
+], S.prototype, "_overflowState", 2);
+j([
+  u()
+], S.prototype, "_dominantColor", 2);
+j([
+  u()
+], S.prototype, "_longPressProgress", 2);
+j([
+  u()
+], S.prototype, "_stopPulse", 2);
+j([
+  u()
+], S.prototype, "_isDragging", 2);
+j([
+  u()
+], S.prototype, "_dragPercentage", 2);
+S = j([
   L("jellyha-now-playing-card")
-], A);
+], S);
 //# sourceMappingURL=jellyha-cards.js.map

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added elapsed/remaining time display.
   - Added user name information and client details formatting.
   - Added specific Artist and Series name support for Music and TV shows.
+  - Added interactive scrubbable progress bar: Drag to seek with real-time visual tracking before committing the jump.
   - Added Shuffle and Repeat buttons for music playback directly in the UI.
   - Added visual `-10s` rewind and `+30s` fast-forward controls for video media.
   - Added stop-pulse animation and haptic vibration feedback for mobile.
@@ -19,9 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Improved Now Playing card visuals with dot separators, dynamic colors extracted from posters, glassmorphic progress bar, and refined spacing.
+- **Overlay Layouts**: Replaced harsh drop-shadows with a soft 5-point ambient vignette scale (70% opacity -> transparent -> 70% opacity) across all portrait/compact views.
+- **Text Alignment**: Enforced a native 6px margin to perfectly normalize text baseline across all grid row constraints (3-row, 4-row).
 - **Improved Alignment**: Progress bar timestamps now perfectly align with the bar edges.
 - **Card Styling**: Removed title/subtitle text shadows and flattened progress bar edges for a cleaner look.
 - **Better Text Handling**: Allowed long titles to wrap to multiple lines instead of using ellipsis.
+- **Compact Layouts**: Overlaid title and subtitle directly on the poster with heavier top/bottom gradients, adjusted typography natively using the dominant dynamic colors, and fixed hover scaling to naturally zoom the entire poster.
+- **Typography & Clean-up**: Reduced the base card title font size from `1.4rem` to `1.3rem`, removed italics from the subtitle with an opacity boost to `0.8`, and ensured hidden `poster-badges` in the smallest container queries.
 
 ### Fixed
 - **Item Details Modal**: Fixed a bug where favorited status was not correctly displayed in the "More Information" card when opened from lists.

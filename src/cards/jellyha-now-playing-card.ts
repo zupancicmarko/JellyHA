@@ -29,6 +29,8 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _dominantColor: string = 'var(--primary-color)';
     @state() private _longPressProgress: number = 0;
     @state() private _stopPulse: boolean = false;
+    @state() private _isDragging: boolean = false;
+    @state() private _dragPercentage: number = 0;
     private _longPressRaf: number | null = null;
     private _resizeObserver?: ResizeObserver;
 
@@ -282,10 +284,15 @@ export class JellyHANowPlayingCard extends LitElement {
                                     `}
                                 </div>
 
-                                <div class="progress-container" @click=${this._handleSeek}>
+                                <div class="progress-container"
+                                    @pointerdown=${this._startDrag}
+                                    @pointermove=${this._handleDrag}
+                                    @pointerup=${this._endDrag}
+                                    @pointercancel=${this._cancelDrag}
+                                >
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${progressPercent}%;"></div>
-                                        <div class="seek-handle" style="left: ${progressPercent}%;"></div>
+                                        <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'left 1s linear'}; transform: translate(-50%, -50%) ${this._isDragging ? 'scale(1.3)' : 'scale(1)'}; background: ${this._dominantColor}"></div>
                                     </div>
                                 </div>
 
@@ -412,11 +419,43 @@ export class JellyHANowPlayingCard extends LitElement {
         });
     }
 
-    private async _handleSeek(e: MouseEvent): Promise<void> {
-        const progressBar = (e.currentTarget as HTMLElement).querySelector('.progress-bar') as HTMLElement;
-        if (!progressBar) return;
-        const rect = progressBar.getBoundingClientRect();
-        const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    private _getDragPercent(e: PointerEvent): number {
+        const container = e.currentTarget as HTMLElement;
+        const rect = container.getBoundingClientRect();
+        // Give 10px buffer on each side for easier edge grabbing
+        let x = e.clientX - rect.left;
+        if (x < 10) x = 0;
+        if (x > rect.width - 10) x = rect.width;
+        return Math.max(0, Math.min(100, (x / rect.width) * 100));
+    }
+
+    private _startDrag(e: PointerEvent): void {
+        const container = e.currentTarget as HTMLElement;
+        container.setPointerCapture(e.pointerId);
+        this._isDragging = true;
+        this._dragPercentage = this._getDragPercent(e);
+        this._haptic('light'); // Slight feedback on grab
+    }
+
+    private _handleDrag(e: PointerEvent): void {
+        if (!this._isDragging) return;
+        this._dragPercentage = this._getDragPercent(e);
+    }
+
+    private _cancelDrag(e: PointerEvent): void {
+        if (!this._isDragging) return;
+        const container = e.currentTarget as HTMLElement;
+        container.releasePointerCapture(e.pointerId);
+        this._isDragging = false;
+    }
+
+    private async _endDrag(e: PointerEvent): Promise<void> {
+        if (!this._isDragging) return;
+        const container = e.currentTarget as HTMLElement;
+        container.releasePointerCapture(e.pointerId);
+        this._isDragging = false;
+
+        const finalPercent = this._getDragPercent(e) / 100;
 
         const stateObj = this.hass.states[this._config.entity];
         if (!stateObj) return;
@@ -424,12 +463,12 @@ export class JellyHANowPlayingCard extends LitElement {
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
         const positionTicks = attributes.position_ticks || 0;
-        const progressPercent = attributes.progress_percent || 1;
-        const durationTicks = (positionTicks / progressPercent) * 100;
+        const currentPercent = attributes.progress_percent || 1;
+        const durationTicks = (positionTicks / currentPercent) * 100;
 
         if (!sessionId || !durationTicks) return;
 
-        const seekTicks = Math.round(durationTicks * percent);
+        const seekTicks = Math.round(durationTicks * finalPercent);
 
         await this.hass.callService('jellyha', 'session_seek', {
             session_id: sessionId,
@@ -722,7 +761,7 @@ export class JellyHANowPlayingCard extends LitElement {
             background: rgba(255, 255, 255, 0.25);
         }
         .jellyha-now-playing.has-background .card-content {
-            padding: 24px 20px 12px !important;
+            padding: 18px 20px 14px !important;
         }
         .card-background {
             position: absolute;
@@ -828,7 +867,7 @@ export class JellyHANowPlayingCard extends LitElement {
             gap: 2px;
             background: rgba(0, 0, 0, 0.6);
             color: #F59E0B;
-            padding: 3px 6px;
+            padding: var(--short-badge-padding, 3px 6px);
             font-weight: 600;
             font-size: 0.8rem;
         }
@@ -845,7 +884,7 @@ export class JellyHANowPlayingCard extends LitElement {
             gap: 2px;
             background: rgba(0, 0, 0, 0.6);
             color: rgba(255, 255, 255, 0.85);
-            padding: 3px 6px;
+            padding: var(--short-badge-padding, 3px 6px);
             font-weight: 600;
             font-size: 0.8rem;
         }
@@ -901,7 +940,7 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             min-height: 0;
             min-width: 0;
-            overflow: hidden;
+            overflow: visible;
         }
         .info-top {
             flex: 1 1 auto;
@@ -919,10 +958,11 @@ export class JellyHANowPlayingCard extends LitElement {
 
         /* 4-line text structure */
         .title {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             line-height: 1.2;
             color: var(--card-dominant-color, var(--primary-text-color));
+            margin-top: 6px;
             margin-bottom: 2px;
             overflow: hidden;
         }
@@ -938,12 +978,12 @@ export class JellyHANowPlayingCard extends LitElement {
         .meta-line {
             font-size: 0.85rem;
             color: var(--secondary-text-color);
-            opacity: 0.7;
-            font-style: italic;
+            opacity: 0.8;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 1px;
+            margin-top: 5px;
         }
         .client-line {
             font-size: 0.75rem;
@@ -1044,8 +1084,9 @@ export class JellyHANowPlayingCard extends LitElement {
             cursor: pointer;
             position: relative;
             width: 100%;
-            padding: 4px 10px;
+            padding: 4px 0;
             box-sizing: border-box;
+            touch-action: none;
         }
         .progress-bar {
             height: 6px;
@@ -1062,7 +1103,7 @@ export class JellyHANowPlayingCard extends LitElement {
         .progress-fill {
             height: 100%;
             border-radius: 0;
-            transition: width 1s linear;
+            transition: background-color 0.5s ease;
             background: var(--card-dominant-color, var(--primary-color));
             opacity: 0.65;
         }
@@ -1076,7 +1117,7 @@ export class JellyHANowPlayingCard extends LitElement {
             background: var(--card-dominant-color, var(--primary-color));
             box-shadow: 0 0 4px rgba(0,0,0,0.3);
             pointer-events: none;
-            transition: left 1s linear;
+            transition: background-color 0.5s ease, transform 0.2s ease;
         }
 
         /* --- Timestamps below progress bar --- */
@@ -1084,7 +1125,7 @@ export class JellyHANowPlayingCard extends LitElement {
             display: flex;
             justify-content: space-between;
             margin-top: 2px;
-            padding: 0 10px;
+            padding: 0;
         }
         .time-elapsed,
         .time-remaining {
@@ -1136,7 +1177,6 @@ export class JellyHANowPlayingCard extends LitElement {
             opacity: 0.7;
         }
 
-        /* ===== Container Query Responsive Tiers ===== */
 
         /* Compact empty state */
         @container now-playing (max-width: 250px) {
@@ -1167,11 +1207,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Hide poster badges when very narrow */
+        /* Adjust layout when very narrow */
         @container now-playing (max-width: 280px) {
-            .poster-badge {
-                display: none !important;
-            }
             .main-container {
                 gap: 12px;
             }
@@ -1186,8 +1223,8 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Very short cards: hide extra text */
-        @container now-playing (max-height: 160px) {
-            .meta-line, .client-line, .subtitle {
+        @container now-playing (max-height: 195px) {
+            .meta-line, .client-line {
                 display: none !important;
             }
             .card-header {
@@ -1204,15 +1241,48 @@ export class JellyHANowPlayingCard extends LitElement {
             .card-content {
                 gap: 8px;
             }
-            .info-top {
-                justify-content: center;
+            .poster-container {
+                --short-badge-padding: 1px !important;
             }
         }
 
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
         @container now-playing (max-width: 350px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.10rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -1223,7 +1293,13 @@ export class JellyHANowPlayingCard extends LitElement {
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -1231,20 +1307,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 20%, transparent 50%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px 10px 4px 10px;
                 box-sizing: border-box;
                 pointer-events: none;
                 z-index: 5;
@@ -1255,23 +1333,38 @@ export class JellyHANowPlayingCard extends LitElement {
                 flex: 0 0 auto;
             }
             .playback-controls {
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px; /* Thicker bar */
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 2px;
+                padding: 0;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -1288,8 +1381,41 @@ export class JellyHANowPlayingCard extends LitElement {
 
         /* Height-Based Compact Mode */
         @container now-playing (max-height: 180px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.25rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -1300,7 +1426,13 @@ export class JellyHANowPlayingCard extends LitElement {
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -1308,20 +1440,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 20%, transparent 50%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px 10px 4px 10px;
                 box-sizing: border-box;
                 pointer-events: none;
                 z-index: 5;
@@ -1332,23 +1466,38 @@ export class JellyHANowPlayingCard extends LitElement {
                 flex: 0 0 auto;
             }
             .playback-controls {
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0 4px;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px;
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 2px;
+                padding: 0 4px;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -1365,8 +1514,41 @@ export class JellyHANowPlayingCard extends LitElement {
 
         /* Tall but Narrow Mode */
         @container now-playing (min-height: 240px) and (max-width: 400px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.25rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -1377,7 +1559,13 @@ export class JellyHANowPlayingCard extends LitElement {
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -1385,20 +1573,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 20%, transparent 50%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px 10px 4px 10px;
                 box-sizing: border-box;
                 pointer-events: none;
                 z-index: 5;
@@ -1409,23 +1599,38 @@ export class JellyHANowPlayingCard extends LitElement {
                 flex: 0 0 auto;
             }
             .playback-controls {
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0 4px;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px;
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 2px;
+                padding: 0 4px;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -1442,8 +1647,41 @@ export class JellyHANowPlayingCard extends LitElement {
 
         /* Very Tall but Narrow Mode */
         @container now-playing (min-height: 300px) and (max-width: 450px) {
-            .card-header, .info-top {
+            .card-header {
                 display: none !important;
+            }
+            .poster-badge {
+                display: none !important;
+            }
+            .info-top {
+                display: flex !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .info-top .meta-line, .info-top .client-line {
+                display: none !important;
+            }
+            .info-top .title {
+                font-size: 1.25rem !important;
+                line-height: 1.1;
+                margin-bottom: 2px !important;
+                color: var(--card-dominant-color, white) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                white-space: normal !important;
+            }
+            .info-top .subtitle {
+                font-size: 0.95rem !important;
+                color: var(--card-dominant-color, rgba(255, 255, 255, 0.8)) !important;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                opacity: 0.9;
             }
             .card-content {
                 padding: 10px !important;
@@ -1454,7 +1692,13 @@ export class JellyHANowPlayingCard extends LitElement {
                 justify-content: center;
                 gap: 0;
                 position: relative;
-                width: 100%;
+                width: max-content;
+                margin: 0 auto;
+                border-radius: 8px;
+                transition: transform 0.2s ease-in-out;
+            }
+            .main-container:hover {
+                transform: scale(1.02);
             }
             .poster-container {
                 flex: 0 0 auto !important;
@@ -1462,18 +1706,20 @@ export class JellyHANowPlayingCard extends LitElement {
                 aspect-ratio: 2 / 3;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             }
+            .poster-container:hover {
+                transform: none;
+            }
             .info-container {
                 position: absolute;
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: auto;
+                left: 0;
+                width: 100%;
                 height: 100%;
-                aspect-ratio: 2 / 3;
-                background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0.85) 100%);
+                transform: none;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 25%, transparent 45%, transparent 55%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.7) 100%);
                 display: flex;
                 flex-direction: column;
-                justify-content: flex-end;
+                justify-content: space-between;
                 border-radius: 8px;
                 padding: 10px;
                 box-sizing: border-box;
@@ -1488,21 +1734,36 @@ export class JellyHANowPlayingCard extends LitElement {
             .playback-controls {
                 margin-bottom: 8px;
             }
-            .playback-controls ha-icon-button {
+            .playback-controls ha-icon-button:not(.music-subtle-btn) {
                 --mdc-icon-button-size: 36px;
                 --mdc-icon-size: 24px;
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(255, 255, 255, 0.25) !important;
                 color: white !important;
             }
+            .playback-controls ha-icon-button:not(.music-subtle-btn):hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .playback-controls .play-pause-btn {
+                background: rgba(255, 255, 255, 0.25) !important;
+            }
+            .playback-controls .play-pause-btn:hover {
+                background: rgba(255, 255, 255, 0.4) !important;
+            }
+            .progress-container {
+                padding: 0 4px;
+            }
             .progress-bar {
-                height: 4px;
+                height: 5px;
+                border-radius: 2.5px;
             }
             .seek-handle {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             .timestamps {
-                margin-top: 4px;
+                margin-top: 5px;
+                padding: 0 4px;
+                justify-content: space-between !important;
             }
             .time-elapsed,
             .time-remaining {
@@ -1517,12 +1778,6 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Hide badge when card has title AND is short AND narrow */
-        @container now-playing (max-height: 180px) and (max-width: 320px) {
-            .has-title .poster-badge {
-                display: none !important;
-            }
-        }
     `;
 
 }
