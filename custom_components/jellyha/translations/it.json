@@ -7,6 +7,7 @@
                 "description": "Inserisci l'URL del server Jellyfin e scegli il metodo di autenticazione",
                 "data": {
                     "server_url": "URL del server",
+                    "external_url": "URL esterno (Opzionale, per i link dell'interfaccia UI)",
                     "auth_method": "Metodo di autenticazione"
                 },
                 "data_description": {
@@ -76,6 +77,7 @@
                 "title": "Impostazioni Server",
                 "data": {
                     "server_url": "URL del server",
+                    "external_url": "URL esterno (Opzionale, per i link dell'interfaccia UI)",
                     "refresh_interval": "Intervallo di aggiornamento libreria",
                     "update_credentials": "Aggiorna credenziali / Cambia utente"
                 }

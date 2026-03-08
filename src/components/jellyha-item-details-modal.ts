@@ -734,7 +734,7 @@ export class JellyHAItemDetailsModal extends LitElement {
                                 <ha-icon icon="${item.is_favorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
                         </button>
 
-                        <a href="${item.jellyfin_url}" class="action-btn" target="_blank" title="Open in Jellyfin" @click=${() => this._haptic()}>
+                        <a href="javascript:void(0)" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => { e.preventDefault(); this._haptic(); this._openExternalUrl(item.jellyfin_url); }}>
                             <ha-icon icon="mdi:popcorn"></ha-icon>
                         </a>
 
@@ -1032,6 +1032,50 @@ export class JellyHAItemDetailsModal extends LitElement {
             if (isAndroid) {
                 window.open(`vnd.youtube:${youtubeId}`, '_blank');
                 return;
+            }
+        }
+
+        this._openExternalUrl(url);
+    }
+
+    private _openExternalUrl(url: string | undefined): void {
+        if (!url) return;
+
+        // Try to get external configure URL if we have an item.
+        // We need to look up the entity state.
+        // In the modal, we don't directly have access to the entity ID that launched it, 
+        // but we can try to find ANY JellyHA sensor, or rely on the frontend to pass it down.
+        // For simplicity, find the first jellyha_library sensor or let the user click standard.
+        // Actually, we can get it from the `item` potentially, but it's not saved there.
+        // Let's check all states for `config_external_url`. They should all be the same for one server.
+        let externalUrl: string | undefined;
+        if (this.hass && this.hass.states) {
+            for (const entityId in this.hass.states) {
+                if (entityId.startsWith('sensor.') && this.hass.states[entityId].attributes?.config_external_url) {
+                    externalUrl = this.hass.states[entityId].attributes.config_external_url as string;
+                    break;
+                }
+            }
+        }
+
+        if (externalUrl && externalUrl.trim() !== '') {
+            try {
+                const originalUrlObj = new URL(url);
+                const externalUrlObj = new URL(externalUrl);
+
+                originalUrlObj.protocol = externalUrlObj.protocol;
+                originalUrlObj.host = externalUrlObj.host;
+                originalUrlObj.port = externalUrlObj.port || '';
+
+                const extPath = externalUrlObj.pathname === '/' ? '' : externalUrlObj.pathname;
+                if (extPath && !originalUrlObj.pathname.startsWith(extPath)) {
+                    originalUrlObj.pathname = extPath + originalUrlObj.pathname;
+                }
+
+                window.open(originalUrlObj.toString(), '_blank');
+                return;
+            } catch (e) {
+                console.warn('JellyHA: Failed to parse URLs to inject external URL override', e);
             }
         }
 

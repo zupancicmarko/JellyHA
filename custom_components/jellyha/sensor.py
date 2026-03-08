@@ -141,6 +141,9 @@ class JellyHALibrarySensor(JellyHABaseSensor):
             "movies": len(movies),
             "series": len(series),
             "episodes": total_episodes,
+            "config_external_url": self._entry.options.get(
+                "external_url", self._entry.data.get("external_url", "")
+            ),
         }
 
 
@@ -425,6 +428,9 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             "backdrop_url": None,
             "media_type": None,
             "is_paused": False,
+            "config_external_url": self._entry.options.get(
+                "external_url", self._entry.data.get("external_url", "")
+            ),
         }
 
         if "NowPlayingItem" in session:

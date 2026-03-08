@@ -31,6 +31,8 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _stopPulse: boolean = false;
     @state() private _isDragging: boolean = false;
     @state() private _dragPercentage: number = 0;
+    @state() private _optimisticSeekPercent: number | null = null;
+    private _optimisticSeekTimer?: number;
     private _longPressRaf: number | null = null;
     private _resizeObserver?: ResizeObserver;
 
@@ -122,7 +124,7 @@ export class JellyHANowPlayingCard extends LitElement {
             return this._renderEmpty();
         }
 
-        const progressPercent = attributes.progress_percent || 0;
+        const progressPercent = this._optimisticSeekPercent !== null ? this._optimisticSeekPercent : (attributes.progress_percent || 0);
 
         // Use series image if configured and available, otherwise use episode/movie image
         const imageUrl = this._config.use_series_image && attributes.series_image_url
@@ -246,7 +248,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                         @contextmenu=${(e: Event) => e.preventDefault()}
                                     >
                                         ${this._rewindActive ? html`
-                                            <ha-icon-button class="spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
+                                            <ha-icon-button class="play-pause-btn spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : isPaused ? html`
@@ -373,6 +375,7 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private async _handleControl(command: string): Promise<void> {
+        this._haptic('light');
         const stateObj = this.hass.states[this._config.entity];
         const sessionId = stateObj?.attributes.session_id;
 
@@ -455,7 +458,10 @@ export class JellyHANowPlayingCard extends LitElement {
         container.releasePointerCapture(e.pointerId);
         this._isDragging = false;
 
-        const finalPercent = this._getDragPercent(e) / 100;
+        const finalPercent = this._getDragPercent(e);
+
+        // Hold the seeked position optimistically until server catches up
+        this._setOptimisticSeek(finalPercent);
 
         const stateObj = this.hass.states[this._config.entity];
         if (!stateObj) return;
@@ -468,7 +474,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         if (!sessionId || !durationTicks) return;
 
-        const seekTicks = Math.round(durationTicks * finalPercent);
+        const seekTicks = Math.round(durationTicks * (finalPercent / 100));
 
         await this.hass.callService('jellyha', 'session_seek', {
             session_id: sessionId,
@@ -476,7 +482,16 @@ export class JellyHANowPlayingCard extends LitElement {
         });
     }
 
+    private _setOptimisticSeek(percent: number): void {
+        if (this._optimisticSeekTimer) clearTimeout(this._optimisticSeekTimer);
+        this._optimisticSeekPercent = percent;
+        this._optimisticSeekTimer = window.setTimeout(() => {
+            this._optimisticSeekPercent = null;
+        }, 3000);
+    }
+
     private async _handleSeekRelative(seconds: number): Promise<void> {
+        this._haptic('light');
         const stateObj = this.hass.states[this._config.entity];
         if (!stateObj) return;
 
@@ -488,6 +503,14 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const seekTicks = seconds * 10000000; // Convert seconds to ticks
         const newPositionTicks = Math.max(0, positionTicks + seekTicks);
+
+        // Hold the seeked position optimistically to prevent jump back
+        // We calculate expected percentage and set it
+        const currentPercent = attributes.progress_percent || 1;
+        const durationTicks = (positionTicks / currentPercent) * 100;
+        if (durationTicks) {
+            this._setOptimisticSeek((newPositionTicks / durationTicks) * 100);
+        }
 
         await this.hass.callService('jellyha', 'session_seek', {
             session_id: sessionId,
@@ -512,16 +535,18 @@ export class JellyHANowPlayingCard extends LitElement {
         }, 1000);
 
         // Haptic feedback
-        const event = new CustomEvent('haptic', {
-            detail: 'selection',
-            bubbles: true,
-            composed: true,
-        });
-        this.dispatchEvent(event);
+        this._haptic('selection');
 
         // Calculate rewind position (20 seconds = 200,000,000 ticks)
         const rewindTicks = 20 * 10000000; // 20 seconds in ticks
         const newPositionTicks = Math.max(0, positionTicks - rewindTicks);
+
+        // Hold the seeked position optimistically to prevent jump back
+        const currentPercent = attributes.progress_percent || 1;
+        const durationTicks = (positionTicks / currentPercent) * 100;
+        if (durationTicks) {
+            this._setOptimisticSeek((newPositionTicks / durationTicks) * 100);
+        }
 
         await this.hass.callService('jellyha', 'session_seek', {
             session_id: sessionId,
@@ -533,19 +558,17 @@ export class JellyHANowPlayingCard extends LitElement {
         const start = Date.now();
         const duration = 800; // ms to hold before stopping
 
+        // Haptic feedback on initial press
+        this._haptic('selection');
+
         const animate = () => {
             const elapsed = Date.now() - start;
             this._longPressProgress = Math.min(elapsed / duration, 1);
 
             if (this._longPressProgress >= 1) {
                 this._handleControl('Stop');
-                // Haptic feedback
-                const event = new CustomEvent('haptic', {
-                    detail: 'success',
-                    bubbles: true,
-                    composed: true,
-                });
-                this.dispatchEvent(event);
+                // Haptic feedback for action trigger
+                this._haptic('success');
                 // Mobile haptic vibration fallback
                 if (navigator.vibrate) navigator.vibrate(50);
                 // Trigger stop pulse animation
@@ -611,8 +634,8 @@ export class JellyHANowPlayingCard extends LitElement {
                         else h = ((rn - gn) / d + 4) * 60;
                     }
 
-                    // Clamp lightness to at least 55% and saturation to at least 60%
-                    const boostedL = Math.max(l * 100, 55);
+                    // Clamp lightness to at least 70% and saturation to at least 60%
+                    const boostedL = Math.max(l * 100, 70);
                     const boostedS = Math.max(s * 100, 60);
                     this._dominantColor = `hsl(${Math.round(h)}, ${Math.round(boostedS)}%, ${Math.round(boostedL)}%)`;
                 } else {
@@ -909,15 +932,17 @@ export class JellyHANowPlayingCard extends LitElement {
             animation: fadeIn 0.2s ease-out;
         }
         .rewind-overlay span {
-            color: white;
+            color: rgba(255, 255, 255, 0.95);
             font-weight: 700;
             font-size: 0.8rem;
+            line-height: 1;
             letter-spacing: 0.5px;
-            background: var(--primary-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 7px 10px 5px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             white-space: nowrap;
         }
         @keyframes fadeIn {
@@ -1072,6 +1097,7 @@ export class JellyHANowPlayingCard extends LitElement {
         /* Stop confirmed pulse animation */
         .play-pause-wrapper.stop-pulse {
             animation: stopPulse 0.5s ease-out;
+            border-radius: 50%;
         }
         @keyframes stopPulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
@@ -1374,7 +1400,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
-                padding: 2px 5px !important;
+                line-height: 1 !important;
+                padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
         }
@@ -1507,7 +1534,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
-                padding: 2px 5px !important;
+                line-height: 1 !important;
+                padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
         }
@@ -1640,7 +1668,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
-                padding: 2px 5px !important;
+                line-height: 1 !important;
+                padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
         }
@@ -1773,7 +1802,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
             .rewind-overlay span {
                 font-size: 0.75rem !important;
-                padding: 2px 5px !important;
+                line-height: 1 !important;
+                padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
         }

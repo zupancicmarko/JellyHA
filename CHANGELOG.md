@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2026-02-22
 
 ### Added
+- **External URL Support**: Added an optional configuration setting for users running Jellyfin in clusters to override the UI base link, ensuring "Open in Jellyfin" actions remain working across public endpoints.
+- **Russian Translation**: Extensive frontend and backend translation coverage provided for the Russian language.
+- **Refresh Interval Dropdown**: Upgraded the Library Refresh Interval setting from a raw seconds slider to a human-readable dropdown format (e.g. `5 minutes`, `1 hour`).
 - **Now Playing Card Updates**:
   - Added elapsed/remaining time display.
   - Added user name information and client details formatting.
@@ -15,8 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added interactive scrubbable progress bar: Drag to seek with real-time visual tracking before committing the jump.
   - Added Shuffle and Repeat buttons for music playback directly in the UI.
   - Added visual `-10s` rewind and `+30s` fast-forward controls for video media.
-  - Added stop-pulse animation and haptic vibration feedback for mobile.
-- **Refresh Interval Update**: Configurable API refresh interval added to integration options.
+  - Added stop-pulse animation and comprehensive haptic vibration feedback for mobile.
 
 ### Changed
 - Improved Now Playing card visuals with dot separators, dynamic colors extracted from posters, glassmorphic progress bar, and refined spacing.
@@ -27,9 +29,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Better Text Handling**: Allowed long titles to wrap to multiple lines instead of using ellipsis.
 - **Compact Layouts**: Overlaid title and subtitle directly on the poster with heavier top/bottom gradients, adjusted typography natively using the dominant dynamic colors, and fixed hover scaling to naturally zoom the entire poster.
 - **Typography & Clean-up**: Reduced the base card title font size from `1.4rem` to `1.3rem`, removed italics from the subtitle with an opacity boost to `0.8`, and ensured hidden `poster-badges` in the smallest container queries.
+- **Status Badges**: Updated the REWINDING/PLAYING/BUFFERING status badge to a unified frosted glass pill design on both Now Playing and Library cards with perfectly vertically-centered typography.
+- **Colors**: Improved dynamic color extraction for the Now Playing card title by raising the minimum lightness threshold to 70%, guaranteeing readability against dark backdrops.
+- **Colors**: Replaced the primary theme color with solid white for the release year on the Library Card hover overlay.
 
 ### Fixed
+- **Empty Setup Dropout**: Fixed an issue where initial setup or reconfiguration would crash if the user did not have standard `movies` or `tvshows` library types (added fallback to `mixed`, `musicvideos` and `homevideos`, protected against completely empty dropdowns).
+- **Setup API Headers**: Fixed a double keyword argument error crashing the setup flow logout cleanup routine.
 - **Item Details Modal**: Fixed a bug where favorited status was not correctly displayed in the "More Information" card when opened from lists.
+- **Progress Bar**: Fixed the immediate snap-back effect when manually jumping or scrubbing the progress bar by optimistically holding the new position for 3 seconds while awaiting the server update.
+- **Stop Pulse**: Fixed a bug where the long-press stop shadow-pulse effect rendered as a square instead of a circle.
+- **Loading Spinner**: Fixed the loading spinner shrinking during rewind/seek actions, now properly maintaining the 44px play/pause button size.
+
+
 
 ## [1.1.0] - 2026-02-15
 

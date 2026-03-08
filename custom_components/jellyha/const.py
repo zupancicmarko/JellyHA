@@ -3,6 +3,7 @@
 DOMAIN = "jellyha"
 # Configuration keys
 CONF_SERVER_URL = "server_url"
+CONF_EXTERNAL_URL = "external_url"
 CONF_API_KEY = "api_key"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"

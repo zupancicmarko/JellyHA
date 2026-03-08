@@ -1,0 +1,204 @@
+{
+    "title": "JellyHA",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Подключение к Jellyfin",
+                "description": "Введите URL вашего сервера Jellyfin и выберите метод аутентификации",
+                "data": {
+                    "server_url": "URL сервера",
+                    "external_url": "Внешний URL (Необязательно, для ссылок UI)",
+                    "auth_method": "Метод аутентификации"
+                },
+                "data_description": {
+                    "server_url": "Полный URL вашего сервера Jellyfin (например, http://192.168.1.100:8096)"
+                }
+            },
+            "auth_api_key": {
+                "title": "Аутентификация по API-ключу",
+                "description": "Введите ваш API-ключ Jellyfin",
+                "data": {
+                    "api_key": "API-ключ"
+                },
+                "data_description": {
+                    "api_key": "API-ключ из панели управления Jellyfin → API-ключи"
+                }
+            },
+            "auth_login": {
+                "title": "Вход в Jellyfin",
+                "description": "Введите ваши учетные данные Jellyfin",
+                "data": {
+                    "username": "Имя пользователя",
+                    "password": "Пароль"
+                }
+            },
+            "user_select": {
+                "title": "Выбор пользователя",
+                "description": "Выберите, какого пользователя Jellyfin использовать",
+                "data": {
+                    "user_id": "Пользователь"
+                }
+            },
+            "library_select": {
+                "title": "Выбор библиотек",
+                "description": "Выберите, какие библиотеки включить (оставьте пустым для всех)",
+                "data": {
+                    "libraries": "Библиотеки",
+                    "refresh_interval": "Интервал обновления библиотеки"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Повторная аутентификация Jellyfin",
+                "description": "Обновите ваши учетные данные для Jellyfin",
+                "data": {
+                    "server_url": "URL сервера",
+                    "auth_method": "Метод аутентификации"
+                },
+                "data_description": {
+                    "server_url": "Полный URL вашего сервера Jellyfin (например, http://192.168.1.100:8096)"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Не удалось подключиться к серверу Jellyfin",
+            "invalid_auth": "Неверный API-ключ или учетные данные",
+            "unknown": "Произошла непредвиденная ошибка"
+        },
+        "abort": {
+            "already_configured": "Этот сервер Jellyfin уже настроен",
+            "reauth_successful": "Повторная аутентификация выполнена успешно",
+            "reauth_failed": "Ошибка повторной аутентификации",
+            "single_instance_allowed": "Разрешена только одна конфигурация JellyHA."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Настройки сервера",
+                "data": {
+                    "server_url": "URL сервера",
+                    "external_url": "Внешний URL (Необязательно, для ссылок UI)",
+                    "refresh_interval": "Интервал обновления библиотеки",
+                    "update_credentials": "Обновить учетные данные / Сменить пользователя"
+                }
+            },
+            "auth_method": {
+                "title": "Метод аутентификации",
+                "description": "Выберите способ аутентификации",
+                "data": {
+                    "auth_method": "Метод"
+                }
+            },
+            "auth_api_key": {
+                "title": "Аутентификация по API-ключу",
+                "description": "Введите ваш API-ключ Jellyfin",
+                "data": {
+                    "api_key": "API-ключ"
+                }
+            },
+            "auth_login": {
+                "title": "Вход в Jellyfin",
+                "description": "Введите ваши учетные данные Jellyfin",
+                "data": {
+                    "username": "Имя пользователя",
+                    "password": "Пароль"
+                }
+            }
+        },
+        "error": {
+            "invalid_auth": "Неверный API-ключ или учетные данные",
+            "cannot_connect": "Не удалось подключиться к серверу Jellyfin",
+            "unknown": "Произошла непредвиденная ошибка"
+        },
+        "abort": {
+            "configuration_saved": "Конфигурация успешно сохранена."
+        }
+    },
+    "entity": {
+        "sensor": {
+            "library": {
+                "name": "Библиотека"
+            },
+            "favorites_count": {
+                "name": "Избранное"
+            },
+            "unwatched_count": {
+                "name": "Не просмотрено"
+            },
+            "unwatched_movies": {
+                "name": "Непросмотренные фильмы"
+            },
+            "unwatched_series": {
+                "name": "Непросмотренные сериалы"
+            },
+            "unwatched_episodes": {
+                "name": "Непросмотренные эпизоды"
+            },
+            "last_refresh": {
+                "name": "Последнее обновление"
+            },
+            "last_data_change": {
+                "name": "Последнее обновление библиотеки"
+            },
+            "websocket_status": {
+                "name": "Статус WebSocket"
+            },
+            "version": {
+                "name": "Версия Jellyfin"
+            },
+            "active_sessions": {
+                "name": "Активные сессии"
+            },
+            "watched_count": {
+                "name": "Просмотрено"
+            },
+            "watched_episodes": {
+                "name": "Просмотренные эпизоды"
+            },
+            "watched_series": {
+                "name": "Просмотренные сериалы"
+            },
+            "watched_movies": {
+                "name": "Просмотренные фильмы"
+            },
+            "refresh_duration": {
+                "name": "Длительность обновления"
+            }
+        },
+        "media_player": {
+            "library_browser": {
+                "name": "Обозреватель библиотеки"
+            }
+        }
+    },
+    "services": {
+        "play_on_chromecast": {
+            "name": "Воспроизвести на Chromecast",
+            "description": "Воспроизвести элемент Jellyfin на устройстве Chromecast",
+            "fields": {
+                "entity_id": {
+                    "name": "Медиа-плеер",
+                    "description": "Сущность медиа-плеера Chromecast"
+                },
+                "item_id": {
+                    "name": "ID элемента",
+                    "description": "ID элемента Jellyfin для воспроизведения"
+                }
+            }
+        },
+        "refresh_library": {
+            "name": "Обновить библиотеку",
+            "description": "Принудительное обновление данных библиотеки из Jellyfin"
+        },
+        "delete_item": {
+            "name": "Удалить элемент",
+            "description": "Удалить элемент из библиотеки Jellyfin",
+            "fields": {
+                "item_id": {
+                    "name": "ID элемента",
+                    "description": "ID элемента Jellyfin для удаления"
+                }
+            }
+        }
+    }
+}

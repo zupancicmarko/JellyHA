@@ -35,7 +35,7 @@ Jellyfin for Home Assistant
 - ⚡ Instant loading via WebSocket
 - 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
 - 🎛️ Graphical card editor (no YAML required)
-- ⏱️ Configurable API Refresh Interval (Integration options)
+- ⏱️ Configurable API Refresh Interval (via Integration Options)
 
 ## Installation
 
@@ -97,12 +97,24 @@ Then continue to step 3. and 4. below.
 1. Go to **Settings** → **Devices & Services** → **Add Integration**
 2. Search for "JellyHA"
 3. Enter your Jellyfin server URL and select authentication method (**Username/Password** or **API Key**)
+   - Optional: Enter an **External URL** if you access JellyHA via an external proxy/network that differs from the internal IP used for connection. This URL will be used for "Open in Jellyfin" buttons in the UI.
 4. Enter your Jellyfin API key or credentials
 5. Select the user and libraries to monitor
 6. Click **Submit**
 7. Add Device to the Area (optional)
 
 > **Note:** You can update these credentials later by re-configuring the integration.
+
+
+### Updating Settings (Refresh Interval, External URL, etc.)
+
+You can customize how JellyHA behaves directly from the integrations page:
+
+1. Go to **Settings** → **Devices & Services**
+2. Find **JellyHA** and click **Configure**
+3. Adjust the **Library Refresh Interval** (ranges from `Off` for pure WebSocket push to `24 hours`)
+4. Set an **External URL** if necessary
+5. Click **Submit**
 
 
 ### Jellyfin API Key

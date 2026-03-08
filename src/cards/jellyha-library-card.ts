@@ -1406,7 +1406,7 @@ export class JellyHALibraryCard extends LitElement {
 
     switch (action) {
       case 'jellyfin':
-        window.open(item.jellyfin_url, '_blank');
+        this._openExternalUrl(item.jellyfin_url);
         break;
       case 'cast':
         this._castMedia(item);
@@ -1416,7 +1416,7 @@ export class JellyHALibraryCard extends LitElement {
         break;
       case 'trailer':
         if (item.trailer_url) {
-          window.open(item.trailer_url, '_blank');
+          this._openExternalUrl(item.trailer_url);
         } else {
           fireEvent(this, 'hass-notification', {
             message: localize(this.hass.locale?.language || this.hass.language, 'no_trailer'),
@@ -1443,6 +1443,43 @@ export class JellyHALibraryCard extends LitElement {
     } catch (err) {
       console.error('JellyHA: Failed to cast media', err);
     }
+  }
+
+  private _openExternalUrl(url: string | undefined): void {
+    if (!url) return;
+
+    // Check if we have an external URL configured on the entity
+    const entity = this.hass?.states[this._config?.entity];
+    const externalUrl = entity?.attributes?.config_external_url as string | undefined;
+
+    if (externalUrl && externalUrl.trim() !== '') {
+      try {
+        // Parse both URLs
+        const originalUrlObj = new URL(url);
+        const externalUrlObj = new URL(externalUrl);
+
+        // Replace protocol, host, and port but keep path and search params
+        originalUrlObj.protocol = externalUrlObj.protocol;
+        originalUrlObj.host = externalUrlObj.host;
+        originalUrlObj.port = externalUrlObj.port || '';
+
+        // Note: external URL might include a path prefix (e.g., /jellyfin)
+        // If it does, we need to prepend it to the original path.
+        // Usually, JellyHA paths start with /web/...
+        const extPath = externalUrlObj.pathname === '/' ? '' : externalUrlObj.pathname;
+        if (extPath && !originalUrlObj.pathname.startsWith(extPath)) {
+          originalUrlObj.pathname = extPath + originalUrlObj.pathname;
+        }
+
+        window.open(originalUrlObj.toString(), '_blank');
+        return;
+      } catch (e) {
+        console.warn('JellyHA: Failed to parse URLs to inject external URL override, falling back to original', e);
+      }
+    }
+
+    // Fallback to the original URL and let browser handle it
+    window.open(url, '_blank');
   }
 
   /**

@@ -7,6 +7,7 @@
                 "description": "Vnesite URL strežnika Jellyfin in izberite način preverjanja pristnosti",
                 "data": {
                     "server_url": "URL strežnika",
+                    "external_url": "Zunanji URL (Neobvezno, za UI povezave)",
                     "auth_method": "Način preverjanja pristnosti"
                 },
                 "data_description": {
@@ -76,6 +77,7 @@
                 "title": "Nastavitve strežnika",
                 "data": {
                     "server_url": "URL strežnika",
+                    "external_url": "Zunanji URL (Neobvezno, za UI povezave)",
                     "refresh_interval": "Interval osveževanja knjižnice",
                     "update_credentials": "Posodobi poverilnice / Zamenjaj uporabnika"
                 }

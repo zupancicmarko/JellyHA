@@ -83,13 +83,17 @@ class JellyfinApiClient:
         """Make an API request with retry logic."""
         url = urljoin(self._server_url + "/", endpoint.lstrip("/"))
         _LOGGER.debug("API request: %s %s", method, url)
+        
+        request_headers = self._headers.copy()
+        if "headers" in kwargs:
+            request_headers.update(kwargs.pop("headers"))
 
         for attempt in range(MAX_RETRIES):
             try:
                 async with self._session.request(
                     method,
                     url,
-                    headers=self._headers,
+                    headers=request_headers,
                     timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
                     **kwargs,
                 ) as response:

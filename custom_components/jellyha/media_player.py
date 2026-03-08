@@ -429,6 +429,10 @@ class JellyHAUserMediaPlayer(
         else:
             attrs["progress_percent"] = 0
 
+        attrs["config_external_url"] = self._entry.options.get(
+            "external_url", self._entry.data.get("external_url", "")
+        )
+
         return attrs
 
     # ------------------------------------------------------------------

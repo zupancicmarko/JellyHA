@@ -26,6 +26,7 @@ from .const import (
     CONF_PASSWORD,
     CONF_REFRESH_INTERVAL,
     CONF_SERVER_URL,
+    CONF_EXTERNAL_URL,
     CONF_USER_ID,
     CONF_USERNAME,
     DEFAULT_DEVICE_NAME,
@@ -74,6 +75,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
 
         self._server_url: str | None = None
+        self._external_url: str | None = None
         self._api_key: str | None = None
         self._username: str | None = None
         self._password: str | None = None
@@ -140,6 +142,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 self._server_url = await async_probe_url(self.hass, user_input[CONF_SERVER_URL])
+                self._external_url = user_input.get(CONF_EXTERNAL_URL, "")
                 auth_method = user_input[CONF_AUTH_METHOD]
 
                 if auth_method == "API Key":
@@ -156,6 +159,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_SERVER_URL): str,
+                    vol.Optional(CONF_EXTERNAL_URL, default=""): str,
                     vol.Required(CONF_AUTH_METHOD, default="API Key"): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=["API Key", "Username/Password"],
@@ -280,7 +284,11 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 self._libraries = await self._api.get_libraries(self._user_id)
                 return await self.async_step_library_select()
-            except JellyfinApiError:
+            except JellyfinApiError as e:
+                _LOGGER.error("Jellyfin API error getting libraries: %s", e)
+                errors["base"] = "unknown"
+            except Exception as e:
+                _LOGGER.error("Unexpected error getting libraries: %s", e, exc_info=True)
                 errors["base"] = "unknown"
 
         user_options = {user["Id"]: user["Name"] for user in self._users}
@@ -331,15 +339,21 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 },
                 options={
                     CONF_REFRESH_INTERVAL: int(user_input.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)),
+                    CONF_EXTERNAL_URL: self._external_url or "",
                 },
             )
 
-        # Filter to only show movie/series libraries
+        # Filter to only show movie/series/mixed libraries
         library_options = [
-            selector.SelectOptionDict(value=lib["Id"], label=lib["Name"])
+            selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
             for lib in self._libraries
-            if lib.get("CollectionType") in ("movies", "tvshows", None)
+            if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", None)
         ]
+
+        if not library_options:
+            library_options = [
+                selector.SelectOptionDict(value="none", label="No compatible libraries found")
+            ]
 
         return self.async_show_form(
             step_id="library_select",
@@ -429,9 +443,11 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 except JellyfinConnectionError:
                     errors["base"] = "cannot_connect"
             
-            if not errors:
                 if CONF_REFRESH_INTERVAL in user_input:
                     new_options[CONF_REFRESH_INTERVAL] = int(user_input[CONF_REFRESH_INTERVAL])
+
+                if CONF_EXTERNAL_URL in user_input:
+                    new_options[CONF_EXTERNAL_URL] = user_input[CONF_EXTERNAL_URL]
 
                 # Update the entry with these preliminary changes
                 self.hass.config_entries.async_update_entry(
@@ -459,12 +475,20 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                         )
                     ),
                     vol.Optional(
+                        CONF_EXTERNAL_URL,
+                        description={"suggested_value": self._config_entry.options.get(CONF_EXTERNAL_URL, "")},
+                    ): selector.TextSelector(
+                        selector.TextSelectorConfig(
+                            type=selector.TextSelectorType.URL,
+                        )
+                    ),
+                    vol.Optional(
                         CONF_REFRESH_INTERVAL,
                         default=str(migrate_refresh_interval(
                             int(self._config_entry.options.get(
                                 CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL
                             ))
-                        )),
+                        ))
                     ): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=[

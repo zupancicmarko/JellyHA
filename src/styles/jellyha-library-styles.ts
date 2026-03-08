@@ -891,7 +891,7 @@ export const cardStyles = css`
   .hover-overlay .overlay-year {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--jf-primary) !important;
+    color: #fff !important;
     margin-bottom: 2px;
   }
 
@@ -1094,7 +1094,7 @@ export const cardStyles = css`
   .now-playing-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1134,15 +1134,17 @@ export const cardStyles = css`
   }
 
   .now-playing-status {
-    color: white;
+    color: rgba(255, 255, 255, 0.95);
     font-weight: 700;
     font-size: 0.8rem;
+    line-height: 1;
     letter-spacing: 0.5px;
-    background: var(--primary-color);
-    padding: 2px 6px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: 7px 10px 5px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     white-space: nowrap;
     text-transform: uppercase;
   }
