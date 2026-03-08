@@ -127,6 +127,18 @@ To get your Jellyfin API key:
 4. Copy the generated key
 
 
+### Supported Library Types
+
+| Library Type | Background Sync | Search Service | Now Playing |
+|---|---|---|---|
+| Movies | ✅ | ✅ | ✅ |
+| TV Shows | ✅ | ✅ | ✅ |
+| Home Videos | ✅ | ✅ | ✅ |
+| Music Videos | ✅ | ✅ | ✅ |
+| Music | ❌ (too large) | ✅ | ✅ |
+| Photos | ❌ (too large) | ✅ | N/A |
+
+
 ## Library Card Configuration
 
 The **JellyHA Library** provides a beautiful way to browse and play your media collection directly in Home Assistant.
@@ -223,7 +235,7 @@ JellyHA provides several sensors to monitor your Jellyfin server and library. Al
 
 | Entity ID | Description | State | Attributes |
 |-----------|-------------|-------|------------|
-| `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `episodes` |
+| `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `videos`, `episodes` |
 | `sensor.jellyha_favorites` | Favorite items | Count | - |
 | `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series` |
 | `sensor.jellyha_unwatched_movies` | Unwatched movies | Count | - |

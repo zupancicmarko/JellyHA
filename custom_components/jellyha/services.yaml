@@ -130,7 +130,7 @@ search:
         text:
     media_type:
       name: Media Type
-      description: Filter by media type (Movie or Series).
+      description: Filter by media type.
       required: false
       selector:
         select:
@@ -141,6 +141,16 @@ search:
               value: Series
             - label: Episode
               value: Episode
+            - label: Audio (Song)
+              value: Audio
+            - label: Music Album
+              value: MusicAlbum
+            - label: Music Artist
+              value: MusicArtist
+            - label: Music Video
+              value: MusicVideo
+            - label: Video (Home Video)
+              value: Video
     is_played:
       name: Is Watched
       description: Filter by watched status.

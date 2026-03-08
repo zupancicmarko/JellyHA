@@ -129,6 +129,7 @@ class JellyHALibrarySensor(JellyHABaseSensor):
         items = self.coordinator.data.get("items", [])
         movies = [i for i in items if i.get("type") == "Movie"]
         series = [i for i in items if i.get("type") == "Series"]
+        videos = [i for i in items if i.get("type") in ("Video", "MusicVideo")]
         # Sum up all episode counts from series items (unplayed + watched)
         total_episodes = sum(
             (i.get("unplayed_count") or 0) for i in series
@@ -140,6 +141,7 @@ class JellyHALibrarySensor(JellyHABaseSensor):
             "last_updated": self.coordinator.last_refresh_time,
             "movies": len(movies),
             "series": len(series),
+            "videos": len(videos),
             "episodes": total_episodes,
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")

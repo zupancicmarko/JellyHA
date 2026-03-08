@@ -34,6 +34,7 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _optimisticSeekPercent: number | null = null;
     private _optimisticSeekTimer?: number;
     private _longPressRaf: number | null = null;
+    private _longPressConsumed: boolean = false;
     private _resizeObserver?: ResizeObserver;
 
     private _cachedBackdropUrl: string | undefined;
@@ -252,11 +253,11 @@ export class JellyHANowPlayingCard extends LitElement {
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : isPaused ? html`
-                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => this._handleControl(isMusic ? 'PlayPause' : 'Unpause')}>
+                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl(isMusic ? 'PlayPause' : 'Unpause'); }}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : html`
-                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => this._handleControl('Pause')}>
+                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl('Pause'); }}>
                                                 <ha-icon icon="mdi:pause"></ha-icon>
                                             </ha-icon-button>
                                         `}
@@ -566,6 +567,7 @@ export class JellyHANowPlayingCard extends LitElement {
             this._longPressProgress = Math.min(elapsed / duration, 1);
 
             if (this._longPressProgress >= 1) {
+                this._longPressConsumed = true;
                 this._handleControl('Stop');
                 // Haptic feedback for action trigger
                 this._haptic('success');

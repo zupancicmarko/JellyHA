@@ -97,7 +97,10 @@ SESSION_GENERAL_COMMAND_SCHEMA = vol.Schema(
 SEARCH_SCHEMA = vol.Schema(
     {
         vol.Optional("query"): cv.string,
-        vol.Optional("media_type"): vol.In(["Movie", "Series", "Episode"]),
+        vol.Optional("media_type"): vol.In([
+            "Movie", "Series", "Episode",
+            "Audio", "MusicAlbum", "MusicArtist", "MusicVideo", "Video",
+        ]),
         vol.Optional("limit", default=5): cv.positive_int,
         vol.Optional("is_played"): cv.boolean,
         vol.Optional("is_favorite"): cv.boolean,
@@ -136,8 +139,6 @@ async def async_register_services(hass: HomeAssistant) -> None:
         min_rating = call.data.get("min_rating")
         season = call.data.get("season")
         episode = call.data.get("episode")
-
-        episode = call.data.get("episode")
         config_entry_id = call.data.get("config_entry_id")
 
         try:
@@ -145,12 +146,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
         except ValueError as e:
             raise ValueError(str(e)) from e
         
-        if not coordinator._api:
-             raise ValueError("API not initialized")
-        
         if not coordinator or not coordinator._api:
-            # We fail gracefully or raise error. 
-            # If used in response_variable, error is better to debug.
             raise ValueError("No JellyHA integration loaded")
             
         user_id = coordinator.entry.data.get("user_id")
@@ -160,40 +156,50 @@ async def async_register_services(hass: HomeAssistant) -> None:
         item_types = [media_type] if media_type else None
         
         try:
-            items = await coordinator._api.get_library_items(
-                user_id=user_id,
-                limit=limit,
-                search_term=query,
-                item_types=item_types,
-                is_played=is_played,
-                is_favorite=is_favorite,
-                genre=genre,
-                year=year,
-                min_rating=min_rating,
-                season=season,
-                episode=episode,
-            )
+            # MusicArtist requires the dedicated AlbumArtists endpoint
+            if media_type == "MusicArtist":
+                params = {
+                    "SortBy": "SortName",
+                    "SortOrder": "Ascending",
+                    "Recursive": "true",
+                    "Fields": "PrimaryImageAspectRatio",
+                    "Limit": str(limit),
+                }
+                if query:
+                    params["searchTerm"] = query
+                result = await coordinator._api._request("GET", "/Artists/AlbumArtists", params=params)
+                items = result.get("Items", [])
+            else:
+                items = await coordinator._api.get_library_items(
+                    user_id=user_id,
+                    limit=limit,
+                    search_term=query,
+                    item_types=item_types,
+                    is_played=is_played,
+                    is_favorite=is_favorite,
+                    genre=genre,
+                    year=year,
+                    min_rating=min_rating,
+                    season=season,
+                    episode=episode,
+                )
         except Exception as err:
             _LOGGER.error("Search failed: %s", err)
             raise ValueError(f"Search failed: {err}") from err
 
-        results = []
-        for item in items:
-            user_data = item.get("UserData", {})
-            results.append({
-                "id": item.get("Id"),
-                "name": item.get("Name"),
-                "type": item.get("Type"),
-                "year": item.get("ProductionYear"),
-                "rating": item.get("CommunityRating"),
-                "series_name": item.get("SeriesName"),
-                "season": item.get("ParentIndexNumber"),
-                "episode": item.get("IndexNumber"),
-                "is_favorite": user_data.get("IsFavorite", False),
-                "is_played": user_data.get("Played", False),
-                "unplayed_count": user_data.get("UnplayedItemCount", 0),
-                "image_url": coordinator._api.get_image_url(item.get("Id"), "Primary"),
-            })
+        # Transform items securely via coordinator (generates signed paths)
+        results = list(await asyncio.gather(*(coordinator._async_transform_item(item) for item in items)))
+
+        # Augment with extra music metadata not in the default schema
+        for i, raw in zip(results, items):
+            item_type = raw.get("Type")
+            if item_type == "Audio":
+                album_artist = raw.get("AlbumArtist")
+                artists = raw.get("Artists", [])
+                i["artist_name"] = album_artist or (artists[0] if artists else None)
+                i["album"] = raw.get("Album")
+            elif item_type in ("MusicAlbum", "MusicVideo"):
+                i["artist_name"] = raw.get("AlbumArtist") or (raw.get("Artists", [])[0] if raw.get("Artists") else None)
 
         return {"items": results}
 

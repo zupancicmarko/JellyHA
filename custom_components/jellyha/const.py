@@ -14,7 +14,7 @@ CONF_REFRESH_INTERVAL = "refresh_interval"
 CONF_DEVICE_NAME = "device_name"
 
 # Defaults
-DEFAULT_REFRESH_INTERVAL = 300  # 5 minutes
+DEFAULT_REFRESH_INTERVAL = 3600  # 1 hour
 DEFAULT_DEVICE_NAME = "JellyHA"
 
 # Refresh interval dropdown options: list of (label, seconds)
@@ -60,6 +60,11 @@ ITEM_TYPE_MOVIE = "Movie"
 ITEM_TYPE_SERIES = "Series"
 ITEM_TYPE_EPISODE = "Episode"
 ITEM_TYPE_AUDIO = "Audio"
+ITEM_TYPE_MUSIC_ALBUM = "MusicAlbum"
+ITEM_TYPE_MUSIC_ARTIST = "MusicArtist"
+ITEM_TYPE_MUSIC_VIDEO = "MusicVideo"
+ITEM_TYPE_VIDEO = "Video"
+ITEM_TYPE_PHOTO = "Photo"
 TICKS_PER_MINUTE = 600000000
 TICKS_PER_SECOND = 10000000
 

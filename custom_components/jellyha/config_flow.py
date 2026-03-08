@@ -347,7 +347,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         library_options = [
             selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
             for lib in self._libraries
-            if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", None)
+            if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
         ]
 
         if not library_options:

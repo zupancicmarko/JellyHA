@@ -14,6 +14,8 @@ from .const import (
     RETRY_BACKOFF_FACTOR,
     ITEM_TYPE_MOVIE,
     ITEM_TYPE_SERIES,
+    ITEM_TYPE_VIDEO,
+    ITEM_TYPE_MUSIC_VIDEO,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -222,14 +224,14 @@ class JellyfinApiClient:
     ) -> list[dict[str, Any]]:
         """Get library items."""
         if item_types is None:
-            item_types = [ITEM_TYPE_MOVIE, ITEM_TYPE_SERIES]
+            item_types = [ITEM_TYPE_MOVIE, ITEM_TYPE_SERIES, ITEM_TYPE_VIDEO, ITEM_TYPE_MUSIC_VIDEO]
 
         params = {
             "SortBy": "DateCreated",
             "SortOrder": "Descending",
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
-            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers",
+            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId",
         }
 
         if limit > 0:

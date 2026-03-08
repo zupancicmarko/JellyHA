@@ -24,6 +24,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         websocket_api.async_register_command(hass, websocket_get_next_up)
         websocket_api.async_register_command(hass, websocket_get_user_next_up)
         websocket_api.async_register_command(hass, websocket_get_episodes)
+        websocket_api.async_register_command(hass, websocket_search_media)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -292,3 +293,101 @@ async def websocket_get_episodes(
     except Exception as err:
         _LOGGER.exception("Error fetching episodes: %s", err)
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, str(err))
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/search_media",
+    vol.Required("entity_id"): cv.entity_id,
+    vol.Required("query"): str,
+    vol.Optional("media_type"): vol.In([
+        "Movie", "Series", "Episode",
+        "Audio", "MusicAlbum", "MusicArtist", "MusicVideo", "Video",
+    ]),
+    vol.Optional("limit", default=20): int,
+})
+@websocket_api.async_response
+async def websocket_search_media(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Search Jellyfin server directly (bypasses local cache)."""
+    entity_id = msg["entity_id"]
+    query = msg["query"]
+    media_type = msg.get("media_type")
+    limit = msg.get("limit", 20)
+
+    state = hass.states.get(entity_id)
+    if not state:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, f"Entity {entity_id} not found")
+        return
+
+    entry_id = state.attributes.get("entry_id")
+    if not entry_id:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Missing entry_id")
+        return
+
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded")
+        return
+
+    coordinator = entry.runtime_data.library
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found")
+        return
+
+    if not coordinator._api:
+        await coordinator._async_setup()
+
+    try:
+        user_id = coordinator.entry.data.get("user_id")
+        if not user_id:
+            connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "User ID missing from config")
+            return
+
+        import asyncio
+
+        # MusicArtist requires the dedicated AlbumArtists endpoint
+        if media_type == "MusicArtist":
+            params = {
+                "SortBy": "SortName",
+                "SortOrder": "Ascending",
+                "Recursive": "true",
+                "Fields": "PrimaryImageAspectRatio",
+                "Limit": str(limit),
+            }
+            if query:
+                params["searchTerm"] = query
+            result = await coordinator._api._request("GET", "/Artists/AlbumArtists", params=params)
+            raw_items = result.get("Items", [])
+        else:
+            # Build item_types list from media_type parameter
+            item_types = [media_type] if media_type else None
+
+            # Query the Jellyfin server directly via the API
+            raw_items = await coordinator._api.get_library_items(
+                user_id=user_id,
+                limit=limit,
+                search_term=query,
+                item_types=item_types,
+            )
+
+        # Transform items using coordinator's helper
+        items_tuple = await asyncio.gather(*(coordinator._async_transform_item(raw) for raw in raw_items))
+        items = list(items_tuple)
+
+        # For Audio items, enrich with artist info
+        for i, raw in zip(items, raw_items):
+            if raw.get("Type") == "Audio":
+                album_artist = raw.get("AlbumArtist")
+                artists = raw.get("Artists", [])
+                i["artist_name"] = album_artist or (artists[0] if artists else None)
+                i["album"] = raw.get("Album")
+            elif raw.get("Type") == "MusicAlbum":
+                i["artist_name"] = raw.get("AlbumArtist")
+
+        connection.send_result(msg["id"], {"items": items})
+
+    except Exception as err:
+        _LOGGER.exception("Error searching media: %s", err)
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")

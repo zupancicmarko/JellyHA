@@ -55,6 +55,18 @@ async def async_browse_media(
         return await _build_movies_list(coordinator, entry_id)
     elif category == "series":
         return await _build_series_list(coordinator, entry_id)
+    elif category == "music":
+        return await _build_music_root(coordinator, entry_id)
+    elif category == "artists":
+        return await _build_artists_list(coordinator, entry_id)
+    elif category == "albums":
+        return await _build_albums_list(coordinator, entry_id)
+    elif category == "artist" and item_id:
+        return await _build_artist_albums(coordinator, entry_id, item_id)
+    elif category == "album" and item_id:
+        return await _build_album_tracks(coordinator, entry_id, item_id)
+    elif category == "homevideos":
+        return await _build_homevideos_list(coordinator, entry_id)
     elif category == "recent":
         return await _build_recent_list(coordinator, entry_id)
     elif category == "favorites":
@@ -91,6 +103,24 @@ def _build_root_menu(entry_id: str) -> BrowseMedia:
                 media_class=MediaClass.DIRECTORY,
                 media_content_id=build_item_id("series"),
                 media_content_type=MediaType.TVSHOW,
+                can_play=False,
+                can_expand=True,
+                thumbnail=None,
+            ),
+            BrowseMedia(
+                title="🎵 Music",
+                media_class=MediaClass.DIRECTORY,
+                media_content_id=build_item_id("music"),
+                media_content_type=MediaType.MUSIC,
+                can_play=False,
+                can_expand=True,
+                thumbnail=None,
+            ),
+            BrowseMedia(
+                title="🎥 Home Videos",
+                media_class=MediaClass.DIRECTORY,
+                media_content_id=build_item_id("homevideos"),
+                media_content_type=MediaType.VIDEO,
                 can_play=False,
                 can_expand=True,
                 thumbnail=None,
@@ -177,6 +207,267 @@ async def _build_series_list(coordinator, entry_id: str) -> BrowseMedia:
     )
 
 
+# ─── Music browsing (API-direct, not cached) ─────────────────────────────────
+
+async def _build_music_root(coordinator, entry_id: str) -> BrowseMedia:
+    """Build music sub-menu with Artists and Albums."""
+    return BrowseMedia(
+        title="Music",
+        media_class=MediaClass.DIRECTORY,
+        media_content_id=build_item_id("music"),
+        media_content_type=MediaType.MUSIC,
+        can_play=False,
+        can_expand=True,
+        children=[
+            BrowseMedia(
+                title="🎤 Artists",
+                media_class=MediaClass.DIRECTORY,
+                media_content_id=build_item_id("artists"),
+                media_content_type=MediaType.MUSIC,
+                can_play=False,
+                can_expand=True,
+                thumbnail=None,
+            ),
+            BrowseMedia(
+                title="💿 Albums",
+                media_class=MediaClass.DIRECTORY,
+                media_content_id=build_item_id("albums"),
+                media_content_type=MediaType.MUSIC,
+                can_play=False,
+                can_expand=True,
+                thumbnail=None,
+            ),
+        ],
+    )
+
+
+async def _build_artists_list(coordinator, entry_id: str) -> BrowseMedia:
+    """Build list of music artists from Jellyfin API directly."""
+    api = coordinator._api
+    user_id = coordinator.entry.data.get("user_id")
+
+    # Use Jellyfin's dedicated AlbumArtists endpoint (not Items)
+    params = {
+        "SortBy": "SortName",
+        "SortOrder": "Ascending",
+        "Recursive": "true",
+        "Fields": "PrimaryImageAspectRatio",
+    }
+    result = await api._request("GET", f"/Artists/AlbumArtists", params=params)
+    raw_artists = result.get("Items", [])
+
+    children = []
+    for artist in raw_artists:
+        artist_id = artist.get("Id", "")
+        children.append(
+            BrowseMedia(
+                title=artist.get("Name", "Unknown Artist"),
+                media_class=MediaClass.ARTIST,
+                media_content_id=build_item_id("artist", artist_id),
+                media_content_type=MediaType.MUSIC,
+                can_play=False,
+                can_expand=True,
+                thumbnail=api.get_image_url(artist_id, "Primary"),
+            )
+        )
+
+    return BrowseMedia(
+        title="Artists",
+        media_class=MediaClass.DIRECTORY,
+        media_content_id=build_item_id("artists"),
+        media_content_type=MediaType.MUSIC,
+        can_play=False,
+        can_expand=True,
+        children=children,
+    )
+
+
+async def _build_albums_list(coordinator, entry_id: str) -> BrowseMedia:
+    """Build list of music albums from Jellyfin API directly."""
+    api = coordinator._api
+    user_id = coordinator.entry.data.get("user_id")
+
+    raw_albums = await api.get_library_items(
+        user_id=user_id,
+        limit=100,
+        item_types=["MusicAlbum"],
+    )
+
+    children = []
+    for album in raw_albums:
+        album_id = album.get("Id", "")
+        artist_name = album.get("AlbumArtist", "")
+        album_name = album.get("Name", "Unknown Album")
+        title = f"{album_name} — {artist_name}" if artist_name else album_name
+
+        children.append(
+            BrowseMedia(
+                title=title,
+                media_class=MediaClass.ALBUM,
+                media_content_id=build_item_id("album", album_id),
+                media_content_type=MediaType.MUSIC,
+                can_play=True,
+                can_expand=True,
+                thumbnail=api.get_image_url(album_id, "Primary"),
+            )
+        )
+
+    return BrowseMedia(
+        title="Albums",
+        media_class=MediaClass.DIRECTORY,
+        media_content_id=build_item_id("albums"),
+        media_content_type=MediaType.MUSIC,
+        can_play=False,
+        can_expand=True,
+        children=children,
+    )
+
+
+async def _build_artist_albums(coordinator, entry_id: str, artist_id: str) -> BrowseMedia:
+    """Build list of albums for a specific artist."""
+    api = coordinator._api
+    user_id = coordinator.entry.data.get("user_id")
+
+    # Get the artist name first
+    try:
+        artist_info = await api._request("GET", f"/Users/{user_id}/Items/{artist_id}")
+        artist_name = artist_info.get("Name", "Unknown Artist")
+    except Exception:
+        artist_name = "Unknown Artist"
+
+    # Get albums by this artist using AlbumArtistIds filter
+    params = {
+        "SortBy": "ProductionYear,SortName",
+        "SortOrder": "Descending",
+        "Recursive": "true",
+        "IncludeItemTypes": "MusicAlbum",
+        "AlbumArtistIds": artist_id,
+        "Fields": "AlbumArtist,Artists",
+    }
+    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    raw_albums = result.get("Items", [])
+
+    children = []
+    for album in raw_albums:
+        album_id = album.get("Id", "")
+        album_name = album.get("Name", "Unknown Album")
+        year = album.get("ProductionYear", "")
+        title = f"{album_name} ({year})" if year else album_name
+
+        children.append(
+            BrowseMedia(
+                title=title,
+                media_class=MediaClass.ALBUM,
+                media_content_id=build_item_id("album", album_id),
+                media_content_type=MediaType.MUSIC,
+                can_play=True,
+                can_expand=True,
+                thumbnail=api.get_image_url(album_id, "Primary"),
+            )
+        )
+
+    return BrowseMedia(
+        title=artist_name,
+        media_class=MediaClass.ARTIST,
+        media_content_id=build_item_id("artist", artist_id),
+        media_content_type=MediaType.MUSIC,
+        can_play=False,
+        can_expand=True,
+        children=children,
+    )
+
+
+async def _build_album_tracks(coordinator, entry_id: str, album_id: str) -> BrowseMedia:
+    """Build list of tracks in an album."""
+    api = coordinator._api
+    user_id = coordinator.entry.data.get("user_id")
+
+    # Get album info
+    try:
+        album_info = await api._request("GET", f"/Users/{user_id}/Items/{album_id}")
+        album_name = album_info.get("Name", "Unknown Album")
+        album_artist = album_info.get("AlbumArtist", "")
+    except Exception:
+        album_name = "Unknown Album"
+        album_artist = ""
+
+    # Get tracks in this album
+    params = {
+        "SortBy": "IndexNumber",
+        "SortOrder": "Ascending",
+        "Recursive": "true",
+        "IncludeItemTypes": "Audio",
+        "ParentId": album_id,
+        "Fields": "AlbumArtist,Artists,RunTimeTicks",
+    }
+    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    raw_tracks = result.get("Items", [])
+
+    children = []
+    for track in raw_tracks:
+        track_id = track.get("Id", "")
+        track_name = track.get("Name", "Unknown Track")
+        index = track.get("IndexNumber")
+        title = f"{index}. {track_name}" if index else track_name
+
+        children.append(
+            BrowseMedia(
+                title=title,
+                media_class=MediaClass.TRACK,
+                media_content_id=build_item_id("item", track_id),
+                media_content_type=MediaType.MUSIC,
+                can_play=True,
+                can_expand=False,
+                thumbnail=api.get_image_url(album_id, "Primary"),
+            )
+        )
+
+    album_title = f"{album_name} — {album_artist}" if album_artist else album_name
+    return BrowseMedia(
+        title=album_title,
+        media_class=MediaClass.ALBUM,
+        media_content_id=build_item_id("album", album_id),
+        media_content_type=MediaType.MUSIC,
+        can_play=True,
+        can_expand=True,
+        children=children,
+    )
+
+
+# ─── Home Videos browsing ─────────────────────────────────────────────────────
+
+async def _build_homevideos_list(coordinator, entry_id: str) -> BrowseMedia:
+    """Build list of home videos from local cache."""
+    items = coordinator.data.get("items", []) if coordinator.data else []
+    videos = [i for i in items if i.get("type") in ("Video", "MusicVideo")]
+
+    children = []
+    for video in videos:
+        children.append(
+            BrowseMedia(
+                title=f"{video.get('name', 'Unknown')} ({video.get('year', '')})",
+                media_class=MediaClass.VIDEO,
+                media_content_id=build_item_id("item", video.get("id", "")),
+                media_content_type=MediaType.VIDEO,
+                can_play=True,
+                can_expand=False,
+                thumbnail=video.get("poster_url"),
+            )
+        )
+
+    return BrowseMedia(
+        title="Home Videos",
+        media_class=MediaClass.DIRECTORY,
+        media_content_id=build_item_id("homevideos"),
+        media_content_type=MediaType.VIDEO,
+        can_play=False,
+        can_expand=True,
+        children=children,
+    )
+
+
+# ─── Recently Added & Favorites ───────────────────────────────────────────────
+
 async def _build_recent_list(coordinator, entry_id: str) -> BrowseMedia:
     """Build list of recently added items."""
     items = coordinator.data.get("items", []) if coordinator.data else []
@@ -185,13 +476,13 @@ async def _build_recent_list(coordinator, entry_id: str) -> BrowseMedia:
 
     children = []
     for item in recent:
-        is_movie = item.get("type") == "Movie"
+        media_class, media_type = _classify_item(item)
         children.append(
             BrowseMedia(
                 title=f"{item.get('name', 'Unknown')} ({item.get('year', '')})",
-                media_class=MediaClass.MOVIE if is_movie else MediaClass.TV_SHOW,
+                media_class=media_class,
                 media_content_id=build_item_id("item", item.get("id", "")),
-                media_content_type=MediaType.MOVIE if is_movie else MediaType.TVSHOW,
+                media_content_type=media_type,
                 can_play=True,
                 can_expand=False,
                 thumbnail=item.get("poster_url"),
@@ -216,13 +507,13 @@ async def _build_favorites_list(coordinator, entry_id: str) -> BrowseMedia:
 
     children = []
     for item in favorites:
-        is_movie = item.get("type") == "Movie"
+        media_class, media_type = _classify_item(item)
         children.append(
             BrowseMedia(
                 title=f"{item.get('name', 'Unknown')} ({item.get('year', '')})",
-                media_class=MediaClass.MOVIE if is_movie else MediaClass.TV_SHOW,
+                media_class=media_class,
                 media_content_id=build_item_id("item", item.get("id", "")),
-                media_content_type=MediaType.MOVIE if is_movie else MediaType.TVSHOW,
+                media_content_type=media_type,
                 can_play=True,
                 can_expand=False,
                 thumbnail=item.get("poster_url"),
@@ -240,6 +531,8 @@ async def _build_favorites_list(coordinator, entry_id: str) -> BrowseMedia:
     )
 
 
+# ─── Item details & search ────────────────────────────────────────────────────
+
 async def _build_item_details(coordinator, entry_id: str, item_id: str) -> BrowseMedia:
     """Build details for a single item."""
     items = coordinator.data.get("items", []) if coordinator.data else []
@@ -255,12 +548,12 @@ async def _build_item_details(coordinator, entry_id: str, item_id: str) -> Brows
             can_expand=False,
         )
 
-    is_movie = item.get("type") == "Movie"
+    media_class, media_type = _classify_item(item)
     return BrowseMedia(
         title=item.get("name", "Unknown"),
-        media_class=MediaClass.MOVIE if is_movie else MediaClass.TV_SHOW,
+        media_class=media_class,
         media_content_id=build_item_id("item", item_id),
-        media_content_type=MediaType.MOVIE if is_movie else MediaType.TVSHOW,
+        media_content_type=media_type,
         can_play=True,
         can_expand=False,
         thumbnail=item.get("poster_url"),
@@ -283,7 +576,7 @@ async def async_browse_media_search(
     user_id = coordinator.config_entry.data.get("user_id")
     api = coordinator._api
 
-    # Search for Movies and Series
+    # Search for Movies, Series, and Audio
     items = await api.get_library_items(
         user_id,
         limit=20,
@@ -292,21 +585,35 @@ async def async_browse_media_search(
 
     children = []
     for item in items:
-        # Check type - API returns "Movie", "Series", "Episode" etc.
         item_type = item.get("Type")
-        is_movie = item_type == "Movie"
+        media_class, media_type = _classify_raw_item(item_type)
 
-        media_class = MediaClass.MOVIE if is_movie else MediaClass.TV_SHOW
-        media_type = MediaType.MOVIE if is_movie else MediaType.TVSHOW
+        # Build title with artist info for music
+        name = item.get("Name", "Unknown")
+        year = item.get("ProductionYear", "")
+        artist = item.get("AlbumArtist", "")
+
+        if item_type == "Audio" and artist:
+            title = f"{name} — {artist}"
+        elif item_type == "MusicAlbum" and artist:
+            title = f"{name} — {artist}"
+        elif year:
+            title = f"{name} ({year})"
+        else:
+            title = name
+
+        # Albums and Artists can be expanded
+        can_expand = item_type in ("MusicAlbum", "MusicArtist")
+        content_category = "album" if item_type == "MusicAlbum" else ("artist" if item_type == "MusicArtist" else "item")
 
         children.append(
             BrowseMedia(
-                title=f"{item.get('Name', 'Unknown')} ({item.get('ProductionYear', '')})",
+                title=title,
                 media_class=media_class,
-                media_content_id=build_item_id("item", item.get("Id", "")),
+                media_content_id=build_item_id(content_category, item.get("Id", "")),
                 media_content_type=media_type,
-                can_play=True,
-                can_expand=False,
+                can_play=not can_expand or item_type == "MusicAlbum",
+                can_expand=can_expand,
                 thumbnail=api.get_image_url(item.get("Id"), "Primary"),
             )
         )
@@ -320,3 +627,26 @@ async def async_browse_media_search(
         can_expand=True,
         children=children,
     )
+
+
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+
+def _classify_item(item: dict[str, Any]) -> tuple[MediaClass, str]:
+    """Classify a cached item (lowercase 'type' key) into MediaClass and MediaType."""
+    item_type = item.get("type", "")
+    return _classify_raw_item(item_type)
+
+
+def _classify_raw_item(item_type: str) -> tuple[MediaClass, str]:
+    """Classify a Jellyfin item type string into MediaClass and MediaType."""
+    mapping = {
+        "Movie": (MediaClass.MOVIE, MediaType.MOVIE),
+        "Series": (MediaClass.TV_SHOW, MediaType.TVSHOW),
+        "Episode": (MediaClass.EPISODE, MediaType.EPISODE),
+        "Audio": (MediaClass.TRACK, MediaType.MUSIC),
+        "MusicAlbum": (MediaClass.ALBUM, MediaType.MUSIC),
+        "MusicArtist": (MediaClass.ARTIST, MediaType.MUSIC),
+        "MusicVideo": (MediaClass.VIDEO, MediaType.VIDEO),
+        "Video": (MediaClass.VIDEO, MediaType.VIDEO),
+    }
+    return mapping.get(item_type, (MediaClass.VIDEO, MediaType.VIDEO))

@@ -61,8 +61,17 @@ class JellyHAMediaSource(MediaSource):
         # Get content URL for direct playback
         url = api.get_content_url(item_id)
         
-        # Mime type guessing (simplified)
-        mime = "video/mp4" 
+        # Detect MIME type based on item type
+        try:
+            user_id = coordinator.entry.data.get("user_id")
+            item_info = await api.get_item(user_id, item_id)
+            item_type = item_info.get("Type", "")
+            if item_type == "Audio":
+                mime = "audio/mpeg"
+            else:
+                mime = "video/mp4"
+        except Exception:
+            mime = "video/mp4"
         
         return PlayMedia(url, mime)
 

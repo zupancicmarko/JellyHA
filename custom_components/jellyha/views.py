@@ -24,10 +24,16 @@ class JellyHAImageView(HomeAssistantView):
         self, request: web.Request, entry_id: str, item_id: str, image_type: str
     ) -> web.Response:
         """Handle image request."""
-        # Retrieve config entry
+        # Retrieve config entry (case-insensitive fallback for ULIDs modified by routers)
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if not entry:
-             return web.Response(status=404, text="Instance not found")
+            for e in self.hass.config_entries.async_entries(DOMAIN):
+                if e.entry_id.lower() == entry_id.lower():
+                    entry = e
+                    break
+                    
+        if not entry:
+             return web.Response(status=404, text=f"Instance not found for ID: {entry_id}")
         
         # Access runtime_data safely
         try:
