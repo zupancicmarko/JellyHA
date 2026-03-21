@@ -423,12 +423,38 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
         self._api_key = config_entry.data.get(CONF_API_KEY)
         self._username: str | None = None
         self._password: str | None = None
+        self._users: list[dict[str, Any]] = []
+        self._user_id: str | None = None
+        self._libraries: list[dict[str, Any]] = []
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
         errors: dict[str, str] = {}
+        
+        # Fetch available libraries for the dropdown
+        library_options = []
+        user_id = self._config_entry.data.get(CONF_USER_ID)
+        current_libraries = self._config_entry.data.get(CONF_LIBRARIES, [])
+        
+        if self._server_url and self._api_key and user_id:
+            try:
+                session = async_get_clientsession(self.hass)
+                api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
+                libraries = await api.get_libraries(user_id)
+                library_options = [
+                    selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
+                    for lib in libraries
+                    if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
+                ]
+            except Exception as err:
+                _LOGGER.error("Failed to fetch Jellyfin libraries for Options Flow: %s", err)
+
+        if not library_options:
+            library_options = [
+                selector.SelectOptionDict(value="none", label="No compatible libraries found")
+            ]
         
         if user_input is not None:
             # Update generic options
@@ -448,6 +474,9 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
 
                 if CONF_EXTERNAL_URL in user_input:
                     new_options[CONF_EXTERNAL_URL] = user_input[CONF_EXTERNAL_URL]
+
+                if CONF_LIBRARIES in user_input:
+                    new_data[CONF_LIBRARIES] = user_input[CONF_LIBRARIES]
 
                 # Update the entry with these preliminary changes
                 self.hass.config_entries.async_update_entry(
@@ -480,6 +509,16 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                     ): selector.TextSelector(
                         selector.TextSelectorConfig(
                             type=selector.TextSelectorType.URL,
+                        )
+                    ),
+                    vol.Optional(
+                        CONF_LIBRARIES,
+                        default=current_libraries,
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=library_options,
+                            multiple=True,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
                         )
                     ),
                     vol.Optional(
@@ -543,16 +582,10 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
              try:
                  await api.validate_connection()
                  # Verify auth works by fetching users
-                 await api.get_users()
+                 self._api_key = user_input[CONF_API_KEY]
+                 self._users = await api.get_users()
                  
-                 # Success - update entry
-                 new_data = dict(self._config_entry.data)
-                 new_data[CONF_API_KEY] = user_input[CONF_API_KEY]
-                 
-                 self.hass.config_entries.async_update_entry(self._config_entry, data=new_data)
-                 # Reload to apply changes
-                 await self.hass.config_entries.async_reload(self._config_entry.entry_id)
-                 return self.async_abort(reason="configuration_saved")
+                 return await self.async_step_user_select()
                  
              except (JellyfinAuthError, JellyfinConnectionError):
                  errors["base"] = "invalid_auth"
@@ -573,16 +606,10 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
              api = JellyfinApiClient(self._server_url, session=session)
              try:
                  auth_data = await api.authenticate(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
-                 new_token = auth_data.get("AccessToken")
+                 self._api_key = auth_data.get("AccessToken")
+                 self._users = await api.get_users()
                  
-                 # Success - update entry
-                 new_data = dict(self._config_entry.data)
-                 new_data[CONF_API_KEY] = new_token
-                 
-                 self.hass.config_entries.async_update_entry(self._config_entry, data=new_data)
-                 # Reload to apply changes
-                 await self.hass.config_entries.async_reload(self._config_entry.entry_id)
-                 return self.async_abort(reason="configuration_saved")
+                 return await self.async_step_user_select()
                  
              except (JellyfinAuthError, JellyfinConnectionError):
                  errors["base"] = "invalid_auth"
@@ -594,4 +621,88 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Required(CONF_PASSWORD): str
             }),
             errors=errors
+        )
+
+    async def async_step_user_select(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Step to select user."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            self._user_id = user_input[CONF_USER_ID]
+            
+            # Fetch libraries for the new user
+            session = async_get_clientsession(self.hass)
+            api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
+            try:
+                self._libraries = await api.get_libraries(self._user_id)
+                return await self.async_step_library_select()
+            except Exception as err:
+                _LOGGER.error("Error fetching libraries: %s", err)
+                errors["base"] = "unknown"
+
+        user_options = [
+            selector.SelectOptionDict(value=user["Id"], label=user.get("Name", "Unknown"))
+            for user in self._users
+        ]
+
+        if not user_options:
+            errors["base"] = "unknown"
+
+        return self.async_show_form(
+            step_id="user_select",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_USER_ID): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=user_options,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_library_select(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Step to select libraries specific to the user."""
+        if user_input is not None:
+            new_data = dict(self._config_entry.data)
+            new_data[CONF_API_KEY] = self._api_key
+            new_data[CONF_USER_ID] = self._user_id
+            new_data[CONF_LIBRARIES] = user_input.get(CONF_LIBRARIES, [])
+            
+            self.hass.config_entries.async_update_entry(self._config_entry, data=new_data)
+            await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+            return self.async_abort(reason="configuration_saved")
+
+        library_options = [
+            selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
+            for lib in self._libraries
+            if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
+        ]
+
+        if not library_options:
+            library_options = [
+                selector.SelectOptionDict(value="none", label="No compatible libraries found")
+            ]
+
+        return self.async_show_form(
+            step_id="library_select",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_LIBRARIES,
+                        default=[],
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=library_options,
+                            multiple=True,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            )
         )

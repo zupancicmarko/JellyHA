@@ -25,7 +25,7 @@ from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .services import async_register_services
 from .storage import JellyfinLibraryData
 from .websocket import async_register_websocket
-from .views import JellyHAImageView
+from .views import JellyHAImageView, JellyHAStreamView
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,8 +97,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
         StaticPathConfig("/jellyha", www_path, True)
     ])
     
-    # Register image proxy view
+    # Register image and stream proxy views
     hass.http.register_view(JellyHAImageView(hass))
+    hass.http.register_view(JellyHAStreamView(hass))
     
 
 

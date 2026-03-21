@@ -151,6 +151,10 @@ search:
               value: MusicVideo
             - label: Video (Home Video)
               value: Video
+            - label: Playlist
+              value: Playlist
+            - label: Collection (BoxSet)
+              value: BoxSet
     is_played:
       name: Is Watched
       description: Filter by watched status.

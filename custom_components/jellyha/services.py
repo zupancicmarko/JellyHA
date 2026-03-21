@@ -100,6 +100,7 @@ SEARCH_SCHEMA = vol.Schema(
         vol.Optional("media_type"): vol.In([
             "Movie", "Series", "Episode",
             "Audio", "MusicAlbum", "MusicArtist", "MusicVideo", "Video",
+            "Playlist", "BoxSet",
         ]),
         vol.Optional("limit", default=5): cv.positive_int,
         vol.Optional("is_played"): cv.boolean,
@@ -270,20 +271,29 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
         _LOGGER.info("Detected Device: %s (Legacy Mode: %s)", model_name, is_legacy_device)
 
-        # ------------------------------------------------------------------
-        # 2. ANALYSIS
-        # ------------------------------------------------------------------
-        media_info = MediaStrategy.analyze_media(item)
-        
-        # ------------------------------------------------------------------
-        # 3. USE STRATEGY
-        # ------------------------------------------------------------------
-        playback_info = MediaStrategy.get_playback_info(
-            server_url, api_key, item_id, media_info, model_name
-        )
-        
-        media_url = playback_info["media_url"]
-        content_type = playback_info["content_type"]
+        if item_type == "Audio":
+            # Flow audio through MediaStrategy to apply Chromecast Gen 1 limits (e.g., FLAC transcodes)
+            media_info = MediaStrategy.analyze_media(item)
+            playback_info = MediaStrategy.get_playback_info(
+                api._server_url, api._api_key, item_id, media_info, model_name, item_type="Audio"
+            )
+            media_url = playback_info["media_url"]
+            content_type = playback_info["content_type"]
+        else:
+            # ------------------------------------------------------------------
+            # 2. ANALYSIS
+            # ------------------------------------------------------------------
+            media_info = MediaStrategy.analyze_media(item)
+            
+            # ------------------------------------------------------------------
+            # 3. USE STRATEGY
+            # ------------------------------------------------------------------
+            playback_info = MediaStrategy.get_playback_info(
+                server_url, api_key, item_id, media_info, model_name
+            )
+            
+            media_url = playback_info["media_url"]
+            content_type = playback_info["content_type"]
 
         # Prepare Metadata
         metadata = {

@@ -77,9 +77,10 @@
                 "title": "Configuración del servidor",
                 "data": {
                     "server_url": "URL del servidor",
-                    "external_url": "URL externa (Opcional, para enlaces de la interfaz)",
+                    "external_url": "URL externa (Opcional, para enlaces de UI)",
                     "refresh_interval": "Intervalo de actualización de la biblioteca",
-                    "update_credentials": "Actualizar credenciales / Cambiar usuario"
+                    "update_credentials": "Actualizar credenciales / Cambiar usuario",
+                    "libraries": "Bibliotecas"
                 }
             },
             "auth_method": {
@@ -102,6 +103,20 @@
                 "data": {
                     "username": "Nombre de usuario",
                     "password": "Contraseña"
+                }
+            },
+            "user_select": {
+                "title": "Seleccionar usuario",
+                "description": "Elija a qué usuario de Jellyfin desea cambiar",
+                "data": {
+                    "user_id": "Usuario"
+                }
+            },
+            "library_select": {
+                "title": "Seleccionar bibliotecas",
+                "description": "Elija qué bibliotecas incluir (dejar en blanco para todas)",
+                "data": {
+                    "libraries": "Bibliotecas"
                 }
             }
         },

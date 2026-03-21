@@ -197,7 +197,7 @@ export class JellyHAMediaItem extends LitElement {
               alt="${item.name}"
               width="140"
               height="210"
-              loading="lazy"
+              loading="auto"
               decoding="async"
               @load="${this._handleImageLoad}"
               @error="${this._handleImageError}"
@@ -525,7 +525,14 @@ export class JellyHAMediaItem extends LitElement {
 
   private _handleImageError(e: Event): void {
     const img = e.target as HTMLImageElement;
-    img.style.display = 'none';
+    // Hide the broken image but let the skeleton/placeholder stay visible
+    img.style.opacity = '0';
+    img.style.position = 'absolute';
+    // Show fallback icon on the skeleton
+    const skeleton = img.nextElementSibling as HTMLElement;
+    if (skeleton && skeleton.classList.contains('poster-skeleton')) {
+      skeleton.classList.add('error');
+    }
   }
 
   /* --- Playback Control Handlers --- */

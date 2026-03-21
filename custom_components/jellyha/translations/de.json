@@ -79,7 +79,8 @@
                     "server_url": "Server-URL",
                     "external_url": "Externe URL (Optional, für UI-Links)",
                     "refresh_interval": "Aktualisierungsintervall der Bibliothek",
-                    "update_credentials": "Anmeldedaten aktualisieren / Benutzer wechseln"
+                    "update_credentials": "Anmeldedaten aktualisieren / Benutzer wechseln",
+                    "libraries": "Bibliotheken"
                 }
             },
             "auth_method": {
@@ -102,6 +103,20 @@
                 "data": {
                     "username": "Benutzername",
                     "password": "Passwort"
+                }
+            },
+            "user_select": {
+                "title": "Benutzer auswählen",
+                "description": "Wählen Sie den Jellyfin-Benutzer, zu dem Sie wechseln möchten",
+                "data": {
+                    "user_id": "Benutzer"
+                }
+            },
+            "library_select": {
+                "title": "Bibliotheken auswählen",
+                "description": "Wählen Sie aus, welche Bibliotheken einbezogen werden sollen (leer lassen für alle)",
+                "data": {
+                    "libraries": "Bibliotheken"
                 }
             }
         },

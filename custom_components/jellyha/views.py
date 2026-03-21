@@ -125,3 +125,74 @@ class JellyHAImageView(HomeAssistantView):
 
         except Exception as err:
             return web.Response(status=500, text=str(err))
+
+
+class JellyHAStreamView(HomeAssistantView):
+    """View to proxy Jellyfin media streams without exposing the API key."""
+
+    url = "/api/jellyha/stream/{item_id}"
+    name = "api:jellyha:stream"
+    requires_auth = False
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        """Initialize."""
+        self.hass = hass
+
+    async def get(
+        self, request: web.Request, item_id: str
+    ) -> web.Response:
+        """Handle stream request."""
+        # Auth check (same as image proxy)
+        is_authenticated = request.get("hass_user") is not None
+        has_valid_signature = request.get("hass_refresh_token_id") is not None
+
+        if not is_authenticated and not has_valid_signature:
+            _LOGGER.warning("Unauthorized stream request for item %s", item_id)
+            return web.Response(status=401, text="Unauthorized")
+
+        # media_type is either "Audio" or "Videos"
+        media_type = request.query.get("media_type", "Videos")
+        if media_type not in ("Audio", "Videos"):
+            return web.Response(status=400, text="Invalid media_type")
+
+        # Find the first loaded JellyHA entry
+        for entry in self.hass.config_entries.async_entries(DOMAIN):
+            if hasattr(entry, "runtime_data") and entry.runtime_data:
+                try:
+                    client = entry.runtime_data.library._api
+                except AttributeError:
+                    continue
+                if client:
+                    break
+        else:
+            return web.Response(status=404, text="No JellyHA integration loaded")
+
+        url = f"{client.server_url}/{media_type}/{item_id}/stream?static=true"
+
+        try:
+            session = client.session
+            async with session.get(
+                url,
+                headers=client._headers,
+                timeout=aiohttp.ClientTimeout(total=None),
+            ) as resp:
+                if resp.status != 200:
+                    return web.Response(status=resp.status, text=resp.reason)
+
+                response = web.StreamResponse(status=200, reason="OK")
+                content_type = resp.headers.get("Content-Type", "application/octet-stream")
+                response.headers["Content-Type"] = content_type
+                if "Content-Length" in resp.headers:
+                    response.headers["Content-Length"] = resp.headers["Content-Length"]
+
+                await response.prepare(request)
+
+                async for chunk in resp.content.iter_chunked(65536):
+                    await response.write(chunk)
+
+                return response
+
+        except Exception as err:
+            _LOGGER.error("Stream proxy error for %s: %s", item_id, err)
+            return web.Response(status=500, text=str(err))
+

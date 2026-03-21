@@ -79,7 +79,8 @@
                     "server_url": "URL du serveur",
                     "external_url": "URL externe (Optionnel, pour les liens de l'interface)",
                     "refresh_interval": "Intervalle de rafraîchissement de la bibliothèque",
-                    "update_credentials": "Mettre à jour les identifiants / Changer d'utilisateur"
+                    "update_credentials": "Mettre à jour les informations / Changer d'utilisateur",
+                    "libraries": "Bibliothèques"
                 }
             },
             "auth_method": {
@@ -102,6 +103,20 @@
                 "data": {
                     "username": "Nom d'utilisateur",
                     "password": "Mot de passe"
+                }
+            },
+            "user_select": {
+                "title": "Sélectionner un utilisateur",
+                "description": "Choisissez l'utilisateur Jellyfin vers lequel basculer",
+                "data": {
+                    "user_id": "Utilisateur"
+                }
+            },
+            "library_select": {
+                "title": "Sélectionner des bibliothèques",
+                "description": "Choisissez les bibliothèques à inclure (laissez vide pour toutes)",
+                "data": {
+                    "libraries": "Bibliothèques"
                 }
             }
         },

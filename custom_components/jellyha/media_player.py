@@ -139,6 +139,20 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
         item = next((i for i in items if i.get("id") == item_id), None)
 
         if not item:
+            # Item might be a music track or other item not in the sync cache —
+            # fall back to a direct API call
+            _LOGGER.debug("Item %s not in cache, fetching from API", item_id)
+            try:
+                api = self.coordinator._api
+                user_id = self._entry.data.get("user_id")
+                if api and user_id:
+                    raw = await api.get_item(user_id, item_id)
+                    item = await self.coordinator._async_transform_item(raw)
+            except Exception:
+                _LOGGER.warning("Item not found in cache or API: %s", item_id)
+                return
+
+        if not item:
             _LOGGER.warning("Item not found: %s", item_id)
             return
 

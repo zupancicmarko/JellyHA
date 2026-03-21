@@ -729,6 +729,21 @@ export const cardStyles = css`
     100% { background-position: -200% 0; }
   }
 
+  /* Error fallback - stop animation and show placeholder icon */
+  .poster-skeleton.error {
+    animation: none;
+    background: var(--jf-divider);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .poster-skeleton.error::after {
+    content: '🎬';
+    font-size: 2rem;
+    opacity: 0.4;
+  }
+
   /* Media Type Badge (MOVIE/SERIES) - Top Left - matches new-badge style */
   .media-type-badge {
     position: absolute;

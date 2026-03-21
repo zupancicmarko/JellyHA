@@ -398,11 +398,23 @@ class JellyfinApiClient:
         """Build deep link URL to open item in Jellyfin web UI."""
         return f"{self._server_url}/web/index.html#!/details?id={item_id}"
 
-    def get_content_url(self, item_id: str) -> str:
-        """Get direct stream URL for an item."""
-        # Simple direct stream URL. Transcoding parameters could be added here.
-        # We append api_key so the player can access without header auth.
-        return f"{self._server_url}/Videos/{item_id}/stream?static=true&api_key={self._api_key}"
+    def get_content_url(self, item_id: str, item_type: str = "Video") -> str:
+        """Get direct stream URL for an item.
+
+        Audio items use the /Audio/ endpoint; everything else uses /Videos/.
+        The URL includes the API key for direct access by external players.
+        For proxied access (signed URLs), use get_stream_path() instead.
+        """
+        prefix = "Audio" if item_type == "Audio" else "Videos"
+        return f"{self._server_url}/{prefix}/{item_id}/stream?static=true&api_key={self._api_key}"
+
+    def get_stream_path(self, item_id: str, item_type: str = "Video") -> str:
+        """Get the internal HA proxy path for streaming (no API key exposed).
+
+        This path is meant to be signed via async_sign_path() before use.
+        """
+        prefix = "Audio" if item_type == "Audio" else "Videos"
+        return f"/api/jellyha/stream/{item_id}?media_type={prefix}"
 
     async def update_favorite(self, user_id: str, item_id: str, is_favorite: bool) -> bool:
         """Update favorite status for an item."""

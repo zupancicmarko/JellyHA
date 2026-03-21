@@ -78,6 +78,7 @@
                 "data": {
                     "server_url": "Server URL",
                     "external_url": "External URL (Optional, for UI links)",
+                    "libraries": "Libraries",
                     "refresh_interval": "Library Refresh Interval",
                     "update_credentials": "Update Credentials / Switch User"
                 }
@@ -102,6 +103,20 @@
                 "data": {
                     "username": "Username",
                     "password": "Password"
+                }
+            },
+            "user_select": {
+                "title": "Select User",
+                "description": "Choose which Jellyfin user to switch to",
+                "data": {
+                    "user_id": "User"
+                }
+            },
+            "library_select": {
+                "title": "Select Libraries",
+                "description": "Choose which libraries to include (leave empty for all)",
+                "data": {
+                    "libraries": "Libraries"
                 }
             }
         },

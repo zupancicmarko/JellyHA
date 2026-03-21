@@ -207,7 +207,6 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "count": len(items),
                 "server_name": self._server_name,
                 "last_refresh": self.last_refresh_time.isoformat(),
-                "last_refresh": self.last_refresh_time.isoformat(),
                 "last_data_change": self.last_data_change_time.isoformat() if self.last_data_change_time else None,
                 "next_up_items": next_up_items,
             }
@@ -310,6 +309,16 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     series_poster_url = async_sign_path(self.hass, series_path, expiration)
                     self._url_cache[series_cache_key] = (series_poster_url, now)
 
+        # Build music-specific fields conditionally
+        artist_name = None
+        album_artist = None
+        album = None
+        if item_type in ("Audio", "MusicAlbum", "MusicVideo"):
+            album_artist = item.get("AlbumArtist")
+            artists = item.get("Artists", [])
+            artist_name = album_artist or (artists[0] if artists else None)
+            album = item.get("Album")
+
         return {
             "id": item_id,
             "name": item.get("Name", ""),
@@ -318,23 +327,24 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "runtime_minutes": runtime_minutes,
             "genres": item.get("Genres", []),
             "rating": rating,
-            # Removed separate provider ratings to save memory
             "description": item.get("Overview", ""),
             "poster_url": poster_url,
             "series_poster_url": series_poster_url,
-            #"backdrop_url": backdrop_url, # Now available if uncommented, but keeping optimizing
             "date_added": item.get("DateCreated"),
             "jellyfin_url": self._api.get_jellyfin_url(item_id),
             "is_played": item.get("UserData", {}).get("Played", False),
             "unplayed_count": item.get("UserData", {}).get("UnplayedItemCount"),
             "is_favorite": item.get("UserData", {}).get("IsFavorite", False),
-            #"media_streams": item.get("MediaStreams", []), # Removed for optimization
             "official_rating": item.get("OfficialRating"),
             "trailer_url": next((t["Url"] for t in item.get("RemoteTrailers", []) if t.get("Url")), None),
             "last_played_date": item.get("UserData", {}).get("LastPlayedDate"),
             "community_rating": rating,
             "season_name": item.get("SeasonName"),
             "index_number": item.get("IndexNumber"),
+            # Music-specific fields (None for non-music items)
+            "artist_name": artist_name,
+            "album_artist": album_artist,
+            "album": album,
         }
 
 

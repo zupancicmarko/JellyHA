@@ -1343,6 +1343,21 @@ const Ue = V`
     100% { background-position: -200% 0; }
   }
 
+  /* Error fallback - stop animation and show placeholder icon */
+  .poster-skeleton.error {
+    animation: none;
+    background: var(--jf-divider);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .poster-skeleton.error::after {
+    content: '🎬';
+    font-size: 2rem;
+    opacity: 0.4;
+  }
+
   /* Media Type Badge (MOVIE/SERIES) - Top Left - matches new-badge style */
   .media-type-badge {
     position: absolute;
@@ -4229,7 +4244,7 @@ let v = class extends j {
               alt="${t.name}"
               width="140"
               height="210"
-              loading="lazy"
+              loading="auto"
               decoding="async"
               @load="${this._handleImageLoad}"
               @error="${this._handleImageError}"
@@ -4421,7 +4436,9 @@ let v = class extends j {
   }
   _handleImageError(t) {
     const e = t.target;
-    e.style.display = "none";
+    e.style.opacity = "0", e.style.position = "absolute";
+    const i = e.nextElementSibling;
+    i && i.classList.contains("poster-skeleton") && i.classList.add("error");
   }
   /* --- Playback Control Handlers --- */
   _stopPropagation(t) {
@@ -5647,7 +5664,7 @@ window.customCards.push({
 });
 let $ = class extends j {
   constructor() {
-    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._longPressRaf = null, this._optimisticFavorites = {}, this._phrases = [];
+    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._longPressRaf = null, this._longPressConsumed = !1, this._optimisticFavorites = {}, this._phrases = [];
   }
   setConfig(t) {
     this._config = {
@@ -5799,11 +5816,23 @@ let $ = class extends j {
                                                 <ha-icon icon="mdi:loading"></ha-icon>
                                             </ha-icon-button>
                                         ` : _ ? n`
-                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => this._handleControl(g ? "PlayPause" : "Unpause")}>
+                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => {
+      if (this._longPressConsumed) {
+        this._longPressConsumed = !1;
+        return;
+      }
+      this._handleControl(g ? "PlayPause" : "Unpause");
+    }}>
                                                 <ha-icon icon="mdi:play"></ha-icon>
                                             </ha-icon-button>
                                         ` : n`
-                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "pause")} @click=${() => this._handleControl("Pause")}>
+                                            <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "pause")} @click=${() => {
+      if (this._longPressConsumed) {
+        this._longPressConsumed = !1;
+        return;
+      }
+      this._handleControl("Pause");
+    }}>
                                                 <ha-icon icon="mdi:pause"></ha-icon>
                                             </ha-icon-button>
                                         `}
@@ -5999,7 +6028,7 @@ let $ = class extends j {
     const i = () => {
       const o = Date.now() - t;
       if (this._longPressProgress = Math.min(o / e, 1), this._longPressProgress >= 1) {
-        this._handleControl("Stop"), this._haptic("success"), navigator.vibrate && navigator.vibrate(50), this._stopPulse = !0, setTimeout(() => {
+        this._longPressConsumed = !0, this._handleControl("Stop"), this._haptic("success"), navigator.vibrate && navigator.vibrate(50), this._stopPulse = !0, setTimeout(() => {
           this._stopPulse = !1;
         }, 600), this._endLongPress();
         return;

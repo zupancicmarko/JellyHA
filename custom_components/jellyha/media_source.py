@@ -66,8 +66,20 @@ class JellyHAMediaSource(MediaSource):
             user_id = coordinator.entry.data.get("user_id")
             item_info = await api.get_item(user_id, item_id)
             item_type = item_info.get("Type", "")
+            
             if item_type == "Audio":
-                mime = "audio/mpeg"
+                # Accurately map container types for Chromecast's Default Media Receiver (DMR)
+                container = item_info.get("Container", "mp3").lower()
+                if container == "flac":
+                    mime = "audio/flac"
+                elif container in ["m4a", "aac"]:
+                    mime = "audio/mp4"
+                elif container in ["ogg", "oga"]:
+                    mime = "audio/ogg"
+                elif container == "wav":
+                    mime = "audio/wav"
+                else:
+                    mime = "audio/mpeg"
             else:
                 mime = "video/mp4"
         except Exception:

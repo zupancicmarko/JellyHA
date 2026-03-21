@@ -14,6 +14,7 @@ class MediaStrategy:
         """Analyze media item to extract codec and dimension info."""
         media_streams = item.get("MediaStreams", [])
         info = {
+            "container": (item.get("Container") or "unknown").lower(),
             "video_codec": "unknown",
             "video_height": 0,
             "bit_depth": 8,
@@ -23,19 +24,19 @@ class MediaStrategy:
 
         for stream in media_streams:
             if stream.get("Type") == "Video":
-                info["video_codec"] = stream.get("Codec", "unknown").lower()
-                info["video_height"] = int(stream.get("Height", 0))
-                info["bit_depth"] = int(stream.get("BitDepth", 8))
+                info["video_codec"] = (stream.get("Codec") or "unknown").lower()
+                info["video_height"] = int(stream.get("Height") or 0)
+                info["bit_depth"] = int(stream.get("BitDepth") or 8)
             elif stream.get("Type") == "Audio" and stream.get("Index") == 1:
                 # Assuming first audio track is main
-                info["audio_codec"] = stream.get("Codec", "unknown").lower()
-                info["audio_channels"] = int(stream.get("Channels", 2))
+                info["audio_codec"] = (stream.get("Codec") or "unknown").lower()
+                info["audio_channels"] = int(stream.get("Channels") or 2)
         
         if info["audio_codec"] == "unknown":
              for stream in media_streams:
                 if stream.get("Type") == "Audio":
-                    info["audio_codec"] = stream.get("Codec", "unknown").lower()
-                    info["audio_channels"] = int(stream.get("Channels", 2))
+                    info["audio_codec"] = (stream.get("Codec") or "unknown").lower()
+                    info["audio_channels"] = int(stream.get("Channels") or 2)
                     break
         
         return info
@@ -83,6 +84,7 @@ class MediaStrategy:
         item_id: str,
         media_info: dict[str, Any],
         device_model: str,
+        item_type: str = "Video",
     ) -> dict[str, str]:
         """Determine playback strategy and return URL/Type."""
         
@@ -93,8 +95,56 @@ class MediaStrategy:
         bit_depth = media_info["bit_depth"]
         audio_codec = media_info["audio_codec"]
         audio_channels = media_info["audio_channels"]
+        container = media_info.get("container", "unknown")
 
-        # Check Format Basics
+        if item_type == "Audio":
+            # Audio-specific compatibility matrix
+            is_format_standard = audio_codec in ["mp3", "aac", "ac3", "wav"]
+            should_direct_play = False
+            
+            if is_legacy_device:
+                # LEGACY: No FLAC, ALAC natively
+                if is_format_standard and audio_channels <= 2 and container not in ["flac", "alac"]:
+                    should_direct_play = True
+            else:
+                # MODERN: FLAC is supported
+                should_direct_play = True
+                
+            if should_direct_play:
+                content_type = "audio/mpeg"
+                if container == "flac":
+                    content_type = "audio/flac"
+                elif container in ["m4a", "aac"]:
+                    content_type = "audio/mp4"
+                elif container in ["ogg", "oga"]:
+                    content_type = "audio/ogg"
+                elif container == "wav":
+                    content_type = "audio/wav"
+                    
+                _LOGGER.info("Strategy Selected: DIRECT PLAY (Audio - %s)", content_type)
+                return {
+                    "media_url": f"{server_url}/Audio/{item_id}/stream?static=true&api_key={api_key}",
+                    "content_type": content_type
+                }
+            else:
+                # Force an HLS transcode for incompatible audio limits
+                _LOGGER.info("Strategy Selected: TRANSCODE (Legacy Audio HLS)")
+                media_url = (
+                    f"{server_url}/Audio/{item_id}/master.m3u8"
+                    f"?api_key={api_key}"
+                    f"&DeviceId=JellyHA_Cast"
+                    f"&MediaSourceId={item_id}"
+                    f"&AudioCodec=mp3"
+                    f"&AudioBitrate=320000"
+                    f"&TranscodingContainer=ts"
+                    f"&TranscodingProtocol=hls"
+                )
+                return {
+                    "media_url": media_url,
+                    "content_type": "application/x-mpegURL"
+                }
+
+        # Check Format Basics (Video)
         is_format_standard = (
             video_codec in ["h264", "avc"] and 
             bit_depth == 8 and
