@@ -15,10 +15,25 @@ play_on_chromecast:
       required: true
       selector:
         text:
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 refresh_library:
   name: Refresh Library
   description: Force refresh library data from Jellyfin
+  fields:
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to refresh (refreshes all if not specified)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 delete_item:
   name: Delete Item
@@ -30,6 +45,13 @@ delete_item:
       required: true
       selector:
         text:
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 mark_watched:
   name: Mark Watched
@@ -47,6 +69,13 @@ mark_watched:
       required: true
       selector:
         boolean:
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 update_favorite:
   name: Update Favorite
@@ -64,6 +93,13 @@ update_favorite:
       required: true
       selector:
         boolean:
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 session_control:
   name: Session Control
@@ -98,6 +134,13 @@ session_control:
               value: Shuffle
             - label: Set Repeat Mode
               value: SetRepeatMode
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 session_seek:
   name: Session Seek
@@ -117,6 +160,43 @@ session_seek:
         number:
           min: 0
           mode: box
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
+
+session_general_command:
+  name: Session General Command
+  description: Send a general command to a Jellyfin playback session.
+  fields:
+    session_id:
+      name: Session ID
+      description: The ID of the Jellyfin session to control.
+      required: true
+      selector:
+        text:
+    command:
+      name: Command
+      description: The general command name to send.
+      required: true
+      selector:
+        text:
+    arguments:
+      name: Arguments
+      description: Optional arguments for the command (as key-value pairs).
+      required: false
+      selector:
+        object:
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 search:
   name: Search
@@ -217,6 +297,13 @@ search:
           min: 1
           max: 50
           mode: box
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to search (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 get_recommendations:
   name: Get Recommendations
@@ -237,6 +324,13 @@ get_recommendations:
           min: 1
           max: 20
           mode: box
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
 
 get_item:
   name: Get Item Details
@@ -248,4 +342,10 @@ get_item:
       required: true
       selector:
         text:
-
+    config_entry_id:
+      name: JellyHA Instance
+      description: The JellyHA instance to use (defaults to first available)
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
