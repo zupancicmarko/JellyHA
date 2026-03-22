@@ -44,7 +44,11 @@
                 "description": "Wählen Sie die einzuschließenden Bibliotheken (leer lassen für alle)",
                 "data": {
                     "libraries": "Bibliotheken",
-                    "refresh_interval": "Aktualisierungsintervall der Bibliothek"
+                    "refresh_interval": "Aktualisierungsintervall der Bibliothek",
+                    "instance_label": "Instanz-Label"
+                },
+                "data_description": {
+                    "instance_label": "Fügen Sie ein Label hinzu, um diese Instanz zu unterscheiden (z.B. Filme, Musik, Heimvideos). Ihr Gerät erhält den Namen 'JellyHA Filme', 'JellyHA Musik' usw. Lassen Sie das Feld leer für den Standardnamen 'JellyHA'."
                 }
             },
             "reauth_confirm": {
@@ -67,8 +71,7 @@
         "abort": {
             "already_configured": "Dieser Jellyfin-Server ist bereits konfiguriert",
             "reauth_successful": "Erneute Authentifizierung erfolgreich",
-            "reauth_failed": "Erneute Authentifizierung fehlgeschlagen",
-            "single_instance_allowed": "Nur eine Konfiguration von JellyHA ist erlaubt."
+            "reauth_failed": "Erneute Authentifizierung fehlgeschlagen"
         }
     },
     "options": {

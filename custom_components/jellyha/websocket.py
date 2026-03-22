@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import asyncio
 from typing import Any
 
 import voluptuous as vol
@@ -150,7 +151,7 @@ async def websocket_get_next_up(
         
         if next_up:
             # Transform using coordinator's helper
-            item = coordinator._transform_item(next_up)
+            item = await coordinator._async_transform_item(next_up)
             # Find the season index/number from the raw item usually (ParentIndexNumber) or simple SeasonName
             # Jellyfin 'ParentIndexNumber' is Season Number, 'IndexNumber' is Episode Number
             item["season"] = next_up.get("ParentIndexNumber")
@@ -216,7 +217,7 @@ async def websocket_get_user_next_up(
         raw_next_up = await coordinator._api.get_next_up_items(user_id=user_id, limit=20)
         items = []
         if raw_next_up:
-            items = [coordinator._transform_item(item) for item in raw_next_up]
+            items = await asyncio.gather(*(coordinator._async_transform_item(item) for item in raw_next_up))
             for i, raw in zip(items, raw_next_up):
                 i["season"] = raw.get("ParentIndexNumber")
                 i["episode"] = raw.get("IndexNumber")
@@ -277,7 +278,7 @@ async def websocket_get_episodes(
         
         items = []
         if raw_episodes:
-            items = [coordinator._transform_item(item) for item in raw_episodes]
+            items = await asyncio.gather(*(coordinator._async_transform_item(item) for item in raw_episodes))
             # Enrich items with logic similar to NextUp to ensure consistency
             for i, raw in zip(items, raw_episodes):
                 i["season"] = raw.get("ParentIndexNumber")

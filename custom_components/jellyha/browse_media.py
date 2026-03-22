@@ -106,6 +106,7 @@ async def _build_root_menu(coordinator, entry_id: str) -> BrowseMedia:
     """Build root browse menu dynamically based on user's authorized libraries."""
     api = coordinator._api
     user_id = coordinator.entry.data.get("user_id")
+    device_name = coordinator.entry.data.get("device_name", "JellyHA")
     selected_libraries = coordinator.entry.data.get("libraries", [])
     
     # Fetch user libraries to determine available collection types
@@ -226,7 +227,7 @@ async def _build_root_menu(coordinator, entry_id: str) -> BrowseMedia:
         ])
     
     return BrowseMedia(
-        title="JellyHA",
+        title=device_name,
         media_class=MediaClass.DIRECTORY,
         media_content_id=build_item_id("root"),
         media_content_type=MediaType.CHANNELS,

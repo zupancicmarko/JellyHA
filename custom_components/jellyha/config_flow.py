@@ -27,6 +27,7 @@ from .const import (
     CONF_REFRESH_INTERVAL,
     CONF_SERVER_URL,
     CONF_EXTERNAL_URL,
+    CONF_INSTANCE_LABEL,
     CONF_USER_ID,
     CONF_USERNAME,
     DEFAULT_DEVICE_NAME,
@@ -64,6 +65,21 @@ async def async_probe_url(hass, url: str) -> str:
             continue
     
     raise JellyfinConnectionError("Cannot connect to server")
+
+
+def _build_device_name(label: str) -> str:
+    """Build device name with guaranteed JellyHA prefix."""
+    label = label.strip()
+    if not label:
+        return "JellyHA"
+    # Smart dedup: remove leading "JellyHA" if user typed it
+    cleaned = label
+    if cleaned.lower().startswith("jellyha"):
+        cleaned = cleaned[7:].strip()
+        # Edge case: user only typed "JellyHA" with nothing after
+        if not cleaned:
+            return "JellyHA"
+    return f"JellyHA {cleaned}"
 
 
 class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -135,9 +151,6 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle the initial step - server URL and auth method."""
         errors: dict[str, str] = {}
-
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
             try:
@@ -322,20 +335,30 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "Jellyfin",
             )
 
-            # Set unique ID using Server ID + User ID
+            # Set unique ID using Server ID + User ID + Instance Label
             if self._server_id and self._user_id:
+                instance_label = user_input.get(CONF_INSTANCE_LABEL, "").strip()
                 unique_id = f"{self._server_id}_{self._user_id}"
+                if instance_label:
+                    # Only append label if provided, leaving empty legacy unchanged
+                    unique_id = f"{unique_id}_{instance_label.lower().replace(' ', '_')}"
+                
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
+            # Build the smart device name
+            instance_label = user_input.get(CONF_INSTANCE_LABEL, "")
+            device_name = _build_device_name(instance_label)
+
             return self.async_create_entry(
-                title=f"JellyHA ({user_name})",
+                title=f"{device_name} ({user_name})",
                 data={
                     CONF_SERVER_URL: self._server_url,
                     CONF_API_KEY: self._api_key,
                     CONF_USER_ID: self._user_id,
                     CONF_LIBRARIES: user_input.get(CONF_LIBRARIES, []),
-                    CONF_DEVICE_NAME: DEFAULT_DEVICE_NAME,
+                    CONF_DEVICE_NAME: device_name,
+                    CONF_INSTANCE_LABEL: instance_label,
                 },
                 options={
                     CONF_REFRESH_INTERVAL: int(user_input.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)),
@@ -359,6 +382,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="library_select",
             data_schema=vol.Schema(
                 {
+                    vol.Optional(CONF_INSTANCE_LABEL, default=""): str,
                     vol.Optional(CONF_LIBRARIES): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=library_options,
@@ -489,6 +513,10 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 if user_input.get("update_credentials"):
                     return await self.async_step_auth_method()
                 
+                # Check if user wants an immediate refresh
+                if user_input.get("trigger_library_refresh"):
+                    await self.hass.config_entries.async_reload(self._config_entry.entry_id)
+
                 return self.async_abort(reason="configuration_saved")
 
         return self.async_show_form(
@@ -537,6 +565,7 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                             mode=selector.SelectSelectorMode.DROPDOWN,
                         )
                     ),
+                    vol.Optional("trigger_library_refresh", default=False): selector.BooleanSelector(),
                     vol.Optional("update_credentials", default=False): selector.BooleanSelector(),
                 }
             ),

@@ -20,7 +20,7 @@ Jellyfin for Home Assistant
 - 📺 Cast media directly to Chromecast (Gen 1 supported)
 - ⏯️ Full playback control: Play, Pause, Stop, Seek, Next/Previous Track, Shuffle, Repeat
 - ⏳ Accurate playback tracking: Elapsed/remaining time, +30s/-10s skip controls
-- 🎮 **Per-user media players** with transport and volume controls
+- 🎮 Per-user media players with transport and volume controls
 - ⏭️ "Next Up" support to resume TV shows
 - 🎨 Three layouts: Carousel, Grid, List
 - 🌙 Automatic dark/light theme adaptation
@@ -36,6 +36,7 @@ Jellyfin for Home Assistant
 - 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
 - 🎛️ Graphical card editor (no YAML required)
 - ⏱️ Configurable API Refresh Interval (via Integration Options)
+- 🚀 **Multi-Instance Support**: Run multiple servers concurrently
 
 ## Installation
 
@@ -84,8 +85,6 @@ Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/u
 
 ## Setup
 
-> **⚠️ Note:** Only a single instance of this integration is supported. Please configure it once for your main user.
-
 ### Use the link to start the integration setup
 
 [![My Home Assistant][my-ha-badge]][my-ha-url]
@@ -100,8 +99,9 @@ Then continue to step 3. and 4. below.
    - Optional: Enter an **External URL** if you access JellyHA via an external proxy/network that differs from the internal IP used for connection. This URL will be used for "Open in Jellyfin" buttons in the UI.
 4. Enter your Jellyfin API key or credentials
 5. Select the user and libraries to monitor
-6. Click **Submit**
-7. Add Device to the Area (optional)
+6. **Instance Label (Optional)**: Add a custom label (e.g., `Movies`, `Music`) if running multiple instances. This will be prefixed with `JellyHA`.
+7. Click **Submit**
+8. Add Device to the Area (optional)
 
 > **Note:** You can update these credentials later by re-configuring the integration.
 
@@ -114,7 +114,8 @@ You can customize how JellyHA behaves directly from the integrations page:
 2. Find **JellyHA** and click **Configure**
 3. Adjust the **Library Refresh Interval** (ranges from `Off` for pure WebSocket push to `24 hours`)
 4. Set an **External URL** if necessary
-5. Click **Submit**
+5. Toggle **Refresh fetched data immediately** if you want to force an update right away.
+6. Click **Submit**
 
 
 ### Jellyfin API Key
@@ -336,7 +337,7 @@ JellyHA provides several services to control and manage your library.
 | `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req) |
 | `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req) |
 | `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req) |
-| `jellyha.search` | Search for media and return Item IDs. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt) |
+| `jellyha.search` | Search for media and return Item IDs. Supports `Audio`, `MusicAlbum`, `MusicArtist`, `MusicVideo`, and `Video`. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt) |
 | `jellyha.get_recommendations` | Get similar items based on item ID. | `item_id` (Req), `limit` (Opt) |
 | `jellyha.get_item` | Get full details for an item. | `item_id` (Req) |
 
@@ -360,12 +361,13 @@ The `sensor.jellyha_websocket` sensor shows the current connection status (`conn
 
 
 ## Media Browser
-
-JellyHA integrates directly with the Home Assistant Media Browser. You can explore your Jellyfin libraries, play media on supported players, and even stream directly to your browser, all without leaving Home Assistant.
-
+ 
+JellyHA integrates directly with the Home Assistant Media Browser with **full multi-instance support**. You can explore your Jellyfin libraries from different servers, play media on supported players, and even stream directly to your browser, all without leaving Home Assistant.
+ 
 1. Go to **Media** in the sidebar.
 2. Select **JellyHA**.
-3. Browse your Movies, Series, and Music collections.
+3. Choose your server (if multiple are connected).
+4. Browse your Movies, Series, and Music collections.
 
 
 ## Examples

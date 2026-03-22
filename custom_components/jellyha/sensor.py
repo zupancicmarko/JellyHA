@@ -62,7 +62,8 @@ async def async_setup_entry(
                     session_coordinator, 
                     entry, 
                     user_id, 
-                    username
+                    username,
+                    device_name
                 )
             )
 
@@ -366,11 +367,13 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         entry: ConfigEntry,
         user_id: str,
         username: str,
+        device_name: str,
     ) -> None:
         """Initialize the user sensor."""
         super().__init__(coordinator)
         self._user_id = user_id
         self._username = username
+        self._device_name = device_name
         self._entry = entry
         
         # Unique ID specifically for this user's viewing state
@@ -385,7 +388,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
-        return get_device_info(self._entry.entry_id, "JellyHA")
+        return get_device_info(self._entry.entry_id, self._device_name)
 
     @property
     def native_value(self) -> str:
@@ -541,7 +544,6 @@ class JellyHAWebSocketStatusSensor(CoordinatorEntity[JellyHALibraryCoordinator],
         self._device_name = device_name
         self._entry = entry
         self._attr_unique_id = f"{entry.entry_id}_websocket_status"
-        self._attr_unique_id = f"{entry.entry_id}_websocket_status"
         # self.entity_id = f"sensor.{device_name}_websocket"
 
     @property
@@ -598,7 +600,6 @@ class JellyHAActiveSessionsSensor(CoordinatorEntity[JellyHASessionCoordinator], 
         super().__init__(coordinator)
         self._device_name = device_name
         self._entry = entry
-        self._attr_unique_id = f"{entry.entry_id}_active_sessions"
         self._attr_unique_id = f"{entry.entry_id}_active_sessions"
         # self.entity_id = f"sensor.{device_name}_active_sessions"
 

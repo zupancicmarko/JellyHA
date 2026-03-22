@@ -44,7 +44,11 @@
                 "description": "Elige qué bibliotecas incluir (dejar vacío para todas)",
                 "data": {
                     "libraries": "Bibliotecas",
-                    "refresh_interval": "Intervalo de actualización"
+                    "refresh_interval": "Intervalo de actualización",
+                    "instance_label": "Etiqueta de instancia"
+                },
+                "data_description": {
+                    "instance_label": "Agrega una etiqueta para distinguir esta instancia (por ejemplo, Películas, Música, Videos caseros). Su dispositivo se llamará 'JellyHA Películas', 'JellyHA Música', etc. Déjelo en blanco para el valor predeterminado 'JellyHA'."
                 }
             },
             "reauth_confirm": {
@@ -67,8 +71,7 @@
         "abort": {
             "already_configured": "Este servidor Jellyfin ya está configurado",
             "reauth_successful": "Reautenticación exitosa",
-            "reauth_failed": "Error en la reautenticación",
-            "single_instance_allowed": "Solo se permite una configuración de JellyHA."
+            "reauth_failed": "Error en la reautenticación"
         }
     },
     "options": {

@@ -64,8 +64,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
     api_key = entry.data.get(CONF_API_KEY)
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
     
-    # Use entry_id as part of device_id to ensure uniqueness if needed, or just device_name
-    ws_client = JellyfinWebSocketClient(session, server_url, api_key, device_name)
+    # Ensure WebSocket deviceId is unique per instance connecting to the same server
+    ws_device_id = f"{device_name}_{entry.entry_id[:8]}"
+    ws_client = JellyfinWebSocketClient(session, server_url, api_key, ws_device_id)
 
     # Initialize session coordinator (api is initialized in library coordinator)
     session_coordinator = JellyHASessionCoordinator(
@@ -80,30 +81,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
         ws_client=ws_client,
     )
     
-    # Start WebSocket client
-    await ws_client.start()
+
 
     
     # Register services and websocket
     await async_register_services(hass)
     async_register_websocket(hass)
 
-    # Register static path for assets (phrases, etc)
-    # Security: Only expose the dedicated 'static' subdirectory, not the entire integration
-    static_path = os.path.join(os.path.dirname(__file__), "static")
-    www_path = os.path.join(os.path.dirname(__file__), "www")
-    await hass.http.async_register_static_paths([
-        StaticPathConfig("/jellyha_static", static_path, False),
-        StaticPathConfig("/jellyha", www_path, True)
-    ])
-    
-    # Register image and stream proxy views
-    hass.http.register_view(JellyHAImageView(hass))
-    hass.http.register_view(JellyHAStreamView(hass))
+    # Register static paths and proxy views only once per Home Assistant start
+    if not hass.data.get(f"{DOMAIN}_views_registered"):
+        static_path = os.path.join(os.path.dirname(__file__), "static")
+        www_path = os.path.join(os.path.dirname(__file__), "www")
+        await hass.http.async_register_static_paths([
+            StaticPathConfig("/jellyha_static", static_path, False),
+            StaticPathConfig("/jellyha", www_path, True)
+        ])
+        
+        # Register image and stream proxy views
+        hass.http.register_view(JellyHAImageView(hass))
+        hass.http.register_view(JellyHAStreamView(hass))
+        
+        hass.data[f"{DOMAIN}_views_registered"] = True
     
 
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Start WebSocket client
+    await ws_client.start()
 
     # Listen for media events to trigger library refresh
     async def _handle_media_event(event):

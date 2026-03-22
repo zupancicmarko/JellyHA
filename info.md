@@ -11,6 +11,7 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant.
 - ⏭️ **Next Up**: Resume TV shows right where you left off.
 - ⏯️ **Playback Control**: Play, pause, seek, and cast to devices.
 - 🔍 **Search**: Find content by title or genre.
+- 🚀 **Multi-Instance**: Run multiple servers concurrently.
 - 🤖 **Automation**: Powerful sensors (`jellyha_now_playing`, `jellyha_library`) for automations.
 
 ### Installation

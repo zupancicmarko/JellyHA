@@ -42,8 +42,12 @@
                 "title": "Select Libraries",
                 "description": "Choose which libraries to include (leave empty for all)",
                 "data": {
+                    "instance_label": "Instance Label",
                     "libraries": "Libraries",
                     "refresh_interval": "Library Refresh Interval"
+                },
+                "data_description": {
+                    "instance_label": "This integration supports **Multi-Instance** configurations.\n\nAdd a label to distinguish this instance (e.g., *Movies, Music, Home Videos*). Your device will be named **'JellyHA Movies'**, **'JellyHA Music'**, etc., making it easier to identify entities across multiple servers.\n\nLeave empty for the default **'JellyHA'**."
                 }
             },
             "reauth_confirm": {
@@ -66,8 +70,7 @@
         "abort": {
             "already_configured": "This Jellyfin server is already configured",
             "reauth_successful": "Re-authentication successful",
-            "reauth_failed": "Re-authentication failed",
-            "single_instance_allowed": "Only a single configuration of JellyHA is allowed."
+            "reauth_failed": "Re-authentication failed"
         }
     },
     "options": {
@@ -77,6 +80,7 @@
                 "data": {
                     "server_url": "Server URL",
                     "refresh_interval": "Library Refresh Interval",
+                    "trigger_library_refresh": "Refresh fetched data immediately",
                     "update_credentials": "Update Credentials / Switch User"
                 }
             },
@@ -100,6 +104,20 @@
                 "data": {
                     "username": "Username",
                     "password": "Password"
+                }
+            },
+            "user_select": {
+                "title": "Select User",
+                "description": "Choose which Jellyfin user to switch to",
+                "data": {
+                    "user_id": "User"
+                }
+            },
+            "library_select": {
+                "title": "Select Libraries",
+                "description": "Choose which libraries to include (leave empty for all)",
+                "data": {
+                    "libraries": "Libraries"
                 }
             }
         },

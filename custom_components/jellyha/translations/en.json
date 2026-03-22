@@ -44,7 +44,11 @@
                 "description": "Choose which libraries to include (leave empty for all)",
                 "data": {
                     "libraries": "Libraries",
-                    "refresh_interval": "Library Refresh Interval"
+                    "refresh_interval": "Library Refresh Interval",
+                    "instance_label": "Instance Label"
+                },
+                "data_description": {
+                    "instance_label": "This integration supports **Multi-Instance** configurations.\n\nAdd a label to distinguish this instance (e.g., *Movies, Music, Home Videos*). Your device will be named **'JellyHA Movies'**, **'JellyHA Music'**, etc., making it easier to identify entities across multiple servers.\n\nLeave empty for the default **'JellyHA'**."
                 }
             },
             "reauth_confirm": {
@@ -67,8 +71,7 @@
         "abort": {
             "already_configured": "This Jellyfin server is already configured",
             "reauth_successful": "Re-authentication successful",
-            "reauth_failed": "Re-authentication failed",
-            "single_instance_allowed": "Only a single configuration of JellyHA is allowed."
+            "reauth_failed": "Re-authentication failed"
         }
     },
     "options": {
@@ -80,6 +83,7 @@
                     "external_url": "External URL (Optional, for UI links)",
                     "libraries": "Libraries",
                     "refresh_interval": "Library Refresh Interval",
+                    "trigger_library_refresh": "Refresh fetched data immediately",
                     "update_credentials": "Update Credentials / Switch User"
                 }
             },

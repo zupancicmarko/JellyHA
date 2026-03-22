@@ -12,6 +12,7 @@ CONF_USER_ID = "user_id"
 CONF_LIBRARIES = "libraries"
 CONF_REFRESH_INTERVAL = "refresh_interval"
 CONF_DEVICE_NAME = "device_name"
+CONF_INSTANCE_LABEL = "instance_label"
 
 # Defaults
 DEFAULT_REFRESH_INTERVAL = 3600  # 1 hour

@@ -5,12 +5,17 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.1] - 2026-03-08
+## [1.2.0] - 2026-03-22
 
 ### Added
+- **Multi-Instance Support**: You can now run multiple JellyHA instances concurrently, perfect for multi-server setups (e.g., separate Movies and Music servers).
+- **Smart Instance Naming**: Automatically prefixes instance names with `JellyHA` and handles de-duplication to prevent nested names (e.g., `JellyHA Movies`).
+- **Immediate Library Refresh**: Added an option to "Refresh fetched data immediately" in the integration config/options flow to force an immediate synchronization after changes.
 - **Options Flow User Switching**: You can now switch the connected Jellyfin user profile directly from the integration Options menu without needing to delete and re-add the integration.
 - **Dynamic Options Library Selection**: You can now modify the list of synchronized libraries natively via the Options menu, dynamically updating your dashboard content.
 - **Configuration Localization**: Deployed fully native UI strings for the new configuration and options flows across German, Spanish, French, Italian, and Russian languages (joining English and Slovenian).
+- **Media Browser Support**: Full multi-instance support in the Home Assistant Media Browser. You can now browse and stream from multiple Jellyfin servers concurrently with accurate root-level categorization.
+- **Improved Streaming Compatibility**: Enhanced MIME type detection for Audio and Video content, improving playback reliability across various Home Assistant media players (like Chromecast).
 - **Home Videos & Music Video Support**: Added support for Home Videos and Music Video library types in background sync.
 - **Music & Photos Setup Support**: Expanded config flow to allow Music, Photos, and Home Videos libraries during setup to prevent crashes.
 - **Direct Search API**: New `jellyha/search_media` WebSocket endpoint for direct server-side search (perfect for massive music libraries).
@@ -29,7 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added stop-pulse animation and comprehensive haptic vibration feedback for mobile.
 
 ### Changed
-- Improved Now Playing card visuals with dot separators, dynamic colors extracted from posters, glassmorphic progress bar, badges, and refined spacing.
+- **Now Playing Card**: Improved Now Playing card visuals with dot separators, dynamic colors extracted from posters, glassmorphic progress bar, badges, and refined spacing.
+- **Stream View Routing**: Improved internal proxy routing to correctly handle multiple active servers simultaneously without URL collisions.
+- **Explicit Frontend Targeting**: Enhanced all card components (Library, Now Playing, Details Modal) to explicitly target their respective integration instances.
 
 ### Fixed
 - **Empty Setup Dropout**: Fixed an issue where initial setup or reconfiguration would crash if the user did not have standard `movies` or `tvshows` library types (added fallback to `mixed`, `musicvideos` and `homevideos`, protected against completely empty dropdowns).
@@ -38,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Progress Bar**: Fixed the immediate snap-back effect when manually jumping or scrubbing the progress bar by optimistically holding the new position for 3 seconds while awaiting the server update.
 - **Stop Pulse**: Fixed a bug where the long-press stop shadow-pulse effect rendered as a square instead of a circle.
 - **Loading Spinner**: Fixed the loading spinner shrinking during rewind/seek actions, now properly maintaining the 44px play/pause button size.
-
+- **Show All Episodes**: Fixed a bug where the "View All Episodes" button was hidden for series that hadn't been started yet. Restored visibility of the episode list in the "More Information" modal, even when "Next Up" data is not yet available (defaults to Season 1).
 
 
 ## [1.1.0] - 2026-02-15

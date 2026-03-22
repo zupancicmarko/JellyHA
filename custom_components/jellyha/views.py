@@ -130,7 +130,7 @@ class JellyHAImageView(HomeAssistantView):
 class JellyHAStreamView(HomeAssistantView):
     """View to proxy Jellyfin media streams without exposing the API key."""
 
-    url = "/api/jellyha/stream/{item_id}"
+    url = "/api/jellyha/stream/{entry_id}/{item_id}"
     name = "api:jellyha:stream"
     requires_auth = False
 
@@ -139,7 +139,7 @@ class JellyHAStreamView(HomeAssistantView):
         self.hass = hass
 
     async def get(
-        self, request: web.Request, item_id: str
+        self, request: web.Request, entry_id: str, item_id: str
     ) -> web.Response:
         """Handle stream request."""
         # Auth check (same as image proxy)
@@ -155,17 +155,24 @@ class JellyHAStreamView(HomeAssistantView):
         if media_type not in ("Audio", "Videos"):
             return web.Response(status=400, text="Invalid media_type")
 
-        # Find the first loaded JellyHA entry
-        for entry in self.hass.config_entries.async_entries(DOMAIN):
-            if hasattr(entry, "runtime_data") and entry.runtime_data:
-                try:
-                    client = entry.runtime_data.library._api
-                except AttributeError:
-                    continue
-                if client:
+        # Retrieve config entry
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if not entry:
+            for e in self.hass.config_entries.async_entries(DOMAIN):
+                if e.entry_id.lower() == entry_id.lower():
+                    entry = e
                     break
-        else:
-            return web.Response(status=404, text="No JellyHA integration loaded")
+                    
+        if not entry:
+             return web.Response(status=404, text=f"Instance not found for ID: {entry_id}")
+        
+        try:
+            client = entry.runtime_data.library._api
+        except AttributeError:
+             return web.Response(status=404, text="Integration not loaded")
+
+        if not client:
+             return web.Response(status=404, text="API not available")
 
         url = f"{client.server_url}/{media_type}/{item_id}/stream?static=true"
 

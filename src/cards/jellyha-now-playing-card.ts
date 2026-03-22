@@ -383,6 +383,7 @@ export class JellyHANowPlayingCard extends LitElement {
         if (!sessionId) return;
 
         await this.hass.callService('jellyha', 'session_control', {
+            entity_id: this._config.entity,
             session_id: sessionId,
             command: command
         });
@@ -394,6 +395,7 @@ export class JellyHANowPlayingCard extends LitElement {
         else if (currentMode === 'RepeatOne') nextMode = 'RepeatNone';
 
         await this.hass.callService('jellyha', 'session_general_command', {
+            entity_id: this._config.entity,
             session_id: sessionId,
             command: 'SetRepeatMode',
             arguments: { RepeatMode: nextMode }
@@ -418,6 +420,7 @@ export class JellyHANowPlayingCard extends LitElement {
         this.requestUpdate();
 
         await this.hass.callService('jellyha', 'update_favorite', {
+            entity_id: this._config.entity,
             item_id: itemId,
             is_favorite: newStatus
         });
@@ -469,15 +472,14 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
-        const positionTicks = attributes.position_ticks || 0;
-        const currentPercent = attributes.progress_percent || 1;
-        const durationTicks = (positionTicks / currentPercent) * 100;
+        const durationTicks = attributes.duration_ticks;
 
         if (!sessionId || !durationTicks) return;
 
         const seekTicks = Math.round(durationTicks * (finalPercent / 100));
 
         await this.hass.callService('jellyha', 'session_seek', {
+            entity_id: this._config.entity,
             session_id: sessionId,
             position_ticks: seekTicks
         });
@@ -507,13 +509,13 @@ export class JellyHANowPlayingCard extends LitElement {
 
         // Hold the seeked position optimistically to prevent jump back
         // We calculate expected percentage and set it
-        const currentPercent = attributes.progress_percent || 1;
-        const durationTicks = (positionTicks / currentPercent) * 100;
+        const durationTicks = attributes.duration_ticks;
         if (durationTicks) {
             this._setOptimisticSeek((newPositionTicks / durationTicks) * 100);
         }
 
         await this.hass.callService('jellyha', 'session_seek', {
+            entity_id: this._config.entity,
             session_id: sessionId,
             position_ticks: newPositionTicks
         });
@@ -543,13 +545,13 @@ export class JellyHANowPlayingCard extends LitElement {
         const newPositionTicks = Math.max(0, positionTicks - rewindTicks);
 
         // Hold the seeked position optimistically to prevent jump back
-        const currentPercent = attributes.progress_percent || 1;
-        const durationTicks = (positionTicks / currentPercent) * 100;
+        const durationTicks = attributes.duration_ticks;
         if (durationTicks) {
             this._setOptimisticSeek((newPositionTicks / durationTicks) * 100);
         }
 
         await this.hass.callService('jellyha', 'session_seek', {
+            entity_id: this._config.entity,
             session_id: sessionId,
             position_ticks: newPositionTicks
         });

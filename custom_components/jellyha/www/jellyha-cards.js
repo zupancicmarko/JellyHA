@@ -22,7 +22,7 @@ let Ee = class {
     return this.cssText;
   }
 };
-const Re = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), V = (t, ...e) => {
+const Re = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), q = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((o, a, s) => o + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
@@ -35,7 +35,7 @@ const Re = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), V = (t,
     const o = document.createElement("style"), a = te.litNonce;
     a !== void 0 && o.setAttribute("nonce", a), o.textContent = i.cssText, t.appendChild(o);
   }
-}, ve = ce ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
+}, ye = ce ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let i = "";
   for (const o of e.cssRules) i += o.cssText;
   return Re(i);
@@ -45,7 +45,7 @@ const Re = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, he), V = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: He, defineProperty: Fe, getOwnPropertyDescriptor: Be, getOwnPropertyNames: We, getOwnPropertySymbols: Ge, getPrototypeOf: Ye } = Object, ae = globalThis, ye = ae.trustedTypes, Xe = ye ? ye.emptyScript : "", Je = ae.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
+const { is: He, defineProperty: Fe, getOwnPropertyDescriptor: Be, getOwnPropertyNames: We, getOwnPropertySymbols: Ge, getPrototypeOf: Ye } = Object, ae = globalThis, ve = ae.trustedTypes, Xe = ve ? ve.emptyScript : "", Je = ae.reactiveElementPolyfillSupport, F = (t, e) => t, ie = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? Xe : null;
@@ -129,8 +129,8 @@ let O = class extends HTMLElement {
     const i = [];
     if (Array.isArray(e)) {
       const o = new Set(e.flat(1 / 0).reverse());
-      for (const a of o) i.unshift(ve(a));
-    } else e !== void 0 && i.push(ve(e));
+      for (const a of o) i.unshift(ye(a));
+    } else e !== void 0 && i.push(ye(e));
     return i;
   }
   static _$Eu(e, i) {
@@ -262,9 +262,9 @@ O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[F("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const _e = globalThis, $e = (t) => t, oe = _e.trustedTypes, ke = oe ? oe.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Me = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, ze = "?" + T, Ve = `<${ze}>`, D = document, W = () => D.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", ge = Array.isArray, qe = (t) => ge(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
+const _e = globalThis, $e = (t) => t, oe = _e.trustedTypes, ke = oe ? oe.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Me = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, ze = "?" + T, qe = `<${ze}>`, D = document, W = () => D.createComment(""), G = (t) => t === null || typeof t != "object" && typeof t != "function", ge = Array.isArray, Ve = (t) => ge(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
 \f\r]`, H = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Se = /-->/g, Ce = />/g, M = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Pe = /'/g, Ae = /"/g, De = /^(?:script|style|textarea|title)$/i, Ze = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Ze(1), U = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), je = /* @__PURE__ */ new WeakMap(), z = D.createTreeWalker(D, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Pe = /'/g, Ae = /"/g, De = /^(?:script|style|textarea|title)$/i, Ze = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = Ze(1), N = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), je = /* @__PURE__ */ new WeakMap(), z = D.createTreeWalker(D, 129);
 function Ie(t, e) {
   if (!ge(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ke !== void 0 ? ke.createHTML(e) : e;
@@ -277,7 +277,7 @@ const Ke = (t, e) => {
     let _, g, p = -1, m = 0;
     for (; m < c.length && (r.lastIndex = m, g = r.exec(c), g !== null); ) m = r.lastIndex, r === H ? g[1] === "!--" ? r = Se : g[1] !== void 0 ? r = Ce : g[2] !== void 0 ? (De.test(g[2]) && (a = RegExp("</" + g[2], "g")), r = M) : g[3] !== void 0 && (r = M) : r === M ? g[0] === ">" ? (r = a ?? H, p = -1) : g[1] === void 0 ? p = -2 : (p = r.lastIndex - g[2].length, _ = g[1], r = g[3] === void 0 ? M : g[3] === '"' ? Ae : Pe) : r === Ae || r === Pe ? r = M : r === Se || r === Ce ? r = H : (r = M, a = void 0);
     const f = r === M && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === H ? c + Ve : p >= 0 ? (o.push(_), c.slice(0, p) + Me + c.slice(p) + T + f) : c + T + (p === -2 ? h : f);
+    s += r === H ? c + qe : p >= 0 ? (o.push(_), c.slice(0, p) + Me + c.slice(p) + T + f) : c + T + (p === -2 ? h : f);
   }
   return [Ie(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), o];
 };
@@ -318,11 +318,11 @@ class Y {
     return o.innerHTML = e, o;
   }
 }
-function N(t, e, i = t, o) {
-  if (e === U) return e;
+function U(t, e, i = t, o) {
+  if (e === N) return e;
   let a = o !== void 0 ? i._$Co?.[o] : i._$Cl;
   const s = G(e) ? void 0 : e._$litDirective$;
-  return a?.constructor !== s && (a?._$AO?.(!1), s === void 0 ? a = void 0 : (a = new s(t), a._$AT(t, i, o)), o !== void 0 ? (i._$Co ??= [])[o] = a : i._$Cl = a), a !== void 0 && (e = N(t, a._$AS(t, e.values), a, o)), e;
+  return a?.constructor !== s && (a?._$AO?.(!1), s === void 0 ? a = void 0 : (a = new s(t), a._$AT(t, i, o)), o !== void 0 ? (i._$Co ??= [])[o] = a : i._$Cl = a), a !== void 0 && (e = U(t, a._$AS(t, e.values), a, o)), e;
 }
 class Qe {
   constructor(e, i) {
@@ -341,7 +341,7 @@ class Qe {
     for (; c !== void 0; ) {
       if (r === c.index) {
         let _;
-        c.type === 2 ? _ = new q(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new ot(s, this, e)), this._$AV.push(_), c = o[++h];
+        c.type === 2 ? _ = new V(s, s.nextSibling, this, e) : c.type === 1 ? _ = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (_ = new ot(s, this, e)), this._$AV.push(_), c = o[++h];
       }
       r !== c?.index && (s = z.nextNode(), r++);
     }
@@ -352,7 +352,7 @@ class Qe {
     for (const o of this._$AV) o !== void 0 && (o.strings !== void 0 ? (o._$AI(e, o, i), i += o.strings.length - 2) : o._$AI(e[i])), i++;
   }
 }
-class q {
+class V {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -371,7 +371,7 @@ class q {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = N(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== U && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : qe(e) ? this.k(e) : this._(e);
+    e = U(this, e, i), G(e) ? e === d || e == null || e === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : e !== this._$AH && e !== N && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Ve(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -398,7 +398,7 @@ class q {
     ge(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let o, a = 0;
-    for (const s of e) a === i.length ? i.push(o = new q(this.O(W()), this.O(W()), this, this.options)) : o = i[a], o._$AI(s), a++;
+    for (const s of e) a === i.length ? i.push(o = new V(this.O(W()), this.O(W()), this, this.options)) : o = i[a], o._$AI(s), a++;
     a < i.length && (this._$AR(o && o._$AB.nextSibling, a), i.length = a);
   }
   _$AR(e = this._$AA.nextSibling, i) {
@@ -424,11 +424,11 @@ class se {
   _$AI(e, i = this, o, a) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) e = N(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== U, r && (this._$AH = e);
+    if (s === void 0) e = U(this, e, i, 0), r = !G(e) || e !== this._$AH && e !== N, r && (this._$AH = e);
     else {
       const h = e;
       let c, _;
-      for (e = s[0], c = 0; c < s.length - 1; c++) _ = N(this, h[o + c], i, c), _ === U && (_ = this._$AH[c]), r ||= !G(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
+      for (e = s[0], c = 0; c < s.length - 1; c++) _ = U(this, h[o + c], i, c), _ === N && (_ = this._$AH[c]), r ||= !G(_) || _ !== this._$AH[c], _ === d ? e = d : e !== d && (e += (_ ?? "") + s[c + 1]), this._$AH[c] = _;
     }
     r && !a && this.j(e);
   }
@@ -457,7 +457,7 @@ class it extends se {
     super(e, i, o, a, s), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = N(this, e, i, 0) ?? d) === U) return;
+    if ((e = U(this, e, i, 0) ?? d) === N) return;
     const o = this._$AH, a = e === d && o !== d || e.capture !== o.capture || e.once !== o.once || e.passive !== o.passive, s = e !== d && (o === d || a);
     a && this.element.removeEventListener(this.name, this, o), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -473,17 +473,17 @@ class ot {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    N(this, e);
+    U(this, e);
   }
 }
 const at = _e.litHtmlPolyfillSupport;
-at?.(Y, q), (_e.litHtmlVersions ??= []).push("3.3.2");
+at?.(Y, V), (_e.litHtmlVersions ??= []).push("3.3.2");
 const Oe = (t, e, i) => {
   const o = i?.renderBefore ?? e;
   let a = o._$litPart$;
   if (a === void 0) {
     const s = i?.renderBefore ?? null;
-    o._$litPart$ = a = new q(e.insertBefore(W(), s), s, void 0, i ?? {});
+    o._$litPart$ = a = new V(e.insertBefore(W(), s), s, void 0, i ?? {});
   }
   return a._$AI(t), a;
 };
@@ -512,7 +512,7 @@ class j extends O {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return U;
+    return N;
   }
 }
 j._$litElement$ = !0, j.finalized = !0, ue.litElementHydrateSupport?.({ LitElement: j });
@@ -615,7 +615,7 @@ function de(t) {
 function B(t, e) {
   return t && `${t}&width=${e}`;
 }
-const Ue = V`
+const Ne = q`
   :host {
     display: block;
     height: 100%;
@@ -2610,7 +2610,7 @@ function l(t, e) {
   const i = t.split("-")[0].toLowerCase();
   return ee[i]?.[e] ? ee[i][e] : ee.en?.[e] ? ee.en[e] : e;
 }
-var ct = Object.defineProperty, ht = Object.getOwnPropertyDescriptor, C = (t, e, i, o) => {
+var ct = Object.defineProperty, ht = Object.getOwnPropertyDescriptor, k = (t, e, i, o) => {
   for (var a = o > 1 ? void 0 : o ? ht(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (a = (o ? r(e, i, a) : r(a)) || a);
   return o && a && ct(e, i, a), a;
@@ -2633,7 +2633,8 @@ let y = class extends j {
       try {
         await this.hass.callService("jellyha", "play_on_chromecast", {
           entity_id: this._defaultCastDevice,
-          item_id: t.id
+          item_id: t.id,
+          server_entity_id: this._serverEntityId
         }), this.closeDialog();
       } catch (e) {
         console.error("Failed to cast episode", e), this.dispatchEvent(new CustomEvent("hass-notification", {
@@ -2654,7 +2655,8 @@ let y = class extends j {
       try {
         await this.hass.callService("jellyha", "play_on_chromecast", {
           entity_id: this._defaultCastDevice,
-          item_id: this._item.id
+          item_id: this._item.id,
+          server_entity_id: this._serverEntityId
         }), this.closeDialog();
       } catch (t) {
         console.error("Failed to cast", t);
@@ -2671,7 +2673,8 @@ let y = class extends j {
       try {
         await this.hass.callService("jellyha", "play_on_chromecast", {
           entity_id: this._defaultCastDevice,
-          item_id: this._nextUpItem.id
+          item_id: this._nextUpItem.id,
+          server_entity_id: this._serverEntityId
         }), this.closeDialog();
       } catch (t) {
         console.error("Failed to cast next up", t);
@@ -2682,7 +2685,8 @@ let y = class extends j {
       const t = !this._item.is_favorite;
       this._item = { ...this._item, is_favorite: t }, await this.hass.callService("jellyha", "update_favorite", {
         item_id: this._item.id,
-        is_favorite: t
+        is_favorite: t,
+        server_entity_id: this._serverEntityId
       }), this.requestUpdate();
     }, this._handleWatched = async () => {
       if (!this._item) return;
@@ -2690,14 +2694,16 @@ let y = class extends j {
       const t = !this._item.is_played;
       this._item = { ...this._item, is_played: t }, await this.hass.callService("jellyha", "mark_watched", {
         item_id: this._item.id,
-        is_played: t
+        is_played: t,
+        server_entity_id: this._serverEntityId
       }), this.requestUpdate();
     }, this._handleDeleteConfirm = async () => {
       if (!this._item) return;
       this._haptic();
       const t = this._item.id;
       this.closeDialog(), await this.hass.callService("jellyha", "delete_item", {
-        item_id: t
+        item_id: t,
+        server_entity_id: this._serverEntityId
       });
     }, this._handleWatchTrailer = () => {
       this._haptic();
@@ -2732,7 +2738,8 @@ let y = class extends j {
       }
       this.requestUpdate(), await this.hass.callService("jellyha", "mark_watched", {
         item_id: t.id,
-        is_played: e
+        is_played: e,
+        server_entity_id: this._serverEntityId
       });
     }, this._handleModalTouchStart = (t) => {
       const e = t.target, i = this._getScrollParent(e);
@@ -2754,7 +2761,7 @@ let y = class extends j {
     super.disconnectedCallback(), this._portalContainer && (this._portalContainer.remove(), this._portalContainer = null);
   }
   async showDialog(t) {
-    this._item = t.item, this.hass = t.hass, this._defaultCastDevice = t.defaultCastDevice, this._open = !0, this._open = !0, this._nextUpItem = void 0, this._viewMode = "default", this._episodes = [], this._item.type === "Series" && this._fetchNextUp(this._item), this._fetchFullDetails(this._item.id), await this.updateComplete;
+    this._item = t.item, this.hass = t.hass, this._defaultCastDevice = t.defaultCastDevice, this._serverEntityId = t.serverEntityId, this._open = !0, this._open = !0, this._nextUpItem = void 0, this._viewMode = "default", this._episodes = [], this._item.type === "Series" && this._fetchNextUp(this._item), this._fetchFullDetails(this._item.id), await this.updateComplete;
   }
   async _fetchFullDetails(t) {
     try {
@@ -2764,6 +2771,7 @@ let y = class extends j {
         service: "get_item",
         service_data: {
           item_id: t,
+          entity_id: this._serverEntityId,
           config_entry_id: this._item?.config_entry_id
         },
         return_response: !0
@@ -2777,7 +2785,7 @@ let y = class extends j {
     const e = Object.keys(this.hass.states).filter(
       (o) => this.hass.states[o].attributes.integration === "jellyha" || o.startsWith("sensor.jellyha_")
       // Fallback convention
-    ), i = e.length > 0 ? e[0] : "sensor.jellyha_library";
+    ), i = this._serverEntityId || (e.length > 0 ? e[0] : "sensor.jellyha_library");
     try {
       const o = await this.hass.callWS({
         type: "jellyha/get_next_up",
@@ -2790,20 +2798,21 @@ let y = class extends j {
     }
   }
   async _fetchEpisodes() {
-    if (!this._item || this._item.type !== "Series" || !this._nextUpItem) return;
-    const t = this._nextUpItem.season || 1, e = Object.keys(this.hass.states).filter(
+    if (!this._item || this._item.type !== "Series") return;
+    const t = this._nextUpItem?.season || 1, e = Object.keys(this.hass.states).filter(
       (o) => this.hass.states[o].attributes.integration === "jellyha" || o.startsWith("sensor.jellyha_")
-    ), i = e.length > 0 ? e[0] : "sensor.jellyha_library";
+    ), i = this._serverEntityId || (e.length > 0 ? e[0] : "sensor.jellyha_library");
     try {
+      this._viewMode = "episodes", this.requestUpdate();
       const o = await this.hass.callWS({
         type: "jellyha/get_episodes",
         entity_id: i,
         series_id: this._item.id,
         season: t
       });
-      o && o.items && (this._episodes = o.items, this._viewMode = "episodes", this.requestUpdate());
+      o && o.items ? this._episodes = o.items : this._episodes = [], this.requestUpdate();
     } catch (o) {
-      console.warn("Failed to fetch episodes:", o);
+      console.warn("Failed to fetch episodes:", o), this._episodes = [], this.requestUpdate();
     }
   }
   updated() {
@@ -3327,7 +3336,7 @@ let y = class extends j {
                             <ha-icon icon="mdi:cast"></ha-icon>
                         </button>
                         
-                        ${e && this._nextUpItem ? n`
+                        ${e ? n`
                                 <button class="action-btn" @click=${(o) => {
       this._haptic(), this._toggleEpisodesView(o);
     }} title="View All Episodes" type="button">
@@ -3422,7 +3431,7 @@ let y = class extends j {
         `;
   }
   _renderEpisodesContent() {
-    if (!this._item || !this._nextUpItem) return n``;
+    if (!this._item) return n``;
     const t = this._item.name;
     return n`
             <div style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
@@ -3529,43 +3538,46 @@ let y = class extends j {
     return null;
   }
 };
-y.styles = V`
+y.styles = q`
         /* Styles handled in _getPortalStyles */
     `;
-C([
+k([
   P({ attribute: !1 })
 ], y.prototype, "hass", 2);
-C([
+k([
   u()
 ], y.prototype, "_item", 2);
-C([
+k([
   u()
 ], y.prototype, "_nextUpItem", 2);
-C([
+k([
   u()
 ], y.prototype, "_defaultCastDevice", 2);
-C([
+k([
+  u()
+], y.prototype, "_serverEntityId", 2);
+k([
   u()
 ], y.prototype, "_open", 2);
-C([
+k([
   u()
 ], y.prototype, "_confirmDelete", 2);
-C([
+k([
   u()
 ], y.prototype, "_viewMode", 2);
-C([
+k([
   u()
 ], y.prototype, "_episodes", 2);
-C([
+k([
   u()
 ], y.prototype, "_touchStartY", 2);
-C([
+k([
   u()
 ], y.prototype, "_currentTranslateY", 2);
-C([
+k([
   u()
 ], y.prototype, "_isDragging", 2);
-y = C([
+y = k([
   R("jellyha-item-details-modal")
 ], y);
 var pt = Object.defineProperty, _t = Object.getOwnPropertyDescriptor, me = (t, e, i, o) => {
@@ -4083,7 +4095,7 @@ let X = class extends j {
     this._config = i, gt(this, "config-changed", { config: i });
   }
 };
-X.styles = V`
+X.styles = q`
     .form-row {
       margin-bottom: 16px;
     }
@@ -4118,7 +4130,7 @@ me([
 X = me([
   R("jellyha-library-editor")
 ], X);
-var ut = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, k = (t, e, i, o) => {
+var ut = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, S = (t, e, i, o) => {
   for (var a = o > 1 ? void 0 : o ? mt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (a = (o ? r(e, i, a) : r(a)) || a);
   return o && a && ut(e, i, a), a;
@@ -4478,44 +4490,44 @@ let v = class extends j {
     this.dispatchEvent(e);
   }
 };
-v.styles = Ue;
-k([
+v.styles = Ne;
+S([
   P({ attribute: !1 })
 ], v.prototype, "hass", 2);
-k([
+S([
   P({ attribute: !1 })
 ], v.prototype, "config", 2);
-k([
+S([
   P({ attribute: !1 })
 ], v.prototype, "item", 2);
-k([
+S([
   P({ type: String })
 ], v.prototype, "layout", 2);
-k([
+S([
   P({ type: Boolean })
 ], v.prototype, "isNextUpHighlight", 2);
-k([
+S([
   u()
 ], v.prototype, "_pressStartTime", 2);
-k([
+S([
   u()
 ], v.prototype, "_holdTimer", 2);
-k([
+S([
   u()
 ], v.prototype, "_isHoldActive", 2);
-k([
+S([
   u()
 ], v.prototype, "_itemTouchStartX", 2);
-k([
+S([
   u()
 ], v.prototype, "_itemTouchStartY", 2);
-k([
+S([
   u()
 ], v.prototype, "_clickTimer", 2);
-k([
+S([
   u()
 ], v.prototype, "_rewindActive", 2);
-v = k([
+v = S([
   R("jellyha-media-item")
 ], v);
 var ft = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, b = (t, e, i, o) => {
@@ -4568,7 +4580,7 @@ const Te = {
   filter_newly_added: !1,
   sort_option: "date_added_desc"
 };
-function vt(t, e, i) {
+function yt(t, e, i) {
   const o = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -5232,7 +5244,7 @@ let w = class extends j {
         this._showItemDetails(t);
         break;
       case "trailer":
-        t.trailer_url ? this._openExternalUrl(t.trailer_url) : vt(this, "hass-notification", {
+        t.trailer_url ? this._openExternalUrl(t.trailer_url) : yt(this, "hass-notification", {
           message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
@@ -5247,7 +5259,8 @@ let w = class extends j {
     try {
       await this.hass.callService("jellyha", "play_on_chromecast", {
         entity_id: e,
-        item_id: t.id
+        item_id: t.id,
+        server_entity_id: this._config.entity
       });
     } catch (i) {
       console.error("JellyHA: Failed to cast media", i);
@@ -5296,7 +5309,8 @@ let w = class extends j {
     this._modal && this._modal.showDialog({
       item: t,
       hass: this.hass,
-      defaultCastDevice: this._config.default_cast_device
+      defaultCastDevice: this._config.default_cast_device,
+      serverEntityId: this._config.entity
     });
   }
   _handleSearchInput(t) {
@@ -5346,7 +5360,7 @@ let w = class extends j {
     `;
   }
 };
-w.styles = Ue;
+w.styles = Ne;
 b([
   P({ attribute: !1 })
 ], w.prototype, "hass", 2);
@@ -5401,10 +5415,10 @@ b([
 w = b([
   R("jellyha-library-card")
 ], w);
-var yt = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, fe = (t, e, i, o) => {
+var vt = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, fe = (t, e, i, o) => {
   for (var a = o > 1 ? void 0 : o ? xt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (a = (o ? r(e, i, a) : r(a)) || a);
-  return o && a && yt(e, i, a), a;
+  return o && a && vt(e, i, a), a;
 };
 function $t(t, e, i) {
   const o = new CustomEvent(e, {
@@ -5615,7 +5629,7 @@ let J = class extends j {
     this._config = i, $t(this, "config-changed", { config: i });
   }
 };
-J.styles = V`
+J.styles = q`
     .form-row {
       margin-bottom: 16px;
     }
@@ -5738,7 +5752,7 @@ let $ = class extends j {
       this._cachedBackdropUrl = K ? B(K, 640) : void 0;
     }
     r !== this._cachedColorItemId && s && (this._cachedColorItemId = r, this._extractDominantColor(B(s, 80)));
-    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused, g = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", S = [x, E].filter(Boolean).join(" • "), I = this._config.show_user !== !1 && i.user_name || "", L = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", re = i.item_id && this._optimisticFavorites[i.item_id] !== void 0 ? this._optimisticFavorites[i.item_id] : i.is_favorite || !1, we = 125.66, Ne = we * (1 - this._longPressProgress);
+    const h = this._cachedBackdropUrl, c = this._config.show_background && h, _ = i.is_paused, g = i.media_type?.toLowerCase() === "audio", p = i.media_type?.toLowerCase() || "", f = this._config.show_subtitle !== !1 && (i.artist_name || i.series_title) || "", x = this._config.show_year !== !1 && i.year ? String(i.year) : "", E = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", C = [x, E].filter(Boolean).join(" • "), I = this._config.show_user !== !1 && i.user_name || "", L = this._config.show_client !== !1 && i.client || "", Z = p === "episode" && i.season !== void 0 && i.episode !== void 0 ? `S${String(i.season).padStart(2, "0")}E${String(i.episode).padStart(2, "0")}` : i.media_type || "", re = i.item_id && this._optimisticFavorites[i.item_id] !== void 0 ? this._optimisticFavorites[i.item_id] : i.is_favorite || !1, we = 125.66, Ue = we * (1 - this._longPressProgress);
     return n`
             <ha-card class="jellyha-now-playing ${c ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${c ? n`
@@ -5785,7 +5799,7 @@ let $ = class extends j {
                                 <div class="header">
                                     ${this._config.show_title !== !1 ? n`<div class="title">${i.title}</div>` : d}
                                     ${f ? n`<div class="subtitle">${f}</div>` : d}
-                                    ${this._overflowState < 1 && S ? n`<div class="meta-line">${S}</div>` : d}
+                                    ${this._overflowState < 1 && C ? n`<div class="meta-line">${C}</div>` : d}
                                     ${this._overflowState < 1 && (I || L) ? n`<div class="client-line">${I ? n`<strong>${I}</strong>` : d}${I && L ? " " : ""}${L || d}</div>` : d}
                                 </div>
                             </div>
@@ -5841,7 +5855,7 @@ let $ = class extends j {
                                                 <circle cx="22" cy="22" r="20"
                                                     stroke="#ef4444" stroke-width="3" fill="none"
                                                     stroke-dasharray="${we}"
-                                                    stroke-dashoffset="${Ne}"
+                                                    stroke-dashoffset="${Ue}"
                                                     stroke-linecap="round"
                                                     transform="rotate(-90 22 22)" />
                                             </svg>
@@ -5933,6 +5947,7 @@ let $ = class extends j {
     this._haptic("light");
     const i = this.hass.states[this._config.entity]?.attributes.session_id;
     i && await this.hass.callService("jellyha", "session_control", {
+      entity_id: this._config.entity,
       session_id: i,
       command: t
     });
@@ -5940,6 +5955,7 @@ let $ = class extends j {
   async _handleRepeatMode(t, e) {
     let i = "RepeatAll";
     e === "RepeatAll" ? i = "RepeatOne" : e === "RepeatOne" && (i = "RepeatNone"), await this.hass.callService("jellyha", "session_general_command", {
+      entity_id: this._config.entity,
       session_id: t,
       command: "SetRepeatMode",
       arguments: { RepeatMode: i }
@@ -5957,6 +5973,7 @@ let $ = class extends j {
     this._haptic();
     const i = !e;
     this._optimisticFavorites[t] = i, this.requestUpdate(), await this.hass.callService("jellyha", "update_favorite", {
+      entity_id: this._config.entity,
       item_id: t,
       is_favorite: i
     });
@@ -5983,12 +6000,13 @@ let $ = class extends j {
     this._setOptimisticSeek(i);
     const o = this.hass.states[this._config.entity];
     if (!o) return;
-    const a = o.attributes, s = a.session_id, r = a.position_ticks || 0, h = a.progress_percent || 1, c = r / h * 100;
-    if (!s || !c) return;
-    const _ = Math.round(c * (i / 100));
+    const a = o.attributes, s = a.session_id, r = a.duration_ticks;
+    if (!s || !r) return;
+    const h = Math.round(r * (i / 100));
     await this.hass.callService("jellyha", "session_seek", {
+      entity_id: this._config.entity,
       session_id: s,
-      position_ticks: _
+      position_ticks: h
     });
   }
   _setOptimisticSeek(t) {
@@ -6002,8 +6020,9 @@ let $ = class extends j {
     if (!e) return;
     const i = e.attributes, o = i.session_id, a = i.position_ticks || 0;
     if (!o) return;
-    const s = t * 1e7, r = Math.max(0, a + s), h = i.progress_percent || 1, c = a / h * 100;
-    c && this._setOptimisticSeek(r / c * 100), await this.hass.callService("jellyha", "session_seek", {
+    const s = t * 1e7, r = Math.max(0, a + s), h = i.duration_ticks;
+    h && this._setOptimisticSeek(r / h * 100), await this.hass.callService("jellyha", "session_seek", {
+      entity_id: this._config.entity,
       session_id: o,
       position_ticks: r
     });
@@ -6016,8 +6035,9 @@ let $ = class extends j {
     this._rewindActive = !0, setTimeout(() => {
       this._rewindActive = !1;
     }, 1e3), this._haptic("selection");
-    const a = 20 * 1e7, s = Math.max(0, o - a), r = e.progress_percent || 1, h = o / r * 100;
-    h && this._setOptimisticSeek(s / h * 100), await this.hass.callService("jellyha", "session_seek", {
+    const a = 20 * 1e7, s = Math.max(0, o - a), r = e.duration_ticks;
+    r && this._setOptimisticSeek(s / r * 100), await this.hass.callService("jellyha", "session_seek", {
+      entity_id: this._config.entity,
       session_id: i,
       position_ticks: s
     });
@@ -6052,14 +6072,14 @@ let $ = class extends j {
         const a = o.getImageData(0, 0, 50, 50).data;
         let s = 0, r = 0, h = 0, c = 0;
         for (let _ = 0; _ < a.length; _ += 16) {
-          const g = a[_], p = a[_ + 1], m = a[_ + 2], f = Math.max(g, p, m), x = Math.min(g, p, m), E = f === 0 ? 0 : (f - x) / f, S = f / 255;
-          E > c && S > 0.15 && S < 0.95 && (c = E, s = g, r = p, h = m);
+          const g = a[_], p = a[_ + 1], m = a[_ + 2], f = Math.max(g, p, m), x = Math.min(g, p, m), E = f === 0 ? 0 : (f - x) / f, C = f / 255;
+          E > c && C > 0.15 && C < 0.95 && (c = E, s = g, r = p, h = m);
         }
         if (c > 0.1) {
           const _ = s / 255, g = r / 255, p = h / 255, m = Math.max(_, g, p), f = Math.min(_, g, p);
           let x = 0;
-          const E = (m + f) / 2, S = m - f, I = S === 0 ? 0 : S / (1 - Math.abs(2 * E - 1));
-          S !== 0 && (m === _ ? x = ((g - p) / S + (g < p ? 6 : 0)) * 60 : m === g ? x = ((p - _) / S + 2) * 60 : x = ((_ - g) / S + 4) * 60);
+          const E = (m + f) / 2, C = m - f, I = C === 0 ? 0 : C / (1 - Math.abs(2 * E - 1));
+          C !== 0 && (m === _ ? x = ((g - p) / C + (g < p ? 6 : 0)) * 60 : m === g ? x = ((p - _) / C + 2) * 60 : x = ((_ - g) / C + 4) * 60);
           const L = Math.max(E * 100, 70), Z = Math.max(I * 100, 60);
           this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(Z)}%, ${Math.round(L)}%)`;
         } else
@@ -6099,7 +6119,7 @@ let $ = class extends j {
     return o > 0 ? `${r}${o}:${String(a).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${a}:${String(s).padStart(2, "0")}`;
   }
 };
-$.styles = V`
+$.styles = q`
         :host {
             display: block;
             height: 100%;

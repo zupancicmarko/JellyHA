@@ -1439,6 +1439,7 @@ export class JellyHALibraryCard extends LitElement {
       await this.hass.callService('jellyha', 'play_on_chromecast', {
         entity_id: entityId,
         item_id: item.id,
+        server_entity_id: this._config.entity,
       });
     } catch (err) {
       console.error('JellyHA: Failed to cast media', err);
@@ -1512,7 +1513,8 @@ export class JellyHALibraryCard extends LitElement {
       this._modal.showDialog({
         item,
         hass: this.hass,
-        defaultCastDevice: this._config.default_cast_device
+        defaultCastDevice: this._config.default_cast_device,
+        serverEntityId: this._config.entity
       });
     }
   }

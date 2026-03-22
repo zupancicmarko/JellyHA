@@ -38,6 +38,9 @@ class JellyHAMediaSource(MediaSource):
 
     async def async_resolve_media(self, item: MediaSourceItem) -> PlayMedia:
         """Resolve media to a url."""
+        from datetime import timedelta
+        from homeassistant.components.http.auth import async_sign_path
+
         # URI format: media-source://jellyha/{entry_id}/{type}/{item_id}
         identifier = item.identifier
         
@@ -46,7 +49,6 @@ class JellyHAMediaSource(MediaSource):
              raise Unresolvable("Invalid identifier format. Expected entry_id/type/item_id")
              
         entry_id = parts[0]
-        # media_type = parts[1] # Not strictly needed if we just stream item_id
         item_id = parts[2]
         
         entry = self.hass.config_entries.async_get_entry(entry_id)
@@ -58,17 +60,15 @@ class JellyHAMediaSource(MediaSource):
         if not api:
             raise Unresolvable("API not available")
             
-        # Get content URL for direct playback
-        url = api.get_content_url(item_id)
-        
-        # Detect MIME type based on item type
+        # Detect item type and MIME type
+        item_type = "Video"
+        mime = "video/mp4"
         try:
             user_id = coordinator.entry.data.get("user_id")
             item_info = await api.get_item(user_id, item_id)
-            item_type = item_info.get("Type", "")
+            item_type = item_info.get("Type", "Video")
             
             if item_type == "Audio":
-                # Accurately map container types for Chromecast's Default Media Receiver (DMR)
                 container = item_info.get("Container", "mp3").lower()
                 if container == "flac":
                     mime = "audio/flac"
@@ -80,12 +80,14 @@ class JellyHAMediaSource(MediaSource):
                     mime = "audio/wav"
                 else:
                     mime = "audio/mpeg"
-            else:
-                mime = "video/mp4"
         except Exception:
-            mime = "video/mp4"
+            pass
+
+        # Use signed proxy URL — no API key exposed to the client
+        stream_path = api.get_stream_path(entry_id, item_id, item_type)
+        signed_url = async_sign_path(self.hass, stream_path, timedelta(hours=24))
         
-        return PlayMedia(url, mime)
+        return PlayMedia(signed_url, mime)
 
     async def async_browse_media(
         self,
@@ -149,7 +151,7 @@ class JellyHAMediaSource(MediaSource):
                         identifier=entry.entry_id,
                         media_class=MediaClass.DIRECTORY,
                         media_content_type="server",
-                        title=coordinator._server_name or "Jellyfin",
+                        title=entry.title,
                         can_play=False,
                         can_expand=True,
                     )

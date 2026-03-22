@@ -9,6 +9,7 @@ export class JellyHAItemDetailsModal extends LitElement {
     @state() private _item?: MediaItem;
     @state() private _nextUpItem?: MediaItem;
     @state() private _defaultCastDevice?: string;
+    @state() private _serverEntityId?: string;
     @state() private _open = false;
     @state() private _confirmDelete = false;
 
@@ -39,10 +40,11 @@ export class JellyHAItemDetailsModal extends LitElement {
         }
     }
 
-    public async showDialog(params: { item: MediaItem; hass: HomeAssistant; defaultCastDevice?: string }): Promise<void> {
+    public async showDialog(params: { item: MediaItem; hass: HomeAssistant; defaultCastDevice?: string; serverEntityId?: string }): Promise<void> {
         this._item = params.item;
         this.hass = params.hass;
         this._defaultCastDevice = params.defaultCastDevice;
+        this._serverEntityId = params.serverEntityId;
         this._open = true;
         this._open = true;
         this._nextUpItem = undefined; // Reset
@@ -76,6 +78,7 @@ export class JellyHAItemDetailsModal extends LitElement {
                 service: 'get_item',
                 service_data: {
                     item_id: itemId,
+                    entity_id: this._serverEntityId,
                     config_entry_id: this._item?.config_entry_id
                 },
                 return_response: true
@@ -102,9 +105,8 @@ export class JellyHAItemDetailsModal extends LitElement {
             eid.startsWith('sensor.jellyha_') // Fallback convention
         );
 
-        // Use the first one found, or if passed via config in card we could use that.
-        // But here we rely on the sensor being present.
-        const entityId = entities.length > 0 ? entities[0] : 'sensor.jellyha_library';
+        // Use the passed server entity or fallback
+        const entityId = this._serverEntityId || (entities.length > 0 ? entities[0] : 'sensor.jellyha_library');
 
         try {
             const result = await this.hass.callWS<{ item: MediaItem | null }>({
@@ -122,20 +124,23 @@ export class JellyHAItemDetailsModal extends LitElement {
     }
 
     private async _fetchEpisodes(): Promise<void> {
-        if (!this._item || this._item.type !== 'Series' || !this._nextUpItem) return;
+        if (!this._item || this._item.type !== 'Series') return;
 
-        // Use the season from Next Up as the context
+        // Use the season from Next Up as the context, or default to Season 1
         // If Next Up is s01e01, we fetch Season 1
-        const season = this._nextUpItem.season || 1;
+        const season = this._nextUpItem?.season || 1;
 
         // Find entity ID like in Next Up
         const entities = Object.keys(this.hass.states).filter(eid =>
             this.hass.states[eid].attributes.integration === 'jellyha' ||
             eid.startsWith('sensor.jellyha_')
         );
-        const entityId = entities.length > 0 ? entities[0] : 'sensor.jellyha_library';
+        const entityId = this._serverEntityId || (entities.length > 0 ? entities[0] : 'sensor.jellyha_library');
 
         try {
+            this._viewMode = 'episodes'; // Switch view immediately for better UX responsiveness
+            this.requestUpdate();
+
             const result = await this.hass.callWS<{ items: MediaItem[] }>({
                 type: 'jellyha/get_episodes',
                 entity_id: entityId,
@@ -145,11 +150,16 @@ export class JellyHAItemDetailsModal extends LitElement {
 
             if (result && result.items) {
                 this._episodes = result.items;
-                this._viewMode = 'episodes'; // Switch view once loaded
-                this.requestUpdate();
+            } else {
+                this._episodes = [];
             }
+            this.requestUpdate();
         } catch (err) {
             console.warn('Failed to fetch episodes:', err);
+            // Stay in episodes view but maybe show error? 
+            // For now just ensure we are in a consistent state
+            this._episodes = [];
+            this.requestUpdate();
         }
     }
 
@@ -715,7 +725,7 @@ export class JellyHAItemDetailsModal extends LitElement {
                             <ha-icon icon="mdi:cast"></ha-icon>
                         </button>
                         
-                        ${isSeries && this._nextUpItem ? html`
+                        ${isSeries ? html`
                                 <button class="action-btn" @click=${(e: Event) => { this._haptic(); this._toggleEpisodesView(e); }} title="View All Episodes" type="button">
                                 <ha-icon icon="mdi:format-list-bulleted"></ha-icon>
                                 </button>
@@ -805,7 +815,7 @@ export class JellyHAItemDetailsModal extends LitElement {
     }
 
     private _renderEpisodesContent(): TemplateResult {
-        if (!this._item || !this._nextUpItem) return html``;
+        if (!this._item) return html``;
 
         // Prefer explicit season name, fallback to "Season X"
         const title = this._item.name;
@@ -900,6 +910,7 @@ export class JellyHAItemDetailsModal extends LitElement {
             await this.hass.callService('jellyha', 'play_on_chromecast', {
                 entity_id: this._defaultCastDevice,
                 item_id: episode.id,
+                server_entity_id: this._serverEntityId,
             });
             this.closeDialog();
         } catch (err) {
@@ -928,6 +939,7 @@ export class JellyHAItemDetailsModal extends LitElement {
             await this.hass.callService('jellyha', 'play_on_chromecast', {
                 entity_id: this._defaultCastDevice,
                 item_id: this._item.id,
+                server_entity_id: this._serverEntityId,
             });
             this.closeDialog();
         } catch (err) {
@@ -961,6 +973,7 @@ export class JellyHAItemDetailsModal extends LitElement {
             await this.hass.callService('jellyha', 'play_on_chromecast', {
                 entity_id: this._defaultCastDevice,
                 item_id: this._nextUpItem.id,
+                server_entity_id: this._serverEntityId,
             });
             this.closeDialog();
         } catch (err) {
@@ -977,6 +990,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         await this.hass.callService('jellyha', 'update_favorite', {
             item_id: this._item.id,
             is_favorite: newStatus,
+            server_entity_id: this._serverEntityId,
         });
         this.requestUpdate();
     }
@@ -990,6 +1004,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         await this.hass.callService('jellyha', 'mark_watched', {
             item_id: this._item.id,
             is_played: newStatus,
+            server_entity_id: this._serverEntityId,
         });
         this.requestUpdate();
     }
@@ -1002,6 +1017,7 @@ export class JellyHAItemDetailsModal extends LitElement {
 
         await this.hass.callService('jellyha', 'delete_item', {
             item_id: itemId,
+            server_entity_id: this._serverEntityId,
         });
     }
 
@@ -1115,6 +1131,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         await this.hass.callService('jellyha', 'mark_watched', {
             item_id: episode.id,
             is_played: newStatus,
+            server_entity_id: this._serverEntityId,
         });
     }
 
