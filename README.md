@@ -328,18 +328,20 @@ This entity integrates with Home Assistant's Media Browser and allows you to exp
 
 JellyHA provides several services to control and manage your library.
 
+All services support an optional `config_entry_id` parameter for **multi-instance targeting**. If you have multiple JellyHA instances configured, use this to specify which server to target. If omitted, the first available instance is used.
+
 | Service | Description | Parameters |
 |---------|-------------|------------|
-| `jellyha.play_on_chromecast` | Play an item on Chromecast with optimized transcoding. | `entity_id` (Req), `item_id` (Req) |
-| `jellyha.refresh_library` | Force refresh library data from Jellyfin. | - |
-| `jellyha.delete_item` | Delete an item from library/disk. ⚠️ **Use with caution.** | `item_id` (Req) |
-| `jellyha.mark_watched` | Mark an item as watched or unwatched. | `item_id` (Req), `is_played` (Req) |
-| `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req) |
-| `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req) |
-| `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req) |
-| `jellyha.search` | Search for media and return Item IDs. Supports `Audio`, `MusicAlbum`, `MusicArtist`, `MusicVideo`, and `Video`. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt) |
-| `jellyha.get_recommendations` | Get similar items based on item ID. | `item_id` (Req), `limit` (Opt) |
-| `jellyha.get_item` | Get full details for an item. | `item_id` (Req) |
+| `jellyha.play_on_chromecast` | Play an item on Chromecast with optimized transcoding. | `entity_id` (Req), `item_id` (Req), `config_entry_id` (Opt) |
+| `jellyha.refresh_library` | Force refresh library data from Jellyfin. | `config_entry_id` (Opt) |
+| `jellyha.delete_item` | Delete an item from library/disk. ⚠️ **Use with caution.** | `item_id` (Req), `config_entry_id` (Opt) |
+| `jellyha.mark_watched` | Mark an item as watched or unwatched. | `item_id` (Req), `is_played` (Req), `config_entry_id` (Opt) |
+| `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req), `config_entry_id` (Opt) |
+| `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req), `config_entry_id` (Opt) |
+| `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req), `config_entry_id` (Opt) |
+| `jellyha.search` | Search for media and return Item IDs. Supports `Audio`, `MusicAlbum`, `MusicArtist`, `MusicVideo`, and `Video`. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt), `config_entry_id` (Opt) |
+| `jellyha.get_recommendations` | Get similar items based on item ID. | `item_id` (Req), `limit` (Opt), `config_entry_id` (Opt) |
+| `jellyha.get_item` | Get full details for an item. | `item_id` (Req), `config_entry_id` (Opt) |
 
 
 ## Session & Now Playing Updates
@@ -400,6 +402,7 @@ action:
       year: 2025
       min_rating: 7
       limit: 50
+      # config_entry_id: "abc123"  # Optional: target a specific JellyHA instance
     response_variable: search_result
 
   # 2. Check if we found anything
