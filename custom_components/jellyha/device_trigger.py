@@ -14,7 +14,7 @@ from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.trigger import TriggerActionType, TriggerInfo
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN
+from .const import DOMAIN, EVENT_CHAPTER_CHANGE, EVENT_SEGMENT_CHANGE
 
 # Define trigger types
 TRIGGER_TYPE_PLAY = "media_play"
@@ -25,6 +25,8 @@ TRIGGER_TYPES = {
     TRIGGER_TYPE_PLAY,
     TRIGGER_TYPE_PAUSE,
     TRIGGER_TYPE_STOP,
+    EVENT_CHAPTER_CHANGE,
+    EVENT_SEGMENT_CHANGE,
 }
 
 TRIGGER_SCHEMA = cv.TRIGGER_BASE_SCHEMA.extend(

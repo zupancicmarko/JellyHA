@@ -447,6 +447,21 @@ class JellyHAUserMediaPlayer(
             "external_url", self._entry.data.get("external_url", "")
         )
 
+        # Chapter/segment awareness
+        session_id_val = session.get("Id")
+        if session_id_val:
+            chapter = self.coordinator._get_current_chapter(
+                session_id_val,
+                position_ticks,
+            )
+            if chapter:
+                attrs["media_chapter_index"]  = chapter["chapter_index"]
+                attrs["media_chapter_count"]  = chapter["chapter_count"]
+                attrs["media_chapter_name"]   = chapter["chapter_name"]
+                attrs["is_last_chapter"]      = chapter["is_last_chapter"]
+                if chapter["segment_type"] is not None:
+                    attrs["media_segment_type"] = chapter["segment_type"]
+
         return attrs
 
     # ------------------------------------------------------------------

@@ -1,4 +1,7 @@
 """Constants for JellyHA integration."""
+import re
+from enum import StrEnum
+
 
 DOMAIN = "jellyha"
 # Configuration keys
@@ -76,3 +79,22 @@ RATING_SOURCE_AUTO = "auto"
 
 # WebSocket Events
 EVENT_SESSIONS = "Sessions"
+
+EVENT_CHAPTER_CHANGE = "media_chapter_change"
+EVENT_SEGMENT_CHANGE = "media_segment_change"
+
+class SegmentType(StrEnum):
+    INTRO      = "Intro"
+    OUTRO      = "Outro"
+    RECAP      = "Recap"
+    PREVIEW    = "Preview"
+    COMMERCIAL = "Commercial"
+
+CHAPTER_SEGMENT_PATTERNS: list[tuple[str, re.Pattern]] = [
+    (SegmentType.OUTRO,      re.compile(r"outro|closing|credits|ending|^ED$",         re.IGNORECASE)),
+    (SegmentType.INTRO,      re.compile(r"intro|opening|^OP$",                        re.IGNORECASE)),
+    (SegmentType.RECAP,      re.compile(r"recap|last time on|last on|previously on",  re.IGNORECASE)),
+    (SegmentType.PREVIEW,    re.compile(r"preview|next time on|next on|sneak peek",   re.IGNORECASE)),
+    (SegmentType.COMMERCIAL, re.compile(r"break|ad|advertisement|intermission",       re.IGNORECASE)),
+]
+

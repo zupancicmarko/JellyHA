@@ -501,3 +501,22 @@ class JellyfinApiClient:
         """Close the session."""
         # Do not close the shared session provided by Home Assistant
         pass
+
+    async def get_media_segments(self, item_id: str) -> list[dict]:
+        """
+        Fetch typed media segments for an item via the Jellyfin MediaSegments API.
+        Available on Jellyfin 10.10+ with a segment provider plugin installed.
+
+        Returns a list of segment dicts, or [] if unavailable.
+        """
+        try:
+            data = await self._request("GET", f"/MediaSegments/{item_id}")
+            # The API returns {"Items": [...], "TotalRecordCount": N}
+            return data.get("Items", []) if data else []
+        except JellyfinApiError as err:
+            _LOGGER.debug(
+                "MediaSegments fetch failed for item %s — falling back to chapters: %s",
+                item_id,
+                err,
+            )
+            return []
