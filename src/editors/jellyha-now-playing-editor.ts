@@ -65,12 +65,23 @@ export class JellyHANowPlayingEditor extends LitElement {
     // Available JellyHA entities: media_player (preferred) and legacy now playing sensors
     const mediaPlayers = Object.keys(this.hass.states).filter(
       (entity) =>
-        entity.startsWith('media_player.jellyha_') &&
+        entity.startsWith('media_player.') &&
+        (entity.includes('jellyha') || entity.includes('jellyfin')) &&
         !entity.includes('_library_browser') &&
         !entity.endsWith('_browser')
     );
-    const legacySensors = Object.keys(this.hass.states).filter((entity) =>
-      entity.startsWith('sensor.jellyha_now_playing_')
+    const legacySensors = Object.keys(this.hass.states).filter(
+      (entity) =>
+        entity.startsWith('sensor.') &&
+        (entity.includes('jellyha') || entity.includes('jellyfin')) &&
+        entity.includes('now_playing')
+    );
+    const otherMediaPlayers = Object.keys(this.hass.states).filter(
+      (entity) =>
+        entity.startsWith('media_player.') &&
+        !entity.includes('_library_browser') &&
+        !entity.endsWith('_browser') &&
+        !mediaPlayers.includes(entity)
     );
 
     const availableEntities = [
@@ -81,6 +92,10 @@ export class JellyHANowPlayingEditor extends LitElement {
       ...legacySensors.map((e) => ({
         entity: e,
         label: `${this.hass.states[e]?.attributes.friendly_name || e} (Legacy Sensor)`,
+      })),
+      ...otherMediaPlayers.map((e) => ({
+        entity: e,
+        label: `${this.hass.states[e]?.attributes.friendly_name || e}`,
       })),
     ];
 
@@ -93,6 +108,7 @@ export class JellyHANowPlayingEditor extends LitElement {
     }
 
     const lang = this.hass.locale?.language || this.hass.language;
+    const labelText = localize(lang, 'editor.media_player') || 'Media Player';
 
     return html`
       <div class="card-config">
@@ -110,7 +126,8 @@ export class JellyHANowPlayingEditor extends LitElement {
               },
             }}
             .value=${this._config.entity || ''}
-            label="${localize(lang, 'editor.media_player') || 'Media Player'}"
+            .label=${labelText}
+            label="${labelText}"
             @value-changed=${this._entityChanged}
           ></ha-selector>
         </div>
