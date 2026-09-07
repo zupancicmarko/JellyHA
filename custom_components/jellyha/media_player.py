@@ -459,8 +459,16 @@ class JellyHAUserMediaPlayer(
                 attrs["media_chapter_count"]  = chapter["chapter_count"]
                 attrs["media_chapter_name"]   = chapter["chapter_name"]
                 attrs["is_last_chapter"]      = chapter["is_last_chapter"]
-                if chapter["segment_type"] is not None:
-                    attrs["media_segment_type"] = chapter["segment_type"]
+
+            segment = self.coordinator._get_current_segment(
+                session_id_val,
+                position_ticks,
+            )
+            if segment:
+                attrs["media_segment_type"] = segment["type"]
+                attrs["segment_end_seconds"] = round(
+                    segment["end_ticks"] / TICKS_PER_SECOND, 1
+                )
 
         return attrs
 

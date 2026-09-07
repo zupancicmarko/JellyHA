@@ -5,6 +5,20 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Live Media Segment Detection**: Real-time detection of `Intro`, `Outro`, `Recap`, `Preview`, and `Commercial` segments from Jellyfin's MediaSegments API (e.g. Intro Skipper).
+- **Segment Attributes & Timing**: Exposed `media_segment_type` and precise `segment_end_seconds` on media player entities, enabling accurate auto-skip and automation triggers.
+- **Chapter Awareness**: Media players now expose `media_chapter_name`, `media_chapter_index`, `media_chapter_count`, and `is_last_chapter`.
+- **Synthetic Chapters**: Automatic synthetic chapter generation for media files without embedded chapter markers.
+- **Segment & Chapter Events**: Fired `media_chapter_change` and `media_segment_change` events on Home Assistant event bus with entry/exit signals (`in_segment=True/False`).
+- **Examples Knowledge Base**: Moved automation and dashboard examples out of `README.md` into a structured `examples/` directory with dedicated subfolders (`automations/`, `dashboards/`).
+- **Now Playing Card**: Added chapter and segment status indicators to the custom dashboard card.
+
+### Fixed
+- **Intro/Outro Detection Decoupling**: Fixed an issue where Intro and Outro segments were missed when segment boundaries did not align with embedded chapter start markers.
+
 ## [1.2.0] - 2026-03-22
 
 ### Added

@@ -1,0 +1,96 @@
+# ==============================================================================
+# JellyHA Automation Example: Cinema Lighting by Media Segment
+# ==============================================================================
+# Description:
+#   Synchronizes your room lighting with media playback and chapter/segment transitions:
+#     - When media starts playing: Dims lights to 10%
+#     - When credits roll (Outro segment): Raises lights to 35%
+#     - When media stops or session ends: Turns lights back up to 100%
+#
+# Requirements:
+#   - JellyHA v1.3.0+
+#   - Light entity (e.g. light.living_room)
+# ==============================================================================
+
+alias: "JellyHA: Cinema Lighting Experience"
+description: "Dynamically adjust lights based on movie playback and credit/outro segments"
+mode: restart
+
+trigger:
+  # 1. Playback started or resumed
+  - trigger: state
+    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    to: "playing"
+    id: "media_playing"
+
+  # 2. Credits / Outro started
+  - trigger: event
+    event_type: jellyha_event
+    event_data:
+      type: media_segment_change
+      segment_type: Outro
+      in_segment: true
+    id: "outro_started"
+
+  # 3. Playback paused
+  - trigger: state
+    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    to: "paused"
+    id: "media_paused"
+
+  # 4. Playback stopped or session closed
+  - trigger: event
+    event_type: jellyha_event
+    event_data:
+      type: media_stop
+    id: "media_stopped"
+
+actions:
+  - choose:
+      # Movie is actively playing -> dim the lights
+      - conditions:
+          - condition: trigger
+            id: "media_playing"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room # Replace with your light entity
+            data:
+              brightness_pct: 10
+              transition: 3
+
+      # Credits/Outro reached -> bring lights up slightly
+      - conditions:
+          - condition: trigger
+            id: "outro_started"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 35
+              transition: 4
+
+      # Paused -> dim to warm ambient light
+      - conditions:
+          - condition: trigger
+            id: "media_paused"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 40
+              transition: 2
+
+      # Stopped -> restore normal room lighting
+      - conditions:
+          - condition: trigger
+            id: "media_stopped"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 100
+              transition: 3

@@ -1,0 +1,54 @@
+# ==============================================================================
+# JellyHA Dashboard Examples: Now Playing Card Configurations
+# ==============================================================================
+# Below are curated examples for custom:jellyha-now-playing-card.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Full Fanart Backdrop (Rich Cinematic Display)
+# ------------------------------------------------------------------------------
+type: custom:jellyha-now-playing-card
+entity: sensor.jellyha_now_playing_admin # Replace with your user-specific sensor
+title: "Now Watching"
+show_background: true
+show_title: true
+show_subtitle: true
+show_client: true
+show_user: true
+show_time: true
+show_media_type_badge: true
+show_genres: true
+show_ratings: true
+show_runtime: true
+show_year: true
+
+# ------------------------------------------------------------------------------
+# 2. Compact Minimal Card (Sidebar or Mobile Dashboard)
+# ------------------------------------------------------------------------------
+type: custom:jellyha-now-playing-card
+entity: sensor.jellyha_now_playing_admin
+show_background: false
+show_title: true
+show_subtitle: true
+show_client: false
+show_user: false
+show_time: true
+show_media_type_badge: false
+show_genres: false
+show_ratings: false
+
+# ------------------------------------------------------------------------------
+# 3. Multi-Instance Setup Example
+# ------------------------------------------------------------------------------
+# When running multiple JellyHA servers (e.g. Movies instance and Music instance),
+# target each card explicitly to the instance's user sensor:
+type: vertical-stack
+cards:
+  - type: custom:jellyha-now-playing-card
+    entity: sensor.jellyha_movies_now_playing_admin
+    title: "Movies Server"
+    show_background: true
+  - type: custom:jellyha-now-playing-card
+    entity: sensor.jellyha_music_now_playing_admin
+    title: "Music Server"
+    show_background: false

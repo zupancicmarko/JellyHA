@@ -47,6 +47,7 @@ from .const import (
     RATING_SOURCE_IMDB,
     RATING_SOURCE_TMDB,
     TICKS_PER_MINUTE,
+    TICKS_PER_SECOND,
     migrate_refresh_interval,
 )
 
@@ -381,6 +382,7 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         self._url_cache: dict[tuple[str, str, str], tuple[str, float]] = {}
 
         self._session_segments: dict[str, list[dict]] = {}
+        self._session_typed_segments: dict[str, list[dict]] = {}
         self._previous_chapter_index: dict[str, int | None] = {}
         self._previous_segment_type: dict[str, str | None] = {}
         self._current_item_id: dict[str, str | None] = {}
@@ -574,7 +576,7 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         for s_id, prev in self._previous_sessions.items():
             if s_id not in curr_map or "NowPlayingItem" not in curr_map[s_id]:
                 if "NowPlayingItem" in prev:
-                    self._cleanup_session(s_id)
+                    self._cleanup_session(s_id, prev)
                     self.hass.bus.async_fire(
                         f"{DOMAIN}_event",
                         {
@@ -623,7 +625,8 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
 
             # --- Resolve current state ---
             current_chapter = self._get_current_chapter(session_id, position)
-            current_seg_type = self._get_current_segment_type(session_id, position)
+            current_seg = self._get_current_segment(session_id, position)
+            current_seg_type = current_seg["type"] if current_seg else None
 
             if current_chapter:
                 # --- Chapter transition ---
@@ -632,11 +635,17 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                     self._previous_chapter_index[session_id] = current_chapter["chapter_index"]
                     self._fire_chapter_event(session, current_chapter)
 
-                # --- Segment transition ---
-                prev_seg = self._previous_segment_type.get(session_id)
-                if current_seg_type != prev_seg:
-                    self._previous_segment_type[session_id] = current_seg_type
-                    self._fire_segment_event(session, current_chapter, current_seg_type, prev_seg)
+            # --- Segment transition ---
+            prev_seg = self._previous_segment_type.get(session_id)
+            if current_seg_type != prev_seg:
+                self._previous_segment_type[session_id] = current_seg_type
+                self._fire_segment_event(
+                    session,
+                    current_chapter or {"chapter_index": None, "chapter_name": ""},
+                    current_seg_type,
+                    prev_seg,
+                    segment_entry=current_seg,
+                )
 
     def _classify_chapter_name(self, name: str) -> str | None:
         """Apply local regex patterns to a chapter name."""
@@ -653,17 +662,48 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         runtime_ticks: int | None,
     ) -> None:
         """Populate session segment cache."""
-        total = len(chapters)
         segments_from_api: list[dict] = []
 
         if item_id:
             segments_from_api = await self._api.get_media_segments(item_id)
 
-        api_lookup: dict[int, str] = {}
+        # 1. Parse typed segments from MediaSegments API (Intro Skipper, etc.)
+        typed_segments: list[dict] = []
         for seg in segments_from_api:
-            # Type must be properly mapped, SegmentType enum value or just raw string
-            api_lookup[seg.get("StartTicks", 0)] = seg.get("Type")
+            stype = seg.get("Type")
+            if stype:
+                typed_segments.append({
+                    "type": stype,
+                    "start_ticks": seg.get("StartTicks", 0),
+                    "end_ticks": seg.get("EndTicks", seg.get("StartTicks", 0)),
+                })
 
+        # 2. If no API segments, extract typed segments from chapter names
+        if not typed_segments and chapters:
+            for idx, ch in enumerate(chapters):
+                classified = self._classify_chapter_name(ch.get("Name", ""))
+                if classified:
+                    start = ch.get("StartPositionTicks", 0)
+                    is_last = (idx == len(chapters) - 1)
+                    if not is_last:
+                        end = chapters[idx + 1].get("StartPositionTicks", start)
+                    elif runtime_ticks:
+                        end = runtime_ticks
+                    else:
+                        end = start + 1
+                    typed_segments.append({
+                        "type": classified,
+                        "start_ticks": start,
+                        "end_ticks": end,
+                    })
+
+        self._session_typed_segments[session_id] = typed_segments
+
+        # 3. If no embedded chapters but we have typed segments, build synthetic chapters
+        if not chapters and typed_segments:
+            chapters = self._build_synthetic_chapters(typed_segments, runtime_ticks)
+
+        total = len(chapters)
         enriched: list[dict] = []
         for idx, chapter in enumerate(chapters):
             start = chapter.get("StartPositionTicks", 0)
@@ -676,7 +716,12 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             else:
                 end = start + 1  # Minimal fallback for zero-duration last chapter
 
-            segment_type = api_lookup.get(start)
+            # Check if chapter overlaps any typed segment
+            segment_type = None
+            for s in typed_segments:
+                if max(start, s["start_ticks"]) < min(end, s["end_ticks"]):
+                    segment_type = s["type"]
+                    break
             if segment_type is None:
                 segment_type = self._classify_chapter_name(chapter.get("Name", ""))
 
@@ -692,6 +737,45 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
 
         self._session_segments[session_id] = enriched
 
+    @staticmethod
+    def _build_synthetic_chapters(
+        segments: list[dict], runtime_ticks: int | None
+    ) -> list[dict]:
+        """Build synthetic chapter entries from segment data.
+
+        Used when a file has no embedded chapters but Intro Skipper or a
+        segment provider has detected segments (e.g. Intro, Outro).
+        """
+        boundaries: set[int] = {0}
+        for seg in segments:
+            boundaries.add(seg.get("start_ticks", seg.get("StartTicks", 0)))
+            end = seg.get("end_ticks", seg.get("EndTicks"))
+            if end is not None:
+                boundaries.add(end)
+        if runtime_ticks:
+            boundaries.add(runtime_ticks)
+
+        sorted_bounds = sorted(boundaries)
+
+        synthetic: list[dict] = []
+        for i in range(len(sorted_bounds) - 1):
+            start = sorted_bounds[i]
+            # Find matching segment type if this slice is within a segment
+            seg_type = None
+            for seg in segments:
+                s_start = seg.get("start_ticks", seg.get("StartTicks", 0))
+                s_end = seg.get("end_ticks", seg.get("EndTicks", s_start))
+                if s_start <= start < s_end:
+                    seg_type = seg.get("type", seg.get("Type"))
+                    break
+            name = seg_type if seg_type else "Content"
+            synthetic.append({
+                "StartPositionTicks": start,
+                "Name": name,
+            })
+
+        return synthetic
+
     def _get_current_chapter(self, session_id: str, position_ticks: int) -> dict | None:
         """Return the enriched chapter dict that contains position_ticks."""
         segments = self._session_segments.get(session_id)
@@ -706,20 +790,49 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                 break
         return current
 
-    def _get_current_segment_type(self, session_id: str, position_ticks: int) -> str | None:
-        """Return the SegmentType the current position falls within."""
-        segments = self._session_segments.get(session_id)
-        if not segments:
-            return None
-
-        for entry in segments:
-            if entry["segment_type"] and entry["start_ticks"] <= position_ticks < entry["end_ticks"]:
-                return entry["segment_type"]
+    def _get_current_segment(self, session_id: str, position_ticks: int) -> dict | None:
+        """Return the active typed segment dict for position_ticks."""
+        segments = self._session_typed_segments.get(session_id, [])
+        for seg in segments:
+            if seg["start_ticks"] <= position_ticks < seg["end_ticks"]:
+                return seg
         return None
 
-    def _cleanup_session(self, session_id: str) -> None:
-        """Remove all cached state for a session that has ended."""
+    def _get_current_segment_type(self, session_id: str, position_ticks: int) -> str | None:
+        """Return the SegmentType the current position falls within."""
+        seg = self._get_current_segment(session_id, position_ticks)
+        return seg["type"] if seg else None
+
+    def _get_current_segment_entry(self, session_id: str, position_ticks: int) -> dict | None:
+        """Return the typed segment entry for position_ticks."""
+        return self._get_current_segment(session_id, position_ticks)
+
+    def _cleanup_session(self, session_id: str, session: dict | None = None) -> None:
+        """Remove all cached state for a session that has ended.
+
+        If the session was inside a typed segment when it ended, fire a
+        media_segment_change event with in_segment=False so automations
+        (e.g. lighting) get a clean exit signal.
+        """
+        prev_seg = self._previous_segment_type.get(session_id)
+        if prev_seg is not None:
+            # Build a minimal chapter context from cached data for the event
+            segments = self._session_segments.get(session_id, [])
+            prev_idx = self._previous_chapter_index.get(session_id)
+            chapter_context = {"chapter_index": prev_idx, "chapter_name": ""}
+            for entry in segments:
+                if entry["chapter_index"] == prev_idx:
+                    chapter_context["chapter_name"] = entry["chapter_name"]
+                    break
+
+            # Fire exit event — use provided session or build minimal context
+            exit_session = session or {"Id": session_id}
+            self._fire_segment_event(
+                exit_session, chapter_context, None, prev_seg
+            )
+
         self._session_segments.pop(session_id, None)
+        self._session_typed_segments.pop(session_id, None)
         self._previous_chapter_index.pop(session_id, None)
         self._previous_segment_type.pop(session_id, None)
         self._current_item_id.pop(session_id, None)
@@ -727,21 +840,23 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
     def _fire_chapter_event(self, session: dict, chapter: dict) -> None:
         """Fire jellyha_event with type=media_chapter_change."""
         now_playing = session.get("NowPlayingItem") or {}
-        self.hass.bus.async_fire(
-            f"{DOMAIN}_event",
-            {
-                "type":            EVENT_CHAPTER_CHANGE,
-                "device_id":       self._device_id or session.get("DeviceId"),
-                "session_id":      session.get("Id"),
-                "user_id":         session.get("UserId"),
-                "media_title":     now_playing.get("Name"),
-                "chapter_index":   chapter["chapter_index"],
-                "chapter_count":   chapter["chapter_count"],
-                "chapter_name":    chapter["chapter_name"],
-                "segment_type":    chapter["segment_type"],
-                "is_last_chapter": chapter["is_last_chapter"],
-            },
-        )
+        event_data = {
+            "type":            EVENT_CHAPTER_CHANGE,
+            "device_id":       self._device_id or session.get("DeviceId"),
+            "session_id":      session.get("Id"),
+            "user_id":         session.get("UserId"),
+            "media_title":     now_playing.get("Name"),
+            "chapter_index":   chapter["chapter_index"],
+            "chapter_count":   chapter.get("chapter_count"),
+            "chapter_name":    chapter["chapter_name"],
+            "segment_type":    chapter.get("segment_type"),
+            "is_last_chapter": chapter.get("is_last_chapter"),
+        }
+        # Add segment end position for skip automations
+        end_ticks = chapter.get("end_ticks")
+        if end_ticks is not None and chapter.get("segment_type"):
+            event_data["segment_end_seconds"] = round(end_ticks / TICKS_PER_SECOND, 1)
+        self.hass.bus.async_fire(f"{DOMAIN}_event", event_data)
 
     def _fire_segment_event(
         self,
@@ -749,21 +864,33 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         chapter: dict,
         current_segment_type: str | None,
         previous_segment_type: str | None,
+        segment_entry: dict | None = None,
     ) -> None:
         """Fire jellyha_event with type=media_segment_change."""
         now_playing = session.get("NowPlayingItem") or {}
-        self.hass.bus.async_fire(
-            f"{DOMAIN}_event",
-            {
-                "type":                  EVENT_SEGMENT_CHANGE,
-                "device_id":             self._device_id or session.get("DeviceId"),
-                "session_id":            session.get("Id"),
-                "user_id":               session.get("UserId"),
-                "media_title":           now_playing.get("Name"),
-                "segment_type":          current_segment_type,
-                "previous_segment_type": previous_segment_type,
-                "in_segment":            current_segment_type is not None,
-                "chapter_index":         chapter["chapter_index"],
-                "chapter_name":          chapter["chapter_name"],
-            },
-        )
+        event_data = {
+            "type":                  EVENT_SEGMENT_CHANGE,
+            "device_id":             self._device_id or session.get("DeviceId"),
+            "session_id":            session.get("Id"),
+            "user_id":               session.get("UserId"),
+            "media_title":           now_playing.get("Name"),
+            "segment_type":          current_segment_type,
+            "previous_segment_type": previous_segment_type,
+            "in_segment":            current_segment_type is not None,
+            "chapter_index":         chapter.get("chapter_index"),
+            "chapter_name":          chapter.get("chapter_name"),
+        }
+        # When entering a typed segment, provide exact end position for skip automations
+        if current_segment_type is not None:
+            if segment_entry and "end_ticks" in segment_entry:
+                event_data["segment_end_seconds"] = round(
+                    segment_entry["end_ticks"] / TICKS_PER_SECOND, 1
+                )
+            else:
+                session_id = session.get("Id")
+                seg = self._get_current_segment(session_id, session.get("PlayState", {}).get("PositionTicks", 0)) if session_id else None
+                if seg:
+                    event_data["segment_end_seconds"] = round(
+                        seg["end_ticks"] / TICKS_PER_SECOND, 1
+                    )
+        self.hass.bus.async_fire(f"{DOMAIN}_event", event_data)

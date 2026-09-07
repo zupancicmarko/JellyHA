@@ -343,8 +343,16 @@ export class JellyHANowPlayingCard extends LitElement {
             const phraseIndex = daySeed % this._phrases.length;
             phrase = this._phrases[phraseIndex];
 
-            // Get unwatched number - look for any sensor ending in _unwatched
-            const unwatchedSensor = Object.keys(this.hass.states).find(e => e.startsWith('sensor.') && e.endsWith('_unwatched'));
+            // Get unwatched number - scope to the same instance as this card's entity
+            const configEntity = this._config?.entity || '';
+            // Derive instance prefix: e.g. "sensor.jellyha_movies_now_playing_0" → "sensor.jellyha_movies"
+            const entityBase = configEntity.replace(/_now_playing.*$/, '');
+            const scopedSensor = entityBase ? `${entityBase}_unwatched` : '';
+            // Try scoped sensor first, fall back to global search for single-instance setups
+            let unwatchedSensor = scopedSensor && this.hass.states[scopedSensor] ? scopedSensor : '';
+            if (!unwatchedSensor) {
+                unwatchedSensor = Object.keys(this.hass.states).find(e => e.startsWith('sensor.') && e.endsWith('_unwatched')) || '';
+            }
             const count = unwatchedSensor ? this.hass.states[unwatchedSensor].state : "0";
 
             phrase = phrase.replace(/\[number\]/g, count);

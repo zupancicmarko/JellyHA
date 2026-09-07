@@ -372,200 +372,24 @@ JellyHA integrates directly with the Home Assistant Media Browser with **full mu
 4. Browse your Movies, Series, and Music collections.
 
 
-## Examples
+## Examples & Cookbook
 
-### Automation Example: Play Random Unwatched Movie from 2025
+Looking for ready-to-use automations, cinema lighting setups, or dashboard configurations? Check out our dedicated **[Examples & Cookbook Library](examples/)**!
 
-This automation finds a highly-rated movie you haven't watched yet and casts it.
+### ⚡ Popular Automations
+- **[Skip Intro Automatically](examples/automations/skip_intro.yaml)** — Automatically detects TV show intros and jumps straight to the episode content.
+- **[Cinema Lighting Experience](examples/automations/cinema_lighting_segments.yaml)** — Dims lights to 10% on play, warms lights on pause, and raises lights when credits roll (Outro segment).
+- **[Play Random Top Movie](examples/automations/play_random_movie.yaml)** — Dynamically queries your library for top-rated unwatched movies and casts one to Chromecast.
+- **[Pause on Doorbell](examples/automations/pause_on_doorbell.yaml)** — Automatically pauses active playback when your doorbell rings.
+- **[New Movie Mobile Notification](examples/automations/new_movie_notification.yaml)** — Sends a push notification with movie artwork and rating when new media is added.
 
-The `jellyha.search` service enables powerful automations by allowing you to find content dynamically.
+### 🎛️ Dashboard Setups
+- **[System & Library Monitoring Stack](examples/dashboards/system_monitoring_card.yaml)** — Complete vertical stack with version, WebSocket status, active sessions gauge, and library counters.
+- **[Library Card Variations](examples/dashboards/library_cards.yaml)** — Carousel, Grid with search bar, Next Up for binge watching, and Favorites views.
+- **[Now Playing Card Variations](examples/dashboards/now_playing_cards.yaml)** — Cinematic backdrop, compact mobile, and multi-instance configurations.
 
-```yaml
-alias: Play Random Top 2025 Movie
-description: Plays a random unwatched movie from 2025 with a rating above 7.
-mode: restart
-max_exceeded: silent
-trigger:
-  - platform: event
-    event_type: call_service
-    event_data:
-      domain: automation
-      service: trigger
-      service_data:
-        entity_id: automation.play_random_top_2025_movie
-action:
-  # 1. Search for candidates
-  - service: jellyha.search
-    data:
-      media_type: Movie
-      is_played: false
-      year: 2025
-      min_rating: 7
-      limit: 50
-      # config_entry_id: "abc123"  # Optional: target a specific JellyHA instance
-    response_variable: search_result
+👉 **[Explore all recipes and guides in the Examples Directory →](examples/)**
 
-  # 2. Check if we found anything
-  - if:
-      - condition: template
-        value_template: "{{ search_result['items'] | count > 0 }}"
-    then:
-      # 3. Pick random item and play
-      - service: jellyha.play_on_chromecast
-        data:
-          entity_id: media_player.office_tv
-          item_id: "{{ (search_result['items'] | random)['id'] }}"
-    else:
-      # 4. Notify if nothing found
-      - service: notify.persistent_notification
-        data:
-          message: "No unwatched 2025 movies with rating > 7 found."
-```
-
-### Automation Example: Pause Movie on Doorbell
-
-This automation pauses playback automatically when the doorbell rings.
-
-```yaml
-alias: Pause Movie on Doorbell
-description: "Pauses Jellyfin when the doorbell rings"
-trigger:
-  - trigger: state
-    entity_id: binary_sensor.doorbell # Replace with your actual doorbell entity
-    to: "on"
-condition:
-  # Only run if something is actually playing
-  - condition: state
-    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
-    state: "playing"
-actions:
-  - action: jellyha.session_control
-    data:
-      # Dynamically get the session_id from the sensor attributes
-      session_id: "{{ state_attr('sensor.jellyha_now_playing_admin', 'session_id') }}"
-      command: Pause
-mode: single
-```
-
-### Automation Example: Movie Time Lights
-
-This automation turns off the lights when you start watching something.
-
-```yaml
-alias: Movie Time - Lights Off
-description: "Turn off living room lights when movie starts playing"
-trigger:
-  - trigger: state
-    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
-    to: "playing"
-conditions: []
-actions:
-  - action: light.turn_off
-    target:
-      entity_id: light.living_room
-mode: single
-```
-
-### Automation Example: New Content Notification
-
-Sends a notification to your phone when a new movie is added.
-
-```yaml
-alias: Notify New Movie
-description: "Send notification when a new movie is added"
-trigger:
-  - trigger: state
-    entity_id: sensor.jellyha_unwatched_movies
-conditions:
-  # Check if count increased (new item added)
-  - condition: template
-    value_template: "{{ trigger.to_state.state | int > trigger.from_state.state | int }}"
-actions:
-  # 1. Fetch the single newest movie
-  - action: jellyha.search
-    data:
-      media_type: Movie
-      limit: 1
-    response_variable: new_items
-  
-  # 2. Send notification
-  - action: notify.mobile_app_phone # Replace with your phone's notify service (check Developer Tools)
-    data:
-      title: New Movie Added
-      message: "{{ new_items['items'][0]['name'] }} ({{ new_items['items'][0]['year'] }}) - Rating: {{ new_items['items'][0]['rating'] }}/10 is now available!"
-      data:
-        image: "{{ new_items['items'][0]['image_url'] }}"
-mode: single
-```
-
-### Card Example: Display JellyHA Sensors in a Dashboard Card
-
-```yaml
-type: vertical-stack
-cards:
-  - type: markdown
-    content: >
-      # 🪼 JellyHA Sensors
-
-      **Version:** {{ states('sensor.jellyha_version') }} | **Status:** {{
-      states('sensor.jellyha_websocket') }}
-  - type: entities
-    title: Library Content
-    state_color: true
-    entities:
-      - entity: sensor.jellyha_library
-        name: Total Items
-        icon: mdi:video-vintage
-        secondary_info: last-changed
-      - type: divider
-      - entity: sensor.jellyha_unwatched_movies
-        name: Unwatched Movies
-        icon: mdi:movie-open
-      - entity: sensor.jellyha_watched_movies
-        name: Watched Movies
-        icon: mdi:movie-check
-      - type: divider
-      - entity: sensor.jellyha_unwatched_series
-        name: Unwatched Series
-        icon: mdi:video-outline
-      - entity: sensor.jellyha_watched_series
-        name: Watched Series
-        icon: mdi:video-check-outline
-      - entity: sensor.jellyha_unwatched_episodes
-        name: Unwatched Episodes
-        icon: mdi:video
-      - entity: sensor.jellyha_watched_episodes
-        name: Watched Episodes
-        icon: mdi:video-check
-  - type: horizontal-stack
-    cards:
-      - type: gauge
-        entity: sensor.jellyha_active_sessions
-        name: Active Sessions
-        min: 0
-        max: 10
-        severity:
-          green: 0
-          yellow: 3
-          red: 7
-      - type: tile
-        entity: sensor.jellyha_favorites
-        name: Favorites
-        icon: mdi:heart
-  - type: entities
-    title: Activity & System
-    entities:
-      - entity: sensor.jellyha_now_playing_admin
-        name: Admin
-        icon: mdi:account
-      - type: divider
-      - entity: sensor.jellyha_last_library_update
-        name: Last Library Update
-      - entity: sensor.jellyha_last_refresh
-        name: Last Refresh
-      - entity: sensor.jellyha_refresh_duration
-        name: Refresh Duration
-```
 
 
 ## Troubleshooting

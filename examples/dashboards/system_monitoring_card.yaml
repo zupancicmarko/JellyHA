@@ -1,0 +1,79 @@
+# ==============================================================================
+# JellyHA Dashboard Example: System & Library Monitoring Stack
+# ==============================================================================
+# Description:
+#   A complete Home Assistant Lovelace vertical stack displaying JellyHA system
+#   status, WebSocket connectivity, library item counts, active sessions gauge,
+#   favorites tile, and refresh diagnostics.
+# ==============================================================================
+
+type: vertical-stack
+cards:
+  # Header with Server Version & WebSocket Status
+  - type: markdown
+    content: >
+      # 🪼 JellyHA System Status
+
+      **Version:** {{ states('sensor.jellyha_version') }} | **Status:** {{ states('sensor.jellyha_websocket') }}
+
+  # Library Content Breakdown
+  - type: entities
+    title: Library Content
+    state_color: true
+    entities:
+      - entity: sensor.jellyha_library
+        name: Total Library Items
+        icon: mdi:video-vintage
+        secondary_info: last-changed
+      - type: divider
+      - entity: sensor.jellyha_unwatched_movies
+        name: Unwatched Movies
+        icon: mdi:movie-open
+      - entity: sensor.jellyha_watched_movies
+        name: Watched Movies
+        icon: mdi:movie-check
+      - type: divider
+      - entity: sensor.jellyha_unwatched_series
+        name: Unwatched Series
+        icon: mdi:video-outline
+      - entity: sensor.jellyha_watched_series
+        name: Watched Series
+        icon: mdi:video-check-outline
+      - entity: sensor.jellyha_unwatched_episodes
+        name: Unwatched Episodes
+        icon: mdi:video
+      - entity: sensor.jellyha_watched_episodes
+        name: Watched Episodes
+        icon: mdi:video-check
+
+  # Quick Gauges & Tiles
+  - type: horizontal-stack
+    cards:
+      - type: gauge
+        entity: sensor.jellyha_active_sessions
+        name: Active Sessions
+        min: 0
+        max: 10
+        severity:
+          green: 0
+          yellow: 3
+          red: 7
+      - type: tile
+        entity: sensor.jellyha_favorites
+        name: Favorites
+        icon: mdi:heart
+
+  # Refresh & Diagnostics
+  - type: entities
+    title: Sync & Activity
+    entities:
+      - entity: sensor.jellyha_now_playing_admin # Replace with your user
+        name: Admin Now Playing
+        icon: mdi:account
+      - type: divider
+      - entity: sensor.jellyha_last_data_change
+        name: Last Library Update
+      - entity: sensor.jellyha_last_refresh
+        name: Last Data Refresh
+      - entity: sensor.jellyha_refresh_duration
+        name: Last Refresh Duration

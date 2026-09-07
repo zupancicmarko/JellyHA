@@ -1,0 +1,22 @@
+# ==============================================================================
+# JellyHA Automation Example: Simple Movie Time Lights
+# ==============================================================================
+# Description:
+#   A simple automation that automatically turns off room lights when playback starts.
+# ==============================================================================
+
+alias: "JellyHA: Movie Time - Lights Off"
+description: "Turn off room lights when media starts playing"
+mode: single
+
+trigger:
+  - trigger: state
+    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    to: "playing"
+
+conditions: []
+
+actions:
+  - action: light.turn_off
+    target:
+      entity_id: light.living_room # Replace with your lights

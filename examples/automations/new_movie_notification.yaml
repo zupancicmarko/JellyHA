@@ -1,0 +1,37 @@
+# ==============================================================================
+# JellyHA Automation Example: New Content Mobile Notification
+# ==============================================================================
+# Description:
+#   Monitors unwatched movie count changes. When a new movie is added, it queries
+#   Jellyfin for the latest item details and sends an actionable mobile notification
+#   with poster fanart and IMDB rating to your phone.
+# ==============================================================================
+
+alias: "JellyHA: Notify New Movie"
+description: "Send push notification when a new movie is added to the library"
+mode: single
+
+trigger:
+  - trigger: state
+    entity_id: sensor.jellyha_unwatched_movies
+
+conditions:
+  # Verify that the count actually increased
+  - condition: template
+    value_template: "{{ trigger.to_state.state | int > trigger.from_state.state | int }}"
+
+actions:
+  # 1. Fetch the single newest movie
+  - action: jellyha.search
+    data:
+      media_type: Movie
+      limit: 1
+    response_variable: new_items
+
+  # 2. Send mobile push notification
+  - action: notify.notify # Replace with notify.mobile_app_<your_device>
+    data:
+      title: "🎬 New Movie Added to Jellyfin"
+      message: "{{ new_items['items'][0]['name'] }} ({{ new_items['items'][0]['year'] }}) — Rating: {{ new_items['items'][0]['rating'] }}/10 is now available!"
+      data:
+        image: "{{ new_items['items'][0]['image_url'] }}"

@@ -5917,8 +5917,11 @@ let $ = class extends j {
     if (this._phrases.length > 0) {
       const s = Math.floor(Date.now() / 864e5) % this._phrases.length;
       o = this._phrases[s];
-      const r = Object.keys(this.hass.states).find((c) => c.startsWith("sensor.") && c.endsWith("_unwatched")), h = r ? this.hass.states[r].state : "0";
-      o = o.replace(/\[number\]/g, h);
+      const h = (this._config?.entity || "").replace(/_now_playing.*$/, ""), c = h ? `${h}_unwatched` : "";
+      let _ = c && this.hass.states[c] ? c : "";
+      _ || (_ = Object.keys(this.hass.states).find((p) => p.startsWith("sensor.") && p.endsWith("_unwatched")) || "");
+      const g = _ ? this.hass.states[_].state : "0";
+      o = o.replace(/\[number\]/g, g);
     }
     return n`
             <ha-card class="jellyha-now-playing empty-state">

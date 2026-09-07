@@ -1,0 +1,35 @@
+# ==============================================================================
+# JellyHA Automation Example: Skip Intro Automatically
+# ==============================================================================
+# Description:
+#   Automatically skips TV show intros when Jellyfin (via Intro Skipper or chapter
+#   markers) detects an "Intro" segment. Seeks directly to the end of the intro.
+#
+# Requirements:
+#   - JellyHA v1.3.0+
+#   - Jellyfin server with chapter markers or the Jellyfin Intro Skipper plugin
+# ==============================================================================
+
+alias: "JellyHA: Skip Intro Automatically"
+description: "Automatically seek past intro segments when detected"
+mode: single
+
+trigger:
+  - trigger: event
+    event_type: jellyha_event
+    event_data:
+      type: media_segment_change
+      segment_type: Intro
+      in_segment: true
+
+conditions:
+  # Verify that segment_end_seconds was provided by the event
+  - condition: template
+    value_template: "{{ trigger.event.data.segment_end_seconds is defined and trigger.event.data.segment_end_seconds > 0 }}"
+
+actions:
+  - action: jellyha.session_seek
+    data:
+      session_id: "{{ trigger.event.data.session_id }}"
+      # Seek directly to the end of the intro segment
+      position_seconds: "{{ trigger.event.data.segment_end_seconds }}"

@@ -1,0 +1,65 @@
+# ==============================================================================
+# JellyHA Dashboard Examples: Library Card Configurations
+# ==============================================================================
+# Below are curated examples for custom:jellyha-library-card across different
+# layout styles and filtering scenarios.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Elegant Carousel (Best for Living Room & Tablet Dashboards)
+# ------------------------------------------------------------------------------
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "Featured Media"
+layout: carousel
+media_type: both
+items_per_page: 4
+max_pages: 5
+auto_swipe_interval: 8 # Auto-advances every 8 seconds
+show_now_playing: true
+show_ratings: true
+show_genres: true
+show_description_on_hover: true
+
+# ------------------------------------------------------------------------------
+# 2. Binge Watcher "Next Up" Carousel
+# ------------------------------------------------------------------------------
+# Automatically shows the next unplayed episodes of TV series you are watching.
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "Continue Watching"
+layout: carousel
+media_type: next_up
+items_per_page: 3
+use_series_image: false # Show episode thumbnail with season & episode numbers
+click_action: cast
+default_cast_device: media_player.living_room_tv
+
+# ------------------------------------------------------------------------------
+# 3. Interactive Grid with In-Card Search
+# ------------------------------------------------------------------------------
+# Best for full-width views. Lets users search titles and filter genres directly.
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "All Movies"
+layout: grid
+media_type: movies
+columns: 5
+items_per_page: 10
+show_search: true
+status_filter: all
+sort_option: date_added_desc
+click_action: more-info
+
+# ------------------------------------------------------------------------------
+# 4. Favorites Collection
+# ------------------------------------------------------------------------------
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "Family Favorites"
+layout: grid
+columns: 4
+filter_favorites: true
+show_ratings: true
+show_runtime: true
+click_action: jellyfin
