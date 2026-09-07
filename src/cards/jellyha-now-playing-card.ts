@@ -65,7 +65,9 @@ export class JellyHANowPlayingCard extends LitElement {
 
     public static getStubConfig(hass: HomeAssistant): Partial<JellyHANowPlayingCardConfig> {
         const entities = Object.keys(hass.states);
-        const entity = entities.find((e) => e.startsWith('sensor.jellyha_now_playing_')) || '';
+        const entity = entities.find((e) => e.startsWith('media_player.jellyha_') && !e.includes('_library_browser') && !e.endsWith('_browser'))
+            || entities.find((e) => e.startsWith('sensor.jellyha_now_playing_'))
+            || '';
         return {
             entity,
             show_title: true,
@@ -110,7 +112,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const entityId = this._config.entity;
         if (!entityId) {
-            return this._renderError('Please configure a JellyHA Now Playing sensor entity');
+            return this._renderError('Please configure a JellyHA Now Playing entity');
         }
 
         const stateObj = this.hass.states[entityId];
@@ -119,7 +121,10 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
-        const isPlaying = !!attributes.item_id;
+        const isMediaPlayer = entityId.startsWith('media_player.');
+        const isPlaying = isMediaPlayer
+            ? (stateObj.state === 'playing' || stateObj.state === 'paused' || !!attributes.item_id)
+            : !!attributes.item_id;
 
         if (!isPlaying) {
             return this._renderEmpty();
@@ -128,15 +133,16 @@ export class JellyHANowPlayingCard extends LitElement {
         const progressPercent = this._optimisticSeekPercent !== null ? this._optimisticSeekPercent : (attributes.progress_percent || 0);
 
         // Use series image if configured and available, otherwise use episode/movie image
-        const imageUrl = this._config.use_series_image && attributes.series_image_url
+        const rawImageUrl = this._config.use_series_image && attributes.series_image_url
             ? attributes.series_image_url
-            : attributes.image_url;
+            : (attributes.image_url || (stateObj.attributes as any).entity_picture);
+        const imageUrl = rawImageUrl;
 
         // Cache backdrop URL to prevent flicker - only update when item changes
-        const currentItemId = attributes.item_id;
+        const currentItemId = attributes.item_id || (stateObj.attributes as any).media_content_id;
         if (currentItemId !== this._cachedItemId) {
             this._cachedItemId = currentItemId;
-            const rawBackdropUrl = attributes.backdrop_url || attributes.image_url;
+            const rawBackdropUrl = attributes.backdrop_url || rawImageUrl;
             this._cachedBackdropUrl = rawBackdropUrl ? addImageParams(rawBackdropUrl, 640) : undefined;
         }
 
@@ -148,12 +154,13 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const backdropUrl = this._cachedBackdropUrl;
         const showBackground = this._config.show_background && backdropUrl;
-        const isPaused = attributes.is_paused;
-        const isMusic = attributes.media_type?.toLowerCase() === 'audio';
-        const mediaType = attributes.media_type?.toLowerCase() || '';
+        const isPaused = isMediaPlayer ? stateObj.state === 'paused' : attributes.is_paused;
+        const mediaType = (attributes.media_type || (stateObj.attributes as any).media_content_type || '').toLowerCase();
+        const isMusic = mediaType === 'audio' || mediaType === 'music';
 
+        const displayTitle = attributes.title || (stateObj.attributes as any).media_title || '';
         const showSubtitle = this._config.show_subtitle !== false;
-        const subtitle = showSubtitle ? (attributes.artist_name || attributes.series_title || '') : '';
+        const subtitle = showSubtitle ? (attributes.artist_name || (stateObj.attributes as any).media_artist || attributes.series_title || (stateObj.attributes as any).media_series_title || '') : '';
         const yearStr = (this._config.show_year !== false && attributes.year) ? String(attributes.year) : '';
         const genreStr = (this._config.show_genres && attributes.genres?.length) ? attributes.genres.slice(0, 2).join(', ') : '';
         const metaLine = [yearStr, genreStr].filter(Boolean).join(' • ');
@@ -161,13 +168,15 @@ export class JellyHANowPlayingCard extends LitElement {
         const clientInfo = (this._config.show_client !== false) ? (attributes.client || '') : '';
 
         // Media type badge text
-        const badgeText = (mediaType === 'episode' && attributes.season !== undefined && attributes.episode !== undefined)
-            ? `S${String(attributes.season).padStart(2, '0')}E${String(attributes.episode).padStart(2, '0')}`
+        const season = attributes.season !== undefined ? attributes.season : (stateObj.attributes as any).media_season;
+        const episode = attributes.episode !== undefined ? attributes.episode : (stateObj.attributes as any).media_episode;
+        const badgeText = ((mediaType === 'episode' || mediaType === 'tvshow') && season !== undefined && episode !== undefined)
+            ? `S${String(season).padStart(2, '0')}E${String(episode).padStart(2, '0')}`
             : attributes.media_type || '';
 
         // Determine effective favorite status using optimistic override if available
-        const isFavorite = attributes.item_id && this._optimisticFavorites[attributes.item_id] !== undefined
-            ? this._optimisticFavorites[attributes.item_id]
+        const isFavorite = currentItemId && this._optimisticFavorites[currentItemId] !== undefined
+            ? this._optimisticFavorites[currentItemId]
             : (attributes.is_favorite || false);
 
         // SVG ring circumference for stop animation (r=20 => C=2*PI*20 ≈ 125.66)
@@ -189,7 +198,7 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="main-container">
                         ${imageUrl ? html`
                             <div class="poster-container" @click=${this._handlePosterRewind}>
-                                <img src="${addImageParams(imageUrl, 160)}" alt="${attributes.title}" loading="eager" fetchpriority="high" />
+                                <img src="${addImageParams(imageUrl, 160)}" alt="${displayTitle}" loading="eager" fetchpriority="high" />
                                 
                                 ${this._config.show_media_type_badge !== false && badgeText ? html`
                                     <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
@@ -220,7 +229,7 @@ export class JellyHANowPlayingCard extends LitElement {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== false ? html`<div class="title">${attributes.title}</div>` : nothing}
+                                    ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
                                     ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
                                     ${this._overflowState < 1 && metaLine ? html`<div class="meta-line">${metaLine}</div>` : nothing}
                                     ${this._overflowState < 1 && (userName || clientInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && clientInfo ? ' ' : ''}${clientInfo || nothing}</div>` : nothing}
@@ -345,8 +354,15 @@ export class JellyHANowPlayingCard extends LitElement {
 
             // Get unwatched number - scope to the same instance as this card's entity
             const configEntity = this._config?.entity || '';
-            // Derive instance prefix: e.g. "sensor.jellyha_movies_now_playing_0" → "sensor.jellyha_movies"
-            const entityBase = configEntity.replace(/_now_playing.*$/, '');
+            let entityBase = '';
+            if (configEntity.startsWith('sensor.')) {
+                entityBase = configEntity.replace(/_now_playing.*$/, '');
+            } else if (configEntity.startsWith('media_player.')) {
+                // e.g. media_player.jellyha_admin -> sensor.jellyha
+                const nameWithoutDomain = configEntity.replace(/^media_player\./, '');
+                const prefix = nameWithoutDomain.includes('_') ? nameWithoutDomain.substring(0, nameWithoutDomain.lastIndexOf('_')) : nameWithoutDomain;
+                entityBase = `sensor.${prefix}`;
+            }
             const scopedSensor = entityBase ? `${entityBase}_unwatched` : '';
             // Try scoped sensor first, fall back to global search for single-instance setups
             let unwatchedSensor = scopedSensor && this.hass.states[scopedSensor] ? scopedSensor : '';
@@ -385,13 +401,32 @@ export class JellyHANowPlayingCard extends LitElement {
 
     private async _handleControl(command: string): Promise<void> {
         this._haptic('light');
-        const stateObj = this.hass.states[this._config.entity];
-        const sessionId = stateObj?.attributes.session_id;
+        const entityId = this._config.entity;
+        const stateObj = this.hass.states[entityId];
+        const isMediaPlayer = entityId.startsWith('media_player.');
 
+        if (isMediaPlayer) {
+            let service = '';
+            if (command === 'Pause') service = 'media_pause';
+            else if (command === 'Unpause' || command === 'Play') service = 'media_play';
+            else if (command === 'PlayPause') service = 'media_play_pause';
+            else if (command === 'Stop') service = 'media_stop';
+            else if (command === 'NextTrack') service = 'media_next_track';
+            else if (command === 'PreviousTrack') service = 'media_previous_track';
+
+            if (service) {
+                await this.hass.callService('media_player', service, {
+                    entity_id: entityId
+                });
+                return;
+            }
+        }
+
+        const sessionId = stateObj?.attributes.session_id;
         if (!sessionId) return;
 
         await this.hass.callService('jellyha', 'session_control', {
-            entity_id: this._config.entity,
+            entity_id: entityId,
             session_id: sessionId,
             command: command
         });
@@ -399,11 +434,26 @@ export class JellyHANowPlayingCard extends LitElement {
 
     private async _handleRepeatMode(sessionId: string, currentMode: string): Promise<void> {
         let nextMode = 'RepeatAll';
-        if (currentMode === 'RepeatAll') nextMode = 'RepeatOne';
-        else if (currentMode === 'RepeatOne') nextMode = 'RepeatNone';
+        let nextHaMode = 'all';
+        if (currentMode === 'RepeatAll' || currentMode === 'all') {
+            nextMode = 'RepeatOne';
+            nextHaMode = 'one';
+        } else if (currentMode === 'RepeatOne' || currentMode === 'one') {
+            nextMode = 'RepeatNone';
+            nextHaMode = 'off';
+        }
+
+        const entityId = this._config.entity;
+        if (entityId.startsWith('media_player.')) {
+            await this.hass.callService('media_player', 'repeat_set', {
+                entity_id: entityId,
+                repeat: nextHaMode
+            });
+            return;
+        }
 
         await this.hass.callService('jellyha', 'session_general_command', {
-            entity_id: this._config.entity,
+            entity_id: entityId,
             session_id: sessionId,
             command: 'SetRepeatMode',
             arguments: { RepeatMode: nextMode }
@@ -475,19 +525,31 @@ export class JellyHANowPlayingCard extends LitElement {
         // Hold the seeked position optimistically until server catches up
         this._setOptimisticSeek(finalPercent);
 
-        const stateObj = this.hass.states[this._config.entity];
+        const entityId = this._config.entity;
+        const stateObj = this.hass.states[entityId];
         if (!stateObj) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
         const durationTicks = attributes.duration_ticks;
 
-        if (!sessionId || !durationTicks) return;
+        if (!durationTicks) return;
+
+        if (entityId.startsWith('media_player.')) {
+            const seekSeconds = Math.round((durationTicks / 10000000) * (finalPercent / 100));
+            await this.hass.callService('media_player', 'media_seek', {
+                entity_id: entityId,
+                seek_position: seekSeconds
+            });
+            return;
+        }
+
+        if (!sessionId) return;
 
         const seekTicks = Math.round(durationTicks * (finalPercent / 100));
 
         await this.hass.callService('jellyha', 'session_seek', {
-            entity_id: this._config.entity,
+            entity_id: entityId,
             session_id: sessionId,
             position_ticks: seekTicks
         });
@@ -503,41 +565,49 @@ export class JellyHANowPlayingCard extends LitElement {
 
     private async _handleSeekRelative(seconds: number): Promise<void> {
         this._haptic('light');
-        const stateObj = this.hass.states[this._config.entity];
+        const entityId = this._config.entity;
+        const stateObj = this.hass.states[entityId];
         if (!stateObj) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
         const positionTicks = attributes.position_ticks || 0;
 
-        if (!sessionId) return;
-
         const seekTicks = seconds * 10000000; // Convert seconds to ticks
         const newPositionTicks = Math.max(0, positionTicks + seekTicks);
 
         // Hold the seeked position optimistically to prevent jump back
-        // We calculate expected percentage and set it
         const durationTicks = attributes.duration_ticks;
         if (durationTicks) {
             this._setOptimisticSeek((newPositionTicks / durationTicks) * 100);
         }
 
+        if (entityId.startsWith('media_player.')) {
+            const newPositionSeconds = Math.round(newPositionTicks / 10000000);
+            await this.hass.callService('media_player', 'media_seek', {
+                entity_id: entityId,
+                seek_position: newPositionSeconds
+            });
+            return;
+        }
+
+        if (!sessionId) return;
+
         await this.hass.callService('jellyha', 'session_seek', {
-            entity_id: this._config.entity,
+            entity_id: entityId,
             session_id: sessionId,
             position_ticks: newPositionTicks
         });
     }
 
     private async _handlePosterRewind(): Promise<void> {
-        const stateObj = this.hass.states[this._config.entity];
+        const entityId = this._config.entity;
+        const stateObj = this.hass.states[entityId];
         if (!stateObj) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
         const positionTicks = attributes.position_ticks || 0;
-
-        if (!sessionId) return;
 
         // Visual feedback
         this._rewindActive = true;
@@ -558,8 +628,19 @@ export class JellyHANowPlayingCard extends LitElement {
             this._setOptimisticSeek((newPositionTicks / durationTicks) * 100);
         }
 
+        if (entityId.startsWith('media_player.')) {
+            const newPositionSeconds = Math.round(newPositionTicks / 10000000);
+            await this.hass.callService('media_player', 'media_seek', {
+                entity_id: entityId,
+                seek_position: newPositionSeconds
+            });
+            return;
+        }
+
+        if (!sessionId) return;
+
         await this.hass.callService('jellyha', 'session_seek', {
-            entity_id: this._config.entity,
+            entity_id: entityId,
             session_id: sessionId,
             position_ticks: newPositionTicks
         });

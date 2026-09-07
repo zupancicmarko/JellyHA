@@ -10,6 +10,7 @@ from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
+    RepeatMode,
 )
 from homeassistant.components.media_player.const import MediaType
 from homeassistant.config_entries import ConfigEntry
@@ -201,6 +202,8 @@ class JellyHAUserMediaPlayer(
         | MediaPlayerEntityFeature.PREVIOUS_TRACK
         | MediaPlayerEntityFeature.VOLUME_SET
         | MediaPlayerEntityFeature.VOLUME_MUTE
+        | MediaPlayerEntityFeature.SHUFFLE_SET
+        | MediaPlayerEntityFeature.REPEAT_SET
     )
 
     def __init__(
@@ -306,6 +309,26 @@ class JellyHAUserMediaPlayer(
         return item.get("Name")
 
     @property
+    def media_artist(self) -> str | None:
+        """Return the artist of current playing media (music track)."""
+        session = self._get_active_session()
+        if not session:
+            return None
+        item = session.get("NowPlayingItem", {})
+        album_artist = item.get("AlbumArtist")
+        artists = item.get("Artists", [])
+        return album_artist or (artists[0] if artists else None)
+
+    @property
+    def media_album_name(self) -> str | None:
+        """Return the album name of current playing media (music track)."""
+        session = self._get_active_session()
+        if not session:
+            return None
+        item = session.get("NowPlayingItem", {})
+        return item.get("Album")
+
+    @property
     def media_series_title(self) -> str | None:
         """Return the series title (TV shows only)."""
         session = self._get_active_session()
@@ -333,6 +356,14 @@ class JellyHAUserMediaPlayer(
         item = session.get("NowPlayingItem", {})
         episode = item.get("IndexNumber")
         return str(episode) if episode is not None else None
+
+    @property
+    def media_content_id(self) -> str | None:
+        """Return the content ID of current playing media."""
+        session = self._get_active_session()
+        if not session:
+            return None
+        return session.get("NowPlayingItem", {}).get("Id")
 
     @property
     def media_image_url(self) -> str | None:
@@ -379,6 +410,32 @@ class JellyHAUserMediaPlayer(
             return None
         return dt_util.utcnow()
 
+    @property
+    def shuffle(self) -> bool | None:
+        """Return True if shuffle is enabled."""
+        session = self._get_active_session()
+        if not session:
+            return None
+        play_state = session.get("PlayState", {})
+        return (
+            play_state.get("ShuffleMethod") == "Shuffle"
+            or play_state.get("ShuffleMode") == "Shuffle"
+        )
+
+    @property
+    def repeat(self) -> RepeatMode | str | None:
+        """Return current repeat mode."""
+        session = self._get_active_session()
+        if not session:
+            return None
+        play_state = session.get("PlayState", {})
+        mode = play_state.get("RepeatMode", "RepeatNone")
+        if mode == "RepeatAll":
+            return RepeatMode.ALL
+        if mode == "RepeatOne":
+            return RepeatMode.ONE
+        return RepeatMode.OFF
+
     # ------------------------------------------------------------------
     # Volume
     # ------------------------------------------------------------------
@@ -395,14 +452,6 @@ class JellyHAUserMediaPlayer(
             return None
         # Jellyfin stores volume as 0-100 int in TranscodingInfo or
         # may not expose it at all depending on the client.
-        # Some clients report it in NowPlayingItem or PlayState.
-        # We check common locations:
-        transcode_info = session.get("TranscodingInfo", {})
-        if transcode_info and "AudioChannels" in transcode_info:
-            # TranscodingInfo doesn't actually contain volume — fallback
-            pass
-        # Volume is not consistently available in Jellyfin session data.
-        # Return None to indicate it's unknown.
         return None
 
     @property
@@ -421,31 +470,92 @@ class JellyHAUserMediaPlayer(
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
         session = self._get_active_session()
-        attrs: dict[str, Any] = {"user_id": self._user_id}
+        attrs: dict[str, Any] = {
+            "user_id": self._user_id,
+            "user_name": self._username,
+            "session_id": None,
+            "device_name": None,
+            "client": None,
+            "item_id": None,
+            "title": None,
+            "progress_percent": 0,
+            "position_ticks": 0,
+            "image_url": None,
+            "backdrop_url": None,
+            "media_type": None,
+            "is_paused": False,
+            "config_external_url": self._entry.options.get(
+                "external_url", self._entry.data.get("external_url", "")
+            ),
+        }
 
         if not session:
             return attrs
 
         item = session.get("NowPlayingItem", {})
         play_state = session.get("PlayState", {})
+        item_type = item.get("Type")
+        item_id = item.get("Id")
 
         attrs["session_id"] = session.get("Id")
         attrs["device_name"] = session.get("DeviceName")
         attrs["client"] = session.get("Client")
-        attrs["item_id"] = item.get("Id")
-        attrs["media_type"] = item.get("Type")
+        attrs["item_id"] = item_id
+        attrs["media_type"] = item_type
+        attrs["title"] = item.get("Name")
 
-        # Progress percentage
+        # Ratings & metadata
+        attrs["official_rating"] = item.get("OfficialRating")
+        attrs["community_rating"] = item.get("CommunityRating")
+        attrs["critic_rating"] = item.get("CriticRating")
+        attrs["genres"] = item.get("Genres", [])
+
+        runtime_ticks = item.get("RunTimeTicks", 0)
+        if runtime_ticks > 0:
+            attrs["runtime_minutes"] = int(runtime_ticks / TICKS_PER_SECOND / 60)
+        else:
+            attrs["runtime_minutes"] = 0
+
+        # Type-specific attributes
+        if item_type == "Episode":
+            attrs["series_title"] = item.get("SeriesName")
+            attrs["season"] = item.get("ParentIndexNumber")
+            attrs["episode"] = item.get("IndexNumber")
+            attrs["series_image_url"] = session.get("jellyha_series_poster_url")
+        elif item_type == "Audio":
+            album_artist = item.get("AlbumArtist")
+            artists = item.get("Artists", [])
+            attrs["artist_name"] = album_artist or (artists[0] if artists else None)
+            attrs["album_name"] = item.get("Album")
+            attrs["year"] = item.get("ProductionYear")
+        elif item_type == "Movie":
+            attrs["year"] = item.get("ProductionYear")
+
+        # Playback state
         position_ticks = play_state.get("PositionTicks", 0)
         duration_ticks = item.get("RunTimeTicks", 0)
+        attrs["is_paused"] = play_state.get("IsPaused", False)
+        attrs["position_ticks"] = position_ticks
+        attrs["duration_ticks"] = duration_ticks
+
         if duration_ticks and duration_ticks > 0:
             attrs["progress_percent"] = int((position_ticks / duration_ticks) * 100)
         else:
             attrs["progress_percent"] = 0
 
-        attrs["config_external_url"] = self._entry.options.get(
-            "external_url", self._entry.data.get("external_url", "")
+        # Modes & Flags
+        attrs["repeat_mode"] = play_state.get("RepeatMode", "RepeatNone")
+        attrs["shuffle_mode"] = (
+            "Shuffle"
+            if play_state.get("ShuffleMethod") == "Shuffle"
+            or play_state.get("ShuffleMode") == "Shuffle"
+            else "Sorted"
         )
+        attrs["is_favorite"] = item.get("UserData", {}).get("IsFavorite", False)
+
+        # Poster & Backdrop URLs
+        attrs["image_url"] = session.get("jellyha_poster_url")
+        attrs["backdrop_url"] = session.get("jellyha_backdrop_url")
 
         # Chapter/segment awareness
         session_id_val = session.get("Id")
@@ -455,10 +565,10 @@ class JellyHAUserMediaPlayer(
                 position_ticks,
             )
             if chapter:
-                attrs["media_chapter_index"]  = chapter["chapter_index"]
-                attrs["media_chapter_count"]  = chapter["chapter_count"]
-                attrs["media_chapter_name"]   = chapter["chapter_name"]
-                attrs["is_last_chapter"]      = chapter["is_last_chapter"]
+                attrs["media_chapter_index"] = chapter["chapter_index"]
+                attrs["media_chapter_count"] = chapter["chapter_count"]
+                attrs["media_chapter_name"] = chapter["chapter_name"]
+                attrs["is_last_chapter"] = chapter["is_last_chapter"]
 
             segment = self.coordinator._get_current_segment(
                 session_id_val,
@@ -545,4 +655,32 @@ class JellyHAUserMediaPlayer(
             return
         command = "Mute" if mute else "Unmute"
         await self.coordinator.api.session_general_command(session["Id"], command)
+
+    async def async_set_shuffle(self, shuffle: bool) -> None:
+        """Enable or disable shuffle mode."""
+        session = self._get_active_session()
+        if not session:
+            _LOGGER.debug("No active session for user %s, cannot set shuffle", self._username)
+            return
+        mode = "Shuffle" if shuffle else "Sorted"
+        await self.coordinator.api.session_general_command(
+            session["Id"], "SetShuffleQueue", {"ShuffleMode": mode}
+        )
+
+    async def async_set_repeat(self, repeat: RepeatMode) -> None:
+        """Set repeat mode."""
+        session = self._get_active_session()
+        if not session:
+            _LOGGER.debug("No active session for user %s, cannot set repeat", self._username)
+            return
+        if repeat == RepeatMode.ALL:
+            mode = "RepeatAll"
+        elif repeat == RepeatMode.ONE:
+            mode = "RepeatOne"
+        else:
+            mode = "RepeatNone"
+        await self.coordinator.api.session_general_command(
+            session["Id"], "SetRepeatMode", {"RepeatMode": mode}
+        )
+
 

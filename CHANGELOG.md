@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.0] - 2026-09-07
 
 ### Added
+- **Full Media Player Migration & Enhancement**: `media_player.jellyha_<user>` is now the primary, recommended entity for playback tracking and control in JellyHA. Added standard Home Assistant properties (`media_artist`, `media_album_name`, `media_content_id`, `shuffle`, `repeat`) and transport controls for shuffle (`async_set_shuffle`) and repeat (`async_set_repeat`), backed by full attribute parity in `extra_state_attributes` (including `title`, `user_name`, `series_image_url`, `backdrop_url`, `is_favorite`, ratings, `runtime_minutes`, and `progress_percent`).
+- **Community Media Card Compatibility**: Out-of-the-box support for popular community Lovelace cards including **Mini Media Player**, **Mushroom Media Card**, and **Universal Media Player** using standard Home Assistant `media_player` controls and properties.
+- **Card & Editor Media Player Support**: `jellyha-now-playing-card` and its graphical editor now natively prioritize `media_player.jellyha_<user>` entities while seamlessly retaining fallback support for legacy sensor entities.
 - **Live Media Segment Detection**: Real-time detection of `Intro`, `Outro`, `Recap`, `Preview`, and `Commercial` segments from Jellyfin's MediaSegments API (e.g., Intro Skipper plugin) as well as fallback regex classification from chapter titles.
 - **Segment Attributes & Accurate Timing**: Added `media_segment_type` and live `segment_end_seconds` attributes to `media_player` entities, enabling precise auto-skip and ambient automation triggers.
 - **Chapter Awareness & Attributes**: Added `media_chapter_name`, `media_chapter_index`, `media_chapter_count`, and `is_last_chapter` attributes to `media_player` entities.
@@ -16,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Device Triggers**: Added device triggers for chapter and segment changes for easy automation building in the HA UI.
 - **Now Playing Card Updates**: Added visual badges for current chapter name/index and active segment type (Intro, Outro, Recap).
 - **Examples Knowledge Base**: Structured repository examples into a dedicated `examples/` directory with `automations/` (cinema lighting, auto-skip intro, doorbell pause, new movie notifications) and `dashboards/` (now playing cards, library cards, system monitoring).
+
+### Deprecated
+- **`sensor.jellyha_now_playing_<user>` Deprecation**: The legacy Now Playing sensor entity is formally deprecated as of v1.3.0 and will be removed in v2.0.0. All playback state, rich metadata, transport controls, and segment information are fully available on `media_player.jellyha_<user>`. Existing automations and dashboards will continue to function normally during the deprecation period.
 
 ### Changed
 - **Documentation Restructuring**: Streamlined `README.md` by replacing long inline YAML code blocks with references to the new `examples/` directory.

@@ -12,7 +12,7 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 | **[Cinema Lighting by Segment](automations/cinema_lighting_segments.yaml)** | Dims lights to 10% on play, warms lights on pause, raises lights to 35% during credits (Outro), and restores 100% on stop. | State + `media_segment_change` |
 | **[Play Random Top Movie](automations/play_random_movie.yaml)** | Dynamically searches your library for high-rated unwatched movies from a specific year and casts one to Chromecast. | Service call / script (`jellyha.search`) |
 | **[Pause Movie on Doorbell](automations/pause_on_doorbell.yaml)** | Pauses active playback immediately when someone rings the doorbell. | State (`binary_sensor.doorbell`) |
-| **[Simple Movie Time Lights](automations/movie_night_lights.yaml)** | Basic starter automation to turn off room lights when playback starts. | State (`sensor.jellyha_now_playing_*`) |
+| **[Simple Movie Time Lights](automations/movie_night_lights.yaml)** | Basic starter automation to turn off room lights when playback starts. | State (`media_player.jellyha_*`) |
 | **[New Movie Mobile Notification](automations/new_movie_notification.yaml)** | Sends a smartphone push notification with movie artwork and rating whenever new content is added. | State (`sensor.jellyha_unwatched_movies`) |
 
 ---
@@ -23,7 +23,7 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 |:---|:---|:---|
 | **[System & Library Monitoring Stack](dashboards/system_monitoring_card.yaml)** | Comprehensive vertical stack with server version, WebSocket health, library breakdown, active sessions gauge, and refresh times. | `vertical-stack` (Native HA Cards) |
 | **[Library Card Variations](dashboards/library_cards.yaml)** | Curated setups for `jellyha-library-card`: Hero Carousel with auto-swipe, Binge-watching "Next Up", Grid with search bar, and Favorites view. | `custom:jellyha-library-card` |
-| **[Now Playing Card Variations](dashboards/now_playing_cards.yaml)** | Curated setups for `jellyha-now-playing-card`: Full backdrop fanart, compact mobile sidebar view, and multi-instance configs. | `custom:jellyha-now-playing-card` |
+| **[Now Playing Card Variations](dashboards/now_playing_cards.yaml)** | Curated setups for `jellyha-now-playing-card`, plus Mini Media Player and Mushroom Media Card. | `custom:jellyha-now-playing-card`, `custom:mini-media-player`, `custom:mushroom-media-player-card` |
 
 ---
 
@@ -34,7 +34,7 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 2. Click **Create Automation** → **Create new automation**.
 3. Click the **⋮** (three dots) menu in the top-right corner and select **Edit in YAML**.
 4. Copy and paste the contents from any `.yaml` file in the [`automations/`](automations/) folder.
-5. Update entity names (e.g. `media_player.office_tv`, `light.living_room`, or `sensor.jellyha_now_playing_admin`) to match your setup, and save!
+5. Update entity names (e.g. `media_player.office_tv`, `light.living_room`, or `media_player.jellyha_admin`) to match your setup, and save!
 
 ### Adding Dashboard Cards
 1. Edit any Home Assistant dashboard and click **+ Add Card**.

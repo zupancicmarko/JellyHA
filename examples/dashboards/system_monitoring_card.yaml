@@ -67,7 +67,7 @@ cards:
   - type: entities
     title: Sync & Activity
     entities:
-      - entity: sensor.jellyha_now_playing_admin # Replace with your user
+      - entity: media_player.jellyha_admin # Preferred in v1.3.0+ (or legacy sensor.jellyha_now_playing_admin)
         name: Admin Now Playing
         icon: mdi:account
       - type: divider

@@ -62,10 +62,27 @@ export class JellyHANowPlayingEditor extends LitElement {
       return html``;
     }
 
-    // Filter for JellyHA Now Playing sensors
-    const nowPlayingSensors = Object.keys(this.hass.states).filter(
-      (entity) => entity.startsWith('sensor.jellyha_now_playing_')
+    // Available JellyHA entities: media_player (preferred) and legacy now playing sensors
+    const mediaPlayers = Object.keys(this.hass.states).filter(
+      (entity) =>
+        entity.startsWith('media_player.jellyha_') &&
+        !entity.includes('_library_browser') &&
+        !entity.endsWith('_browser')
     );
+    const legacySensors = Object.keys(this.hass.states).filter((entity) =>
+      entity.startsWith('sensor.jellyha_now_playing_')
+    );
+
+    const availableEntities = [
+      ...mediaPlayers.map((e) => ({
+        entity: e,
+        label: `${this.hass.states[e]?.attributes.friendly_name || e} (Media Player)`,
+      })),
+      ...legacySensors.map((e) => ({
+        entity: e,
+        label: `${this.hass.states[e]?.attributes.friendly_name || e} (Legacy Sensor)`,
+      })),
+    ];
 
     const lang = this.hass.locale?.language || this.hass.language;
 
@@ -73,18 +90,18 @@ export class JellyHANowPlayingEditor extends LitElement {
       <div class="card-config">
         <div class="form-row">
           <ha-select
-            label="${localize(lang, 'editor.now_playing_sensor')}"
+            label="${localize(lang, 'editor.now_playing_sensor') || 'Now Playing Entity'}"
             .value=${this._config.entity || ''}
             @selected=${this._entityChanged}
             @closed=${(e: Event) => e.stopPropagation()}
           >
-            ${nowPlayingSensors.map(
-      (entity) => html`
-                <mwc-list-item .value=${entity}>
-                  ${this.hass.states[entity].attributes.friendly_name || entity}
+            ${availableEntities.map(
+              (item) => html`
+                <mwc-list-item .value=${item.entity}>
+                  ${item.label}
                 </mwc-list-item>
               `
-    )}
+            )}
           </ha-select>
         </div>
 

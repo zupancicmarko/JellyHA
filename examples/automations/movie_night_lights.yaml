@@ -11,7 +11,7 @@ mode: single
 
 trigger:
   - trigger: state
-    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    entity_id: media_player.jellyha_admin # Preferred in v1.3.0+ (or legacy sensor.jellyha_now_playing_admin)
     to: "playing"
 
 conditions: []
@@ -20,3 +20,4 @@ actions:
   - action: light.turn_off
     target:
       entity_id: light.living_room # Replace with your lights
+

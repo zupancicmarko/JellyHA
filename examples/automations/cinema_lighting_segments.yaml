@@ -19,7 +19,7 @@ mode: restart
 trigger:
   # 1. Playback started or resumed
   - trigger: state
-    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    entity_id: media_player.jellyha_admin # Preferred in v1.3.0+ (or legacy sensor.jellyha_now_playing_admin)
     to: "playing"
     id: "media_playing"
 
@@ -34,7 +34,7 @@ trigger:
 
   # 3. Playback paused
   - trigger: state
-    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    entity_id: media_player.jellyha_admin # Preferred in v1.3.0+ (or legacy sensor.jellyha_now_playing_admin)
     to: "paused"
     id: "media_paused"
 

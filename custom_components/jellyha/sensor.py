@@ -1,8 +1,8 @@
 """Sensor platform for JellyHA Library."""
 from __future__ import annotations
 
+import logging
 from typing import Any
-
 from datetime import datetime
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -22,6 +22,8 @@ from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .device import get_device_info
 from .ws_client import JellyfinWebSocketClient
 from . import JellyHAConfigEntry
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -379,11 +381,13 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         # Unique ID specifically for this user's viewing state
         self._attr_unique_id = f"{entry.entry_id}_now_playing_{user_id}"
         self._attr_name = f"Now Playing {username}"
-        # self.entity_id = generate_entity_id(
-        #     "sensor.{}", 
-        #     f"jellyha_now_playing_{username}", 
-        #     hass=coordinator.hass
-        # )
+
+        _LOGGER.warning(
+            "The entity sensor.jellyha_now_playing_%s is deprecated in JellyHA v1.3.0 and will be removed in v2.0.0. "
+            "Please migrate automations and cards to media_player.jellyha_%s",
+            username.lower(),
+            username.lower(),
+        )
 
     @property
     def device_info(self) -> DeviceInfo:

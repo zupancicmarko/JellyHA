@@ -18,12 +18,11 @@ trigger:
 conditions:
   # Only run if something is currently playing for this user
   - condition: state
-    entity_id: sensor.jellyha_now_playing_admin # Replace with your user sensor
+    entity_id: media_player.jellyha_admin # Preferred in v1.3.0+ (or legacy sensor.jellyha_now_playing_admin)
     state: "playing"
 
 actions:
-  - action: jellyha.session_control
-    data:
-      # Dynamically get the session_id from the user sensor's attributes
-      session_id: "{{ state_attr('sensor.jellyha_now_playing_admin', 'session_id') }}"
-      command: "Pause"
+  - action: media_player.media_pause
+    target:
+      entity_id: media_player.jellyha_admin
+
