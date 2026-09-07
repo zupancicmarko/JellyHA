@@ -84,25 +84,35 @@ export class JellyHANowPlayingEditor extends LitElement {
       })),
     ];
 
+    // Ensure currently configured entity is always present
+    if (this._config.entity && !availableEntities.some((e) => e.entity === this._config.entity)) {
+      availableEntities.unshift({
+        entity: this._config.entity,
+        label: this.hass.states[this._config.entity]?.attributes.friendly_name || this._config.entity,
+      });
+    }
+
     const lang = this.hass.locale?.language || this.hass.language;
 
     return html`
       <div class="card-config">
         <div class="form-row">
-          <ha-select
-            label="${localize(lang, 'editor.now_playing_sensor') || 'Now Playing Entity'}"
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              select: {
+                mode: 'dropdown',
+                custom_value: true,
+                options: availableEntities.map((item) => ({
+                  value: item.entity,
+                  label: item.label,
+                })),
+              },
+            }}
             .value=${this._config.entity || ''}
-            @selected=${this._entityChanged}
-            @closed=${(e: Event) => e.stopPropagation()}
-          >
-            ${availableEntities.map(
-              (item) => html`
-                <mwc-list-item .value=${item.entity}>
-                  ${item.label}
-                </mwc-list-item>
-              `
-            )}
-          </ha-select>
+            label="${localize(lang, 'editor.media_player') || 'Media Player'}"
+            @value-changed=${this._entityChanged}
+          ></ha-selector>
         </div>
 
         <div class="form-row">
@@ -215,9 +225,11 @@ export class JellyHANowPlayingEditor extends LitElement {
     `;
   }
 
-  private _entityChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('entity', target.value);
+  private _entityChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('entity', value);
+    }
   }
 
   private _titleChanged(e: Event): void {

@@ -262,7 +262,7 @@ I.elementStyles = [], I.shadowRootOptions = { mode: "open" }, I[L("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ue = globalThis, je = (t) => t, ie = ue.trustedTypes, Ae = ie ? ie.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ne = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Ue = "?" + T, et = `<${Ue}>`, z = document, F = () => z.createComment(""), B = (t) => t === null || typeof t != "object" && typeof t != "function", me = Array.isArray, tt = (t) => me(t) || typeof t?.[Symbol.iterator] == "function", de = `[ 	
+const ue = globalThis, je = (t) => t, ie = ue.trustedTypes, Ae = ie ? ie.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ue = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + T, et = `<${Ne}>`, z = document, F = () => z.createComment(""), B = (t) => t === null || typeof t != "object" && typeof t != "function", me = Array.isArray, tt = (t) => me(t) || typeof t?.[Symbol.iterator] == "function", de = `[ 	
 \f\r]`, R = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Te = /-->/g, Ee = />/g, E = RegExp(`>|${de}(?:([^\\s"'>=/]+)(${de}*=${de}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), Me = /'/g, ze = /"/g, Re = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = it(1), O = Symbol.for("lit-noChange"), c = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), M = z.createTreeWalker(z, 129);
 function Le(t, e) {
@@ -277,7 +277,7 @@ const at = (t, e) => {
     let p, g, _ = -1, m = 0;
     for (; m < d.length && (r.lastIndex = m, g = r.exec(d), g !== null); ) m = r.lastIndex, r === R ? g[1] === "!--" ? r = Te : g[1] !== void 0 ? r = Ee : g[2] !== void 0 ? (Re.test(g[2]) && (o = RegExp("</" + g[2], "g")), r = E) : g[3] !== void 0 && (r = E) : r === E ? g[0] === ">" ? (r = o ?? R, _ = -1) : g[1] === void 0 ? _ = -2 : (_ = r.lastIndex - g[2].length, p = g[1], r = g[3] === void 0 ? E : g[3] === '"' ? ze : Me) : r === ze || r === Me ? r = E : r === Te || r === Ee ? r = R : (r = E, o = void 0);
     const f = r === E && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === R ? d + et : _ >= 0 ? (a.push(p), d.slice(0, _) + Ne + d.slice(_) + T + f) : d + T + (_ === -2 ? h : f);
+    s += r === R ? d + et : _ >= 0 ? (a.push(p), d.slice(0, _) + Ue + d.slice(_) + T + f) : d + T + (_ === -2 ? h : f);
   }
   return [Le(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
@@ -293,7 +293,7 @@ class W {
     }
     for (; (o = M.nextNode()) !== null && d.length < h; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Ne)) {
+        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Ue)) {
           const m = g[r++], f = o.getAttribute(_).split(T), x = /([.?@])?(.*)/.exec(m);
           d.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? st : x[1] === "?" ? rt : x[1] === "@" ? nt : oe }), o.removeAttribute(_);
         } else _.startsWith(T) && (d.push({ type: 6, index: s }), o.removeAttribute(_));
@@ -305,7 +305,7 @@ class W {
             o.append(_[m], F());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === Ue) d.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === Ne) d.push({ type: 2, index: s });
       else {
         let _ = -1;
         for (; (_ = o.data.indexOf(T, _ + 1)) !== -1; ) d.push({ type: 7, index: s }), _ += T.length - 1;
@@ -318,11 +318,11 @@ class W {
     return a.innerHTML = e, a;
   }
 }
-function N(t, e, i = t, a) {
+function U(t, e, i = t, a) {
   if (e === O) return e;
   let o = a !== void 0 ? i._$Co?.[a] : i._$Cl;
   const s = B(e) ? void 0 : e._$litDirective$;
-  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = N(t, o._$AS(t, e.values), o, a)), e;
+  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = U(t, o._$AS(t, e.values), o, a)), e;
 }
 class ot {
   constructor(e, i) {
@@ -371,7 +371,7 @@ class J {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = N(this, e, i), B(e) ? e === c || e == null || e === "" ? (this._$AH !== c && this._$AR(), this._$AH = c) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : tt(e) ? this.k(e) : this._(e);
+    e = U(this, e, i), B(e) ? e === c || e == null || e === "" ? (this._$AH !== c && this._$AR(), this._$AH = c) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : tt(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -424,11 +424,11 @@ class oe {
   _$AI(e, i = this, a, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) e = N(this, e, i, 0), r = !B(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
+    if (s === void 0) e = U(this, e, i, 0), r = !B(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
     else {
       const h = e;
       let d, p;
-      for (e = s[0], d = 0; d < s.length - 1; d++) p = N(this, h[a + d], i, d), p === O && (p = this._$AH[d]), r ||= !B(p) || p !== this._$AH[d], p === c ? e = c : e !== c && (e += (p ?? "") + s[d + 1]), this._$AH[d] = p;
+      for (e = s[0], d = 0; d < s.length - 1; d++) p = U(this, h[a + d], i, d), p === O && (p = this._$AH[d]), r ||= !B(p) || p !== this._$AH[d], p === c ? e = c : e !== c && (e += (p ?? "") + s[d + 1]), this._$AH[d] = p;
     }
     r && !o && this.j(e);
   }
@@ -457,7 +457,7 @@ class nt extends oe {
     super(e, i, a, o, s), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = N(this, e, i, 0) ?? c) === O) return;
+    if ((e = U(this, e, i, 0) ?? c) === O) return;
     const a = this._$AH, o = e === c && a !== c || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== c && (a === c || o);
     o && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -473,7 +473,7 @@ class lt {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    N(this, e);
+    U(this, e);
   }
 }
 const dt = ue.litHtmlPolyfillSupport;
@@ -524,7 +524,7 @@ ct?.({ LitElement: A });
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const U = (t) => (e, i) => {
+const N = (t) => (e, i) => {
   i !== void 0 ? i.addInitializer(() => {
     customElements.define(t, e);
   }) : customElements.define(t, e);
@@ -2017,7 +2017,8 @@ const Fe = X`
     "editor.filter_new_items": "Filter New Items",
     "editor.columns": "Columns",
     "editor.rows": "Rows",
-    "editor.now_playing_sensor": "Now Playing Sensor",
+    "editor.media_player": "Media Player",
+    "editor.now_playing_sensor": "Media Player",
     "editor.auto": "Auto",
     "editor.show_search": "Show Search Bar",
     "search.placeholder_title": "Search Title",
@@ -2100,7 +2101,8 @@ const Fe = X`
     "editor.filter_new_items": "Neue Elemente filtern",
     "editor.columns": "Spalten",
     "editor.rows": "Zeilen",
-    "editor.now_playing_sensor": "Sensor für aktuelle Wiedergabe",
+    "editor.media_player": "Medienplayer",
+    "editor.now_playing_sensor": "Medienplayer",
     "editor.auto": "Automatisch",
     "editor.show_search": "Suchleiste anzeigen",
     "search.placeholder_title": "Titel suchen",
@@ -2183,7 +2185,8 @@ const Fe = X`
     "editor.filter_new_items": "Filtrer les nouveaux éléments",
     "editor.columns": "Colonnes",
     "editor.rows": "Lignes",
-    "editor.now_playing_sensor": "Capteur de lecture en cours",
+    "editor.media_player": "Lecteur multimédia",
+    "editor.now_playing_sensor": "Lecteur multimédia",
     "editor.auto": "Auto",
     "editor.show_search": "Afficher la barre de recherche",
     "search.placeholder_title": "Rechercher un titre",
@@ -2266,7 +2269,8 @@ const Fe = X`
     "editor.filter_new_items": "Filtrar elementos nuevos",
     "editor.columns": "Columnas",
     "editor.rows": "Filas",
-    "editor.now_playing_sensor": "Sensor de reproducción actual",
+    "editor.media_player": "Reproductor multimedia",
+    "editor.now_playing_sensor": "Reproductor multimedia",
     "editor.auto": "Auto",
     "editor.show_search": "Mostrar barra de búsqueda",
     "search.placeholder_title": "Buscar título",
@@ -2349,7 +2353,8 @@ const Fe = X`
     "editor.filter_new_items": "Filtra nuovi elementi",
     "editor.columns": "Colonne",
     "editor.rows": "Righe",
-    "editor.now_playing_sensor": "Sensore in riproduzione",
+    "editor.media_player": "Lettore multimediale",
+    "editor.now_playing_sensor": "Lettore multimediale",
     "editor.auto": "Auto",
     "editor.show_search": "Mostra barra di ricerca",
     "search.placeholder_title": "Cerca titolo",
@@ -2432,7 +2437,8 @@ const Fe = X`
     "editor.filter_new_items": "Nieuwe items filteren",
     "editor.columns": "Kolommen",
     "editor.rows": "Rijen",
-    "editor.now_playing_sensor": 'Sensor "Nu aan het spelen"',
+    "editor.media_player": "Mediaspeler",
+    "editor.now_playing_sensor": "Mediaspeler",
     "editor.auto": "Auto",
     "editor.show_search": "Zoekbalk tonen",
     "search.placeholder_title": "Zoek titel",
@@ -2515,7 +2521,8 @@ const Fe = X`
     "editor.filter_new_items": "Filtriraj nove elemente",
     "editor.columns": "Stolpci",
     "editor.rows": "Vrstice",
-    "editor.now_playing_sensor": "Senzor predvajanja",
+    "editor.media_player": "Predvajalnik medijev",
+    "editor.now_playing_sensor": "Predvajalnik medijev",
     "editor.auto": "Avtomatsko",
     "editor.show_search": "Prikaži iskalno vrstico",
     "search.placeholder_title": "Išči naslov",
@@ -2598,7 +2605,8 @@ const Fe = X`
     "editor.filter_new_items": "Фильтр новых элементов",
     "editor.columns": "Столбцы",
     "editor.rows": "Строки",
-    "editor.now_playing_sensor": "Сенсор текущего воспроизведения",
+    "editor.media_player": "Медиаплеер",
+    "editor.now_playing_sensor": "Медиаплеер",
     "editor.auto": "Авто",
     "editor.show_search": "Показывать панель поиска",
     "search.placeholder_title": "Поиск по названию",
@@ -2615,7 +2623,7 @@ var ut = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, k = (t, e,
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && ut(e, i, o), o;
 };
-let b = class extends A {
+let w = class extends A {
   constructor() {
     super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
       this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
@@ -3538,54 +3546,54 @@ let b = class extends A {
     return null;
   }
 };
-b.styles = X`
+w.styles = X`
         /* Styles handled in _getPortalStyles */
     `;
 k([
   P({ attribute: !1 })
-], b.prototype, "hass", 2);
+], w.prototype, "hass", 2);
 k([
   u()
-], b.prototype, "_item", 2);
+], w.prototype, "_item", 2);
 k([
   u()
-], b.prototype, "_nextUpItem", 2);
+], w.prototype, "_nextUpItem", 2);
 k([
   u()
-], b.prototype, "_defaultCastDevice", 2);
+], w.prototype, "_defaultCastDevice", 2);
 k([
   u()
-], b.prototype, "_serverEntityId", 2);
+], w.prototype, "_serverEntityId", 2);
 k([
   u()
-], b.prototype, "_open", 2);
+], w.prototype, "_open", 2);
 k([
   u()
-], b.prototype, "_confirmDelete", 2);
+], w.prototype, "_confirmDelete", 2);
 k([
   u()
-], b.prototype, "_viewMode", 2);
+], w.prototype, "_viewMode", 2);
 k([
   u()
-], b.prototype, "_episodes", 2);
+], w.prototype, "_episodes", 2);
 k([
   u()
-], b.prototype, "_touchStartY", 2);
+], w.prototype, "_touchStartY", 2);
 k([
   u()
-], b.prototype, "_currentTranslateY", 2);
+], w.prototype, "_currentTranslateY", 2);
 k([
   u()
-], b.prototype, "_isDragging", 2);
-b = k([
-  U("jellyha-item-details-modal")
-], b);
+], w.prototype, "_isDragging", 2);
+w = k([
+  N("jellyha-item-details-modal")
+], w);
 var ft = Object.defineProperty, yt = Object.getOwnPropertyDescriptor, ye = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? yt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && ft(e, i, o), o;
 };
-function wt(t, e, i) {
+function bt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -4092,7 +4100,7 @@ let G = class extends A {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, wt(this, "config-changed", { config: i });
+    this._config = i, bt(this, "config-changed", { config: i });
   }
 };
 G.styles = X`
@@ -4128,12 +4136,12 @@ ye([
   u()
 ], G.prototype, "_config", 2);
 G = ye([
-  U("jellyha-library-editor")
+  N("jellyha-library-editor")
 ], G);
-var bt = Object.defineProperty, vt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+var wt = Object.defineProperty, vt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? vt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && bt(e, i, o), o;
+  return a && o && wt(e, i, o), o;
 };
 let v = class extends A {
   constructor() {
@@ -4528,9 +4536,9 @@ S([
   u()
 ], v.prototype, "_rewindActive", 2);
 v = S([
-  U("jellyha-media-item")
+  N("jellyha-media-item")
 ], v);
-var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, w = (t, e, i, a) => {
+var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, b = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? $t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && xt(e, i, o), o;
@@ -5361,61 +5369,61 @@ let y = class extends A {
   }
 };
 y.styles = Fe;
-w([
+b([
   P({ attribute: !1 })
 ], y.prototype, "hass", 2);
-w([
+b([
   u()
 ], y.prototype, "_config", 2);
-w([
+b([
   u()
 ], y.prototype, "_currentPage", 2);
-w([
+b([
   u()
 ], y.prototype, "_itemsPerPage", 2);
-w([
+b([
   u()
 ], y.prototype, "_pressStartTime", 2);
-w([
+b([
   u()
 ], y.prototype, "_holdTimer", 2);
-w([
+b([
   u()
 ], y.prototype, "_isHoldActive", 2);
-w([
+b([
   u()
 ], y.prototype, "_rewindActive", 2);
-w([
+b([
   u()
 ], y.prototype, "_items", 2);
-w([
+b([
   u()
 ], y.prototype, "_error", 2);
-w([
+b([
   u()
 ], y.prototype, "_lastUpdate", 2);
-w([
+b([
   u()
 ], y.prototype, "_mostRecentNextUpItemId", 2);
-w([
+b([
   u()
 ], y.prototype, "_searchQuery", 2);
-w([
+b([
   u()
 ], y.prototype, "_searchGenre", 2);
-w([
+b([
   gt("jellyha-item-details-modal")
 ], y.prototype, "_modal", 2);
-w([
+b([
   u()
 ], y.prototype, "_scrollProgress", 2);
-w([
+b([
   u()
 ], y.prototype, "_hasScrollableContent", 2);
-y = w([
-  U("jellyha-library-card")
+y = b([
+  N("jellyha-library-card")
 ], y);
-var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, we = (t, e, i, a) => {
+var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, be = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? Pt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && Ct(e, i, o), o;
@@ -5448,24 +5456,31 @@ let Y = class extends A {
         entity: o,
         label: `${this.hass.states[o]?.attributes.friendly_name || o} (Legacy Sensor)`
       }))
-    ], a = this.hass.locale?.language || this.hass.language;
+    ];
+    this._config.entity && !i.some((o) => o.entity === this._config.entity) && i.unshift({
+      entity: this._config.entity,
+      label: this.hass.states[this._config.entity]?.attributes.friendly_name || this._config.entity
+    });
+    const a = this.hass.locale?.language || this.hass.language;
     return n`
       <div class="card-config">
         <div class="form-row">
-          <ha-select
-            label="${l(a, "editor.now_playing_sensor") || "Now Playing Entity"}"
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+      select: {
+        mode: "dropdown",
+        custom_value: !0,
+        options: i.map((o) => ({
+          value: o.entity,
+          label: o.label
+        }))
+      }
+    }}
             .value=${this._config.entity || ""}
-            @selected=${this._entityChanged}
-            @closed=${(o) => o.stopPropagation()}
-          >
-            ${i.map(
-      (o) => n`
-                <mwc-list-item .value=${o.entity}>
-                  ${o.label}
-                </mwc-list-item>
-              `
-    )}
-          </ha-select>
+            label="${l(a, "editor.media_player") || "Media Player"}"
+            @value-changed=${this._entityChanged}
+          ></ha-selector>
         </div>
 
         <div class="form-row">
@@ -5578,8 +5593,8 @@ let Y = class extends A {
     `;
   }
   _entityChanged(t) {
-    const e = t.target;
-    this._updateConfig("entity", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("entity", e);
   }
   _titleChanged(t) {
     const e = t.target;
@@ -5666,14 +5681,14 @@ Y.styles = X`
       flex: 1;
     }
   `;
-we([
+be([
   P({ attribute: !1 })
 ], Y.prototype, "hass", 2);
-we([
+be([
   u()
 ], Y.prototype, "_config", 2);
-Y = we([
-  U("jellyha-now-playing-editor")
+Y = be([
+  N("jellyha-now-playing-editor")
 ], Y);
 var At = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, j = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? Tt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
@@ -5764,7 +5779,7 @@ let $ = class extends A {
       this._cachedBackdropUrl = Z ? H(Z, 640) : void 0;
     }
     d !== this._cachedColorItemId && h && (this._cachedColorItemId = d, this._extractDominantColor(H(h, 80)));
-    const p = this._cachedBackdropUrl, g = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", q = [se, re].filter(Boolean).join(" • "), V = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", be = i.season !== void 0 ? i.season : e.attributes.media_season, ve = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && be !== void 0 && ve !== void 0 ? `S${String(be).padStart(2, "0")}E${String(ve).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
+    const p = this._cachedBackdropUrl, g = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", q = [se, re].filter(Boolean).join(" • "), V = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", we = i.season !== void 0 ? i.season : e.attributes.media_season, ve = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && we !== void 0 && ve !== void 0 ? `S${String(we).padStart(2, "0")}E${String(ve).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
     return n`
             <ha-card class="jellyha-now-playing ${g ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${g ? n`
@@ -7291,6 +7306,6 @@ j([
   u()
 ], $.prototype, "_optimisticSeekPercent", 2);
 $ = j([
-  U("jellyha-now-playing-card")
+  N("jellyha-now-playing-card")
 ], $);
 //# sourceMappingURL=jellyha-cards.js.map
