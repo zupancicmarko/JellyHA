@@ -5,19 +5,23 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.0] - 2026-09-07
 
 ### Added
-- **Live Media Segment Detection**: Real-time detection of `Intro`, `Outro`, `Recap`, `Preview`, and `Commercial` segments from Jellyfin's MediaSegments API (e.g. Intro Skipper).
-- **Segment Attributes & Timing**: Exposed `media_segment_type` and precise `segment_end_seconds` on media player entities, enabling accurate auto-skip and automation triggers.
-- **Chapter Awareness**: Media players now expose `media_chapter_name`, `media_chapter_index`, `media_chapter_count`, and `is_last_chapter`.
-- **Synthetic Chapters**: Automatic synthetic chapter generation for media files without embedded chapter markers.
-- **Segment & Chapter Events**: Fired `media_chapter_change` and `media_segment_change` events on Home Assistant event bus with entry/exit signals (`in_segment=True/False`).
-- **Examples Knowledge Base**: Moved automation and dashboard examples out of `README.md` into a structured `examples/` directory with dedicated subfolders (`automations/`, `dashboards/`).
-- **Now Playing Card**: Added chapter and segment status indicators to the custom dashboard card.
+- **Live Media Segment Detection**: Real-time detection of `Intro`, `Outro`, `Recap`, `Preview`, and `Commercial` segments from Jellyfin's MediaSegments API (e.g., Intro Skipper plugin) as well as fallback regex classification from chapter titles.
+- **Segment Attributes & Accurate Timing**: Added `media_segment_type` and live `segment_end_seconds` attributes to `media_player` entities, enabling precise auto-skip and ambient automation triggers.
+- **Chapter Awareness & Attributes**: Added `media_chapter_name`, `media_chapter_index`, `media_chapter_count`, and `is_last_chapter` attributes to `media_player` entities.
+- **Synthetic Chapters**: Automatic generation of synthetic chapter boundaries for media files without embedded MKV chapter markers when segment providers (like Intro Skipper) detect scenes.
+- **Segment & Chapter Change Events**: Fired `media_chapter_change` and `media_segment_change` events on the Home Assistant event bus with entry/exit signals (`in_segment=True/False`), current chapter context, and exact `segment_end_seconds`.
+- **Device Triggers**: Added device triggers for chapter and segment changes for easy automation building in the HA UI.
+- **Now Playing Card Updates**: Added visual badges for current chapter name/index and active segment type (Intro, Outro, Recap).
+- **Examples Knowledge Base**: Structured repository examples into a dedicated `examples/` directory with `automations/` (cinema lighting, auto-skip intro, doorbell pause, new movie notifications) and `dashboards/` (now playing cards, library cards, system monitoring).
+
+### Changed
+- **Documentation Restructuring**: Streamlined `README.md` by replacing long inline YAML code blocks with references to the new `examples/` directory.
 
 ### Fixed
-- **Intro/Outro Detection Decoupling**: Fixed an issue where Intro and Outro segments were missed when segment boundaries did not align with embedded chapter start markers.
+- **Segment-Chapter Decoupling**: Fixed an issue where Intro and Outro segments were missed because Intro Skipper's audio-detected boundaries did not align with coarse embedded chapter start markers. Segments are now evaluated independently based on real-time playback position.
 
 ## [1.2.0] - 2026-03-22
 
