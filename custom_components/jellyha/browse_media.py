@@ -4,8 +4,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.media_player import BrowseMedia
-from homeassistant.components.media_player.const import MediaClass, MediaType
+from homeassistant.components.media_player import (
+    BrowseMedia,
+    MediaClass,
+    MediaType,
+)
 from homeassistant.components.http.auth import async_sign_path
 from homeassistant.core import HomeAssistant
 

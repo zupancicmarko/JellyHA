@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.media_player import BrowseMedia
+from homeassistant.components.media_player import BrowseMedia, MediaClass
 from homeassistant.components.media_source.error import MediaSourceError, Unresolvable
 from homeassistant.components.media_source.models import (
     BrowseMediaSource,
@@ -14,7 +14,6 @@ from homeassistant.components.media_source.models import (
 )
 from homeassistant.core import HomeAssistant
 
-from homeassistant.components.media_player.const import MediaClass
 from .browse_media import async_browse_media
 from .const import DOMAIN
 

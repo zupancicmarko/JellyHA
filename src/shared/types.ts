@@ -41,7 +41,7 @@ export interface LovelaceCardConfig {
 export interface MediaItem {
     id: string;
     name: string;
-    type: 'Movie' | 'Series';
+    type: 'Movie' | 'Series' | 'Episode' | string;
     year?: number;
     runtime_minutes?: number;
     genres: string[];
@@ -75,6 +75,7 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     title?: string;
     layout?: 'carousel' | 'grid' | 'list';
     media_type?: 'movies' | 'series' | 'next_up' | 'both';
+    tv_content?: 'series' | 'episodes';
     items_per_page?: number;
     max_pages?: number;
     auto_swipe_interval?: number; // seconds, 0 = disabled

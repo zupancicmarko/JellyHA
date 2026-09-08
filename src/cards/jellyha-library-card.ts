@@ -886,6 +886,16 @@ export class JellyHALibraryCard extends LitElement {
           type: 'jellyha/get_user_next_up',
           entity_id: this._config.entity
         });
+      } else if (
+        (this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type) &&
+        this._config.tv_content === 'episodes'
+      ) {
+        const itemTypes = this._config.media_type === 'series' ? ['Episode'] : ['Movie', 'Episode'];
+        result = await this.hass.callWS<{ items: MediaItem[] }>({
+          type: 'jellyha/get_latest_items',
+          entity_id: this._config.entity,
+          item_types: itemTypes,
+        });
       } else {
         result = await this.hass.callWS<{ items: MediaItem[] }>({
           type: 'jellyha/get_items',
@@ -928,10 +938,23 @@ export class JellyHALibraryCard extends LitElement {
         const entryId = (entity.attributes as unknown as SensorData).entry_id;
         const lastUpdated = (entity.attributes as unknown as SensorData).last_updated;
 
-        // If entry_id changed or last_updated changed, fetch items
-        // Also fetch if we haven't fetched yet (empty items)
+        let shouldFetch = false;
         if (lastUpdated !== this._lastUpdate || (this._items.length === 0 && entryId)) {
           this._lastUpdate = lastUpdated;
+          shouldFetch = true;
+        } else if (changedProps.has('_config')) {
+          const oldConfig = changedProps.get('_config') as JellyHALibraryCardConfig | undefined;
+          if (
+            oldConfig &&
+            (oldConfig.media_type !== this._config?.media_type ||
+              oldConfig.tv_content !== this._config?.tv_content ||
+              oldConfig.entity !== this._config?.entity)
+          ) {
+            shouldFetch = true;
+          }
+        }
+
+        if (shouldFetch) {
           this._fetchItems();
         }
       }
@@ -1016,7 +1039,17 @@ export class JellyHALibraryCard extends LitElement {
     if (this._config.media_type === 'movies') {
       filtered = filtered.filter((item) => item.type === 'Movie');
     } else if (this._config.media_type === 'series') {
-      filtered = filtered.filter((item) => item.type === 'Series');
+      if (this._config.tv_content === 'episodes') {
+        filtered = filtered.filter((item) => item.type === 'Episode');
+      } else {
+        filtered = filtered.filter((item) => item.type === 'Series');
+      }
+    } else if (this._config.media_type === 'both' || !this._config.media_type) {
+      if (this._config.tv_content === 'episodes') {
+        filtered = filtered.filter((item) => item.type === 'Movie' || item.type === 'Episode');
+      } else {
+        filtered = filtered.filter((item) => item.type !== 'Episode');
+      }
     } else if (this._config.media_type === 'next_up') {
       // Next Up items are already filtered by backend
       // But we might want to ensure they are valid

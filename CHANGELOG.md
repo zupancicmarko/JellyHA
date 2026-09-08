@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Device Triggers**: Added device triggers for chapter and segment changes for easy automation building in the HA UI.
 - **Now Playing Card Updates**: Added visual badges for current chapter name/index and active segment type (Intro, Outro, Recap).
 - **Examples Knowledge Base**: Structured repository examples into a dedicated `examples/` directory with `automations/` (cinema lighting, auto-skip intro, doorbell pause, new movie notifications) and `dashboards/` (now playing cards, library cards, system monitoring).
+- **TV Content (Shows / Series vs. Episodes)**: Added a `tv_content` sub-option under **TV Shows Only** and **Movies & TV Shows** in the JellyHA Library Card. Users can now choose between showing full series or newly added individual episodes (`Shows / Series` vs `Episodes`).
+- **Use Series Cover Image in Library Cards**: Made the `use_series_image` option available for episode cards (under TV Shows and combined Movies & TV Shows), allowing episode items to optionally display their parent show's portrait cover poster rather than 16:9 episode screenshots for a clean, uniform grid/carousel layout.
+- **WebSocket On-Demand Media Endpoint**: Added `jellyha/get_latest_items` WebSocket command to query newly added episodes or combined media with multi-library deduplication and chronological ordering.
+- **Modernized Card Editors**: Replaced legacy MWC elements with Home Assistant's native `<ha-selector>` across dropdowns, number inputs, text inputs, and sliders, fixing invisible form fields (`title`, `columns`, `items_per_page`, `max_pages`, `auto_swipe_interval`, `new_badge_days`) and dropdown selection issues.
+- **Consolidated MediaType Imports**: Updated media player, browse media, and media source components to import `MediaType` and `MediaClass` directly from `homeassistant.components.media_player`.
 
 ### Deprecated
 - **`sensor.jellyha_now_playing_<user>` Deprecation**: The legacy Now Playing sensor entity is formally deprecated as of v1.3.0 and will be removed in v2.0.0. All playback state, rich metadata, transport controls, and segment information are fully available on `media_player.jellyha_<user>`. Existing automations and dashboards will continue to function normally during the deprecation period.

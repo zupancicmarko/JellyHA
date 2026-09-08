@@ -760,6 +760,8 @@ export class JellyHAItemDetailsModal extends LitElement {
                 <div class="header-group">
                     <h1>${item.name}</h1>
                     <div class="header-sub">
+                        ${item.series_name ? html`<span>${item.series_name}</span>` : nothing}
+                        ${item.season !== undefined && item.episode !== undefined ? html`<span class="badge">S${String(item.season).padStart(2, '0')}E${String(item.episode).padStart(2, '0')}</span>` : nothing}
                         ${year ? html`<span>${year}</span>` : nothing}
                         <span class="badge">${item.type}</span>
                         ${item.official_rating ? html`<span class="badge">${item.official_rating}</span>` : nothing}

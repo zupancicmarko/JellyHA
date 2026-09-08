@@ -140,6 +140,29 @@ export class JellyHALibraryEditor extends LitElement {
           </div>
         </div>
 
+        ${(this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type)
+        ? html`
+          <div class="form-row">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'series', label: localize(lang, 'editor.tv_content_series') },
+                    { value: 'episodes', label: localize(lang, 'editor.tv_content_episodes') },
+                  ],
+                },
+              }}
+              .value=${this._config.tv_content || 'series'}
+              .label=${localize(lang, 'editor.tv_content')}
+              label="${localize(lang, 'editor.tv_content')}"
+              @value-changed=${this._tvContentChanged}
+            ></ha-selector>
+          </div>
+        `
+        : ''}
+
         ${this._config.layout === 'grid' || this._config.layout === 'list'
         ? html`
               <div class="form-row">
@@ -516,9 +539,9 @@ export class JellyHALibraryEditor extends LitElement {
       </div>
     </div>
 
-    ${this._config.media_type === 'next_up'
+    ${(this._config.media_type === 'next_up' || ((this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type) && this._config.tv_content === 'episodes'))
         ? html`
-          <div class=\"checkbox-row\">
+          <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.use_series_image === true}
               @change=${this._useSeriesImageChanged}
@@ -558,6 +581,13 @@ export class JellyHALibraryEditor extends LitElement {
     const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('media_type', value);
+    }
+  }
+
+  private _tvContentChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('tv_content', value);
     }
   }
 

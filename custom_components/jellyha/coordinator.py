@@ -345,6 +345,10 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "community_rating": rating,
             "season_name": item.get("SeasonName"),
             "index_number": item.get("IndexNumber"),
+            "series_name": item.get("SeriesName"),
+            "series_id": item.get("SeriesId"),
+            "season": item.get("ParentIndexNumber"),
+            "episode": item.get("IndexNumber"),
             # Music-specific fields (None for non-music items)
             "artist_name": artist_name,
             "album_artist": album_artist,

@@ -11,7 +11,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 
-from .const import DOMAIN
+from .const import DOMAIN, ITEM_TYPE_EPISODE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         websocket_api.async_register_command(hass, websocket_get_user_next_up)
         websocket_api.async_register_command(hass, websocket_get_episodes)
         websocket_api.async_register_command(hass, websocket_search_media)
+        websocket_api.async_register_command(hass, websocket_get_latest_items)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -392,3 +393,67 @@ async def websocket_search_media(
     except Exception as err:
         _LOGGER.exception("Error searching media: %s", err)
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")
+
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/get_latest_items",
+    vol.Required("entity_id"): cv.entity_id,
+    vol.Optional("item_types"): [str],
+    vol.Optional("limit", default=100): int,
+})
+@websocket_api.async_response
+async def websocket_get_latest_items(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Handle get latest items command."""
+    entity_id = msg["entity_id"]
+    item_types = msg.get("item_types") or [ITEM_TYPE_EPISODE]
+    limit = msg.get("limit", 100)
+
+    state = hass.states.get(entity_id)
+    if not state:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, f"Entity {entity_id} not found")
+        return
+
+    entry_id = state.attributes.get("entry_id")
+    if not entry_id:
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Missing entry_id")
+        return
+
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if not entry or not hasattr(entry, "runtime_data"):
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Integration not loaded")
+        return
+
+    coordinator = entry.runtime_data.library
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, "Library coordinator not found")
+        return
+
+    try:
+        if not coordinator._api:
+            await coordinator._async_setup()
+
+        user_id = coordinator.entry.data.get("user_id")
+        if not user_id:
+            connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "User ID missing from config")
+            return
+
+        libraries = coordinator.entry.data.get("libraries", [])
+        raw_items = await coordinator._api.get_library_items(
+            user_id=user_id,
+            limit=limit,
+            item_types=item_types,
+            library_ids=libraries if libraries else None,
+        )
+
+        items = []
+        if raw_items:
+            items = await asyncio.gather(*(coordinator._async_transform_item(item) for item in raw_items))
+
+        connection.send_result(msg["id"], {"items": list(items)})
+    except Exception as err:
+        _LOGGER.exception("Error fetching latest items: %s", err)
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")

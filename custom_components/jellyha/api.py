@@ -231,7 +231,7 @@ class JellyfinApiClient:
             "SortOrder": "Descending",
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
-            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId",
+            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId,ParentIndexNumber,IndexNumber,SeriesName,SeriesId,SeasonName,SeasonId,SeriesPrimaryImageTag",
         }
 
         if limit > 0:
@@ -279,6 +279,11 @@ class JellyfinApiClient:
                         if item_id and item_id not in seen_ids:
                             seen_ids.add(item_id)
                             all_items.append(item)
+                if params.get("SortBy") == "DateCreated":
+                    reverse = params.get("SortOrder", "Descending").lower() == "descending"
+                    all_items.sort(key=lambda x: x.get("DateCreated") or "", reverse=reverse)
+                if limit > 0:
+                    all_items = all_items[:limit]
                 return all_items
 
         result = await self._request("GET", f"/Users/{user_id}/Items", params=params)
