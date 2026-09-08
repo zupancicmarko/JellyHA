@@ -14,7 +14,7 @@ export const cardStyles = css`
     --jf-text: var(--primary-text-color, #fff);
     --jf-text-secondary: var(--secondary-text-color, rgba(255, 255, 255, 0.7));
     --jf-divider: var(--divider-color, rgba(255, 255, 255, 0.12));
-    --jf-poster-radius: var(--ha-card-border-radius, 12px);
+    --jf-poster-radius: var(--jellyha-poster-border-radius, 12px);
     --jf-transition: 0.2s ease-out;
     --jf-movie-badge: #AA5CC3;
     --jf-series-badge: #F2A218;

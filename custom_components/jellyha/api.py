@@ -231,7 +231,7 @@ class JellyfinApiClient:
             "SortOrder": "Descending",
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
-            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId,ParentIndexNumber,IndexNumber,SeriesName,SeriesId,SeasonName,SeasonId,SeriesPrimaryImageTag",
+            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId,ParentIndexNumber,IndexNumber,SeriesName,SeriesId,SeasonName,SeasonId,SeriesPrimaryImageTag,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,MediaStreams",
         }
 
         if limit > 0:
@@ -306,7 +306,7 @@ class JellyfinApiClient:
             "UserId": user_id,
             "SeriesId": series_id,
             "Limit": 1,
-            "Fields": "MediaSources,MediaStreams,Overview,RunTimeTicks,OfficialRating,CommunityRating"
+            "Fields": "MediaSources,MediaStreams,Overview,RunTimeTicks,OfficialRating,CommunityRating,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,SeriesPrimaryImageTag"
         }
         result = await self._request("GET", "/Shows/NextUp", params=params)
         items = result.get("Items", [])
@@ -319,7 +319,7 @@ class JellyfinApiClient:
             "SortBy": "DatePlayed",
             "SortOrder": "Descending",
             "Dependencies": "true",
-            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,SeriesInfo,ParentId",
+            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,SeriesInfo,ParentId,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,MediaStreams,SeriesPrimaryImageTag",
         }
         if limit:
             params["Limit"] = limit
@@ -337,7 +337,7 @@ class JellyfinApiClient:
             "IncludeItemTypes": "Episode",
             "SortBy": "SortName", # Sort by episode number typically via SortName or index
             "SortOrder": "Ascending",
-            "Fields": "PrimaryImageAspectRatio,Overview,MediaStreams,RunTimeTicks,OfficialRating,CommunityRating,UserData",
+            "Fields": "PrimaryImageAspectRatio,Overview,MediaStreams,RunTimeTicks,OfficialRating,CommunityRating,UserData,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,SeriesPrimaryImageTag",
         }
         
         if season is not None:
@@ -357,9 +357,9 @@ class JellyfinApiClient:
         params = {
             "IncludeItemTypes": "Movie,Series,Episode",
             "Recursive": "true",
-            "Fields": "Overview,RemoteTrailers,DateCreated",
+            "Fields": "Overview,RemoteTrailers,DateCreated,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId",
             "ImageTypeLimit": 1,
-            "EnableImageTypes": "Primary,Banner,Thumb",
+            "EnableImageTypes": "Primary,Banner,Thumb,Backdrop",
             "Limit": limit,
         }
         result = await self._request("GET", f"/Items/{item_id}/Similar", params=params)

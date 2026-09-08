@@ -233,7 +233,7 @@ async def websocket_get_user_next_up(
     vol.Required("type"): "jellyha/get_episodes",
     vol.Required("entity_id"): cv.entity_id,
     vol.Required("series_id"): str,
-    vol.Required("season"): int,
+    vol.Optional("season"): vol.Any(int, None),
 })
 @websocket_api.async_response
 async def websocket_get_episodes(
@@ -244,7 +244,8 @@ async def websocket_get_episodes(
     """Handle get episodes command."""
     entity_id = msg["entity_id"]
     series_id = msg["series_id"]
-    season = msg["season"]
+    season = msg.get("season")
+    _LOGGER.debug(f"Fetching episodes for series {series_id}, season={season}")
     
     state = hass.states.get(entity_id)
     if not state:

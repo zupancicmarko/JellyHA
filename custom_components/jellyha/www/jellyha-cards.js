@@ -4,207 +4,207 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ee = globalThis, pe = ee.ShadowRoot && (ee.ShadyCSS === void 0 || ee.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, _e = Symbol(), ke = /* @__PURE__ */ new WeakMap();
-let Oe = class {
-  constructor(e, i, a) {
-    if (this._$cssResult$ = !0, a !== _e) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
-    this.cssText = e, this.t = i;
+let Ue = class {
+  constructor(t, a, i) {
+    if (this._$cssResult$ = !0, i !== _e) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t, this.t = a;
   }
   get styleSheet() {
-    let e = this.o;
-    const i = this.t;
-    if (pe && e === void 0) {
-      const a = i !== void 0 && i.length === 1;
-      a && (e = ke.get(i)), e === void 0 && ((this.o = e = new CSSStyleSheet()).replaceSync(this.cssText), a && ke.set(i, e));
+    let t = this.o;
+    const a = this.t;
+    if (pe && t === void 0) {
+      const i = a !== void 0 && a.length === 1;
+      i && (t = ke.get(a)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), i && ke.set(a, t));
     }
-    return e;
+    return t;
   }
   toString() {
     return this.cssText;
   }
 };
-const We = (t) => new Oe(typeof t == "string" ? t : t + "", void 0, _e), X = (t, ...e) => {
-  const i = t.length === 1 ? t[0] : e.reduce((a, o, s) => a + ((r) => {
+const We = (e) => new Ue(typeof e == "string" ? e : e + "", void 0, _e), X = (e, ...t) => {
+  const a = e.length === 1 ? e[0] : t.reduce((i, o, s) => i + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-  })(o) + t[s + 1], t[0]);
-  return new Oe(i, t, _e);
-}, Ge = (t, e) => {
-  if (pe) t.adoptedStyleSheets = e.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
-  else for (const i of e) {
-    const a = document.createElement("style"), o = ee.litNonce;
-    o !== void 0 && a.setAttribute("nonce", o), a.textContent = i.cssText, t.appendChild(a);
+  })(o) + e[s + 1], e[0]);
+  return new Ue(a, e, _e);
+}, Ge = (e, t) => {
+  if (pe) e.adoptedStyleSheets = t.map((a) => a instanceof CSSStyleSheet ? a : a.styleSheet);
+  else for (const a of t) {
+    const i = document.createElement("style"), o = ee.litNonce;
+    o !== void 0 && i.setAttribute("nonce", o), i.textContent = a.cssText, e.appendChild(i);
   }
-}, Se = pe ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
-  let i = "";
-  for (const a of e.cssRules) i += a.cssText;
-  return We(i);
-})(t) : t;
+}, Se = pe ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
+  let a = "";
+  for (const i of t.cssRules) a += i.cssText;
+  return We(a);
+})(e) : e;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Ye, defineProperty: Xe, getOwnPropertyDescriptor: Ve, getOwnPropertyNames: Je, getOwnPropertySymbols: qe, getPrototypeOf: Ze } = Object, ae = globalThis, Ce = ae.trustedTypes, Ke = Ce ? Ce.emptyScript : "", Qe = ae.reactiveElementPolyfillSupport, L = (t, e) => t, te = { toAttribute(t, e) {
-  switch (e) {
+const { is: Ye, defineProperty: Xe, getOwnPropertyDescriptor: Ve, getOwnPropertyNames: Je, getOwnPropertySymbols: qe, getPrototypeOf: Ze } = Object, ae = globalThis, Ce = ae.trustedTypes, Ke = Ce ? Ce.emptyScript : "", Qe = ae.reactiveElementPolyfillSupport, R = (e, t) => e, te = { toAttribute(e, t) {
+  switch (t) {
     case Boolean:
-      t = t ? Ke : null;
+      e = e ? Ke : null;
       break;
     case Object:
     case Array:
-      t = t == null ? t : JSON.stringify(t);
+      e = e == null ? e : JSON.stringify(e);
   }
-  return t;
-}, fromAttribute(t, e) {
-  let i = t;
-  switch (e) {
+  return e;
+}, fromAttribute(e, t) {
+  let a = e;
+  switch (t) {
     case Boolean:
-      i = t !== null;
+      a = e !== null;
       break;
     case Number:
-      i = t === null ? null : Number(t);
+      a = e === null ? null : Number(e);
       break;
     case Object:
     case Array:
       try {
-        i = JSON.parse(t);
+        a = JSON.parse(e);
       } catch {
-        i = null;
+        a = null;
       }
   }
-  return i;
-} }, ue = (t, e) => !Ye(t, e), Pe = { attribute: !0, type: String, converter: te, reflect: !1, useDefault: !1, hasChanged: ue };
+  return a;
+} }, ue = (e, t) => !Ye(e, t), Pe = { attribute: !0, type: String, converter: te, reflect: !1, useDefault: !1, hasChanged: ue };
 Symbol.metadata ??= Symbol("metadata"), ae.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let D = class extends HTMLElement {
-  static addInitializer(e) {
-    this._$Ei(), (this.l ??= []).push(e);
+  static addInitializer(t) {
+    this._$Ei(), (this.l ??= []).push(t);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(e, i = Pe) {
-    if (i.state && (i.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((i = Object.create(i)).wrapped = !0), this.elementProperties.set(e, i), !i.noAccessor) {
-      const a = Symbol(), o = this.getPropertyDescriptor(e, a, i);
-      o !== void 0 && Xe(this.prototype, e, o);
+  static createProperty(t, a = Pe) {
+    if (a.state && (a.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((a = Object.create(a)).wrapped = !0), this.elementProperties.set(t, a), !a.noAccessor) {
+      const i = Symbol(), o = this.getPropertyDescriptor(t, i, a);
+      o !== void 0 && Xe(this.prototype, t, o);
     }
   }
-  static getPropertyDescriptor(e, i, a) {
-    const { get: o, set: s } = Ve(this.prototype, e) ?? { get() {
-      return this[i];
+  static getPropertyDescriptor(t, a, i) {
+    const { get: o, set: s } = Ve(this.prototype, t) ?? { get() {
+      return this[a];
     }, set(r) {
-      this[i] = r;
+      this[a] = r;
     } };
     return { get: o, set(r) {
       const h = o?.call(this);
-      s?.call(this, r), this.requestUpdate(e, h, a);
+      s?.call(this, r), this.requestUpdate(t, h, i);
     }, configurable: !0, enumerable: !0 };
   }
-  static getPropertyOptions(e) {
-    return this.elementProperties.get(e) ?? Pe;
+  static getPropertyOptions(t) {
+    return this.elementProperties.get(t) ?? Pe;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(L("elementProperties"))) return;
-    const e = Ze(this);
-    e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
+    if (this.hasOwnProperty(R("elementProperties"))) return;
+    const t = Ze(this);
+    t.finalize(), t.l !== void 0 && (this.l = [...t.l]), this.elementProperties = new Map(t.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(L("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(L("properties"))) {
-      const i = this.properties, a = [...Je(i), ...qe(i)];
-      for (const o of a) this.createProperty(o, i[o]);
+    if (this.hasOwnProperty(R("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(R("properties"))) {
+      const a = this.properties, i = [...Je(a), ...qe(a)];
+      for (const o of i) this.createProperty(o, a[o]);
     }
-    const e = this[Symbol.metadata];
-    if (e !== null) {
-      const i = litPropertyMetadata.get(e);
-      if (i !== void 0) for (const [a, o] of i) this.elementProperties.set(a, o);
+    const t = this[Symbol.metadata];
+    if (t !== null) {
+      const a = litPropertyMetadata.get(t);
+      if (a !== void 0) for (const [i, o] of a) this.elementProperties.set(i, o);
     }
     this._$Eh = /* @__PURE__ */ new Map();
-    for (const [i, a] of this.elementProperties) {
-      const o = this._$Eu(i, a);
-      o !== void 0 && this._$Eh.set(o, i);
+    for (const [a, i] of this.elementProperties) {
+      const o = this._$Eu(a, i);
+      o !== void 0 && this._$Eh.set(o, a);
     }
     this.elementStyles = this.finalizeStyles(this.styles);
   }
-  static finalizeStyles(e) {
-    const i = [];
-    if (Array.isArray(e)) {
-      const a = new Set(e.flat(1 / 0).reverse());
-      for (const o of a) i.unshift(Se(o));
-    } else e !== void 0 && i.push(Se(e));
-    return i;
+  static finalizeStyles(t) {
+    const a = [];
+    if (Array.isArray(t)) {
+      const i = new Set(t.flat(1 / 0).reverse());
+      for (const o of i) a.unshift(Se(o));
+    } else t !== void 0 && a.push(Se(t));
+    return a;
   }
-  static _$Eu(e, i) {
-    const a = i.attribute;
-    return a === !1 ? void 0 : typeof a == "string" ? a : typeof e == "string" ? e.toLowerCase() : void 0;
+  static _$Eu(t, a) {
+    const i = a.attribute;
+    return i === !1 ? void 0 : typeof i == "string" ? i : typeof t == "string" ? t.toLowerCase() : void 0;
   }
   constructor() {
     super(), this._$Ep = void 0, this.isUpdatePending = !1, this.hasUpdated = !1, this._$Em = null, this._$Ev();
   }
   _$Ev() {
-    this._$ES = new Promise((e) => this.enableUpdating = e), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((e) => e(this));
+    this._$ES = new Promise((t) => this.enableUpdating = t), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t) => t(this));
   }
-  addController(e) {
-    (this._$EO ??= /* @__PURE__ */ new Set()).add(e), this.renderRoot !== void 0 && this.isConnected && e.hostConnected?.();
+  addController(t) {
+    (this._$EO ??= /* @__PURE__ */ new Set()).add(t), this.renderRoot !== void 0 && this.isConnected && t.hostConnected?.();
   }
-  removeController(e) {
-    this._$EO?.delete(e);
+  removeController(t) {
+    this._$EO?.delete(t);
   }
   _$E_() {
-    const e = /* @__PURE__ */ new Map(), i = this.constructor.elementProperties;
-    for (const a of i.keys()) this.hasOwnProperty(a) && (e.set(a, this[a]), delete this[a]);
-    e.size > 0 && (this._$Ep = e);
+    const t = /* @__PURE__ */ new Map(), a = this.constructor.elementProperties;
+    for (const i of a.keys()) this.hasOwnProperty(i) && (t.set(i, this[i]), delete this[i]);
+    t.size > 0 && (this._$Ep = t);
   }
   createRenderRoot() {
-    const e = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Ge(e, this.constructor.elementStyles), e;
+    const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+    return Ge(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
-    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((e) => e.hostConnected?.());
+    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((t) => t.hostConnected?.());
   }
-  enableUpdating(e) {
+  enableUpdating(t) {
   }
   disconnectedCallback() {
-    this._$EO?.forEach((e) => e.hostDisconnected?.());
+    this._$EO?.forEach((t) => t.hostDisconnected?.());
   }
-  attributeChangedCallback(e, i, a) {
-    this._$AK(e, a);
+  attributeChangedCallback(t, a, i) {
+    this._$AK(t, i);
   }
-  _$ET(e, i) {
-    const a = this.constructor.elementProperties.get(e), o = this.constructor._$Eu(e, a);
-    if (o !== void 0 && a.reflect === !0) {
-      const s = (a.converter?.toAttribute !== void 0 ? a.converter : te).toAttribute(i, a.type);
-      this._$Em = e, s == null ? this.removeAttribute(o) : this.setAttribute(o, s), this._$Em = null;
+  _$ET(t, a) {
+    const i = this.constructor.elementProperties.get(t), o = this.constructor._$Eu(t, i);
+    if (o !== void 0 && i.reflect === !0) {
+      const s = (i.converter?.toAttribute !== void 0 ? i.converter : te).toAttribute(a, i.type);
+      this._$Em = t, s == null ? this.removeAttribute(o) : this.setAttribute(o, s), this._$Em = null;
     }
   }
-  _$AK(e, i) {
-    const a = this.constructor, o = a._$Eh.get(e);
+  _$AK(t, a) {
+    const i = this.constructor, o = i._$Eh.get(t);
     if (o !== void 0 && this._$Em !== o) {
-      const s = a.getPropertyOptions(o), r = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : te;
+      const s = i.getPropertyOptions(o), r = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : te;
       this._$Em = o;
-      const h = r.fromAttribute(i, s.type);
+      const h = r.fromAttribute(a, s.type);
       this[o] = h ?? this._$Ej?.get(o) ?? h, this._$Em = null;
     }
   }
-  requestUpdate(e, i, a, o = !1, s) {
-    if (e !== void 0) {
+  requestUpdate(t, a, i, o = !1, s) {
+    if (t !== void 0) {
       const r = this.constructor;
-      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? ue)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
-      this.C(e, i, a);
+      if (o === !1 && (s = this[t]), i ??= r.getPropertyOptions(t), !((i.hasChanged ?? ue)(s, a) || i.useDefault && i.reflect && s === this._$Ej?.get(t) && !this.hasAttribute(r._$Eu(t, i)))) return;
+      this.C(t, a, i);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
   }
-  C(e, i, { useDefault: a, reflect: o, wrapped: s }, r) {
-    a && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(e) && (this._$Ej.set(e, r ?? i ?? this[e]), s !== !0 || r !== void 0) || (this._$AL.has(e) || (this.hasUpdated || a || (i = void 0), this._$AL.set(e, i)), o === !0 && this._$Em !== e && (this._$Eq ??= /* @__PURE__ */ new Set()).add(e));
+  C(t, a, { useDefault: i, reflect: o, wrapped: s }, r) {
+    i && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t) && (this._$Ej.set(t, r ?? a ?? this[t]), s !== !0 || r !== void 0) || (this._$AL.has(t) || (this.hasUpdated || i || (a = void 0), this._$AL.set(t, a)), o === !0 && this._$Em !== t && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t));
   }
   async _$EP() {
     this.isUpdatePending = !0;
     try {
       await this._$ES;
-    } catch (i) {
-      Promise.reject(i);
+    } catch (a) {
+      Promise.reject(a);
     }
-    const e = this.scheduleUpdate();
-    return e != null && await e, !this.isUpdatePending;
+    const t = this.scheduleUpdate();
+    return t != null && await t, !this.isUpdatePending;
   }
   scheduleUpdate() {
     return this.performUpdate();
@@ -216,25 +216,25 @@ let D = class extends HTMLElement {
         for (const [o, s] of this._$Ep) this[o] = s;
         this._$Ep = void 0;
       }
-      const a = this.constructor.elementProperties;
-      if (a.size > 0) for (const [o, s] of a) {
+      const i = this.constructor.elementProperties;
+      if (i.size > 0) for (const [o, s] of i) {
         const { wrapped: r } = s, h = this[o];
         r !== !0 || this._$AL.has(o) || h === void 0 || this.C(o, void 0, s, h);
       }
     }
-    let e = !1;
-    const i = this._$AL;
+    let t = !1;
+    const a = this._$AL;
     try {
-      e = this.shouldUpdate(i), e ? (this.willUpdate(i), this._$EO?.forEach((a) => a.hostUpdate?.()), this.update(i)) : this._$EM();
-    } catch (a) {
-      throw e = !1, this._$EM(), a;
+      t = this.shouldUpdate(a), t ? (this.willUpdate(a), this._$EO?.forEach((i) => i.hostUpdate?.()), this.update(a)) : this._$EM();
+    } catch (i) {
+      throw t = !1, this._$EM(), i;
     }
-    e && this._$AE(i);
+    t && this._$AE(a);
   }
-  willUpdate(e) {
+  willUpdate(t) {
   }
-  _$AE(e) {
-    this._$EO?.forEach((i) => i.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(e)), this.updated(e);
+  _$AE(t) {
+    this._$EO?.forEach((a) => a.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(t)), this.updated(t);
   }
   _$EM() {
     this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = !1;
@@ -245,88 +245,88 @@ let D = class extends HTMLElement {
   getUpdateComplete() {
     return this._$ES;
   }
-  shouldUpdate(e) {
+  shouldUpdate(t) {
     return !0;
   }
-  update(e) {
-    this._$Eq &&= this._$Eq.forEach((i) => this._$ET(i, this[i])), this._$EM();
+  update(t) {
+    this._$Eq &&= this._$Eq.forEach((a) => this._$ET(a, this[a])), this._$EM();
   }
-  updated(e) {
+  updated(t) {
   }
-  firstUpdated(e) {
+  firstUpdated(t) {
   }
 };
-D.elementStyles = [], D.shadowRootOptions = { mode: "open" }, D[L("elementProperties")] = /* @__PURE__ */ new Map(), D[L("finalized")] = /* @__PURE__ */ new Map(), Qe?.({ ReactiveElement: D }), (ae.reactiveElementVersions ??= []).push("2.1.2");
+D.elementStyles = [], D.shadowRootOptions = { mode: "open" }, D[R("elementProperties")] = /* @__PURE__ */ new Map(), D[R("finalized")] = /* @__PURE__ */ new Map(), Qe?.({ ReactiveElement: D }), (ae.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ge = globalThis, je = (t) => t, ie = ge.trustedTypes, Ae = ie ? ie.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ue = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + T, et = `<${Ne}>`, z = document, F = () => z.createComment(""), B = (t) => t === null || typeof t != "object" && typeof t != "function", me = Array.isArray, tt = (t) => me(t) || typeof t?.[Symbol.iterator] == "function", de = `[ 	
-\f\r]`, R = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Te = /-->/g, Ee = />/g, E = RegExp(`>|${de}(?:([^\\s"'>=/]+)(${de}*=${de}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Me = /'/g, ze = /"/g, Re = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = it(1), O = Symbol.for("lit-noChange"), c = Symbol.for("lit-nothing"), Ie = /* @__PURE__ */ new WeakMap(), M = z.createTreeWalker(z, 129);
-function Le(t, e) {
-  if (!me(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Ae !== void 0 ? Ae.createHTML(e) : e;
+const ge = globalThis, je = (e) => e, ie = ge.trustedTypes, Ae = ie ? ie.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Oe = "$lit$", E = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + E, et = `<${Le}>`, z = document, F = () => z.createComment(""), B = (e) => e === null || typeof e != "object" && typeof e != "function", me = Array.isArray, tt = (e) => me(e) || typeof e?.[Symbol.iterator] == "function", de = `[ 	
+\f\r]`, N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Ee = /-->/g, Te = />/g, T = RegExp(`>|${de}(?:([^\\s"'>=/]+)(${de}*=${de}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Me = /'/g, ze = /"/g, Ne = /^(?:script|style|textarea|title)$/i, it = (e) => (t, ...a) => ({ _$litType$: e, strings: t, values: a }), n = it(1), U = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ie = /* @__PURE__ */ new WeakMap(), M = z.createTreeWalker(z, 129);
+function Re(e, t) {
+  if (!me(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return Ae !== void 0 ? Ae.createHTML(t) : t;
 }
-const at = (t, e) => {
-  const i = t.length - 1, a = [];
-  let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = R;
-  for (let h = 0; h < i; h++) {
-    const d = t[h];
+const at = (e, t) => {
+  const a = e.length - 1, i = [];
+  let o, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = N;
+  for (let h = 0; h < a; h++) {
+    const c = e[h];
     let p, u, _ = -1, m = 0;
-    for (; m < d.length && (r.lastIndex = m, u = r.exec(d), u !== null); ) m = r.lastIndex, r === R ? u[1] === "!--" ? r = Te : u[1] !== void 0 ? r = Ee : u[2] !== void 0 ? (Re.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = E) : u[3] !== void 0 && (r = E) : r === E ? u[0] === ">" ? (r = o ?? R, _ = -1) : u[1] === void 0 ? _ = -2 : (_ = r.lastIndex - u[2].length, p = u[1], r = u[3] === void 0 ? E : u[3] === '"' ? ze : Me) : r === ze || r === Me ? r = E : r === Te || r === Ee ? r = R : (r = E, o = void 0);
-    const f = r === E && t[h + 1].startsWith("/>") ? " " : "";
-    s += r === R ? d + et : _ >= 0 ? (a.push(p), d.slice(0, _) + Ue + d.slice(_) + T + f) : d + T + (_ === -2 ? h : f);
+    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === N ? u[1] === "!--" ? r = Ee : u[1] !== void 0 ? r = Te : u[2] !== void 0 ? (Ne.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = T) : u[3] !== void 0 && (r = T) : r === T ? u[0] === ">" ? (r = o ?? N, _ = -1) : u[1] === void 0 ? _ = -2 : (_ = r.lastIndex - u[2].length, p = u[1], r = u[3] === void 0 ? T : u[3] === '"' ? ze : Me) : r === ze || r === Me ? r = T : r === Ee || r === Te ? r = N : (r = T, o = void 0);
+    const f = r === T && e[h + 1].startsWith("/>") ? " " : "";
+    s += r === N ? c + et : _ >= 0 ? (i.push(p), c.slice(0, _) + Oe + c.slice(_) + E + f) : c + E + (_ === -2 ? h : f);
   }
-  return [Le(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
+  return [Re(e, s + (e[a] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
 class W {
-  constructor({ strings: e, _$litType$: i }, a) {
+  constructor({ strings: t, _$litType$: a }, i) {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = e.length - 1, d = this.parts, [p, u] = at(e, i);
-    if (this.el = W.createElement(p, a), M.currentNode = this.el.content, i === 2 || i === 3) {
+    const h = t.length - 1, c = this.parts, [p, u] = at(t, a);
+    if (this.el = W.createElement(p, i), M.currentNode = this.el.content, a === 2 || a === 3) {
       const _ = this.el.content.firstChild;
       _.replaceWith(..._.childNodes);
     }
-    for (; (o = M.nextNode()) !== null && d.length < h; ) {
+    for (; (o = M.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Ue)) {
-          const m = u[r++], f = o.getAttribute(_).split(T), x = /([.?@])?(.*)/.exec(m);
-          d.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? st : x[1] === "?" ? rt : x[1] === "@" ? nt : oe }), o.removeAttribute(_);
-        } else _.startsWith(T) && (d.push({ type: 6, index: s }), o.removeAttribute(_));
-        if (Re.test(o.tagName)) {
-          const _ = o.textContent.split(T), m = _.length - 1;
+        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Oe)) {
+          const m = u[r++], f = o.getAttribute(_).split(E), x = /([.?@])?(.*)/.exec(m);
+          c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? st : x[1] === "?" ? rt : x[1] === "@" ? nt : oe }), o.removeAttribute(_);
+        } else _.startsWith(E) && (c.push({ type: 6, index: s }), o.removeAttribute(_));
+        if (Ne.test(o.tagName)) {
+          const _ = o.textContent.split(E), m = _.length - 1;
           if (m > 0) {
             o.textContent = ie ? ie.emptyScript : "";
-            for (let f = 0; f < m; f++) o.append(_[f], F()), M.nextNode(), d.push({ type: 2, index: ++s });
+            for (let f = 0; f < m; f++) o.append(_[f], F()), M.nextNode(), c.push({ type: 2, index: ++s });
             o.append(_[m], F());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === Ne) d.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === Le) c.push({ type: 2, index: s });
       else {
         let _ = -1;
-        for (; (_ = o.data.indexOf(T, _ + 1)) !== -1; ) d.push({ type: 7, index: s }), _ += T.length - 1;
+        for (; (_ = o.data.indexOf(E, _ + 1)) !== -1; ) c.push({ type: 7, index: s }), _ += E.length - 1;
       }
       s++;
     }
   }
-  static createElement(e, i) {
-    const a = z.createElement("template");
-    return a.innerHTML = e, a;
+  static createElement(t, a) {
+    const i = z.createElement("template");
+    return i.innerHTML = t, i;
   }
 }
-function U(t, e, i = t, a) {
-  if (e === O) return e;
-  let o = a !== void 0 ? i._$Co?.[a] : i._$Cl;
-  const s = B(e) ? void 0 : e._$litDirective$;
-  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(t), o._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = o : i._$Cl = o), o !== void 0 && (e = U(t, o._$AS(t, e.values), o, a)), e;
+function O(e, t, a = e, i) {
+  if (t === U) return t;
+  let o = i !== void 0 ? a._$Co?.[i] : a._$Cl;
+  const s = B(t) ? void 0 : t._$litDirective$;
+  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(e), o._$AT(e, a, i)), i !== void 0 ? (a._$Co ??= [])[i] = o : a._$Cl = o), o !== void 0 && (t = O(e, o._$AS(e, t.values), o, i)), t;
 }
 class ot {
-  constructor(e, i) {
-    this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = i;
+  constructor(t, a) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t, this._$AM = a;
   }
   get parentNode() {
     return this._$AM.parentNode;
@@ -334,35 +334,35 @@ class ot {
   get _$AU() {
     return this._$AM._$AU;
   }
-  u(e) {
-    const { el: { content: i }, parts: a } = this._$AD, o = (e?.creationScope ?? z).importNode(i, !0);
+  u(t) {
+    const { el: { content: a }, parts: i } = this._$AD, o = (t?.creationScope ?? z).importNode(a, !0);
     M.currentNode = o;
-    let s = M.nextNode(), r = 0, h = 0, d = a[0];
-    for (; d !== void 0; ) {
-      if (r === d.index) {
+    let s = M.nextNode(), r = 0, h = 0, c = i[0];
+    for (; c !== void 0; ) {
+      if (r === c.index) {
         let p;
-        d.type === 2 ? p = new V(s, s.nextSibling, this, e) : d.type === 1 ? p = new d.ctor(s, d.name, d.strings, this, e) : d.type === 6 && (p = new lt(s, this, e)), this._$AV.push(p), d = a[++h];
+        c.type === 2 ? p = new V(s, s.nextSibling, this, t) : c.type === 1 ? p = new c.ctor(s, c.name, c.strings, this, t) : c.type === 6 && (p = new lt(s, this, t)), this._$AV.push(p), c = i[++h];
       }
-      r !== d?.index && (s = M.nextNode(), r++);
+      r !== c?.index && (s = M.nextNode(), r++);
     }
     return M.currentNode = z, o;
   }
-  p(e) {
-    let i = 0;
-    for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(e, a, i), i += a.strings.length - 2) : a._$AI(e[i])), i++;
+  p(t) {
+    let a = 0;
+    for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(t, i, a), a += i.strings.length - 2) : i._$AI(t[a])), a++;
   }
 }
 class V {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
-  constructor(e, i, a, o) {
-    this.type = 2, this._$AH = c, this._$AN = void 0, this._$AA = e, this._$AB = i, this._$AM = a, this.options = o, this._$Cv = o?.isConnected ?? !0;
+  constructor(t, a, i, o) {
+    this.type = 2, this._$AH = d, this._$AN = void 0, this._$AA = t, this._$AB = a, this._$AM = i, this.options = o, this._$Cv = o?.isConnected ?? !0;
   }
   get parentNode() {
-    let e = this._$AA.parentNode;
-    const i = this._$AM;
-    return i !== void 0 && e?.nodeType === 11 && (e = i.parentNode), e;
+    let t = this._$AA.parentNode;
+    const a = this._$AM;
+    return a !== void 0 && t?.nodeType === 11 && (t = a.parentNode), t;
   }
   get startNode() {
     return this._$AA;
@@ -370,45 +370,45 @@ class V {
   get endNode() {
     return this._$AB;
   }
-  _$AI(e, i = this) {
-    e = U(this, e, i), B(e) ? e === c || e == null || e === "" ? (this._$AH !== c && this._$AR(), this._$AH = c) : e !== this._$AH && e !== O && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : tt(e) ? this.k(e) : this._(e);
+  _$AI(t, a = this) {
+    t = O(this, t, a), B(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== U && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : tt(t) ? this.k(t) : this._(t);
   }
-  O(e) {
-    return this._$AA.parentNode.insertBefore(e, this._$AB);
+  O(t) {
+    return this._$AA.parentNode.insertBefore(t, this._$AB);
   }
-  T(e) {
-    this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
+  T(t) {
+    this._$AH !== t && (this._$AR(), this._$AH = this.O(t));
   }
-  _(e) {
-    this._$AH !== c && B(this._$AH) ? this._$AA.nextSibling.data = e : this.T(z.createTextNode(e)), this._$AH = e;
+  _(t) {
+    this._$AH !== d && B(this._$AH) ? this._$AA.nextSibling.data = t : this.T(z.createTextNode(t)), this._$AH = t;
   }
-  $(e) {
-    const { values: i, _$litType$: a } = e, o = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = W.createElement(Le(a.h, a.h[0]), this.options)), a);
-    if (this._$AH?._$AD === o) this._$AH.p(i);
+  $(t) {
+    const { values: a, _$litType$: i } = t, o = typeof i == "number" ? this._$AC(t) : (i.el === void 0 && (i.el = W.createElement(Re(i.h, i.h[0]), this.options)), i);
+    if (this._$AH?._$AD === o) this._$AH.p(a);
     else {
       const s = new ot(o, this), r = s.u(this.options);
-      s.p(i), this.T(r), this._$AH = s;
+      s.p(a), this.T(r), this._$AH = s;
     }
   }
-  _$AC(e) {
-    let i = Ie.get(e.strings);
-    return i === void 0 && Ie.set(e.strings, i = new W(e)), i;
+  _$AC(t) {
+    let a = Ie.get(t.strings);
+    return a === void 0 && Ie.set(t.strings, a = new W(t)), a;
   }
-  k(e) {
+  k(t) {
     me(this._$AH) || (this._$AH = [], this._$AR());
-    const i = this._$AH;
-    let a, o = 0;
-    for (const s of e) o === i.length ? i.push(a = new V(this.O(F()), this.O(F()), this, this.options)) : a = i[o], a._$AI(s), o++;
-    o < i.length && (this._$AR(a && a._$AB.nextSibling, o), i.length = o);
+    const a = this._$AH;
+    let i, o = 0;
+    for (const s of t) o === a.length ? a.push(i = new V(this.O(F()), this.O(F()), this, this.options)) : i = a[o], i._$AI(s), o++;
+    o < a.length && (this._$AR(i && i._$AB.nextSibling, o), a.length = o);
   }
-  _$AR(e = this._$AA.nextSibling, i) {
-    for (this._$AP?.(!1, !0, i); e !== this._$AB; ) {
-      const a = je(e).nextSibling;
-      je(e).remove(), e = a;
+  _$AR(t = this._$AA.nextSibling, a) {
+    for (this._$AP?.(!1, !0, a); t !== this._$AB; ) {
+      const i = je(t).nextSibling;
+      je(t).remove(), t = i;
     }
   }
-  setConnected(e) {
-    this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
+  setConnected(t) {
+    this._$AM === void 0 && (this._$Cv = t, this._$AP?.(t));
   }
 }
 class oe {
@@ -418,74 +418,74 @@ class oe {
   get _$AU() {
     return this._$AM._$AU;
   }
-  constructor(e, i, a, o, s) {
-    this.type = 1, this._$AH = c, this._$AN = void 0, this.element = e, this.name = i, this._$AM = o, this.options = s, a.length > 2 || a[0] !== "" || a[1] !== "" ? (this._$AH = Array(a.length - 1).fill(new String()), this.strings = a) : this._$AH = c;
+  constructor(t, a, i, o, s) {
+    this.type = 1, this._$AH = d, this._$AN = void 0, this.element = t, this.name = a, this._$AM = o, this.options = s, i.length > 2 || i[0] !== "" || i[1] !== "" ? (this._$AH = Array(i.length - 1).fill(new String()), this.strings = i) : this._$AH = d;
   }
-  _$AI(e, i = this, a, o) {
+  _$AI(t, a = this, i, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) e = U(this, e, i, 0), r = !B(e) || e !== this._$AH && e !== O, r && (this._$AH = e);
+    if (s === void 0) t = O(this, t, a, 0), r = !B(t) || t !== this._$AH && t !== U, r && (this._$AH = t);
     else {
-      const h = e;
-      let d, p;
-      for (e = s[0], d = 0; d < s.length - 1; d++) p = U(this, h[a + d], i, d), p === O && (p = this._$AH[d]), r ||= !B(p) || p !== this._$AH[d], p === c ? e = c : e !== c && (e += (p ?? "") + s[d + 1]), this._$AH[d] = p;
+      const h = t;
+      let c, p;
+      for (t = s[0], c = 0; c < s.length - 1; c++) p = O(this, h[i + c], a, c), p === U && (p = this._$AH[c]), r ||= !B(p) || p !== this._$AH[c], p === d ? t = d : t !== d && (t += (p ?? "") + s[c + 1]), this._$AH[c] = p;
     }
-    r && !o && this.j(e);
+    r && !o && this.j(t);
   }
-  j(e) {
-    e === c ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+  j(t) {
+    t === d ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t ?? "");
   }
 }
 class st extends oe {
   constructor() {
     super(...arguments), this.type = 3;
   }
-  j(e) {
-    this.element[this.name] = e === c ? void 0 : e;
+  j(t) {
+    this.element[this.name] = t === d ? void 0 : t;
   }
 }
 class rt extends oe {
   constructor() {
     super(...arguments), this.type = 4;
   }
-  j(e) {
-    this.element.toggleAttribute(this.name, !!e && e !== c);
+  j(t) {
+    this.element.toggleAttribute(this.name, !!t && t !== d);
   }
 }
 class nt extends oe {
-  constructor(e, i, a, o, s) {
-    super(e, i, a, o, s), this.type = 5;
+  constructor(t, a, i, o, s) {
+    super(t, a, i, o, s), this.type = 5;
   }
-  _$AI(e, i = this) {
-    if ((e = U(this, e, i, 0) ?? c) === O) return;
-    const a = this._$AH, o = e === c && a !== c || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== c && (a === c || o);
-    o && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
+  _$AI(t, a = this) {
+    if ((t = O(this, t, a, 0) ?? d) === U) return;
+    const i = this._$AH, o = t === d && i !== d || t.capture !== i.capture || t.once !== i.once || t.passive !== i.passive, s = t !== d && (i === d || o);
+    o && this.element.removeEventListener(this.name, this, i), s && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
-  handleEvent(e) {
-    typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
+  handleEvent(t) {
+    typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, t) : this._$AH.handleEvent(t);
   }
 }
 class lt {
-  constructor(e, i, a) {
-    this.element = e, this.type = 6, this._$AN = void 0, this._$AM = i, this.options = a;
+  constructor(t, a, i) {
+    this.element = t, this.type = 6, this._$AN = void 0, this._$AM = a, this.options = i;
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  _$AI(e) {
-    U(this, e);
+  _$AI(t) {
+    O(this, t);
   }
 }
 const dt = ge.litHtmlPolyfillSupport;
 dt?.(W, V), (ge.litHtmlVersions ??= []).push("3.3.2");
-const He = (t, e, i) => {
-  const a = i?.renderBefore ?? e;
-  let o = a._$litPart$;
+const He = (e, t, a) => {
+  const i = a?.renderBefore ?? t;
+  let o = i._$litPart$;
   if (o === void 0) {
-    const s = i?.renderBefore ?? null;
-    a._$litPart$ = o = new V(e.insertBefore(F(), s), s, void 0, i ?? {});
+    const s = a?.renderBefore ?? null;
+    i._$litPart$ = o = new V(t.insertBefore(F(), s), s, void 0, a ?? {});
   }
-  return o._$AI(t), o;
+  return o._$AI(e), o;
 };
 /**
  * @license
@@ -498,12 +498,12 @@ class A extends D {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
   createRenderRoot() {
-    const e = super.createRenderRoot();
-    return this.renderOptions.renderBefore ??= e.firstChild, e;
+    const t = super.createRenderRoot();
+    return this.renderOptions.renderBefore ??= t.firstChild, t;
   }
-  update(e) {
-    const i = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = He(i, this.renderRoot, this.renderOptions);
+  update(t) {
+    const a = this.render();
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = He(a, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -512,7 +512,7 @@ class A extends D {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return O;
+    return U;
   }
 }
 A._$litElement$ = !0, A.finalized = !0, fe.litElementHydrateSupport?.({ LitElement: A });
@@ -524,96 +524,96 @@ ct?.({ LitElement: A });
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const N = (t) => (e, i) => {
-  i !== void 0 ? i.addInitializer(() => {
-    customElements.define(t, e);
-  }) : customElements.define(t, e);
+const L = (e) => (t, a) => {
+  a !== void 0 ? a.addInitializer(() => {
+    customElements.define(e, t);
+  }) : customElements.define(e, t);
 };
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ht = { attribute: !0, type: String, converter: te, reflect: !1, hasChanged: ue }, pt = (t = ht, e, i) => {
-  const { kind: a, metadata: o } = i;
+const ht = { attribute: !0, type: String, converter: te, reflect: !1, hasChanged: ue }, pt = (e = ht, t, a) => {
+  const { kind: i, metadata: o } = a;
   let s = globalThis.litPropertyMetadata.get(o);
-  if (s === void 0 && globalThis.litPropertyMetadata.set(o, s = /* @__PURE__ */ new Map()), a === "setter" && ((t = Object.create(t)).wrapped = !0), s.set(i.name, t), a === "accessor") {
-    const { name: r } = i;
+  if (s === void 0 && globalThis.litPropertyMetadata.set(o, s = /* @__PURE__ */ new Map()), i === "setter" && ((e = Object.create(e)).wrapped = !0), s.set(a.name, e), i === "accessor") {
+    const { name: r } = a;
     return { set(h) {
-      const d = e.get.call(this);
-      e.set.call(this, h), this.requestUpdate(r, d, t, !0, h);
+      const c = t.get.call(this);
+      t.set.call(this, h), this.requestUpdate(r, c, e, !0, h);
     }, init(h) {
-      return h !== void 0 && this.C(r, void 0, t, h), h;
+      return h !== void 0 && this.C(r, void 0, e, h), h;
     } };
   }
-  if (a === "setter") {
-    const { name: r } = i;
+  if (i === "setter") {
+    const { name: r } = a;
     return function(h) {
-      const d = this[r];
-      e.call(this, h), this.requestUpdate(r, d, t, !0, h);
+      const c = this[r];
+      t.call(this, h), this.requestUpdate(r, c, e, !0, h);
     };
   }
-  throw Error("Unsupported decorator location: " + a);
+  throw Error("Unsupported decorator location: " + i);
 };
-function P(t) {
-  return (e, i) => typeof i == "object" ? pt(t, e, i) : ((a, o, s) => {
+function P(e) {
+  return (t, a) => typeof a == "object" ? pt(e, t, a) : ((i, o, s) => {
     const r = o.hasOwnProperty(s);
-    return o.constructor.createProperty(s, a), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
-  })(t, e, i);
+    return o.constructor.createProperty(s, i), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
+  })(e, t, a);
 }
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function g(t) {
-  return P({ ...t, state: !0, attribute: !1 });
+function g(e) {
+  return P({ ...e, state: !0, attribute: !1 });
 }
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const _t = (t, e, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof e != "object" && Object.defineProperty(t, e, i), i);
+const _t = (e, t, a) => (a.configurable = !0, a.enumerable = !0, Reflect.decorate && typeof t != "object" && Object.defineProperty(e, t, a), a);
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function ut(t, e) {
-  return (i, a, o) => {
-    const s = (r) => r.renderRoot?.querySelector(t) ?? null;
-    return _t(i, a, { get() {
+function ut(e, t) {
+  return (a, i, o) => {
+    const s = (r) => r.renderRoot?.querySelector(e) ?? null;
+    return _t(a, i, { get() {
       return s(this);
     } });
   };
 }
-function ce(t, e) {
-  if (!e || !t.date_added)
+function ce(e, t) {
+  if (!t || !e.date_added)
     return !1;
-  const i = new Date(t.date_added);
-  return ((/* @__PURE__ */ new Date()).getTime() - i.getTime()) / (1e3 * 60 * 60 * 24) <= e;
+  const a = new Date(e.date_added);
+  return ((/* @__PURE__ */ new Date()).getTime() - a.getTime()) / (1e3 * 60 * 60 * 24) <= t;
 }
-function K(t, e = "en") {
+function K(e, t = "en") {
   try {
-    const i = new Date(t);
-    return new Intl.DateTimeFormat(e, {
+    const a = new Date(e);
+    return new Intl.DateTimeFormat(t, {
       year: "numeric",
       month: "short",
       day: "numeric"
-    }).format(i);
+    }).format(a);
   } catch {
-    return t;
+    return e;
   }
 }
-function he(t) {
-  if (t < 60)
-    return `${t}m`;
-  const e = Math.floor(t / 60), i = t % 60;
-  return i > 0 ? `${e}h ${i}m` : `${e}h`;
+function he(e) {
+  if (e < 60)
+    return `${e}m`;
+  const t = Math.floor(e / 60), a = e % 60;
+  return a > 0 ? `${t}h ${a}m` : `${t}h`;
 }
-function H(t, e) {
-  return t && `${t}&width=${e}`;
+function H(e, t) {
+  return e && `${e}&width=${t}`;
 }
 const Fe = X`
   :host {
@@ -628,7 +628,7 @@ const Fe = X`
     --jf-text: var(--primary-text-color, #fff);
     --jf-text-secondary: var(--secondary-text-color, rgba(255, 255, 255, 0.7));
     --jf-divider: var(--divider-color, rgba(255, 255, 255, 0.12));
-    --jf-poster-radius: var(--ha-card-border-radius, 12px);
+    --jf-poster-radius: var(--jellyha-poster-border-radius, 12px);
     --jf-transition: 0.2s ease-out;
     --jf-movie-badge: #AA5CC3;
     --jf-series-badge: #F2A218;
@@ -2638,22 +2638,24 @@ const Fe = X`
     "search.all_genres": "Все жанры"
   }
 };
-function l(t, e) {
-  const i = t.split("-")[0].toLowerCase();
-  return Q[i]?.[e] ? Q[i][e] : Q.en?.[e] ? Q.en[e] : e;
+function l(e, t) {
+  const a = e.split("-")[0].toLowerCase();
+  return Q[a]?.[t] ? Q[a][t] : Q.en?.[t] ? Q.en[t] : t;
 }
-var gt = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, k = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? mt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
-    (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && gt(e, i, o), o;
+var gt = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, $ = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? mt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+    (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
+  return i && o && gt(t, a, o), o;
 };
-let y = class extends A {
+let v = class extends A {
   constructor() {
-    super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
-      this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
-    }, this._toggleEpisodesView = (t) => {
-      t && (t.stopPropagation(), t.preventDefault()), this._viewMode === "default" ? this._fetchEpisodes() : this._viewMode = "default";
-    }, this._handlePlayEpisode = async (t) => {
+    super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._selectedSeason = "all", this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this._handleKeyDown = (e) => {
+      e.key === "Escape" && this._open && this.closeDialog();
+    }, this.closeDialog = () => {
+      this._open = !1, this._confirmDelete = !1, document.body.style.overflow = "", this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
+    }, this._toggleEpisodesView = (e) => {
+      e && (e.stopPropagation(), e.preventDefault()), this._viewMode === "default" ? this._fetchEpisodes() : this._viewMode = "default";
+    }, this._handlePlayEpisode = async (e) => {
       if (this._haptic(), !this._defaultCastDevice) {
         this.dispatchEvent(new CustomEvent("hass-notification", {
           detail: { message: "No Chromecast device selected. Please configure a cast device in the card editor." },
@@ -2665,18 +2667,20 @@ let y = class extends A {
       try {
         await this.hass.callService("jellyha", "play_on_chromecast", {
           entity_id: this._defaultCastDevice,
-          item_id: t.id,
+          item_id: e.id,
           server_entity_id: this._serverEntityId
         }), this.closeDialog();
-      } catch (e) {
-        console.error("Failed to cast episode", e), this.dispatchEvent(new CustomEvent("hass-notification", {
+      } catch (t) {
+        console.error("Failed to cast episode", t), this.dispatchEvent(new CustomEvent("hass-notification", {
           detail: { message: "Failed to cast episode. Check logs." },
           bubbles: !0,
           composed: !0
         }));
       }
     }, this._handlePlay = async () => {
-      if (this._haptic(), !this._item || !this._defaultCastDevice) {
+      this._haptic();
+      const e = this._item?.type === "Series" && this._nextUpItem ? this._nextUpItem : this._item;
+      if (!e || !this._defaultCastDevice) {
         this._defaultCastDevice || this.dispatchEvent(new CustomEvent("hass-notification", {
           detail: { message: "No Chromecast device selected. Please configure a cast device in the card editor." },
           bubbles: !0,
@@ -2687,7 +2691,7 @@ let y = class extends A {
       try {
         await this.hass.callService("jellyha", "play_on_chromecast", {
           entity_id: this._defaultCastDevice,
-          item_id: this._item.id,
+          item_id: e.id,
           server_entity_id: this._serverEntityId
         }), this.closeDialog();
       } catch (t) {
@@ -2708,140 +2712,157 @@ let y = class extends A {
           item_id: this._nextUpItem.id,
           server_entity_id: this._serverEntityId
         }), this.closeDialog();
-      } catch (t) {
-        console.error("Failed to cast next up", t);
+      } catch (e) {
+        console.error("Failed to cast next up", e);
       }
     }, this._handleFavorite = async () => {
       if (!this._item) return;
       this._haptic();
-      const t = !this._item.is_favorite;
-      this._item = { ...this._item, is_favorite: t }, await this.hass.callService("jellyha", "update_favorite", {
+      const e = !this._item.is_favorite;
+      this._item = { ...this._item, is_favorite: e };
+      const t = {
         item_id: this._item.id,
-        is_favorite: t,
-        server_entity_id: this._serverEntityId
-      }), this.requestUpdate();
+        is_favorite: e
+      };
+      this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "update_favorite", t), this.requestUpdate();
     }, this._handleWatched = async () => {
       if (!this._item) return;
       this._haptic();
-      const t = !this._item.is_played;
-      this._item = { ...this._item, is_played: t }, await this.hass.callService("jellyha", "mark_watched", {
+      const e = !this._item.is_played;
+      this._item = { ...this._item, is_played: e };
+      const t = {
         item_id: this._item.id,
-        is_played: t,
-        server_entity_id: this._serverEntityId
-      }), this.requestUpdate();
+        is_played: e
+      };
+      this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "mark_watched", t), this.requestUpdate();
     }, this._handleDeleteConfirm = async () => {
       if (!this._item) return;
       this._haptic();
-      const t = this._item.id;
-      this.closeDialog(), await this.hass.callService("jellyha", "delete_item", {
-        item_id: t,
-        server_entity_id: this._serverEntityId
-      });
+      const e = this._item.id;
+      this.closeDialog();
+      const t = {
+        item_id: e
+      };
+      this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "delete_item", t);
     }, this._handleWatchTrailer = () => {
       this._haptic();
-      const t = this._item;
-      if (!t?.trailer_url) return;
-      const e = t.trailer_url;
-      let i = "";
+      const e = this._item;
+      if (!e?.trailer_url) return;
+      let t = e.trailer_url.trim();
+      !t.startsWith("http://") && !t.startsWith("https://") && (t = "https://" + t);
+      let a = "";
       try {
-        const a = new URL(e);
-        a.hostname.includes("youtube.com") ? i = a.searchParams.get("v") || "" : a.hostname.includes("youtu.be") && (i = a.pathname.slice(1));
+        const i = new URL(t);
+        i.hostname.includes("youtube.com") ? i.searchParams.has("v") ? a = i.searchParams.get("v") || "" : i.pathname.startsWith("/embed/") ? a = i.pathname.split("/embed/")[1]?.split("/")[0] || "" : i.pathname.startsWith("/shorts/") && (a = i.pathname.split("/shorts/")[1]?.split("/")[0] || "") : i.hostname.includes("youtu.be") && (a = i.pathname.replace(/^\/+/, "").split("/")[0] || "");
       } catch {
       }
-      if (i) {
-        const a = navigator.userAgent || navigator.vendor || window.opera;
-        if (/android/i.test(a)) {
-          window.open(`vnd.youtube:${i}`, "_blank");
+      if (a) {
+        const i = navigator.userAgent || navigator.vendor || window.opera;
+        if (/android/i.test(i)) {
+          window.open(`vnd.youtube:${a}`, "_blank");
           return;
         }
+        window.open(`https://www.youtube.com/watch?v=${a}`, "_blank");
+        return;
       }
-      this._openExternalUrl(e);
-    }, this._handleMarkEpisodeWatched = async (t) => {
+      window.open(t, "_blank");
+    }, this._handleMarkEpisodeWatched = async (e) => {
       this._haptic();
-      const e = !t.is_played;
+      const t = !e.is_played;
       if (this._episodes = this._episodes.map(
-        (i) => i.id === t.id ? { ...i, is_played: e, unplayed_count: e ? 0 : 1 } : i
-      ), e && this._nextUpItem && t.id === this._nextUpItem.id) {
-        const i = this._episodes.findIndex((a) => a.id === t.id);
+        (i) => i.id === e.id ? { ...i, is_played: t, unplayed_count: t ? 0 : 1 } : i
+      ), t && this._nextUpItem && e.id === this._nextUpItem.id) {
+        const i = this._episodes.findIndex((o) => o.id === e.id);
         i !== -1 && i < this._episodes.length - 1 && (this._nextUpItem = this._episodes[i + 1]);
-      } else if (!e && this._nextUpItem && t.id !== this._nextUpItem.id) {
-        const i = this._episodes.findIndex((o) => o.id === t.id), a = this._episodes.findIndex((o) => o.id === this._nextUpItem.id);
-        i !== -1 && a !== -1 && i < a && (this._nextUpItem = this._episodes[i]);
+      } else if (!t && this._nextUpItem && e.id !== this._nextUpItem.id) {
+        const i = this._episodes.findIndex((s) => s.id === e.id), o = this._episodes.findIndex((s) => s.id === this._nextUpItem.id);
+        i !== -1 && o !== -1 && i < o && (this._nextUpItem = this._episodes[i]);
       }
-      this.requestUpdate(), await this.hass.callService("jellyha", "mark_watched", {
-        item_id: t.id,
-        is_played: e,
-        server_entity_id: this._serverEntityId
-      });
-    }, this._handleModalTouchStart = (t) => {
-      const e = t.target, i = this._getScrollParent(e);
-      i && i.scrollTop > 0 || (this._touchStartY = t.touches[0].clientY, this._isDragging = !0);
-    }, this._handleModalTouchMove = (t) => {
+      this.requestUpdate();
+      const a = {
+        item_id: e.id,
+        is_played: t
+      };
+      this._serverEntityId && (a.entity_id = this._serverEntityId, a.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "mark_watched", a);
+    }, this._handleModalTouchStart = (e) => {
+      const t = e.target, a = this._getScrollParent(t);
+      a && a.scrollTop > 0 || (this._touchStartY = e.touches[0].clientY, this._isDragging = !0);
+    }, this._handleModalTouchMove = (e) => {
       if (!this._isDragging) return;
-      const e = t.touches[0].clientY - this._touchStartY;
-      e > 0 ? (t.cancelable && t.preventDefault(), this._currentTranslateY = e) : this._isDragging = !1;
-    }, this._handleModalTouchEnd = (t) => {
+      const t = e.touches[0].clientY - this._touchStartY;
+      t > 0 ? (e.cancelable && e.preventDefault(), this._currentTranslateY = t) : this._isDragging = !1;
+    }, this._handleModalTouchEnd = (e) => {
       this._isDragging && (this._isDragging = !1, this._currentTranslateY > this._swipeClosingThreshold ? (this.closeDialog(), setTimeout(() => {
         this._currentTranslateY = 0;
       }, 300)) : this._currentTranslateY = 0);
     };
   }
   connectedCallback() {
-    super.connectedCallback(), this._portalContainer = document.createElement("div"), this._portalContainer.id = "jellyha-modal-portal", document.body.appendChild(this._portalContainer);
+    super.connectedCallback(), this._portalContainer = document.createElement("div"), this._portalContainer.id = "jellyha-modal-portal", document.body.appendChild(this._portalContainer), window.addEventListener("keydown", this._handleKeyDown);
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._portalContainer && (this._portalContainer.remove(), this._portalContainer = null);
+    super.disconnectedCallback(), window.removeEventListener("keydown", this._handleKeyDown), this._portalContainer && (this._portalContainer.remove(), this._portalContainer = null), document.body.style.overflow = "";
   }
-  async showDialog(t) {
-    this._item = t.item, this.hass = t.hass, this._defaultCastDevice = t.defaultCastDevice, this._serverEntityId = t.serverEntityId, this._open = !0, this._open = !0, this._nextUpItem = void 0, this._viewMode = "default", this._episodes = [], this._item.type === "Series" && this._fetchNextUp(this._item), this._fetchFullDetails(this._item.id), await this.updateComplete;
+  async showDialog(e) {
+    this._item = e.item, this.hass = e.hass, this._defaultCastDevice = e.defaultCastDevice, this._serverEntityId = e.serverEntityId, this._open = !0, this._nextUpItem = void 0, this._viewMode = "default", this._episodes = [], this._selectedSeason = "all", document.body.style.overflow = "hidden", this._item.type === "Series" && this._fetchNextUp(this._item), this._fetchFullDetails(this._item.id), await this.updateComplete;
   }
-  async _fetchFullDetails(t) {
+  async _fetchFullDetails(e) {
     try {
-      const e = await this.hass.callWS({
+      const t = await this.hass.callWS({
         type: "call_service",
         domain: "jellyha",
         service: "get_item",
         service_data: {
-          item_id: t,
+          item_id: e,
           entity_id: this._serverEntityId,
+          server_entity_id: this._serverEntityId,
           config_entry_id: this._item?.config_entry_id
         },
         return_response: !0
-      }), i = e?.response || e;
-      i && i.item && (this._item = { ...this._item, ...i.item }, this.requestUpdate());
-    } catch (e) {
-      console.warn("Failed to fetch full item details:", JSON.stringify(e, null, 2));
+      }), a = t?.response || t?.service_response || t;
+      a && a.item && (this._item = { ...this._item, ...a.item }, this.requestUpdate());
+    } catch (t) {
+      console.warn("Failed to fetch full item details:", JSON.stringify(t, null, 2));
     }
   }
-  async _fetchNextUp(t) {
-    const e = Object.keys(this.hass.states).filter(
-      (a) => this.hass.states[a].attributes.integration === "jellyha" || a.startsWith("sensor.jellyha_")
-      // Fallback convention
-    ), i = this._serverEntityId || (e.length > 0 ? e[0] : "sensor.jellyha_library");
+  async _fetchNextUp(e) {
+    const t = Object.keys(this.hass.states).filter(
+      (i) => (this.hass.states[i].attributes.integration === "jellyha" || i.startsWith("sensor.jellyha_")) && this.hass.states[i].attributes.entry_id
+    ), a = this._serverEntityId || (t.length > 0 ? t[0] : "sensor.jellyha_library");
     try {
-      const a = await this.hass.callWS({
+      const i = await this.hass.callWS({
         type: "jellyha/get_next_up",
-        entity_id: i,
-        series_id: t.id
+        entity_id: a,
+        series_id: e.id
       });
-      a && a.item && (this._nextUpItem = a.item);
-    } catch (a) {
-      console.warn("Failed to fetch Next Up:", a);
+      i && i.item && (this._nextUpItem = i.item);
+    } catch (i) {
+      console.warn("Failed to fetch Next Up:", i);
     }
   }
   async _fetchEpisodes() {
     if (!this._item || this._item.type !== "Series") return;
-    const t = this._nextUpItem?.season || 1, e = Object.keys(this.hass.states).filter(
-      (a) => this.hass.states[a].attributes.integration === "jellyha" || a.startsWith("sensor.jellyha_")
-    ), i = this._serverEntityId || (e.length > 0 ? e[0] : "sensor.jellyha_library");
+    const e = Object.keys(this.hass.states).filter(
+      (a) => (this.hass.states[a].attributes.integration === "jellyha" || a.startsWith("sensor.jellyha_")) && this.hass.states[a].attributes.entry_id
+    ), t = this._serverEntityId || (e.length > 0 ? e[0] : "sensor.jellyha_library");
     try {
       this._viewMode = "episodes", this.requestUpdate();
-      const a = await this.hass.callWS({
-        type: "jellyha/get_episodes",
-        entity_id: i,
-        series_id: this._item.id,
-        season: t
-      });
+      let a = null;
+      try {
+        a = await this.hass.callWS({
+          type: "jellyha/get_episodes",
+          entity_id: t,
+          series_id: this._item.id
+        });
+      } catch {
+        const o = this._nextUpItem?.season || 1;
+        a = await this.hass.callWS({
+          type: "jellyha/get_episodes",
+          entity_id: t,
+          series_id: this._item.id,
+          season: o
+        });
+      }
       a && a.items ? this._episodes = a.items : this._episodes = [], this.requestUpdate();
     } catch (a) {
       console.warn("Failed to fetch episodes:", a), this._episodes = [], this.requestUpdate();
@@ -2850,8 +2871,8 @@ let y = class extends A {
   updated() {
     if (this._portalContainer) {
       He(this._renderDialogContent(), this._portalContainer);
-      const t = this._portalContainer.querySelector(".content");
-      t && (t.removeEventListener("touchstart", this._handleModalTouchStart), t.removeEventListener("touchmove", this._handleModalTouchMove), t.removeEventListener("touchend", this._handleModalTouchEnd), t.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), t.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), t.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
+      const e = this._portalContainer.querySelector(".jellyha-modal-surface");
+      e && (e.removeEventListener("touchstart", this._handleModalTouchStart), e.removeEventListener("touchmove", this._handleModalTouchMove), e.removeEventListener("touchend", this._handleModalTouchEnd), e.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), e.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), e.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
     }
   }
   render() {
@@ -2860,59 +2881,122 @@ let y = class extends A {
   _getPortalStyles() {
     return n`
         <style>
-             ha-dialog {
-                --mdc-dialog-z-index: 9999;
-                --mdc-dialog-min-width: 400px;
-                --mdc-dialog-max-width: 90vw;
-                --mdc-theme-surface: transparent; 
-                --ha-dialog-background: transparent;
-                --mdc-dialog-box-shadow: none;
-                --dialog-content-padding: 0;
-                --mdc-dialog-content-padding: 0;
-                --dialog-surface-margin: 0;
-             }
+            .jellyha-modal-scrim {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 99999;
+                background: rgba(0, 0, 0, 0.72);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+                box-sizing: border-box;
+                animation: jellyhaFadeIn 0.2s ease-out;
+            }
 
-            .content {
-                display: flex; /* Flex container for children scrollers */
+            @keyframes jellyhaFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes jellyhaSlideUp {
+                from { transform: scale(0.96) translateY(16px); opacity: 0; }
+                to { transform: scale(1) translateY(0); opacity: 1; }
+            }
+
+            .jellyha-modal-surface {
+                position: relative;
+                display: flex;
                 flex-direction: column;
-                
-                transform-origin: top center;
+                transform-origin: center center;
                 will-change: transform;
-                background: var(--ha-card-background, var(--card-background-color, #1c1c1c));
-                border-radius: 20px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.5); /* Card shadow */
-                padding: 24px;
-                max-height: 80vh;
-                overscroll-behavior-y: contain; /* Prevent browser overscroll/refresh */
-                
-                /* Hide scrollbar on the container itself */
+                background: #14161f;
+                color: #ffffff;
+                border-radius: 24px;
+                box-shadow: 0 24px 72px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+                width: min(840px, 94vw);
+                max-height: min(90vh, 880px);
+                overscroll-behavior-y: contain;
                 scrollbar-width: none; 
                 -ms-overflow-style: none; 
-                overflow: hidden; /* Clip content to rounded corners */
-            }
-            
-            /* Episodes View specific */
-            .content.episodes {
-                overflow: hidden !important; 
-                padding-right: 24px; 
+                overflow: hidden;
+                animation: jellyhaSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             }
 
-            .content::-webkit-scrollbar {
+            .jellyha-modal-surface::-webkit-scrollbar {
                 display: none; 
                 width: 0px !important;
                 height: 0px !important;
                 background: transparent;
             }
 
+            /* Top-Right Circular Close Button */
+            .modal-close-btn {
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                z-index: 20;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                width: 38px;
+                height: 38px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                color: #ffffff;
+                transition: all 0.2s ease;
+                padding: 0;
+            }
+            .modal-close-btn:hover {
+                background: rgba(255, 255, 255, 0.25);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: scale(1.08);
+            }
+            .modal-close-btn ha-icon {
+                --mdc-icon-size: 20px;
+            }
+
+            /* Backdrop Hero Fanart */
+            .backdrop-hero {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 320px;
+                pointer-events: none;
+                overflow: hidden;
+                mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0) 100%);
+                -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0) 100%);
+                z-index: 0;
+            }
+
+            .backdrop-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center 25%;
+                opacity: 0.35;
+                filter: saturate(1.2) brightness(0.9);
+            }
+
             /* Inner Layouts (Default View) */
             .default-layout {
-                display: block; /* Mobile default */
+                position: relative;
+                z-index: 1;
+                display: block;
                 overflow-y: auto;
                 height: 100%;
                 width: 100%;
-                padding-right: 4px; /* Space for scrollbar */
-                
-                /* Inset Scrollbar */
+                box-sizing: border-box;
                 scrollbar-width: thin; 
                 scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
             }
@@ -2933,99 +3017,244 @@ let y = class extends A {
             @media (min-width: 601px) {
                 .default-layout {
                     display: grid;
-                    grid-template-columns: 300px 1fr;
-                    gap: 24px;
+                    grid-template-columns: 240px 1fr;
+                    gap: 28px;
+                    padding: 28px;
                     overflow-y: auto; 
                 }
-                .content.episodes {
-                    max-height: 80vh;
+                .poster-col {
+                    width: 240px;
+                }
+            }
+
+            @media (max-width: 600px) {
+                .default-layout {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    padding: 20px;
+                }
+                .poster-col {
+                    max-width: 240px;
+                    margin: 0 auto;
+                    width: 100%;
                 }
             }
 
             .poster-col {
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: 14px;
+                position: relative;
+                z-index: 1;
             }
 
             .poster-img {
                 width: 100%;
                 aspect-ratio: 2/3;
                 object-fit: cover;
-                border-radius: 12px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                border-radius: 14px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.12);
             }
 
-            .actions-col {
+            .poster-actions {
                 display: flex;
-                flex-direction: row;
-                gap: 0;
-                justify-content: space-between;
-                align-items: center;
-                min-height: 44px; /* Maintain height for delete confirmation */
+                flex-direction: column;
+                gap: 10px;
                 width: 100%;
+            }
+
+            .primary-play-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                width: 100%;
+                padding: 11px 16px;
+                box-sizing: border-box;
+                background: linear-gradient(135deg, #0288d1 0%, #00acc1 100%);
+                color: #ffffff;
+                border: none;
+                border-radius: 24px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 4px 16px rgba(2, 136, 209, 0.45);
+                transition: all 0.2s ease;
+            }
+            .primary-play-btn:hover {
+                filter: brightness(1.12);
+                box-shadow: 0 6px 20px rgba(2, 136, 209, 0.6);
+                transform: translateY(-1px);
+            }
+            .primary-play-btn:active {
+                transform: scale(0.98);
+            }
+            .primary-play-btn ha-icon {
+                --mdc-icon-size: 20px;
+            }
+
+            .actions-icon-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+            }
+
+            .action-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                cursor: pointer;
+                background: rgba(255, 255, 255, 0.08);
+                color: #d0d4e0;
+                width: 34px;
+                height: 34px;
+                padding: 0;
+                box-sizing: border-box;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+            .action-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+                color: #ffffff;
+                border-color: rgba(255, 255, 255, 0.35);
+                transform: translateY(-1px);
+            }
+            .action-btn.active {
+                color: #03a9f4;
+                border-color: #03a9f4;
+                background: rgba(3, 169, 244, 0.2);
+            }
+            .action-btn.favorite-btn.active {
+                color: #ff5252;
+                border-color: #ff5252;
+                background: rgba(255, 82, 82, 0.2);
+            }
+            .action-btn ha-icon {
+                --mdc-icon-size: 18px;
+            }
+
+            .btn-danger {
+                color: #ff5252;
+                border-color: rgba(255, 82, 82, 0.35);
+            }
+            .btn-danger:hover {
+                background: rgba(255, 82, 82, 0.25);
+                border-color: #ff5252;
+            }
+
+            .confirmation-box {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                background: rgba(255, 82, 82, 0.15);
+                border: 1px solid rgba(255, 82, 82, 0.35);
+                border-radius: 12px;
+                padding: 8px;
+                box-sizing: border-box;
+                font-size: 0.85rem;
+                color: #ffffff;
+            }
+            .confirm-btn {
+                background: rgba(255, 255, 255, 0.12);
+                border: none;
+                cursor: pointer;
+                color: #ffffff;
+                font-weight: 600;
+                padding: 5px 12px;
+                border-radius: 6px;
+                transition: background 0.2s;
+            }
+            .confirm-btn:hover {
+                 background: rgba(255, 255, 255, 0.22);
+            }
+            .confirm-yes {
+                background: #e53935;
+                color: #ffffff;
+            }
+            .confirm-yes:hover {
+                background: #d32f2f;
             }
 
             .details-col {
                 display: flex;
                 flex-direction: column;
                 gap: 16px;
+                position: relative;
+                z-index: 1;
+                min-width: 0;
+            }
+
+            .header-group {
+                padding-right: 52px;
             }
 
             .header-group h1 {
                 margin: 0;
-                font-size: 2rem;
+                font-size: 2.1rem;
                 font-weight: 700;
                 line-height: 1.2;
-                color: var(--primary-text-color);
+                color: #ffffff;
+                letter-spacing: -0.5px;
             }
 
             .header-sub {
                 display: flex;
-                gap: 12px;
+                flex-wrap: wrap;
+                gap: 10px;
                 align-items: center;
                 margin-top: 8px;
-                color: var(--secondary-text-color);
-                font-size: 1rem;
+                color: #9ea4b5;
+                font-size: 0.95rem;
             }
 
             .badge {
-                padding: 4px 8px;
+                padding: 3px 8px;
                 border-radius: 6px;
-                background: rgba(var(--rgb-primary-text-color), 0.1);
-                font-size: 0.85rem;
+                background: rgba(255, 255, 255, 0.1);
+                color: #ffffff;
+                font-size: 0.8rem;
                 font-weight: 600;
                 text-transform: uppercase;
+                letter-spacing: 0.4px;
+                border: 1px solid rgba(255, 255, 255, 0.15);
             }
 
             .stats-row {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px; /* Tighter gap for chips */
-                padding: 4px 0; /* Minimal vertical padding */
-                /* Remove container background for native look */
-                background: transparent;
-                border-radius: 0;
+                gap: 10px;
+                padding: 2px 0;
             }
 
             .stat-item {
-                display: flex;
+                display: inline-flex;
                 gap: 6px;
                 align-items: center;
-                /* Native Chip Styling */
-                border: 1px solid var(--divider-color);
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                background: rgba(255, 255, 255, 0.07);
                 border-radius: 18px;
-                padding: 6px 12px;
+                padding: 5px 14px;
                 font-size: 0.9rem;
                 font-weight: 500;
-                color: var(--primary-text-color);
-                background: transparent; 
+                color: #e2e4ea;
+            }
+            .stat-item ha-icon {
+                --mdc-icon-size: 16px;
             }
 
             .description {
-                font-size: 1rem;
-                line-height: 1.6;
-                color: var(--primary-text-color);
+                font-size: 0.95rem;
+                line-height: 1.65;
+                color: #c4c8d4;
                 white-space: pre-wrap;
             }
 
@@ -3036,180 +3265,254 @@ let y = class extends A {
             }
 
             .genre-tag {
-                background: rgba(var(--rgb-primary-color), 0.15);
-                color: var(--primary-color);
+                background: rgba(3, 169, 244, 0.15);
+                color: #4fc3f7;
                 padding: 4px 12px;
-                border-radius: 16px;
-                font-size: 0.85rem;
-                border: 1px solid rgba(var(--rgb-primary-color), 0.3);
+                border-radius: 14px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border: 1px solid rgba(3, 169, 244, 0.3);
             }
 
             .divider {
                 height: 1px;
-                background: var(--divider-color);
-                margin: 8px 0;
-            }
-
-            .media-info-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
-                font-size: 0.85rem;
-                color: var(--secondary-text-color);
-            }
-
-            .info-pair b {
-                color: var(--primary-text-color);
-                display: block;
-                margin-bottom: 2px;
-            }
-
-            .action-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 10px;
-                border-radius: 50%; /* Circle shape */
-                border: none;
-                cursor: pointer;
-                background: transparent;
-                color: var(--secondary-text-color);
-                width: 44px;
-                height: 44px;
-                box-sizing: border-box;
-                transition: background 0.2s, color 0.2s;
-            }
-
-            .action-btn:hover {
                 background: rgba(255, 255, 255, 0.1);
-                color: var(--primary-text-color);
+                margin: 4px 0;
             }
 
-            .action-btn.active {
-                color: var(--primary-color);
-            }
-            .favorite-btn.active {
-                color: #F44336;
-            }
-
-            .action-btn ha-icon {
-                --mdc-icon-size: 26px;
-            }
-
-            .btn-danger {
-                color: var(--error-color, #f44336);
-            }
-            .btn-danger:hover {
-                background: rgba(244, 67, 54, 0.15);
-            }
-
-            .confirmation-box {
+            .tech-specs-row {
                 display: flex;
-                gap: 12px;
+                flex-wrap: wrap;
+                gap: 8px;
                 align-items: center;
-                justify-content: center;
-                width: 100%;
-                background: rgba(244, 67, 54, 0.1);
-                border-radius: 8px;
-                padding: 4px 8px;
+                margin-top: 2px;
             }
-            
-            .confirm-btn {
-                background: none;
-                border: none;
-                cursor: pointer;
-                color: var(--primary-text-color);
+
+            .tech-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-size: 0.75rem;
                 font-weight: 600;
-                padding: 8px 16px;
-                border-radius: 4px;
+                letter-spacing: 0.6px;
+                color: #c0c5d4;
+                text-transform: uppercase;
             }
-            .confirm-btn:hover {
-                 background: rgba(255,255,255,0.1);
-            }
-            .confirm-yes {
-                color: var(--error-color);
+            .tech-chip ha-icon {
+                --mdc-icon-size: 14px;
+                color: #9ea4b5;
             }
 
-
-
-            /* Next Up Section */
+            /* Next Up Modern Card */
             .next-up-card {
-                background: var(--secondary-background-color, rgba(0, 0, 0, 0.1));
-                border-radius: 12px;
-                padding: 12px;
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 16px;
+                padding: 12px 16px;
                 display: flex;
                 gap: 16px;
                 align-items: center;
-                margin-top: 16px;
-                border: 1px solid var(--divider-color);
                 cursor: pointer;
-                transition: background 0.2s, transform 0.1s;
+                transition: all 0.2s ease;
                 position: relative;
                 overflow: hidden;
+                width: 100%;
+                box-sizing: border-box;
             }
             .next-up-card:hover {
-                background: rgba(var(--rgb-primary-text-color), 0.05);
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.28);
+                transform: translateY(-1px);
             }
             .next-up-card:active {
-                background: rgba(var(--rgb-primary-text-color), 0.1);
-                transform: scale(0.98); /* Button press effect */
+                transform: scale(0.99);
+            }
+            .next-up-thumb-wrap {
+                position: relative;
+                width: 140px;
+                flex-shrink: 0;
+                aspect-ratio: 16/9;
+                border-radius: 10px;
+                overflow: hidden;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.12);
             }
             .next-up-thumb {
-                width: 120px;
-                aspect-ratio: 16/9;
+                width: 100%;
+                height: 100%;
                 object-fit: cover;
-                border-radius: 8px;
+                display: block;
+            }
+            .next-up-play-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            .next-up-card:hover .next-up-play-overlay {
+                opacity: 1;
+            }
+            .next-up-play-overlay ha-icon {
+                --mdc-icon-size: 32px;
+                color: #ffffff;
             }
             .next-up-info {
                 flex: 1;
+                min-width: 0;
                 display: flex;
                 flex-direction: column;
                 gap: 4px;
             }
-            .next-up-label {
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                color: var(--primary-color);
+            .next-up-header-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .next-up-badge {
+                font-size: 0.7rem;
                 font-weight: 700;
+                letter-spacing: 0.5px;
+                color: #03a9f4;
+                background: rgba(3, 169, 244, 0.16);
+                padding: 2px 7px;
+                border-radius: 4px;
+                border: 1px solid rgba(3, 169, 244, 0.25);
+            }
+            .next-up-ep-code {
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: #9ea4b5;
             }
             .next-up-title {
-                font-size: 1.1rem;
-                font-weight: 600;
-                color: var(--primary-text-color);
                 margin: 0;
+                font-size: 1.15rem;
+                font-weight: 600;
+                color: #ffffff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
-            .next-up-meta {
-                font-size: 0.9rem;
-                color: var(--secondary-text-color);
+            .next-up-sub {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.85rem;
+                color: #9ea4b5;
+            }
+            .next-up-rating {
+                display: inline-flex;
+                align-items: center;
+                gap: 3px;
+                color: #FBC02D;
+            }
+            .next-up-rating ha-icon {
+                --mdc-icon-size: 14px;
+            }
+            .next-up-cast-btn {
+                background: rgba(3, 169, 244, 0.15);
+                color: #03a9f4;
+                border: 1px solid rgba(3, 169, 244, 0.3);
+                border-radius: 50%;
+                width: 42px;
+                height: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                flex-shrink: 0;
+                transition: all 0.2s ease;
+                padding: 0;
+            }
+            .next-up-cast-btn:hover {
+                background: #03a9f4;
+                color: #ffffff;
+                box-shadow: 0 0 12px rgba(3, 169, 244, 0.5);
+                transform: scale(1.05);
+            }
+            .next-up-cast-btn ha-icon {
+                --mdc-icon-size: 20px;
             }
 
-            @media (max-width: 600px) {
-                .poster-col { max-width: 350px; margin: 0 auto; width: 100%; margin-bottom: 24px; }
+            /* Episodes View specific */
+            .jellyha-modal-surface.episodes {
+                overflow: hidden !important; 
+                padding: 28px;
+                max-height: min(90vh, 880px);
+                box-sizing: border-box;
             }
 
             /* Episode List Styles */
             .episodes-header {
                  display: flex;
                  align-items: center;
-                 gap: 12px;
-                 margin-bottom: 16px;
+                 gap: 14px;
+                 margin-bottom: 18px;
+                 padding-right: 52px;
             }
             .back-btn {
-                background: none;
-                border: none;
-                color: var(--primary-text-color);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #ffffff;
                 cursor: pointer;
-                padding: 8px;
+                width: 38px;
+                height: 38px;
                 border-radius: 50%;
-                display: flex; /* Fix icon alignment */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                transition: all 0.2s ease;
             }
             .back-btn:hover {
-                background: rgba(255,255,255,0.1);
+                background: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.35);
+                transform: scale(1.06);
             }
             .episodes-title {
                 margin: 0;
-                font-size: 1.5rem;
+                font-size: 1.6rem;
+                font-weight: 700;
+                color: #ffffff;
+            }
+            .season-selector {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 16px;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+            .season-selector::-webkit-scrollbar {
+                display: none;
+            }
+            .season-tab {
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: rgba(255, 255, 255, 0.8);
+                padding: 6px 14px;
+                border-radius: 20px;
+                cursor: pointer;
+                font-size: 0.85rem;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+            }
+            .season-tab:hover {
+                background: rgba(255, 255, 255, 0.15);
+                color: #ffffff;
+            }
+            .season-tab.active {
+                background: var(--primary-color, #03a9f4);
+                border-color: var(--primary-color, #03a9f4);
+                color: #ffffff;
                 font-weight: 600;
             }
             .episodes-list {
@@ -3217,11 +3520,9 @@ let y = class extends A {
                 flex-direction: column;
                 gap: 12px;
                 overflow-y: auto;
-                flex: 1; /* Take remaining height */
-                min-height: 0; /* Flexbox scroll fix */
-                padding-right: 4px; /* Space for scrollbar */
-                
-                /* Re-enable scrollbars for this list */
+                flex: 1;
+                min-height: 0;
+                padding-right: 4px;
                 scrollbar-width: thin; 
                 scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
             }
@@ -3240,18 +3541,30 @@ let y = class extends A {
             .episode-row {
                 display: flex;
                 gap: 16px;
-                padding: 12px;
-                background: rgba(255,255,255,0.03);
-                border-radius: 12px;
+                padding: 12px 16px;
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 14px;
                 align-items: center;
-                transition: background 0.2s;
+                transition: all 0.2s ease;
+                cursor: pointer;
             }
             .episode-row:hover {
-                background: rgba(255,255,255,0.08); /* Slightly lighter on hover */
+                background: rgba(255, 255, 255, 0.09);
+                border-color: rgba(255, 255, 255, 0.2);
             }
             .episode-row.next-up-highlight {
-                background: rgba(var(--rgb-primary-color), 0.1);
-                border-left: 3px solid var(--primary-color);
+                background: rgba(3, 169, 244, 0.12);
+                border-left: 4px solid #03a9f4;
+            }
+            .episode-thumb {
+                width: 120px;
+                aspect-ratio: 16/9;
+                object-fit: cover;
+                border-radius: 8px;
+                flex-shrink: 0; 
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.12);
             }
             .episode-content {
                 flex: 1;
@@ -3261,69 +3574,56 @@ let y = class extends A {
                 justify-content: center;
                 gap: 4px;
             }
+            .episode-title {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+                line-height: 1.3;
+                color: #ffffff;
+            }
             .episode-footer {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
             }
-            .episode-actions {
-                display: flex;
-                gap: 12px;
-            }
-            .episode-thumb {
-                width: 100px;
-                aspect-ratio: 16/9;
-                object-fit: cover;
-                border-radius: 8px;
-                flex-shrink: 0; 
-                background: var(--secondary-background-color); /* Skeleton placeholder */
-                border: 1px solid rgba(255, 255, 255, 0.5);
-            }
-            .episode-info {
-                flex: 1;
-                min-width: 0; /* truncate text */
-            }
-            .episode-title {
-                margin: 0;
-                font-size: 1rem;
-                font-weight: 500;
-                line-height: 1.2;
-                color: var(--primary-text-color);
-            }
             .episode-meta {
                 font-size: 0.85rem;
-                color: var(--secondary-text-color);
+                color: #9ea4b5;
                 display: flex;
                 align-items: center;
             }
+            .episode-actions {
+                display: flex;
+                gap: 8px;
+            }
             .play-episode-btn {
-                background: transparent;
-                border: none;
-                color: var(--primary-color);
-                border-radius: 50%; /* Keep radius for hover effect */
-                width: 36px;
-                height: 36px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #03a9f4;
+                border-radius: 50%;
+                width: 34px;
+                height: 34px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
                 transition: all 0.2s;
+                padding: 0;
             }
             .play-episode-btn:hover {
-                background: rgba(255, 255, 255, 0.15);
-                color: var(--primary-color);
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(1.08);
             }
-            /* Specific override for the checkmark button */
+            .play-episode-btn ha-icon {
+                --mdc-icon-size: 18px;
+            }
             .watched-btn {
-                color: var(--secondary-text-color);
-                opacity: 0.6;
-            }
-            .watched-btn:hover {
-                opacity: 1;
+                color: #9ea4b5;
             }
             .watched-btn.active {
-                color: var(--primary-color);
-                opacity: 1;
+                color: #03a9f4;
+                background: rgba(3, 169, 244, 0.2);
+                border-color: #03a9f4;
             }
         </style>
         `;
@@ -3331,180 +3631,233 @@ let y = class extends A {
   _renderDialogContent() {
     return !this._open || !this._item ? n`` : n`
             ${this._getPortalStyles()}
-            <ha-dialog
-                open
-                .escapeKeyAction=${"close"}
-                .scrimClickAction=${"close"}
-                @closed=${this.closeDialog}
-                hideActions
-                .heading=${""} 
-            >
-                <ha-card 
-                    class="content ${this._viewMode}"
+            <div class="jellyha-modal-scrim" @click=${this.closeDialog}>
+                <div 
+                    class="jellyha-modal-surface ${this._viewMode}" 
+                    @click=${(e) => e.stopPropagation()}
                     style="${this._isDragging || this._currentTranslateY > 0 ? `transform: translateY(${this._currentTranslateY}px); transition: ${this._isDragging ? "none" : "transform 0.3s ease-out"}` : ""}"
                 >
+                    <button class="modal-close-btn" @click=${this.closeDialog} aria-label="Close" title="Close">
+                        <ha-icon icon="mdi:close"></ha-icon>
+                    </button>
+                    ${(() => {
+      const e = this._item.backdrop_url || (this._item.type === "Episode" ? this._item.series_poster_url || this._item.poster_url : this._item.poster_url);
+      return e ? n`
+                            <div class="backdrop-hero">
+                                <img class="backdrop-img" src="${e}" alt="" />
+                            </div>
+                        ` : d;
+    })()}
                     ${this._viewMode === "episodes" ? this._renderEpisodesContent() : this._renderDefaultContent()}
-                </ha-card>
-            </ha-dialog>
+                </div>
+            </div>
         `;
   }
   _renderDefaultContent() {
     if (!this._item) return n``;
-    const t = this._item, e = t.type === "Series", i = t.year || (t.date_added ? new Date(t.date_added).getFullYear() : "");
+    const e = this._item, t = e.type === "Series", a = e.year || (e.date_added ? new Date(e.date_added).getFullYear() : "");
     return n`
         <div class="default-layout">
             <div class="poster-col">
-                <img class="poster-img" src="${t.poster_url}" alt="${t.name}" />
+                <img class="poster-img" src="${e.poster_url}" alt="${e.name}" />
 
-                <div class="actions-col">
+                <div class="poster-actions">
                     ${this._confirmDelete ? n`
-                        <div class="confirmation-box">
-                            <span>Delete?</span>
-                            <button class="confirm-btn confirm-yes" @click=${this._handleDeleteConfirm}>Yes</button>
-                            <button class="confirm-btn" @click=${() => this._confirmDelete = !1}>No</button>
-                        </div>
+                            <div class="confirmation-box">
+                                <span>Delete item?</span>
+                                <button class="confirm-btn confirm-yes" @click=${this._handleDeleteConfirm}>Yes</button>
+                                <button class="confirm-btn" @click=${() => this._confirmDelete = !1}>No</button>
+                            </div>
                         ` : n`
-                        <button class="action-btn" @click=${this._handlePlay} title="Play on Chromecast">
-                            <ha-icon icon="mdi:cast"></ha-icon>
-                        </button>
-                        
-                        ${e ? n`
-                                <button class="action-btn" @click=${(a) => {
-      this._haptic(), this._toggleEpisodesView(a);
+                            <!-- Primary Play / Cast Button -->
+                            <button class="primary-play-btn" @click=${this._handlePlay} title="Play on Chromecast">
+                                <ha-icon icon="mdi:cast"></ha-icon>
+                                <span>Play on Cast</span>
+                            </button>
+
+                            <!-- Secondary Action Icons Toolbar -->
+                            <div class="actions-icon-row">
+                                ${t ? n`
+                                    <button class="action-btn" @click=${(i) => {
+      this._haptic(), this._toggleEpisodesView(i);
     }} title="View All Episodes" type="button">
-                                <ha-icon icon="mdi:format-list-bulleted"></ha-icon>
+                                        <ha-icon icon="mdi:format-list-bulleted"></ha-icon>
+                                    </button>
+                                ` : d}
+
+                                ${e.trailer_url ? n`
+                                    <button class="action-btn" @click=${this._handleWatchTrailer} title="Watch Trailer">
+                                        <ha-icon icon="mdi:filmstrip"></ha-icon>
+                                    </button>
+                                ` : d}
+
+                                <button class="action-btn ${e.is_played ? "active" : ""}" @click=${this._handleWatched} title="${e.is_played ? "Mark Unwatched" : "Mark Watched"}">
+                                    <ha-icon icon="mdi:check"></ha-icon>
                                 </button>
-                        ` : c}
 
-                        ${t.trailer_url ? n`
-                            <button class="action-btn" @click=${this._handleWatchTrailer} title="Watch Trailer">
-                                <ha-icon icon="mdi:filmstrip"></ha-icon>
-                        ` : c}
+                                <button class="action-btn favorite-btn ${e.is_favorite ? "active" : ""}" @click=${this._handleFavorite} title="${e.is_favorite ? "Remove Favorite" : "Add to Favorites"}">
+                                    <ha-icon icon="${e.is_favorite ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
+                                </button>
 
-                        <button class="action-btn ${t.is_played ? "active" : ""}" @click=${this._handleWatched} title="${t.is_played ? "Mark Unwatched" : "Mark Watched"}">
-                            <ha-icon icon="mdi:check"></ha-icon>
-                        </button>
-
-                        <button class="action-btn favorite-btn ${t.is_favorite ? "active" : ""}" @click=${this._handleFavorite} title="${t.is_favorite ? "Remove Favorite" : "Add to Favorites"}">
-                                <ha-icon icon="${t.is_favorite ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
-                        </button>
-
-                        <a href="javascript:void(0)" class="action-btn" title="Open in Jellyfin" @click=${(a) => {
-      a.preventDefault(), this._haptic(), this._openExternalUrl(t.jellyfin_url);
+                                <a href="javascript:void(0)" class="action-btn" title="Open in Jellyfin" @click=${(i) => {
+      i.preventDefault(), this._haptic(), this._openExternalUrl(e.jellyfin_url);
     }}>
-                            <ha-icon icon="mdi:popcorn"></ha-icon>
-                        </a>
+                                    <ha-icon icon="mdi:open-in-new"></ha-icon>
+                                </a>
 
-                        <button class="action-btn" @click=${() => {
+                                <button class="action-btn btn-danger" @click=${() => {
       this._haptic(), this._confirmDelete = !0;
     }} title="Delete Item">
-                            <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-                        </button>
-                        
-                    `}
+                                    <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+                                </button>
+                            </div>
+                        `}
                 </div>
             </div>
 
             <div class="details-col">
                 <div class="header-group">
-                    <h1>${t.name}</h1>
+                    <h1>${e.name}</h1>
                     <div class="header-sub">
-                        ${t.series_name ? n`<span>${t.series_name}</span>` : c}
-                        ${t.season !== void 0 && t.episode !== void 0 ? n`<span class="badge">S${String(t.season).padStart(2, "0")}E${String(t.episode).padStart(2, "0")}</span>` : c}
-                        ${i ? n`<span>${i}</span>` : c}
-                        <span class="badge">${t.type}</span>
-                        ${t.official_rating ? n`<span class="badge">${t.official_rating}</span>` : c}
+                        ${e.series_name ? n`<span>${e.series_name}</span>` : d}
+                        ${e.type === "Episode" && e.season != null && e.episode != null ? n`<span class="badge">S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}</span>` : d}
+                        ${a ? n`<span>${a}</span>` : d}
+                        <span class="badge">${e.type}</span>
+                        ${e.official_rating ? n`<span class="badge">${e.official_rating}</span>` : d}
                     </div>
                 </div>
                 
                 ${this._nextUpItem ? n`
                     <div class="next-up-card" @click=${this._playNextUp}>
-                        <img class="next-up-thumb" src="${this._nextUpItem.backdrop_url || this._nextUpItem.poster_url}" />
-                        <div class="next-up-info">
-                            <span class="next-up-label">Next Up</span>
-                            <h3 class="next-up-title">${this._nextUpItem.name}</h3>
-                            <span class="next-up-meta">S${this._nextUpItem.season} : E${this._nextUpItem.episode} • ${this._formatRuntime(this._nextUpItem.runtime_minutes)}</span>
+                        <div class="next-up-thumb-wrap">
+                            <img class="next-up-thumb" src="${this._nextUpItem.poster_url || this._nextUpItem.backdrop_url || this._item.poster_url}" alt="${this._nextUpItem.name}" />
+                            <div class="next-up-play-overlay">
+                                <ha-icon icon="mdi:play"></ha-icon>
+                            </div>
                         </div>
-                        <ha-icon icon="mdi:cast" style="font-size: 36px; color: var(--primary-color); opacity: 1;"></ha-icon>
+                        <div class="next-up-info">
+                            <div class="next-up-header-row">
+                                <span class="next-up-badge">NEXT UP</span>
+                                ${this._nextUpItem.season != null && this._nextUpItem.episode != null ? n`
+                                    <span class="next-up-ep-code">S${this._nextUpItem.season}:E${this._nextUpItem.episode}</span>
+                                ` : d}
+                            </div>
+                            <h3 class="next-up-title">${this._nextUpItem.name}</h3>
+                            <div class="next-up-sub">
+                                ${this._nextUpItem.runtime_minutes ? n`<span>${this._formatRuntime(this._nextUpItem.runtime_minutes)}</span>` : d}
+                                ${this._nextUpItem.rating ? n`
+                                    <span>•</span>
+                                    <span class="next-up-rating"><ha-icon icon="mdi:star"></ha-icon> ${this._nextUpItem.rating.toFixed(1)}</span>
+                                ` : d}
+                            </div>
+                        </div>
+                        <button class="next-up-cast-btn" title="Cast Next Up" @click=${(i) => {
+      i.stopPropagation(), this._playNextUp();
+    }}>
+                            <ha-icon icon="mdi:cast"></ha-icon>
+                        </button>
                     </div>
-                ` : c}
+                ` : d}
 
                 <div class="stats-row">
-                    <div class="stat-item">
-                        <ha-icon icon="mdi:star" style="color: #FBC02D;"></ha-icon>
-                        <span>${t.rating ? t.rating.toFixed(1) : "N/A"}</span>
-                    </div>
-                    ${e ? n`
+                    ${e.rating ? n`
                         <div class="stat-item">
-                            <ha-icon icon="mdi:television-classic"></ha-icon>
-                            <span>${t.unplayed_count !== void 0 ? t.unplayed_count + " Unplayed" : ""}</span>
+                            <ha-icon icon="mdi:star" style="color: #FBC02D;"></ha-icon>
+                            <span>${e.rating.toFixed(1)}</span>
                         </div>
-                        ` : n`
-                        <div class="stat-item">
-                            <ha-icon icon="mdi:clock-outline"></ha-icon>
-                            <span>${this._formatRuntime(t.runtime_minutes)}</span>
-                        </div>
-                        `}
+                    ` : d}
+                    ${t ? n`
+                        ${e.unplayed_count !== void 0 ? n`
+                            <div class="stat-item">
+                                <ha-icon icon="mdi:television-classic"></ha-icon>
+                                <span>${e.unplayed_count} Unplayed</span>
+                            </div>
+                        ` : d}
+                    ` : n`
+                        ${e.runtime_minutes ? n`
+                            <div class="stat-item">
+                                <ha-icon icon="mdi:clock-outline"></ha-icon>
+                                <span>${this._formatRuntime(e.runtime_minutes)}</span>
+                            </div>
+                        ` : d}
+                    `}
                 </div>
 
-                    ${t.description ? n`<div class="description">${t.description}</div>` : c}
+                ${e.description ? n`<div class="description">${e.description}</div>` : d}
 
-                    ${t.genres && t.genres.length > 0 ? n`
+                ${e.genres && e.genres.length > 0 ? n`
                     <div class="genres-list">
-                        ${t.genres.map((a) => n`<span class="genre-tag">${a}</span>`)}
+                        ${e.genres.map((i) => n`<span class="genre-tag">${i}</span>`)}
                     </div>
-                    ` : c}
-                
-                    <div class="divider"></div>
+                ` : d}
 
-                    <div class="media-info-grid">
-                    ${this._renderMediaDetails(e && this._nextUpItem ? this._nextUpItem : t)}
-                    </div>
+                ${this._renderMediaDetails(t && this._nextUpItem ? this._nextUpItem : e)}
             </div>
         </div>
         `;
   }
   _renderEpisodesContent() {
     if (!this._item) return n``;
-    const t = this._item.name;
+    const e = this._item.name, t = Array.from(
+      new Set(
+        this._episodes.map((i) => i.season).filter((i) => typeof i == "number" && !isNaN(i))
+      )
+    ).sort((i, o) => i - o), a = this._selectedSeason && this._selectedSeason !== "all" ? this._episodes.filter((i) => i.season === this._selectedSeason) : this._episodes;
     return n`
-            <div style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+            <div style="display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; z-index: 1;">
                 <div class="episodes-header">
-                    <button class="back-btn" @click=${(e) => this._toggleEpisodesView(e)} type="button">
+                    <button class="back-btn" @click=${(i) => this._toggleEpisodesView(i)} type="button" title="Back to Details">
                         <ha-icon icon="mdi:arrow-left"></ha-icon>
                     </button>
-                    <h2 class="episodes-title">${t}</h2>
+                    <h2 class="episodes-title">${e}</h2>
                 </div>
+
+                ${t.length > 1 ? n`
+                    <div class="season-selector">
+                        <button class="season-tab ${this._selectedSeason === "all" || !this._selectedSeason ? "active" : ""}" @click=${() => {
+      this._selectedSeason = "all", this.requestUpdate();
+    }}>All</button>
+                        ${t.map((i) => n`
+                            <button class="season-tab ${this._selectedSeason === i ? "active" : ""}" @click=${() => {
+      this._selectedSeason = i, this.requestUpdate();
+    }}>Season ${i}</button>
+                        `)}
+                    </div>
+                ` : d}
                 
                 <div class="episodes-list">
-                    ${this._episodes.map((e) => n`
-                        <div class="episode-row ${this._nextUpItem && e.id === this._nextUpItem.id ? "next-up-highlight" : ""}" @click=${(i) => {
-      i.stopPropagation(), this._handlePlayEpisode(e);
+                    ${a.length === 0 ? n`
+                        <div style="text-align: center; color: rgba(255,255,255,0.6); padding: 40px 20px;">
+                            No episodes found.
+                        </div>
+                    ` : a.map((i) => n`
+                        <div class="episode-row ${this._nextUpItem && i.id === this._nextUpItem.id ? "next-up-highlight" : ""}" @click=${(o) => {
+      o.stopPropagation(), this._handlePlayEpisode(i);
     }}>
-                            <img class="episode-thumb" src="${e.backdrop_url || e.poster_url || this._item.backdrop_url}" />
+                            <img class="episode-thumb" src="${i.poster_url || i.backdrop_url || this._item.poster_url}" alt="${i.name || ""}" />
                             
                             <div class="episode-content">
                                 <h4 class="episode-title">
-                                    ${e.episode || e.index_number}. ${e.name}
-                                    ${this._nextUpItem && e.id === this._nextUpItem.id ? n`<span style="font-size: 0.7em; background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; white-space: nowrap;">NEXT UP</span>` : c}
+                                    ${i.season ? `S${i.season}:E${i.episode || i.index_number || ""}` : `${i.episode || i.index_number || ""}`}. ${i.name || "Episode"}
+                                    ${this._nextUpItem && i.id === this._nextUpItem.id ? n`<span style="font-size: 0.7em; background: var(--primary-color, #03a9f4); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; white-space: nowrap;">NEXT UP</span>` : d}
                                 </h4>
                                 
                                 <div class="episode-footer">
                                     <div class="episode-meta">
-                                        <span>${this._formatRuntime(e.runtime_minutes)}</span>
-                                        ${e.rating !== void 0 ? n` <ha-icon icon="mdi:star" style="--mdc-icon-size: 14px; color: #FBC02D; margin-left: 6px; transform: translateY(-1px);"></ha-icon> ${e.rating.toFixed(1)}` : c}
+                                        <span>${this._formatRuntime(i.runtime_minutes)}</span>
+                                        ${i.rating ? n` <ha-icon icon="mdi:star" style="--mdc-icon-size: 14px; color: #FBC02D; margin-left: 6px; transform: translateY(-1px);"></ha-icon> ${i.rating.toFixed(1)}` : d}
                                     </div>
 
                                     <div class="episode-actions">
-                                        <button class="play-episode-btn watched-btn ${e.is_played ? "active" : ""}" @click=${(i) => {
-      i.stopPropagation(), this._handleMarkEpisodeWatched(e);
-    }} type="button" title="${e.is_played ? "Mark Unwatched" : "Mark Watched"}">
+                                        <button class="play-episode-btn watched-btn ${i.is_played ? "active" : ""}" @click=${(o) => {
+      o.stopPropagation(), this._handleMarkEpisodeWatched(i);
+    }} type="button" title="${i.is_played ? "Mark Unwatched" : "Mark Watched"}">
                                             <ha-icon icon="mdi:check"></ha-icon>
                                         </button>
 
-                                        <button class="play-episode-btn" @click=${(i) => {
-      i.stopPropagation(), this._handlePlayEpisode(e);
-    }} type="button">
+                                        <button class="play-episode-btn" @click=${(o) => {
+      o.stopPropagation(), this._handlePlayEpisode(i);
+    }} type="button" title="Play Episode">
                                             <ha-icon icon="mdi:cast"></ha-icon>
                                         </button>
                                     </div>
@@ -3516,125 +3869,151 @@ let y = class extends A {
             </div>
         `;
   }
-  _formatRuntime(t) {
-    if (!t) return "";
-    const e = Math.floor(t / 60), i = t % 60;
-    return e > 0 ? `${e}h ${i}m` : `${i} min`;
+  _formatRuntime(e) {
+    if (!e) return "";
+    const t = Math.floor(e / 60), a = e % 60;
+    return t > 0 ? `${t}h ${a}m` : `${a} min`;
   }
-  _renderMediaDetails(t) {
-    const e = [], i = t.media_streams || [], a = i.find((s) => s.Type?.toLowerCase() === "video");
-    a && (a.Codec && e.push(n`<div class="info-pair"><b>Video</b><span>${a.Codec.toUpperCase()}</span></div>`), a.Width && a.Height && e.push(n`<div class="info-pair"><b>Resolution</b><span>${a.Width}x${a.Height}</span></div>`));
-    const o = i.find((s) => s.Type?.toLowerCase() === "audio" && !!s.IsDefault) || i.find((s) => s.Type?.toLowerCase() === "audio");
-    return o && (o.Codec && e.push(n`<div class="info-pair"><b>Audio</b><span>${o.Codec.toUpperCase()}</span></div>`), o.Channels && e.push(n`<div class="info-pair"><b>Channels</b><span>${o.Channels} ch</span></div>`)), e;
+  _renderMediaDetails(e) {
+    const t = [], a = e.media_streams || [], i = a.find((s) => s.Type?.toLowerCase() === "video");
+    if (i) {
+      if (i.Width && i.Height) {
+        let s = "";
+        i.Width >= 3800 || i.Height >= 2e3 ? s = "4K UHD" : i.Height >= 1e3 || i.Width >= 1900 ? s = "1080p" : i.Height >= 700 || i.Width >= 1200 ? s = "720p" : s = `${i.Width}x${i.Height}`, t.push(n`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${s}</span>`);
+      }
+      i.Codec && t.push(n`<span class="tech-chip">${i.Codec.toUpperCase()}</span>`);
+    }
+    const o = a.find((s) => s.Type?.toLowerCase() === "audio" && !!s.IsDefault) || a.find((s) => s.Type?.toLowerCase() === "audio");
+    if (o && (o.Codec && t.push(n`<span class="tech-chip"><ha-icon icon="mdi:volume-high"></ha-icon>${o.Codec.toUpperCase()}</span>`), o.Channels)) {
+      let s = `${o.Channels} ch`;
+      o.Channels === 6 ? s = "5.1" : o.Channels === 8 ? s = "7.1" : o.Channels === 2 && (s = "Stereo"), t.push(n`<span class="tech-chip">${s}</span>`);
+    }
+    return t.length === 0 ? n`` : n`
+            <div class="divider"></div>
+            <div class="tech-specs-row">
+                ${t}
+            </div>
+        `;
   }
-  _haptic(t = "selection") {
-    const e = new CustomEvent("haptic", {
-      detail: t,
+  _haptic(e = "selection") {
+    const t = new CustomEvent("haptic", {
+      detail: e,
       bubbles: !0,
       composed: !0
     });
-    this.dispatchEvent(e);
+    this.dispatchEvent(t);
   }
-  _openExternalUrl(t) {
-    if (!t) return;
-    let e;
+  _openExternalUrl(e) {
+    if (!e) return;
+    try {
+      const a = new URL(e);
+      if (a.hostname.includes("youtube.com") || a.hostname.includes("youtu.be") || a.hostname.includes("vimeo.com")) {
+        window.open(e, "_blank");
+        return;
+      }
+    } catch {
+    }
+    let t;
     if (this.hass && this.hass.states) {
-      for (const i in this.hass.states)
-        if (i.startsWith("sensor.") && this.hass.states[i].attributes?.config_external_url) {
-          e = this.hass.states[i].attributes.config_external_url;
+      for (const a in this.hass.states)
+        if (a.startsWith("sensor.") && this.hass.states[a].attributes?.config_external_url) {
+          t = this.hass.states[a].attributes.config_external_url;
           break;
         }
     }
-    if (e && e.trim() !== "")
+    if (t && t.trim() !== "")
       try {
-        const i = new URL(t), a = new URL(e);
-        i.protocol = a.protocol, i.host = a.host, i.port = a.port || "";
-        const o = a.pathname === "/" ? "" : a.pathname;
-        o && !i.pathname.startsWith(o) && (i.pathname = o + i.pathname), window.open(i.toString(), "_blank");
+        const a = new URL(e), i = new URL(t);
+        a.protocol = i.protocol, a.host = i.host, a.port = i.port || "";
+        const o = i.pathname === "/" ? "" : i.pathname;
+        o && !a.pathname.startsWith(o) && (a.pathname = o + a.pathname), window.open(a.toString(), "_blank");
         return;
-      } catch (i) {
-        console.warn("JellyHA: Failed to parse URLs to inject external URL override", i);
+      } catch (a) {
+        console.warn("JellyHA: Failed to parse URLs to inject external URL override", a);
       }
-    window.open(t, "_blank");
+    window.open(e, "_blank");
   }
   /* Swipe to Close Logic */
-  _getScrollParent(t) {
-    if (!t) return null;
-    let e = t;
-    for (; e && e !== this._portalContainer && e !== document.body; ) {
-      if (e.classList?.contains("content"))
-        return e.scrollHeight > e.clientHeight ? e : null;
-      const { overflowY: i } = window.getComputedStyle(e);
-      if ((i === "auto" || i === "scroll") && e.scrollHeight > e.clientHeight)
-        return e;
-      e = e.parentElement;
+  _getScrollParent(e) {
+    if (!e) return null;
+    let t = e;
+    for (; t && t !== this._portalContainer && t !== document.body; ) {
+      if (t.classList?.contains("jellyha-modal-surface") || t.classList?.contains("default-layout") || t.classList?.contains("episodes-list"))
+        return t.scrollHeight > t.clientHeight ? t : null;
+      const { overflowY: a } = window.getComputedStyle(t);
+      if ((a === "auto" || a === "scroll") && t.scrollHeight > t.clientHeight)
+        return t;
+      t = t.parentElement;
     }
     return null;
   }
 };
-y.styles = X`
+v.styles = X`
         /* Styles handled in _getPortalStyles */
     `;
-k([
+$([
   P({ attribute: !1 })
-], y.prototype, "hass", 2);
-k([
+], v.prototype, "hass", 2);
+$([
   g()
-], y.prototype, "_item", 2);
-k([
+], v.prototype, "_item", 2);
+$([
   g()
-], y.prototype, "_nextUpItem", 2);
-k([
+], v.prototype, "_nextUpItem", 2);
+$([
   g()
-], y.prototype, "_defaultCastDevice", 2);
-k([
+], v.prototype, "_defaultCastDevice", 2);
+$([
   g()
-], y.prototype, "_serverEntityId", 2);
-k([
+], v.prototype, "_serverEntityId", 2);
+$([
   g()
-], y.prototype, "_open", 2);
-k([
+], v.prototype, "_open", 2);
+$([
   g()
-], y.prototype, "_confirmDelete", 2);
-k([
+], v.prototype, "_confirmDelete", 2);
+$([
   g()
-], y.prototype, "_viewMode", 2);
-k([
+], v.prototype, "_viewMode", 2);
+$([
   g()
-], y.prototype, "_episodes", 2);
-k([
+], v.prototype, "_episodes", 2);
+$([
   g()
-], y.prototype, "_touchStartY", 2);
-k([
+], v.prototype, "_selectedSeason", 2);
+$([
   g()
-], y.prototype, "_currentTranslateY", 2);
-k([
+], v.prototype, "_touchStartY", 2);
+$([
   g()
-], y.prototype, "_isDragging", 2);
-y = k([
-  N("jellyha-item-details-modal")
-], y);
-var ft = Object.defineProperty, vt = Object.getOwnPropertyDescriptor, ve = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? vt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
-    (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && ft(e, i, o), o;
+], v.prototype, "_currentTranslateY", 2);
+$([
+  g()
+], v.prototype, "_isDragging", 2);
+v = $([
+  L("jellyha-item-details-modal")
+], v);
+var ft = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, be = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? bt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+    (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
+  return i && o && ft(t, a, o), o;
 };
-function bt(t, e, i) {
-  const a = new CustomEvent(e, {
+function yt(e, t, a) {
+  const i = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
-    detail: i
+    detail: a
   });
-  t.dispatchEvent(a);
+  e.dispatchEvent(i);
 }
 let G = class extends A {
-  setConfig(t) {
-    this._config = t;
+  setConfig(e) {
+    this._config = e;
   }
   render() {
     if (!this.hass || !this._config)
       return n``;
-    const t = this._config.click_action || "more-info", e = this._config.hold_action || "jellyfin", i = this._config.double_tap_action || "none", a = this.hass.locale?.language || this.hass.language, s = this._config.layout === "grid" && this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0 ? l(a, "editor.rows") : l(a, "editor.columns");
+    const e = this._config.click_action || "more-info", t = this._config.hold_action || "jellyfin", a = this._config.double_tap_action || "none", i = this.hass.locale?.language || this.hass.language, s = this._config.layout === "grid" && this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0 ? l(i, "editor.rows") : l(i, "editor.columns");
     return n`
       <div class="card-config">
         <div class="form-row">
@@ -3642,7 +4021,7 @@ let G = class extends A {
             .hass=${this.hass}
             .selector=${{ entity: { domain: "sensor" } }}
             .value=${this._config.entity}
-            label="${l(a, "editor.entity")}"
+            label="${l(i, "editor.entity")}"
             @value-changed=${this._entityChanged}
           ></ha-selector>
         </div>
@@ -3652,8 +4031,8 @@ let G = class extends A {
             .hass=${this.hass}
             .selector=${{ text: {} }}
             .value=${this._config.title || ""}
-            .label=${l(a, "editor.title")}
-            label="${l(a, "editor.title")}"
+            .label=${l(i, "editor.title")}
+            label="${l(i, "editor.title")}"
             @value-changed=${this._titleChanged}
           ></ha-selector>
         </div>
@@ -3666,15 +4045,15 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "carousel", label: l(a, "editor.layout_carousel") },
-          { value: "grid", label: l(a, "editor.layout_grid") },
-          { value: "list", label: l(a, "editor.layout_list") }
+          { value: "carousel", label: l(i, "editor.layout_carousel") },
+          { value: "grid", label: l(i, "editor.layout_grid") },
+          { value: "list", label: l(i, "editor.layout_list") }
         ]
       }
     }}
               .value=${this._config.layout || "carousel"}
-              .label=${l(a, "editor.layout")}
-              label="${l(a, "editor.layout")}"
+              .label=${l(i, "editor.layout")}
+              label="${l(i, "editor.layout")}"
               @value-changed=${this._layoutChanged}
             ></ha-selector>
           </div>
@@ -3686,16 +4065,16 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "both", label: l(a, "editor.media_type_both") },
-          { value: "movies", label: l(a, "editor.media_type_movies") },
-          { value: "series", label: l(a, "editor.media_type_series") },
-          { value: "next_up", label: l(a, "editor.media_type_next_up") }
+          { value: "both", label: l(i, "editor.media_type_both") },
+          { value: "movies", label: l(i, "editor.media_type_movies") },
+          { value: "series", label: l(i, "editor.media_type_series") },
+          { value: "next_up", label: l(i, "editor.media_type_next_up") }
         ]
       }
     }}
               .value=${this._config.media_type || "both"}
-              .label=${l(a, "editor.media_type")}
-              label="${l(a, "editor.media_type")}"
+              .label=${l(i, "editor.media_type")}
+              label="${l(i, "editor.media_type")}"
               @value-changed=${this._mediaTypeChanged}
             ></ha-selector>
           </div>
@@ -3709,14 +4088,14 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "series", label: l(a, "editor.tv_content_series") },
-          { value: "episodes", label: l(a, "editor.tv_content_episodes") }
+          { value: "series", label: l(i, "editor.tv_content_series") },
+          { value: "episodes", label: l(i, "editor.tv_content_episodes") }
         ]
       }
     }}
               .value=${this._config.tv_content || "series"}
-              .label=${l(a, "editor.tv_content")}
-              label="${l(a, "editor.tv_content")}"
+              .label=${l(i, "editor.tv_content")}
+              label="${l(i, "editor.tv_content")}"
               @value-changed=${this._tvContentChanged}
             ></ha-selector>
           </div>
@@ -3734,8 +4113,8 @@ let G = class extends A {
       }
     }}
                   .value=${this._config.columns || 1}
-                  .label=${`${s}: ${(this._config.columns || 1) === 1 ? l(a, "editor.auto") : this._config.columns}`}
-                  label="${`${s}: ${(this._config.columns || 1) === 1 ? l(a, "editor.auto") : this._config.columns}`}"
+                  .label=${`${s}: ${(this._config.columns || 1) === 1 ? l(i, "editor.auto") : this._config.columns}`}
+                  label="${`${s}: ${(this._config.columns || 1) === 1 ? l(i, "editor.auto") : this._config.columns}`}"
                   @value-changed=${this._columnsChanged}
                 ></ha-selector>
               </div>
@@ -3753,8 +4132,8 @@ let G = class extends A {
       }
     }}
               .value=${this._config.items_per_page !== void 0 && this._config.items_per_page !== null ? this._config.items_per_page : 5}
-              .label=${l(a, "editor.items_per_page")}
-              label="${l(a, "editor.items_per_page")}"
+              .label=${l(i, "editor.items_per_page")}
+              label="${l(i, "editor.items_per_page")}"
               @value-changed=${this._itemsPerPageChanged}
             ></ha-selector>
           </div>
@@ -3770,8 +4149,8 @@ let G = class extends A {
       }
     }}
               .value=${this._config.max_pages !== void 0 && this._config.max_pages !== null ? this._config.max_pages : 5}
-              .label=${l(a, "editor.max_pages")}
-              label="${l(a, "editor.max_pages")}"
+              .label=${l(i, "editor.max_pages")}
+              label="${l(i, "editor.max_pages")}"
               @value-changed=${this._maxPagesChanged}
             ></ha-selector>
           </div>
@@ -3790,8 +4169,8 @@ let G = class extends A {
       }
     }}
               .value=${this._config.auto_swipe_interval !== void 0 && this._config.auto_swipe_interval !== null ? this._config.auto_swipe_interval : 0}
-              .label=${l(a, "editor.auto_swipe")}
-              label="${l(a, "editor.auto_swipe")}"
+              .label=${l(i, "editor.auto_swipe")}
+              label="${l(i, "editor.auto_swipe")}"
               @value-changed=${this._autoSwipeIntervalChanged}
             ></ha-selector>
           </div>
@@ -3808,8 +4187,8 @@ let G = class extends A {
       }
     }}
               .value=${this._config.new_badge_days !== void 0 && this._config.new_badge_days !== null ? this._config.new_badge_days : 3}
-              .label=${l(a, "editor.new_badge_days")}
-              label="${l(a, "editor.new_badge_days")}"
+              .label=${l(i, "editor.new_badge_days")}
+              label="${l(i, "editor.new_badge_days")}"
               @value-changed=${this._newBadgeDaysChanged}
             ></ha-selector>
           </div>
@@ -3823,17 +4202,17 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "jellyfin", label: l(a, "editor.action_jellyfin") },
-          { value: "cast", label: l(a, "editor.action_cast") },
-          { value: "more-info", label: l(a, "editor.action_more_info") },
-          { value: "trailer", label: l(a, "editor.action_trailer") },
-          { value: "none", label: l(a, "editor.action_none") }
+          { value: "jellyfin", label: l(i, "editor.action_jellyfin") },
+          { value: "cast", label: l(i, "editor.action_cast") },
+          { value: "more-info", label: l(i, "editor.action_more_info") },
+          { value: "trailer", label: l(i, "editor.action_trailer") },
+          { value: "none", label: l(i, "editor.action_none") }
         ]
       }
     }}
-              .value=${t}
-              .label=${l(a, "editor.click_action")}
-              label="${l(a, "editor.click_action")}"
+              .value=${e}
+              .label=${l(i, "editor.click_action")}
+              label="${l(i, "editor.click_action")}"
               @value-changed=${this._clickActionChanged}
             ></ha-selector>
           </div>
@@ -3845,17 +4224,17 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "jellyfin", label: l(a, "editor.action_jellyfin") },
-          { value: "cast", label: l(a, "editor.action_cast") },
-          { value: "more-info", label: l(a, "editor.action_more_info") },
-          { value: "trailer", label: l(a, "editor.action_trailer") },
-          { value: "none", label: l(a, "editor.action_none") }
+          { value: "jellyfin", label: l(i, "editor.action_jellyfin") },
+          { value: "cast", label: l(i, "editor.action_cast") },
+          { value: "more-info", label: l(i, "editor.action_more_info") },
+          { value: "trailer", label: l(i, "editor.action_trailer") },
+          { value: "none", label: l(i, "editor.action_none") }
         ]
       }
     }}
-              .value=${e}
-              .label=${l(a, "editor.hold_action")}
-              label="${l(a, "editor.hold_action")}"
+              .value=${t}
+              .label=${l(i, "editor.hold_action")}
+              label="${l(i, "editor.hold_action")}"
               @value-changed=${this._holdActionChanged}
             ></ha-selector>
           </div>
@@ -3869,22 +4248,22 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "jellyfin", label: l(a, "editor.action_jellyfin") },
-          { value: "cast", label: l(a, "editor.action_cast") },
-          { value: "more-info", label: l(a, "editor.action_more_info") },
-          { value: "trailer", label: l(a, "editor.action_trailer") },
-          { value: "none", label: l(a, "editor.action_none") }
+          { value: "jellyfin", label: l(i, "editor.action_jellyfin") },
+          { value: "cast", label: l(i, "editor.action_cast") },
+          { value: "more-info", label: l(i, "editor.action_more_info") },
+          { value: "trailer", label: l(i, "editor.action_trailer") },
+          { value: "none", label: l(i, "editor.action_none") }
         ]
       }
     }}
-              .value=${i}
-              .label=${l(a, "editor.double_tap_action")}
-              label="${l(a, "editor.double_tap_action")}"
+              .value=${a}
+              .label=${l(i, "editor.double_tap_action")}
+              label="${l(i, "editor.double_tap_action")}"
               @value-changed=${this._doubleTapActionChanged}
             ></ha-selector>
           </div>
 
-          ${t === "cast" || e === "cast" || i === "cast" ? n`
+          ${e === "cast" || t === "cast" || a === "cast" ? n`
                 <div class="form-row">
                   <ha-entity-picker
                     .hass=${this.hass}
@@ -3896,13 +4275,13 @@ let G = class extends A {
               ` : n`<div></div>`}
         </div>
 
-        ${t === "cast" || e === "cast" || i === "cast" ? n`
+        ${e === "cast" || t === "cast" || a === "cast" ? n`
               <div class="checkbox-row">
                 <ha-switch
                   .checked=${this._config.show_now_playing !== !1}
                   @change=${this._showNowPlayingChanged}
                 ></ha-switch>
-                <span>${l(a, "editor.show_now_playing_overlay")}</span>
+                <span>${l(i, "editor.show_now_playing_overlay")}</span>
               </div>
             ` : ""}
 
@@ -3911,7 +4290,7 @@ let G = class extends A {
         .checked=${this._config.show_title !== !1}
         @change=${this._showTitleChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_title")}</span>
+      <span>${l(i, "editor.show_title")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3919,7 +4298,7 @@ let G = class extends A {
         .checked=${this._config.show_year !== !1}
         @change=${this._showYearChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_year")}</span>
+      <span>${l(i, "editor.show_year")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3927,7 +4306,7 @@ let G = class extends A {
         .checked=${this._config.show_ratings !== !1}
         @change=${this._showRatingsChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_rating")}</span>
+      <span>${l(i, "editor.show_rating")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3935,7 +4314,7 @@ let G = class extends A {
         .checked=${this._config.show_runtime === !0}
         @change=${this._showRuntimeChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_runtime")}</span>
+      <span>${l(i, "editor.show_runtime")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3943,7 +4322,7 @@ let G = class extends A {
         .checked=${this._config.show_date_added === !0}
         @change=${this._showDateAddedChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_date_added")}</span>
+      <span>${l(i, "editor.show_date_added")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3951,7 +4330,7 @@ let G = class extends A {
         .checked=${this._config.show_genres === !0}
         @change=${this._showGenresChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_genres")}</span>
+      <span>${l(i, "editor.show_genres")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3959,7 +4338,7 @@ let G = class extends A {
         .checked=${this._config.show_description_on_hover !== !1}
         @change=${this._showDescriptionOnHoverChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_description")}</span>
+      <span>${l(i, "editor.show_description")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3967,7 +4346,7 @@ let G = class extends A {
         .checked=${this._config.show_media_type_badge !== !1}
         @change=${this._showMediaTypeBadgeChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_media_type_badge")}</span>
+      <span>${l(i, "editor.show_media_type_badge")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3975,7 +4354,7 @@ let G = class extends A {
         .checked=${this._config.show_watched_status !== !1}
         @change=${this._showWatchedStatusChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_watched_status")}</span>
+      <span>${l(i, "editor.show_watched_status")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -3983,7 +4362,7 @@ let G = class extends A {
         .checked=${this._config.show_search === !0}
         @change=${this._showSearchChanged}
       ></ha-switch>
-      <span>${l(a, "editor.show_search")}</span>
+      <span>${l(i, "editor.show_search")}</span>
     </div>
 
     <div class="side-by-side">
@@ -3994,14 +4373,14 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "below", label: l(a, "editor.metadata_below") },
-          { value: "above", label: l(a, "editor.metadata_above") }
+          { value: "below", label: l(i, "editor.metadata_below") },
+          { value: "above", label: l(i, "editor.metadata_above") }
         ]
       }
     }}
           .value=${this._config.metadata_position || "below"}
-          .label=${l(a, "editor.metadata_position")}
-          label="${l(a, "editor.metadata_position")}"
+          .label=${l(i, "editor.metadata_position")}
+          label="${l(i, "editor.metadata_position")}"
           @value-changed=${this._metadataPositionChanged}
         ></ha-selector>
       </div>
@@ -4014,20 +4393,20 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "date_added_desc", label: l(a, "editor.sort_date_added_desc") },
-          { value: "date_added_asc", label: l(a, "editor.sort_date_added_asc") },
-          { value: "title_asc", label: l(a, "editor.sort_title_asc") },
-          { value: "title_desc", label: l(a, "editor.sort_title_desc") },
-          { value: "year_desc", label: l(a, "editor.sort_year_desc") },
-          { value: "year_asc", label: l(a, "editor.sort_year_asc") },
-          { value: "last_played_desc", label: l(a, "editor.sort_last_played_desc") },
-          { value: "last_played_asc", label: l(a, "editor.sort_last_played_asc") }
+          { value: "date_added_desc", label: l(i, "editor.sort_date_added_desc") },
+          { value: "date_added_asc", label: l(i, "editor.sort_date_added_asc") },
+          { value: "title_asc", label: l(i, "editor.sort_title_asc") },
+          { value: "title_desc", label: l(i, "editor.sort_title_desc") },
+          { value: "year_desc", label: l(i, "editor.sort_year_desc") },
+          { value: "year_asc", label: l(i, "editor.sort_year_asc") },
+          { value: "last_played_desc", label: l(i, "editor.sort_last_played_desc") },
+          { value: "last_played_asc", label: l(i, "editor.sort_last_played_asc") }
         ]
       }
     }}
               .value=${this._config.sort_option || "date_added_desc"}
-              .label=${l(a, "editor.sort_order")}
-              label="${l(a, "editor.sort_order")}"
+              .label=${l(i, "editor.sort_order")}
+              label="${l(i, "editor.sort_order")}"
               @value-changed=${this._sortOptionChanged}
             ></ha-selector>
         ` : n`<div></div>`}
@@ -4040,7 +4419,7 @@ let G = class extends A {
           .checked=${this._config.enable_pagination !== !1}
           @change=${this._enablePaginationChanged}
         ></ha-switch>
-        <span>${l(a, "editor.enable_pagination")}</span>
+        <span>${l(i, "editor.enable_pagination")}</span>
       </div>
 
       <div class="checkbox-row">
@@ -4048,7 +4427,7 @@ let G = class extends A {
           .checked=${this._config.show_pagination_dots !== !1}
           @change=${this._showPaginationDotsChanged}
         ></ha-switch>
-        <span>${l(a, "editor.show_pagination_dots")}</span>
+        <span>${l(i, "editor.show_pagination_dots")}</span>
       </div>
     </div>
 
@@ -4059,15 +4438,15 @@ let G = class extends A {
       select: {
         mode: "dropdown",
         options: [
-          { value: "all", label: l(a, "editor.filter_all") },
-          { value: "unwatched", label: l(a, "editor.filter_unwatched") },
-          { value: "watched", label: l(a, "editor.filter_watched") }
+          { value: "all", label: l(i, "editor.filter_all") },
+          { value: "unwatched", label: l(i, "editor.filter_unwatched") },
+          { value: "watched", label: l(i, "editor.filter_watched") }
         ]
       }
     }}
         .value=${this._config.status_filter || "all"}
-        .label=${l(a, "editor.filter_watch_status")}
-        label="${l(a, "editor.filter_watch_status")}"
+        .label=${l(i, "editor.filter_watch_status")}
+        label="${l(i, "editor.filter_watch_status")}"
         @value-changed=${this._statusFilterChanged}
       ></ha-selector>
     </div>
@@ -4078,7 +4457,7 @@ let G = class extends A {
           .checked=${this._config.filter_favorites === !0}
           @change=${this._filterFavoritesChanged}
         ></ha-switch>
-        <span>${l(a, "editor.filter_favorites")}</span>
+        <span>${l(i, "editor.filter_favorites")}</span>
       </div>
 
       <div class="checkbox-row">
@@ -4086,7 +4465,7 @@ let G = class extends A {
           .checked=${this._config.filter_newly_added === !0}
           @change=${this._filterNewlyAddedChanged}
         ></ha-switch>
-        <span>${l(a, "editor.filter_new_items")}</span>
+        <span>${l(i, "editor.filter_new_items")}</span>
       </div>
     </div>
 
@@ -4096,7 +4475,7 @@ let G = class extends A {
               .checked=${this._config.use_series_image === !0}
               @change=${this._useSeriesImageChanged}
             ></ha-switch>
-            <span>${l(a, "editor.use_series_image")}</span>
+            <span>${l(i, "editor.use_series_image")}</span>
           </div>
         ` : ""}
 
@@ -4104,145 +4483,145 @@ let G = class extends A {
   </div>
 `;
   }
-  _entityChanged(t) {
-    this._updateConfig("entity", t.detail.value);
+  _entityChanged(e) {
+    this._updateConfig("entity", e.detail.value);
   }
-  _titleChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    this._updateConfig("title", e);
+  _titleChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    this._updateConfig("title", t);
   }
-  _layoutChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("layout", e);
+  _layoutChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("layout", t);
   }
-  _columnsChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    this._updateConfig("columns", Number(e));
+  _columnsChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    this._updateConfig("columns", Number(t));
   }
-  _mediaTypeChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("media_type", e);
+  _mediaTypeChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("media_type", t);
   }
-  _tvContentChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("tv_content", e);
+  _tvContentChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("tv_content", t);
   }
-  _itemsPerPageChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== "" && e !== null && e !== void 0 ? this._updateConfig("items_per_page", Number(e)) : this._updateConfig("items_per_page", null);
+  _itemsPerPageChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== "" && t !== null && t !== void 0 ? this._updateConfig("items_per_page", Number(t)) : this._updateConfig("items_per_page", null);
   }
-  _maxPagesChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e === "" || e === null || e === void 0 ? this._updateConfig("max_pages", null) : this._updateConfig("max_pages", Number(e));
+  _maxPagesChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t === "" || t === null || t === void 0 ? this._updateConfig("max_pages", null) : this._updateConfig("max_pages", Number(t));
   }
-  _autoSwipeIntervalChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    this._updateConfig("auto_swipe_interval", Number(e || 0));
+  _autoSwipeIntervalChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    this._updateConfig("auto_swipe_interval", Number(t || 0));
   }
-  _newBadgeDaysChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e === "" || e === null || e === void 0 ? this._updateConfig("new_badge_days", null) : this._updateConfig("new_badge_days", Number(e));
+  _newBadgeDaysChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t === "" || t === null || t === void 0 ? this._updateConfig("new_badge_days", null) : this._updateConfig("new_badge_days", Number(t));
   }
-  _clickActionChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("click_action", e);
+  _clickActionChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("click_action", t);
   }
-  _holdActionChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("hold_action", e);
+  _holdActionChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("hold_action", t);
   }
-  _doubleTapActionChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("double_tap_action", e);
+  _doubleTapActionChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("double_tap_action", t);
   }
-  _defaultCastDeviceChanged(t) {
-    this._updateConfig("default_cast_device", t.detail.value);
+  _defaultCastDeviceChanged(e) {
+    this._updateConfig("default_cast_device", e.detail.value);
   }
-  _showNowPlayingChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_now_playing", e.checked);
+  _showNowPlayingChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_now_playing", t.checked);
   }
-  _showTitleChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_title", e.checked);
+  _showTitleChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_title", t.checked);
   }
-  _showYearChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_year", e.checked);
+  _showYearChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_year", t.checked);
   }
-  _showRatingsChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_ratings", e.checked);
+  _showRatingsChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_ratings", t.checked);
   }
-  _showRuntimeChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_runtime", e.checked);
+  _showRuntimeChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_runtime", t.checked);
   }
-  _showMediaTypeBadgeChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_media_type_badge", e.checked);
+  _showMediaTypeBadgeChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_media_type_badge", t.checked);
   }
-  _showWatchedStatusChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_watched_status", e.checked);
+  _showWatchedStatusChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_watched_status", t.checked);
   }
-  _showGenresChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_genres", e.checked);
+  _showGenresChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_genres", t.checked);
   }
-  _showDateAddedChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_date_added", e.checked);
+  _showDateAddedChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_date_added", t.checked);
   }
-  _showDescriptionOnHoverChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_description_on_hover", e.checked);
+  _showDescriptionOnHoverChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_description_on_hover", t.checked);
   }
-  _metadataPositionChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("metadata_position", e);
+  _metadataPositionChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("metadata_position", t);
   }
-  _horizontalAlignmentChanged(t) {
-    const e = t.target;
-    this._updateConfig("horizontal_alignment", e.value);
+  _horizontalAlignmentChanged(e) {
+    const t = e.target;
+    this._updateConfig("horizontal_alignment", t.value);
   }
-  _enablePaginationChanged(t) {
-    const e = t.target;
-    this._updateConfig("enable_pagination", e.checked);
+  _enablePaginationChanged(e) {
+    const t = e.target;
+    this._updateConfig("enable_pagination", t.checked);
   }
-  _showPaginationDotsChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_pagination_dots", e.checked);
+  _showPaginationDotsChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_pagination_dots", t.checked);
   }
-  _filterFavoritesChanged(t) {
-    const e = t.target;
-    this._updateConfig("filter_favorites", e.checked);
+  _filterFavoritesChanged(e) {
+    const t = e.target;
+    this._updateConfig("filter_favorites", t.checked);
   }
-  _statusFilterChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("status_filter", e);
+  _statusFilterChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("status_filter", t);
   }
-  _filterNewlyAddedChanged(t) {
-    const e = t.target;
-    this._updateConfig("filter_newly_added", e.checked);
+  _filterNewlyAddedChanged(e) {
+    const t = e.target;
+    this._updateConfig("filter_newly_added", t.checked);
   }
-  _showSearchChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_search", e.checked);
+  _showSearchChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_search", t.checked);
   }
-  _sortOptionChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("sort_option", e);
+  _sortOptionChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("sort_option", t);
   }
-  _useSeriesImageChanged(t) {
-    const e = t.target;
-    this._updateConfig("use_series_image", e.checked);
+  _useSeriesImageChanged(e) {
+    const t = e.target;
+    this._updateConfig("use_series_image", t.checked);
   }
-  _updateConfig(t, e) {
+  _updateConfig(e, t) {
     if (!this._config)
       return;
-    const i = { ...this._config, [t]: e };
-    this._config = i, bt(this, "config-changed", { config: i });
+    const a = { ...this._config, [e]: t };
+    this._config = a, yt(this, "config-changed", { config: a });
   }
 };
 G.styles = X`
@@ -4271,19 +4650,19 @@ G.styles = X`
       margin-bottom: 0;
     }
   `;
-ve([
+be([
   P({ attribute: !1 })
 ], G.prototype, "hass", 2);
-ve([
+be([
   g()
 ], G.prototype, "_config", 2);
-G = ve([
-  N("jellyha-library-editor")
+G = be([
+  L("jellyha-library-editor")
 ], G);
-var yt = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? wt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
-    (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && yt(e, i, o), o;
+var vt = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, S = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? wt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+    (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
+  return i && o && vt(t, a, o), o;
 };
 let w = class extends A {
   constructor() {
@@ -4293,13 +4672,13 @@ let w = class extends A {
     return !this.item || !this.config || !this.hass ? n`` : this.layout === "list" ? this._renderListItem() : this._renderMediaItem();
   }
   _renderListItem() {
-    const t = this.item, e = ce(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
+    const e = this.item, t = ce(e, this.config.new_badge_days || 0), a = this._getRating(e), i = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(e);
     return n`
       <div
         class="media-item list-item ${o ? "playing" : ""} ${this.config.show_title ? "" : "no-title"} ${this.config.metadata_position === "above" ? "metadata-above" : ""}"
         tabindex="0"
         role="button"
-        aria-label="${t.name}"
+        aria-label="${e.name}"
         @mousedown="${this._handleMouseDown}"
         @mouseup="${this._handleMouseUp}"
         @touchstart="${this._handleTouchStart}"
@@ -4310,16 +4689,16 @@ let w = class extends A {
         @contextmenu="${this._handleContextMenu}"
       >
         <div class="list-poster-wrapper">
-          ${this.config.metadata_position === "above" && this.config.show_date_added && t.date_added ? n`<p class="list-date-added">${K(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : c}
-          <div class="poster-container" id="poster-${t.id}">
+          ${this.config.metadata_position === "above" && this.config.show_date_added && e.date_added ? n`<p class="list-date-added">${K(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+          <div class="poster-container" id="poster-${e.id}">
             <div class="poster-inner">
               <img
                 class="poster"
                 src="${H(
-      this.config.use_series_image && t.series_poster_url ? t.series_poster_url : t.poster_url,
+      this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       160
     )}"
-                alt="${t.name}"
+                alt="${e.name}"
                 width="80"
                 height="120"
                 loading="lazy"
@@ -4329,56 +4708,56 @@ let w = class extends A {
               />
               <div class="poster-skeleton"></div>
               
-              ${a && !o && !t.series_name ? n`<span class="list-type-badge ${t.series_name ? "series" : t.type === "Movie" ? "movie" : "series"}">
-                    ${t.series_name && t.season !== void 0 && t.episode !== void 0 ? `S${String(t.season).padStart(2, "0")}E${String(t.episode).padStart(2, "0")}` : t.type === "Movie" ? "Movie" : "Series"}
-                  </span>` : c}
+              ${i && !o && !e.series_name ? n`<span class="list-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+                    ${e.series_name && e.season !== void 0 && e.episode !== void 0 ? `S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}` : e.type === "Movie" ? "Movie" : "Series"}
+                  </span>` : d}
 
-              ${t.series_name && !o ? n`
+              ${e.series_name && !o ? n`
             <div class="censor-bar list-bar ${this.isNextUpHighlight ? "highlight" : ""}">
-              <span>${t.series_name}</span>
+              <span>${e.series_name}</span>
             </div>
-              ` : c}
+              ` : d}
               
-              ${o ? c : this._renderStatusBadge(t, e)}
-              ${this._renderNowPlayingOverlay(t)}
+              ${o ? d : this._renderStatusBadge(e, t)}
+              ${this._renderNowPlayingOverlay(e)}
             </div>
           </div>
-          ${this.config.metadata_position !== "above" && this.config.show_date_added && t.date_added ? n`<p class="list-date-added">${K(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : c}
+          ${this.config.metadata_position !== "above" && this.config.show_date_added && e.date_added ? n`<p class="list-date-added">${K(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
         </div>
         
         <div class="list-info">
-          ${this.config.show_title ? n`<h3 class="list-title">${t.name}</h3>` : c}
+          ${this.config.show_title ? n`<h3 class="list-title">${e.name}</h3>` : d}
           
           <div class="list-metadata">
-            ${a && !o ? n`<span class="list-type-badge ${t.series_name ? "series" : t.type === "Movie" ? "movie" : "series"}">
-                  ${t.series_name && t.season !== void 0 && t.episode !== void 0 ? `S${String(t.season).padStart(2, "0")}E${String(t.episode).padStart(2, "0")}` : t.type === "Movie" ? "Movie" : "Series"}
-                </span>` : c}
-            ${this.config.show_year && t.year ? n`<span class="list-year">${t.year}</span>` : c}
-            ${this.config.show_ratings && i ? n`<span class="list-rating">
+            ${i && !o ? n`<span class="list-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+                  ${e.series_name && e.season !== void 0 && e.episode !== void 0 ? `S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}` : e.type === "Movie" ? "Movie" : "Series"}
+                </span>` : d}
+            ${this.config.show_year && e.year ? n`<span class="list-year">${e.year}</span>` : d}
+            ${this.config.show_ratings && a ? n`<span class="list-rating">
                   <ha-icon icon="mdi:star"></ha-icon>
-                  ${i.toFixed(1)}
-                </span>` : c}
-            ${this.config.show_runtime && t.runtime_minutes ? n`<span class="list-runtime">
+                  ${a.toFixed(1)}
+                </span>` : d}
+            ${this.config.show_runtime && e.runtime_minutes ? n`<span class="list-runtime">
                   <ha-icon icon="mdi:clock-outline"></ha-icon>
-                  ${he(t.runtime_minutes)}
-                </span>` : c}
+                  ${he(e.runtime_minutes)}
+                </span>` : d}
           </div>
           
-          ${this.config.show_genres && t.genres && t.genres.length > 0 ? n`<p class="list-genres">${t.genres.slice(0, 3).join(", ")}</p>` : c}
+          ${this.config.show_genres && e.genres && e.genres.length > 0 ? n`<p class="list-genres">${e.genres.slice(0, 3).join(", ")}</p>` : d}
           
-          ${this.config.show_description_on_hover !== !1 && t.description ? n`<p class="list-description">${t.description}</p>` : c}
+          ${this.config.show_description_on_hover !== !1 && e.description ? n`<p class="list-description">${e.description}</p>` : d}
         </div>
       </div>
     `;
   }
   _renderMediaItem() {
-    const t = this.item, e = ce(t, this.config.new_badge_days || 0), i = this._getRating(t), a = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(t);
+    const e = this.item, t = ce(e, this.config.new_badge_days || 0), a = this._getRating(e), i = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(e);
     return n`
       <div
         class="media-item ${o ? "playing" : ""}"
         tabindex="0"
         role="button"
-        aria-label="${t.name}"
+        aria-label="${e.name}"
         @mousedown="${this._handleMouseDown}"
         @mouseup="${this._handleMouseUp}"
         @touchstart="${this._handleTouchStart}"
@@ -4390,20 +4769,20 @@ let w = class extends A {
       >
         ${this.config.metadata_position === "above" ? n`
               <div class="media-info-above">
-                ${this.config.show_title ? n`<p class="media-title">${t.name}</p>` : c}
-                ${this.config.show_year && t.year ? n`<p class="media-year">${t.year}</p>` : c}
-                ${this.config.show_date_added && t.date_added ? n`<p class="media-date-added">${K(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : c}
+                ${this.config.show_title ? n`<p class="media-title">${e.name}</p>` : d}
+                ${this.config.show_year && e.year ? n`<p class="media-year">${e.year}</p>` : d}
+                ${this.config.show_date_added && e.date_added ? n`<p class="media-date-added">${K(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
               </div>
-            ` : c}
-        <div class="poster-container" id="poster-${t.id}">
+            ` : d}
+        <div class="poster-container" id="poster-${e.id}">
           <div class="poster-inner">
             <img
               class="poster"
               src="${H(
-      this.config.use_series_image && t.series_poster_url ? t.series_poster_url : t.poster_url,
+      this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       300
     )}"
-              alt="${t.name}"
+              alt="${e.name}"
               width="140"
               height="210"
               loading="auto"
@@ -4413,72 +4792,72 @@ let w = class extends A {
             />
             <div class="poster-skeleton"></div>
             
-            ${a && !o ? n`
-            <span class="media-type-badge ${t.series_name ? "series" : t.type === "Movie" ? "movie" : "series"}">
-              ${t.series_name && t.season !== void 0 && t.episode !== void 0 ? `S${String(t.season).padStart(2, "0")}E${String(t.episode).padStart(2, "0")}` : t.type === "Movie" ? "Movie" : "Series"}
+            ${i && !o ? n`
+            <span class="media-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+              ${e.series_name && e.season !== void 0 && e.episode !== void 0 ? `S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}` : e.type === "Movie" ? "Movie" : "Series"}
             </span>
-          ` : c}
+          ` : d}
 
-            ${t.series_name && !o ? n`
+            ${e.series_name && !o ? n`
             <div class="censor-bar ${this.isNextUpHighlight ? "highlight" : ""}">
-              <span>${t.series_name}</span>
+              <span>${e.series_name}</span>
             </div>
-              ` : c}
+              ` : d}
             
-            ${o ? c : this._renderStatusBadge(t, e)}
+            ${o ? d : this._renderStatusBadge(e, t)}
             
-            ${this.config.show_ratings && i && !o ? n`
+            ${this.config.show_ratings && a && !o ? n`
                   <span class="rating">
                     <ha-icon icon="mdi:star"></ha-icon>
-                    ${i.toFixed(1)}
+                    ${a.toFixed(1)}
                   </span>
-                ` : c}
+                ` : d}
             
-            ${this.config.show_runtime && t.runtime_minutes && !o ? n`
+            ${this.config.show_runtime && e.runtime_minutes && !o ? n`
                   <span class="runtime">
                     <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${he(t.runtime_minutes)}
+                    ${he(e.runtime_minutes)}
                   </span>
-                ` : c}
+                ` : d}
             
-            ${o ? c : n`
+            ${o ? d : n`
             <div class="hover-overlay">
-              ${t.year ? n`<span class="overlay-year">${t.year}</span>` : c}
-              <h3 class="overlay-title">${t.name}</h3>
-              ${this.config.show_genres && t.genres && t.genres.length > 0 ? n`<span class="overlay-genres">${t.genres.slice(0, 3).join(", ")}</span>` : c}
-              ${this.config.show_description_on_hover !== !1 && t.description ? n`<p class="overlay-description">${t.description}</p>` : c}
+              ${e.year ? n`<span class="overlay-year">${e.year}</span>` : d}
+              <h3 class="overlay-title">${e.name}</h3>
+              ${this.config.show_genres && e.genres && e.genres.length > 0 ? n`<span class="overlay-genres">${e.genres.slice(0, 3).join(", ")}</span>` : d}
+              ${this.config.show_description_on_hover !== !1 && e.description ? n`<p class="overlay-description">${e.description}</p>` : d}
             </div>`}
 
-            ${this._renderNowPlayingOverlay(t)}
+            ${this._renderNowPlayingOverlay(e)}
           </div>
         </div>
         
         ${this.config.metadata_position === "below" ? n`
               <div class="media-info-below">
-                ${this.config.show_title ? n`<p class="media-title">${t.name}</p>` : c}
-                ${this.config.show_year && t.year ? n`<p class="media-year">${t.year}</p>` : c}
-                ${this.config.show_date_added && t.date_added ? n`<p class="media-date-added">${K(t.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : c}
+                ${this.config.show_title ? n`<p class="media-title">${e.name}</p>` : d}
+                ${this.config.show_year && e.year ? n`<p class="media-year">${e.year}</p>` : d}
+                ${this.config.show_date_added && e.date_added ? n`<p class="media-date-added">${K(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
               </div>
-            ` : c}
+            ` : d}
       </div>
     `;
   }
-  _renderStatusBadge(t, e) {
-    const i = this.config.show_watched_status !== !1;
-    return i && t.is_played ? n`
+  _renderStatusBadge(e, t) {
+    const a = this.config.show_watched_status !== !1;
+    return a && e.is_played ? n`
         <div class="status-badge watched">
           <ha-icon icon="mdi:check-bold"></ha-icon>
         </div>
-      ` : i && t.type === "Series" && (t.unplayed_count || 0) > 0 ? n`
+      ` : a && e.type === "Series" && (e.unplayed_count || 0) > 0 ? n`
         <div class="status-badge unplayed">
-          ${t.unplayed_count}
+          ${e.unplayed_count}
         </div>
-      ` : e ? n`<span class="new-badge">${l(this.hass.locale?.language || this.hass.language, "new")}</span>` : n``;
+      ` : t ? n`<span class="new-badge">${l(this.hass.locale?.language || this.hass.language, "new")}</span>` : n``;
   }
-  _renderNowPlayingOverlay(t) {
-    if (!this.config.show_now_playing || !this._isItemPlaying(t))
-      return c;
-    const e = this.hass.states[this.config.default_cast_device];
+  _renderNowPlayingOverlay(e) {
+    if (!this.config.show_now_playing || !this._isItemPlaying(e))
+      return d;
+    const t = this.hass.states[this.config.default_cast_device];
     return n`
       <div 
         class="now-playing-overlay" 
@@ -4492,23 +4871,23 @@ let w = class extends A {
         tabindex="0"
       >
         <span class="now-playing-status">
-          ${this._rewindActive ? "REWINDING" : e.state}
+          ${this._rewindActive ? "REWINDING" : t.state}
         </span>
         <div class="now-playing-controls">
           <ha-icon-button
             class="${this._rewindActive ? "spinning" : ""}"
             .label=${"Play/Pause"}
-            @click="${(i) => {
-      i.stopPropagation(), this._handlePlayPause(this.config.default_cast_device);
+            @click="${(a) => {
+      a.stopPropagation(), this._handlePlayPause(this.config.default_cast_device);
     }}"
           >
-            <ha-icon icon="${this._rewindActive ? "mdi:loading" : e.state === "playing" ? "mdi:pause" : "mdi:play"}"></ha-icon>
+            <ha-icon icon="${this._rewindActive ? "mdi:loading" : t.state === "playing" ? "mdi:pause" : "mdi:play"}"></ha-icon>
           </ha-icon-button>
           <ha-icon-button
             class="stop"
             .label=${"Stop"}
-            @click="${(i) => {
-      i.stopPropagation(), this._handleStop(this.config.default_cast_device);
+            @click="${(a) => {
+      a.stopPropagation(), this._handleStop(this.config.default_cast_device);
     }}"
           >
             <ha-icon icon="mdi:stop"></ha-icon>
@@ -4518,43 +4897,43 @@ let w = class extends A {
     `;
   }
   /* --- Helpers --- */
-  _isItemPlaying(t) {
+  _isItemPlaying(e) {
     if (!this.config.default_cast_device || !this.hass) return !1;
-    const e = this.hass.states[this.config.default_cast_device];
-    if (!e || e.state !== "playing" && e.state !== "paused" && e.state !== "buffering")
+    const t = this.hass.states[this.config.default_cast_device];
+    if (!t || t.state !== "playing" && t.state !== "paused" && t.state !== "buffering")
       return !1;
-    const i = e.attributes.media_title, a = e.attributes.media_series_title;
-    return t.name && (i === t.name || a === t.name) || t.type === "Series" && a === t.name;
+    const a = t.attributes.media_title, i = t.attributes.media_series_title;
+    return e.name && (a === e.name || i === e.name) || e.type === "Series" && i === e.name;
   }
-  _getRating(t) {
-    return this.config.rating_source === "auto", t.rating || null;
+  _getRating(e) {
+    return this.config.rating_source === "auto", e.rating || null;
   }
   /* --- Event Handlers --- */
-  _fireAction(t) {
-    const e = new CustomEvent("jellyha-action", {
-      detail: { type: t, item: this.item },
+  _fireAction(e) {
+    const t = new CustomEvent("jellyha-action", {
+      detail: { type: e, item: this.item },
       bubbles: !0,
       composed: !0
     });
-    this.dispatchEvent(e);
+    this.dispatchEvent(t);
   }
   _startHoldTimer() {
     this._pressStartTime = Date.now(), this._isHoldActive = !1, this._holdTimer = window.setTimeout(() => {
       this._isHoldActive = !0;
-      const t = this.shadowRoot?.querySelector(`#poster-${this.item.id}`);
-      t && (t.classList.add("hold-pulse"), setTimeout(() => {
-        t.classList.remove("hold-pulse");
+      const e = this.shadowRoot?.querySelector(`#poster-${this.item.id}`);
+      e && (e.classList.add("hold-pulse"), setTimeout(() => {
+        e.classList.remove("hold-pulse");
       }, 300)), this._dispatchHaptic("medium"), this._fireAction("hold");
     }, 500);
   }
   _clearHoldTimer() {
     this._holdTimer && (clearTimeout(this._holdTimer), this._holdTimer = void 0);
   }
-  _handleMouseDown(t) {
-    t.button === 0 && this._startHoldTimer();
+  _handleMouseDown(e) {
+    e.button === 0 && this._startHoldTimer();
   }
-  _handleMouseUp(t) {
-    this._isHoldActive ? (t.preventDefault(), t.stopPropagation()) : Date.now() - this._pressStartTime < 500 && this._handleTap(), this._clearHoldTimer();
+  _handleMouseUp(e) {
+    this._isHoldActive ? (e.preventDefault(), e.stopPropagation()) : Date.now() - this._pressStartTime < 500 && this._handleTap(), this._clearHoldTimer();
   }
   _handleTap() {
     if ((this.config.double_tap_action || "none") === "none") {
@@ -4565,79 +4944,79 @@ let w = class extends A {
       this._clickTimer = void 0, this._dispatchHaptic("light"), this._fireAction("click");
     }, 250);
   }
-  _handleContextMenu(t) {
-    t.preventDefault(), t.stopPropagation();
+  _handleContextMenu(e) {
+    e.preventDefault(), e.stopPropagation();
   }
-  _handleTouchStart(t) {
-    t.touches.length > 0 && (this._itemTouchStartX = t.touches[0].clientX, this._itemTouchStartY = t.touches[0].clientY, t.currentTarget.classList.add("active-press")), this._startHoldTimer();
+  _handleTouchStart(e) {
+    e.touches.length > 0 && (this._itemTouchStartX = e.touches[0].clientX, this._itemTouchStartY = e.touches[0].clientY, e.currentTarget.classList.add("active-press")), this._startHoldTimer();
   }
-  _handleTouchMove(t) {
-    if (t.touches.length > 0) {
-      const e = Math.abs(t.touches[0].clientX - this._itemTouchStartX), i = Math.abs(t.touches[0].clientY - this._itemTouchStartY);
-      (e > 10 || i > 10) && (this._clearHoldTimer(), t.currentTarget.classList.remove("active-press"));
+  _handleTouchMove(e) {
+    if (e.touches.length > 0) {
+      const t = Math.abs(e.touches[0].clientX - this._itemTouchStartX), a = Math.abs(e.touches[0].clientY - this._itemTouchStartY);
+      (t > 10 || a > 10) && (this._clearHoldTimer(), e.currentTarget.classList.remove("active-press"));
     }
   }
-  _handleTouchEnd(t) {
-    t.currentTarget.classList.remove("active-press"), this._clearHoldTimer();
-    let i = 0;
-    if (t.changedTouches.length > 0) {
-      const a = t.changedTouches[0].clientX - this._itemTouchStartX, o = t.changedTouches[0].clientY - this._itemTouchStartY;
-      i = Math.sqrt(a * a + o * o);
+  _handleTouchEnd(e) {
+    e.currentTarget.classList.remove("active-press"), this._clearHoldTimer();
+    let a = 0;
+    if (e.changedTouches.length > 0) {
+      const i = e.changedTouches[0].clientX - this._itemTouchStartX, o = e.changedTouches[0].clientY - this._itemTouchStartY;
+      a = Math.sqrt(i * i + o * o);
     }
-    if (t.cancelable && t.preventDefault(), this._isHoldActive) {
+    if (e.cancelable && e.preventDefault(), this._isHoldActive) {
       this._isHoldActive = !1;
       return;
     }
-    i > 10 || this._handleTap();
+    a > 10 || this._handleTap();
   }
-  _handleKeydown(t) {
-    (t.key === "Enter" || t.key === " ") && (t.preventDefault(), this._fireAction("click"));
+  _handleKeydown(e) {
+    (e.key === "Enter" || e.key === " ") && (e.preventDefault(), this._fireAction("click"));
   }
-  _handleImageLoad(t) {
-    t.target.classList.add("loaded");
+  _handleImageLoad(e) {
+    e.target.classList.add("loaded");
   }
-  _handleImageError(t) {
-    const e = t.target;
-    e.style.opacity = "0", e.style.position = "absolute";
-    const i = e.nextElementSibling;
-    i && i.classList.contains("poster-skeleton") && i.classList.add("error");
+  _handleImageError(e) {
+    const t = e.target;
+    t.style.opacity = "0", t.style.position = "absolute";
+    const a = t.nextElementSibling;
+    a && a.classList.contains("poster-skeleton") && a.classList.add("error");
   }
   /* --- Playback Control Handlers --- */
-  _stopPropagation(t) {
-    t.stopPropagation();
+  _stopPropagation(e) {
+    e.stopPropagation();
   }
-  _handlePlayPause(t) {
-    this._dispatchHaptic(), this.hass.callService("media_player", "media_play_pause", { entity_id: t });
+  _handlePlayPause(e) {
+    this._dispatchHaptic(), this.hass.callService("media_player", "media_play_pause", { entity_id: e });
   }
-  _handleStop(t) {
-    this._dispatchHaptic(), this.hass.callService("media_player", "turn_off", { entity_id: t });
+  _handleStop(e) {
+    this._dispatchHaptic(), this.hass.callService("media_player", "turn_off", { entity_id: e });
   }
-  _handleRewind(t) {
+  _handleRewind(e) {
     this._rewindActive = !0, setTimeout(() => {
       this._rewindActive = !1;
     }, 2e3), this._dispatchHaptic();
-    const e = this.hass.states[t];
-    if (e && e.attributes.media_position) {
-      const i = e.attributes.media_position, a = e.attributes.media_position_updated_at;
-      let o = i;
-      if (a) {
-        const r = (/* @__PURE__ */ new Date()).getTime(), h = new Date(a).getTime(), d = (r - h) / 1e3;
-        e.state === "playing" && (o += d);
+    const t = this.hass.states[e];
+    if (t && t.attributes.media_position) {
+      const a = t.attributes.media_position, i = t.attributes.media_position_updated_at;
+      let o = a;
+      if (i) {
+        const r = (/* @__PURE__ */ new Date()).getTime(), h = new Date(i).getTime(), c = (r - h) / 1e3;
+        t.state === "playing" && (o += c);
       }
       const s = Math.max(0, o - 20);
       this.hass.callService("media_player", "media_seek", {
-        entity_id: t,
+        entity_id: e,
         seek_position: s
       });
     }
   }
-  _dispatchHaptic(t = "selection") {
-    const e = new CustomEvent("haptic", {
-      detail: t,
+  _dispatchHaptic(e = "selection") {
+    const t = new CustomEvent("haptic", {
+      detail: e,
       bubbles: !0,
       composed: !0
     });
-    this.dispatchEvent(e);
+    this.dispatchEvent(t);
   }
 };
 w.styles = Fe;
@@ -4678,12 +5057,12 @@ S([
   g()
 ], w.prototype, "_rewindActive", 2);
 w = S([
-  N("jellyha-media-item")
+  L("jellyha-media-item")
 ], w);
-var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, b = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? $t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
-    (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && xt(e, i, o), o;
+var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, y = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? $t(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+    (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
+  return i && o && xt(t, a, o), o;
 };
 const kt = "1.0.0";
 console.info(
@@ -4730,15 +5109,15 @@ const De = {
   filter_newly_added: !1,
   sort_option: "date_added_desc"
 };
-function St(t, e, i) {
-  const a = new CustomEvent(e, {
+function St(e, t, a) {
+  const i = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
-    detail: i
+    detail: a
   });
-  t.dispatchEvent(a);
+  e.dispatchEvent(i);
 }
-let v = class extends A {
+let b = class extends A {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -4760,43 +5139,43 @@ let v = class extends A {
   }
   _setupAutoSwipe() {
     this._clearAutoSwipe();
-    const t = this._config?.auto_swipe_interval;
-    !t || t <= 0 || (this._config.enable_pagination !== !1 ? this._autoSwipeTimer = window.setInterval(() => {
+    const e = this._config?.auto_swipe_interval;
+    !e || e <= 0 || (this._config.enable_pagination !== !1 ? this._autoSwipeTimer = window.setInterval(() => {
       this._autoSwipePaused || this._handleAutoSwipePage();
-    }, t * 1e3) : this._startContinuousScroll());
+    }, e * 1e3) : this._startContinuousScroll());
   }
   _clearAutoSwipe() {
     this._autoSwipeTimer && (clearInterval(this._autoSwipeTimer), this._autoSwipeTimer = void 0), this._animationFrameId && (cancelAnimationFrame(this._animationFrameId), this._animationFrameId = void 0);
   }
   /* Continuous Scroll Logic */
   _startContinuousScroll() {
-    const t = (e) => {
-      this._lastFrameTime || (this._lastFrameTime = e);
-      const i = e - this._lastFrameTime;
-      if (this._lastFrameTime = e, !this._autoSwipePaused && this._config.auto_swipe_interval) {
-        const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-        if (a) {
-          const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a;
+    const e = (t) => {
+      this._lastFrameTime || (this._lastFrameTime = t);
+      const a = t - this._lastFrameTime;
+      if (this._lastFrameTime = t, !this._autoSwipePaused && this._config.auto_swipe_interval) {
+        const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+        if (i) {
+          const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i;
           Math.abs(this._scrollAccumulator - o) > 10 && (this._scrollAccumulator = o);
-          const d = r / (this._config.auto_swipe_interval * 1e3) * i, p = s / 2;
-          this._scrollAccumulator += d, this._scrollAccumulator >= p ? (this._scrollAccumulator = this._scrollAccumulator - p, a.scrollLeft = this._scrollAccumulator) : a.scrollLeft = this._scrollAccumulator;
+          const c = r / (this._config.auto_swipe_interval * 1e3) * a, p = s / 2;
+          this._scrollAccumulator += c, this._scrollAccumulator >= p ? (this._scrollAccumulator = this._scrollAccumulator - p, i.scrollLeft = this._scrollAccumulator) : i.scrollLeft = this._scrollAccumulator;
         }
       }
-      this._animationFrameId = requestAnimationFrame(t);
+      this._animationFrameId = requestAnimationFrame(e);
     };
-    this._animationFrameId = requestAnimationFrame(t);
+    this._animationFrameId = requestAnimationFrame(e);
   }
   /* Pagination Auto Swipe Logic */
   async _handleAutoSwipePage() {
-    const t = this._items || [], e = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages || 10, a = Math.min(Math.ceil(t.length / e), i);
-    this._currentPage >= a - 1 ? await this._animatePageChange("next", () => {
+    const e = this._items || [], t = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages || 10, i = Math.min(Math.ceil(e.length / t), a);
+    this._currentPage >= i - 1 ? await this._animatePageChange("next", () => {
       this._currentPage = 0;
     }) : this._nextPage();
   }
   /* Pagination Handlers */
   async _nextPage() {
     if (!this._config?.entity || !this.hass || !this.hass.states[this._config.entity]) return;
-    const e = this._filterItems(this._items || []), i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages || 10, o = Math.min(Math.ceil(e.length / i), a);
+    const t = this._filterItems(this._items || []), a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages || 10, o = Math.min(Math.ceil(t.length / a), i);
     this._currentPage < o - 1 && await this._animatePageChange("next", () => {
       this._currentPage++;
     });
@@ -4809,60 +5188,60 @@ let v = class extends A {
   /**
    * Helper to set scroll position after page change
    */
-  _setScrollPosition(t) {
-    const e = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-    e && (t === "start" ? e.scrollLeft = 0 : e.scrollLeft = e.scrollWidth);
+  _setScrollPosition(e) {
+    const t = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    t && (e === "start" ? t.scrollLeft = 0 : t.scrollLeft = t.scrollWidth);
   }
   /**
    * Helper to animate page changes (Slide & Fade)
    **/
-  async _animatePageChange(t, e) {
-    const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-    if (!i) {
-      e();
+  async _animatePageChange(e, t) {
+    const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    if (!a) {
+      t();
       return;
     }
-    const a = t === "next" ? "-30px" : "30px";
-    i.style.transition = "transform 0.2s ease-out, opacity 0.2s ease-out", i.style.transform = `translateX(${a})`, i.style.opacity = "0", await new Promise((s) => setTimeout(s, 200)), e(), await this.updateComplete, this._setScrollPosition(t === "next" ? "start" : "end");
-    const o = t === "next" ? "30px" : "-30px";
-    i.style.transition = "none", i.style.opacity = "0", i.style.transform = `translateX(${o})`, i.offsetHeight, i.style.transition = "transform 0.25s ease-out, opacity 0.25s ease-out", i.style.transform = "translateX(0)", i.style.opacity = "1", await new Promise((s) => setTimeout(s, 250)), i.style.transition = "", i.style.transform = "", i.style.opacity = "";
+    const i = e === "next" ? "-30px" : "30px";
+    a.style.transition = "transform 0.2s ease-out, opacity 0.2s ease-out", a.style.transform = `translateX(${i})`, a.style.opacity = "0", await new Promise((s) => setTimeout(s, 200)), t(), await this.updateComplete, this._setScrollPosition(e === "next" ? "start" : "end");
+    const o = e === "next" ? "30px" : "-30px";
+    a.style.transition = "none", a.style.opacity = "0", a.style.transform = `translateX(${o})`, a.offsetHeight, a.style.transition = "transform 0.25s ease-out, opacity 0.25s ease-out", a.style.transform = "translateX(0)", a.style.opacity = "1", await new Promise((s) => setTimeout(s, 250)), a.style.transition = "", a.style.transform = "", a.style.opacity = "";
   }
   /**
    * Helper to get total pages (used for elastic check)
    */
   _getTotalPages() {
     if (!this._config?.entity || !this.hass || !this.hass.states[this._config.entity]) return 1;
-    const e = this._filterItems(this._items || []), i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages || 10;
-    return Math.min(Math.ceil(e.length / i), a);
+    const t = this._filterItems(this._items || []), a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages || 10;
+    return Math.min(Math.ceil(t.length / a), i);
   }
   // Touch/Swipe handlers
-  _handleTouchStart(t) {
-    this._touchStartX = t.touches[0].clientX, this._touchStartY = t.touches[0].clientY, this._isSwiping = !1, this._isOverscrolling = !1, this._elasticAnchorX = 0;
+  _handleTouchStart(e) {
+    this._touchStartX = e.touches[0].clientX, this._touchStartY = e.touches[0].clientY, this._isSwiping = !1, this._isOverscrolling = !1, this._elasticAnchorX = 0;
   }
-  _handleTouchMove(t) {
+  _handleTouchMove(e) {
     if (!this._touchStartX) return;
-    const e = t.touches[0].clientX - this._touchStartX, i = t.touches[0].clientY - this._touchStartY;
-    if (Math.abs(e) > Math.abs(i)) {
-      const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-      if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, d = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
+    const t = e.touches[0].clientX - this._touchStartX, a = e.touches[0].clientY - this._touchStartY;
+    if (Math.abs(t) > Math.abs(a)) {
+      const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+      if (i && Math.abs(t) > 0) {
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i, h = s - r, c = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
         let _ = !1;
         if (u) {
           const m = this._getTotalPages();
-          d && e > 0 && this._currentPage === 0 && (_ = !0), p && e < 0 && this._currentPage >= m - 1 && (_ = !0);
+          c && t > 0 && this._currentPage === 0 && (_ = !0), p && t < 0 && this._currentPage >= m - 1 && (_ = !0);
         } else
-          d && e > 0 && (_ = !0), p && e < 0 && (_ = !0);
+          c && t > 0 && (_ = !0), p && t < 0 && (_ = !0);
         if (_) {
-          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
-          const m = 0.3, f = e - this._elasticAnchorX;
-          a.style.transition = "none", a.style.transform = `translateX(${f * m}px)`;
+          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = t), e.cancelable && e.preventDefault();
+          const m = 0.3, f = t - this._elasticAnchorX;
+          i.style.transition = "none", i.style.transform = `translateX(${f * m}px)`;
           return;
         }
       }
-      Math.abs(e) > 30 && (this._isSwiping = !0);
+      Math.abs(t) > 30 && (this._isSwiping = !0);
     }
   }
-  _handleTouchEnd(t) {
+  _handleTouchEnd(e) {
     if (this._isOverscrolling) {
       const o = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       o && (o.style.transition = "transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)", o.style.transform = ""), this._isOverscrolling = !1, this._elasticAnchorX = 0, this._touchStartX = 0, this._isSwiping = !1;
@@ -4876,51 +5255,51 @@ let v = class extends A {
       this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
-    const e = t.changedTouches[0].clientX - this._touchStartX, i = 50, a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-    if (e < -i)
-      if (a) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a;
+    const t = e.changedTouches[0].clientX - this._touchStartX, a = 50, i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    if (t < -a)
+      if (i) {
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i;
         o + r >= s - 10 && this._nextPage();
       } else
         this._nextPage();
-    else e > i && (a ? a.scrollLeft <= 10 && this._prevPage() : this._prevPage());
+    else t > a && (i ? i.scrollLeft <= 10 && this._prevPage() : this._prevPage());
     this._touchStartX = 0, this._isSwiping = !1;
   }
   // Pointer events for Android Companion App (uses same logic as touch)
   // Pointer events for Android Companion App (uses same logic as touch)
-  _handlePointerDown(t) {
-    t.pointerType !== "mouse" && (this._touchStartX = t.clientX, this._touchStartY = t.clientY, this._isSwiping = !1, this._isOverscrolling = !1, this._elasticAnchorX = 0, t.target.setPointerCapture?.(t.pointerId));
+  _handlePointerDown(e) {
+    e.pointerType !== "mouse" && (this._touchStartX = e.clientX, this._touchStartY = e.clientY, this._isSwiping = !1, this._isOverscrolling = !1, this._elasticAnchorX = 0, e.target.setPointerCapture?.(e.pointerId));
   }
-  _handlePointerMove(t) {
-    if (t.pointerType === "mouse" || !this._touchStartX) return;
-    const e = t.clientX - this._touchStartX, i = t.clientY - this._touchStartY;
-    if (Math.abs(e) > Math.abs(i)) {
-      const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-      if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, d = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
+  _handlePointerMove(e) {
+    if (e.pointerType === "mouse" || !this._touchStartX) return;
+    const t = e.clientX - this._touchStartX, a = e.clientY - this._touchStartY;
+    if (Math.abs(t) > Math.abs(a)) {
+      const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+      if (i && Math.abs(t) > 0) {
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i, h = s - r, c = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
         let _ = !1;
         if (u) {
           const m = this._getTotalPages();
-          d && e > 0 && this._currentPage === 0 && (_ = !0), p && e < 0 && this._currentPage >= m - 1 && (_ = !0);
+          c && t > 0 && this._currentPage === 0 && (_ = !0), p && t < 0 && this._currentPage >= m - 1 && (_ = !0);
         } else
-          d && e > 0 && (_ = !0), p && e < 0 && (_ = !0);
+          c && t > 0 && (_ = !0), p && t < 0 && (_ = !0);
         if (_) {
-          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = e), t.cancelable && t.preventDefault();
-          const m = 0.3, f = e - this._elasticAnchorX;
-          a.style.transition = "none", a.style.transform = `translateX(${f * m}px)`;
+          this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = t), e.cancelable && e.preventDefault();
+          const m = 0.3, f = t - this._elasticAnchorX;
+          i.style.transition = "none", i.style.transform = `translateX(${f * m}px)`;
           return;
         }
       }
-      Math.abs(e) > 30 && (this._isSwiping = !0);
+      Math.abs(t) > 30 && (this._isSwiping = !0);
     }
   }
-  _handlePointerUp(t) {
-    if (t.target.releasePointerCapture?.(t.pointerId), this._isOverscrolling) {
+  _handlePointerUp(e) {
+    if (e.target.releasePointerCapture?.(e.pointerId), this._isOverscrolling) {
       const o = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       o && (o.style.transition = "transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)", o.style.transform = ""), this._isOverscrolling = !1, this._elasticAnchorX = 0, this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
-    if (t.pointerType === "mouse" || !this._isSwiping) {
+    if (e.pointerType === "mouse" || !this._isSwiping) {
       this._touchStartX = 0;
       return;
     }
@@ -4928,40 +5307,40 @@ let v = class extends A {
       this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
-    const e = t.clientX - this._touchStartX, i = 50, a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
-    if (e < -i)
-      if (a) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a;
+    const t = e.clientX - this._touchStartX, a = 50, i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    if (t < -a)
+      if (i) {
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i;
         o + r >= s - 10 && this._nextPage();
       } else
         this._nextPage();
-    else e > i && (a ? a.scrollLeft <= 10 && this._prevPage() : this._prevPage());
+    else t > a && (i ? i.scrollLeft <= 10 && this._prevPage() : this._prevPage());
     this._touchStartX = 0, this._isSwiping = !1;
   }
   // Scroll handler for elastic dot indicator
-  _handleScroll(t) {
-    const e = t.target, i = e.scrollWidth, a = e.clientWidth, o = e.scrollLeft, s = i > a + 10;
+  _handleScroll(e) {
+    const t = e.target, a = t.scrollWidth, i = t.clientWidth, o = t.scrollLeft, s = a > i + 10;
     if (s !== this._hasScrollableContent && (this._hasScrollableContent = s), s) {
       let r = 0;
       const h = this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0;
       if (h) {
-        const d = i / 2;
-        r = o / d;
+        const c = a / 2;
+        r = o / c;
       } else {
-        const d = i - a;
-        r = o / d;
+        const c = a - i;
+        r = o / c;
       }
-      !h && (i - a - o < 10 || r > 0.98) && (r = 1), (o < 10 || r < 0.02) && (r = 0), r = Math.min(1, Math.max(0, r)), this._scrollProgress = r;
+      !h && (a - i - o < 10 || r > 0.98) && (r = 1), (o < 10 || r < 0.02) && (r = 0), r = Math.min(1, Math.max(0, r)), this._scrollProgress = r;
     }
   }
   // Render scroll indicator for non-paginated scrollable content
   _renderScrollIndicator() {
     if (!this._hasScrollableContent || this._config.show_pagination_dots === !1) return n``;
-    const t = this.SCROLL_INDICATOR_DOTS, e = this._scrollProgress, i = Math.round(e * (t - 1));
+    const e = this.SCROLL_INDICATOR_DOTS, t = this._scrollProgress, a = Math.round(t * (e - 1));
     return n`
       <div class="scroll-indicator">
-        ${Array.from({ length: t }, (a, o) => {
-      const s = o === i, r = o === 0 && e < 0.1 || o === t - 1 && e > 0.9;
+        ${Array.from({ length: e }, (i, o) => {
+      const s = o === a, r = o === 0 && t < 0.1 || o === e - 1 && t > 0.9;
       return n`
         <span 
           class="scroll-dot ${s ? "active" : ""} ${r ? "pill" : ""}"
@@ -4973,17 +5352,17 @@ let v = class extends A {
   }
   _setupResizeHandler() {
     this._resizeHandler = () => {
-      const e = this.getBoundingClientRect().width;
-      if (e === 0) return;
-      const i = Math.max(0, e - 32);
-      if (i !== this._containerWidth) {
-        this._containerWidth = i;
-        const o = Math.max(2, Math.floor(i / 160));
+      const t = this.getBoundingClientRect().width;
+      if (t === 0) return;
+      const a = Math.max(0, t - 32);
+      if (a !== this._containerWidth) {
+        this._containerWidth = a;
+        const o = Math.max(2, Math.floor(a / 160));
         if (o !== this._itemsPerPage && (this._itemsPerPage = o, this.requestUpdate()), this._config) {
           const s = this._config.columns || 1, r = 300;
           if (s > 1) {
-            const h = Math.max(1, Math.floor(i / r)), d = Math.min(s, h);
-            d !== this._effectiveListColumns && (this._effectiveListColumns = d, this.requestUpdate());
+            const h = Math.max(1, Math.floor(a / r)), c = Math.min(s, h);
+            c !== this._effectiveListColumns && (this._effectiveListColumns = c, this.requestUpdate());
           } else this._effectiveListColumns !== 1 && (this._effectiveListColumns = 1, this.requestUpdate());
         }
       }
@@ -4992,26 +5371,26 @@ let v = class extends A {
       this._resizeObserver = new ResizeObserver(() => {
         this._resizeHandler && window.requestAnimationFrame(() => this._resizeHandler());
       }), this._resizeObserver.observe(this);
-    } catch (t) {
-      console.warn("ResizeObserver not supported, falling back to window resize", t), window.addEventListener("resize", this._resizeHandler);
+    } catch (e) {
+      console.warn("ResizeObserver not supported, falling back to window resize", e), window.addEventListener("resize", this._resizeHandler);
     }
     this._resizeHandler();
   }
-  _handleDotClick(t) {
-    t !== this._currentPage && (this._currentPage = t, this.requestUpdate());
+  _handleDotClick(e) {
+    e !== this._currentPage && (this._currentPage = e, this.requestUpdate());
   }
-  _onDotClick(t) {
-    t.stopPropagation(), t.preventDefault();
-    const e = t.currentTarget, i = parseInt(e.dataset.page || "0", 10);
-    this._handleDotClick(i);
+  _onDotClick(e) {
+    e.stopPropagation(), e.preventDefault();
+    const t = e.currentTarget, a = parseInt(t.dataset.page || "0", 10);
+    this._handleDotClick(a);
   }
   /**
    * Set card configuration
    */
-  setConfig(t) {
-    if (!t.entity)
+  setConfig(e) {
+    if (!e.entity)
       throw new Error("Please define an entity");
-    this._config = { ...De, ...t }, this._effectiveListColumns = this._config.columns || 1;
+    this._config = { ...De, ...e }, this._effectiveListColumns = this._config.columns || 1;
   }
   /**
    * Return the card editor element
@@ -5051,23 +5430,23 @@ let v = class extends A {
   /**
    * Determine if component should update
    */
-  shouldUpdate(t) {
+  shouldUpdate(e) {
     if (!this._config)
       return !1;
-    if (t.has("_currentPage") || t.has("_itemsPerPage") || t.has("_items") || t.has("_error") || t.has("_searchQuery") || t.has("_searchGenre") || t.has("_scrollProgress") || t.has("_hasScrollableContent"))
+    if (e.has("_currentPage") || e.has("_itemsPerPage") || e.has("_items") || e.has("_error") || e.has("_searchQuery") || e.has("_searchGenre") || e.has("_scrollProgress") || e.has("_hasScrollableContent"))
       return !0;
-    if (t.has("hass")) {
-      const e = t.get("hass");
-      if (e) {
-        const i = e.states[this._config.entity], a = this.hass.states[this._config.entity], o = this._config.default_cast_device;
+    if (e.has("hass")) {
+      const t = e.get("hass");
+      if (t) {
+        const a = t.states[this._config.entity], i = this.hass.states[this._config.entity], o = this._config.default_cast_device;
         if (o) {
-          const s = e.states[o], r = this.hass.states[o];
+          const s = t.states[o], r = this.hass.states[o];
           if (s !== r) return !0;
         }
-        return i !== a;
+        return a !== i;
       }
     }
-    return t.has("_config");
+    return e.has("_config");
   }
   /**
    * Fetch items from WebSocket
@@ -5076,53 +5455,53 @@ let v = class extends A {
     if (!(!this._config || !this.hass || !this.hass.states[this._config.entity])) {
       this._error = void 0;
       try {
-        let e;
+        let t;
         if (this._config.media_type === "next_up")
-          e = await this.hass.callWS({
+          t = await this.hass.callWS({
             type: "jellyha/get_user_next_up",
             entity_id: this._config.entity
           });
         else if ((this._config.media_type === "series" || this._config.media_type === "both" || !this._config.media_type) && this._config.tv_content === "episodes") {
-          const i = this._config.media_type === "series" ? ["Episode"] : ["Movie", "Episode"];
-          e = await this.hass.callWS({
+          const a = this._config.media_type === "series" ? ["Episode"] : ["Movie", "Episode"];
+          t = await this.hass.callWS({
             type: "jellyha/get_latest_items",
             entity_id: this._config.entity,
-            item_types: i
+            item_types: a
           });
         } else
-          e = await this.hass.callWS({
+          t = await this.hass.callWS({
             type: "jellyha/get_items",
             entity_id: this._config.entity
           });
-        e && e.items ? (this._items = e.items, this._config.media_type === "next_up" && this._items.length > 0 ? this._mostRecentNextUpItemId = this._items[0].id : this._mostRecentNextUpItemId = void 0) : (this._items = [], this._mostRecentNextUpItemId = void 0);
-      } catch (e) {
-        console.error("Error fetching JellyHA items:", e), this._error = `Error fetching items: ${e}`;
+        t && t.items ? (this._items = t.items, this._config.media_type === "next_up" && this._items.length > 0 ? this._mostRecentNextUpItemId = this._items[0].id : this._mostRecentNextUpItemId = void 0) : (this._items = [], this._mostRecentNextUpItemId = void 0);
+      } catch (t) {
+        console.error("Error fetching JellyHA items:", t), this._error = `Error fetching items: ${t}`;
       }
     }
   }
   /**
    * Called after update - check for scrollable content and fetch data
    */
-  updated(t) {
-    if (super.updated(t), t.has("hass") || t.has("_config")) {
-      const e = this.hass?.states[this._config?.entity];
-      if (e) {
-        const i = e.attributes.entry_id, a = e.attributes.last_updated;
+  updated(e) {
+    if (super.updated(e), e.has("hass") || e.has("_config")) {
+      const t = this.hass?.states[this._config?.entity];
+      if (t) {
+        const a = t.attributes.entry_id, i = t.attributes.last_updated;
         let o = !1;
-        if (a !== this._lastUpdate || this._items.length === 0 && i)
-          this._lastUpdate = a, o = !0;
-        else if (t.has("_config")) {
-          const s = t.get("_config");
+        if (i !== this._lastUpdate || this._items.length === 0 && a)
+          this._lastUpdate = i, o = !0;
+        else if (e.has("_config")) {
+          const s = e.get("_config");
           s && (s.media_type !== this._config?.media_type || s.tv_content !== this._config?.tv_content || s.entity !== this._config?.entity) && (o = !0);
         }
         o && this._fetchItems();
       }
     }
     this._config.enable_pagination || requestAnimationFrame(() => {
-      const e = this.shadowRoot?.querySelector(".carousel.scrollable, .grid-wrapper, .list-wrapper");
-      if (e) {
-        const i = e.scrollWidth > e.clientWidth + 10;
-        i !== this._hasScrollableContent && (this._hasScrollableContent = i);
+      const t = this.shadowRoot?.querySelector(".carousel.scrollable, .grid-wrapper, .list-wrapper");
+      if (t) {
+        const a = t.scrollWidth > t.clientWidth + 10;
+        a !== this._hasScrollableContent && (this._hasScrollableContent = a);
       }
     });
   }
@@ -5136,7 +5515,7 @@ let v = class extends A {
       return this._renderError(`Entity not found: ${this._config.entity}`);
     if (this._error)
       return this._renderError(this._error);
-    const e = this._filterItems(this._items || []);
+    const t = this._filterItems(this._items || []);
     return n`
       <ha-card>
         <div class="card-inner">
@@ -5144,10 +5523,10 @@ let v = class extends A {
                   <div class="card-header">
                     <h2>${this._config.title}</h2>
                   </div>
-                ` : c}
-            ${this._config.show_search ? this._renderSearchBar(e) : c}
+                ` : d}
+            ${this._config.show_search ? this._renderSearchBar(t) : d}
             <div class="card-content">
-              ${e.length === 0 ? this._renderEmpty() : this._renderLayout(e)}
+              ${t.length === 0 ? this._renderEmpty() : this._renderLayout(t)}
             </div>
         </div>
         <jellyha-item-details-modal .hass=${this.hass}></jellyha-item-details-modal>
@@ -5157,32 +5536,32 @@ let v = class extends A {
   /**
    * Filter items based on config
    */
-  _filterItems(t) {
-    let e = t;
+  _filterItems(e) {
+    let t = e;
     if (this._searchQuery) {
       const s = this._searchQuery.toLowerCase();
-      e = e.filter((r) => r.name.toLowerCase().includes(s));
+      t = t.filter((r) => r.name.toLowerCase().includes(s));
     }
-    if (this._searchGenre && (e = e.filter((s) => s.genres && s.genres.includes(this._searchGenre))), this._config.media_type === "movies")
-      e = e.filter((s) => s.type === "Movie");
+    if (this._searchGenre && (t = t.filter((s) => s.genres && s.genres.includes(this._searchGenre))), this._config.media_type === "movies")
+      t = t.filter((s) => s.type === "Movie");
     else if (this._config.media_type === "series")
-      this._config.tv_content === "episodes" ? e = e.filter((s) => s.type === "Episode") : e = e.filter((s) => s.type === "Series");
+      this._config.tv_content === "episodes" ? t = t.filter((s) => s.type === "Episode") : t = t.filter((s) => s.type === "Series");
     else if (this._config.media_type === "both" || !this._config.media_type)
-      this._config.tv_content === "episodes" ? e = e.filter((s) => s.type === "Movie" || s.type === "Episode") : e = e.filter((s) => s.type !== "Episode");
+      this._config.tv_content === "episodes" ? t = t.filter((s) => s.type === "Movie" || s.type === "Episode") : t = t.filter((s) => s.type !== "Episode");
     else if (this._config.media_type === "next_up") {
       const s = this._config.max_pages;
       if (s != null && s > 0) {
         const r = (this._config.items_per_page || 5) * s;
-        e = e.slice(0, r);
+        t = t.slice(0, r);
       }
-      return e;
+      return t;
     }
-    this._config.filter_favorites && (e = e.filter((s) => s.is_favorite === !0));
-    const i = this._config.status_filter || "all";
-    i === "unwatched" ? e = e.filter((s) => !s.is_played) : i === "watched" && (e = e.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (e = e.filter((s) => ce(s, this._config.new_badge_days || 0)));
-    const a = this._config.sort_option || "date_added_desc";
-    e.sort((s, r) => {
-      switch (a) {
+    this._config.filter_favorites && (t = t.filter((s) => s.is_favorite === !0));
+    const a = this._config.status_filter || "all";
+    a === "unwatched" ? t = t.filter((s) => !s.is_played) : a === "watched" && (t = t.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (t = t.filter((s) => ce(s, this._config.new_badge_days || 0)));
+    const i = this._config.sort_option || "date_added_desc";
+    t.sort((s, r) => {
+      switch (i) {
         case "date_added_asc":
           return (s.date_added || "").localeCompare(r.date_added || "");
         case "date_added_desc":
@@ -5206,29 +5585,29 @@ let v = class extends A {
     const o = this._config.max_pages;
     if (o != null && o > 0) {
       const s = (this._config.items_per_page || 5) * o;
-      e = e.slice(0, s);
+      t = t.slice(0, s);
     }
-    return e;
+    return t;
   }
   /**
    * Render media item action handler
    */
-  _handleItemAction(t) {
-    const { type: e, item: i } = t.detail;
-    this._performAction(i, e);
+  _handleItemAction(e) {
+    const { type: t, item: a } = e.detail;
+    this._performAction(a, t);
   }
   /**
    * Render layout based on config
    */
-  _renderLayout(t) {
-    const e = this._config.layout || "carousel", i = this._config.enable_pagination !== !1;
-    return e === "carousel" ? this._renderCarousel(t, i) : e === "list" ? this._renderList(t, i) : e === "grid" ? this._renderGrid(t, i) : n`
-      <div class="${e}">
-        ${t.map((a) => n`
+  _renderLayout(e) {
+    const t = this._config.layout || "carousel", a = this._config.enable_pagination !== !1;
+    return t === "carousel" ? this._renderCarousel(e, a) : t === "list" ? this._renderList(e, a) : t === "grid" ? this._renderGrid(e, a) : n`
+      <div class="${t}">
+        ${e.map((i) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
-                .item=${a}
+                .item=${i}
                 .layout=${"grid"}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
@@ -5239,8 +5618,8 @@ let v = class extends A {
   /**
    * Render carousel with optional pagination
    */
-  _renderCarousel(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t;
+  _renderCarousel(e, t) {
+    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e;
     return n`
       <div 
         class="carousel-wrapper ${this._config.horizontal_alignment !== "left" ? "align-center" : ""}"
@@ -5252,8 +5631,8 @@ let v = class extends A {
         @pointerup="${this._handlePointerUp}"
       >
         <div 
-          class="carousel ${e ? "paginated" : "scrollable"}"
-          @scroll="${e ? c : this._handleScroll}"
+          class="carousel ${t ? "paginated" : "scrollable"}"
+          @scroll="${t ? d : this._handleScroll}"
         >
           ${p.map((u) => n`
             <jellyha-media-item
@@ -5266,16 +5645,16 @@ let v = class extends A {
             ></jellyha-media-item>
           `)}
         </div>
-        ${e && r > 1 ? this._renderPagination(r) : c}
-        ${e ? c : this._renderScrollIndicator()}
+        ${t && r > 1 ? this._renderPagination(r) : d}
+        ${t ? d : this._renderScrollIndicator()}
       </div>
     `;
   }
   /**
    * Render list with optional pagination
    */
-  _renderList(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t, u = this._effectiveListColumns, _ = u === 1;
+  _renderList(e, t) {
+    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e, u = this._effectiveListColumns, _ = u === 1;
     return n`
       <div 
         class="list-wrapper"
@@ -5287,7 +5666,7 @@ let v = class extends A {
         @pointerup="${this._handlePointerUp}"
       >
         <div 
-          class="list ${e ? "paginated" : ""} ${_ ? "single-column" : ""}"
+          class="list ${t ? "paginated" : ""} ${_ ? "single-column" : ""}"
           style="--jf-list-columns: ${u}"
         >
           ${p.map((m) => n`
@@ -5301,15 +5680,15 @@ let v = class extends A {
             ></jellyha-media-item>
           `)}
         </div>
-        ${e && r > 1 ? this._renderPagination(r) : c}
+        ${t && r > 1 ? this._renderPagination(r) : d}
       </div>
     `;
   }
   /**
    * Render grid with optional pagination
    */
-  _renderGrid(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t, u = this._config.columns || 1, _ = u === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
+  _renderGrid(e, t) {
+    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e, u = this._config.columns || 1, _ = u === 1, m = !t && (this._config.auto_swipe_interval || 0) > 0;
     return n`
       <div class="grid-outer">
         <div 
@@ -5320,10 +5699,10 @@ let v = class extends A {
           @pointerdown="${this._handlePointerDown}"
           @pointermove="${this._handlePointerMove}"
           @pointerup="${this._handlePointerUp}"
-          @scroll="${e ? c : this._handleScroll}"
+          @scroll="${t ? d : this._handleScroll}"
         >
           <div
-            class="grid ${e ? "paginated" : ""} ${_ ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
+            class="grid ${t ? "paginated" : ""} ${_ ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
             style="--jf-columns: ${u}; --jf-grid-rows: ${u}"
           >
             ${p.map((f) => n`
@@ -5338,8 +5717,8 @@ let v = class extends A {
             `)}
           </div>
         </div>
-        ${e && r > 1 ? this._renderPagination(r) : c}
-        ${e ? c : this._renderScrollIndicator()}
+        ${t && r > 1 ? this._renderPagination(r) : d}
+        ${t ? d : this._renderScrollIndicator()}
       </div>
     `;
   }
@@ -5347,23 +5726,23 @@ let v = class extends A {
    * Main Pagination Render Dispatcher
    * Decides between standard and smart pagination based on page count
    */
-  _renderPagination(t) {
-    return this._config.show_pagination_dots === !1 ? n`` : t <= 5 ? this._renderStandardPagination(t) : this._renderSmartPagination(t);
+  _renderPagination(e) {
+    return this._config.show_pagination_dots === !1 ? n`` : e <= 5 ? this._renderStandardPagination(e) : this._renderSmartPagination(e);
   }
   /**
    * Render Standard Pagination (Existing Logic preserved)
    */
-  _renderStandardPagination(t) {
+  _renderStandardPagination(e) {
     return n`
       <div class="pagination-dots">
-        ${Array.from({ length: t }, (e, i) => n`
+        ${Array.from({ length: e }, (t, a) => n`
           <button
             type="button"
-            class="pagination-dot ${i === this._currentPage ? "active" : ""}"
-            data-page="${i}"
+            class="pagination-dot ${a === this._currentPage ? "active" : ""}"
+            data-page="${a}"
             @click="${this._onDotClick}"
-            aria-label="${i === this._currentPage ? `Page ${i + 1}, current page` : `Go to page ${i + 1}`}"
-            aria-current="${i === this._currentPage ? "true" : "false"}"
+            aria-label="${a === this._currentPage ? `Page ${a + 1}, current page` : `Go to page ${a + 1}`}"
+            aria-current="${a === this._currentPage ? "true" : "false"}"
           ></button>
         `)}
       </div>
@@ -5372,15 +5751,15 @@ let v = class extends A {
   /**
    * Render Smart Sliding Pagination (iOS Style)
    */
-  _renderSmartPagination(t) {
+  _renderSmartPagination(e) {
     const h = -(this._currentPage * 16) + 32;
     return n`
       <div class="pagination-container smart" style="width: ${72}px">
         <div 
           class="pagination-track" 
-          style="transform: translateX(${h}px); width: ${t * 16}px"
+          style="transform: translateX(${h}px); width: ${e * 16}px"
         >
-          ${Array.from({ length: t }, (d, p) => {
+          ${Array.from({ length: e }, (c, p) => {
       const u = Math.abs(p - this._currentPage);
       let _ = "smart-dot";
       return p === this._currentPage ? _ += " active" : u > 2 ? _ += " hidden" : u === 2 && (_ += " small"), n`
@@ -5389,7 +5768,7 @@ let v = class extends A {
                 class="${_}"
                 data-page="${p}"
                 @click="${this._onDotClick}"
-                aria-label="${p === this._currentPage ? `Page ${p + 1} of ${t}, current page` : `Go to page ${p + 1} of ${t}`}"
+                aria-label="${p === this._currentPage ? `Page ${p + 1} of ${e}, current page` : `Go to page ${p + 1} of ${e}`}"
                 aria-current="${p === this._currentPage ? "true" : "false"}"
               ></button>
             `;
@@ -5401,55 +5780,63 @@ let v = class extends A {
   /**
    * Perform configured action
    */
-  _performAction(t, e) {
-    let i = "none";
-    switch (e === "click" ? i = this._config.click_action || "more-info" : e === "hold" ? i = this._config.hold_action || "jellyfin" : e === "double_tap" && (i = this._config.double_tap_action || "none"), i) {
+  _performAction(e, t) {
+    let a = "none";
+    switch (t === "click" ? a = this._config.click_action || "more-info" : t === "hold" ? a = this._config.hold_action || "jellyfin" : t === "double_tap" && (a = this._config.double_tap_action || "none"), a) {
       case "jellyfin":
-        this._openExternalUrl(t.jellyfin_url);
+        this._openExternalUrl(e.jellyfin_url);
         break;
       case "cast":
-        this._castMedia(t);
+        this._castMedia(e);
         break;
       case "more-info":
-        this._showItemDetails(t);
+        this._showItemDetails(e);
         break;
       case "trailer":
-        t.trailer_url ? this._openExternalUrl(t.trailer_url) : St(this, "hass-notification", {
+        e.trailer_url ? window.open(e.trailer_url, "_blank") : St(this, "hass-notification", {
           message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
     }
   }
-  async _castMedia(t) {
-    const e = this._config.default_cast_device;
-    if (!e) {
+  async _castMedia(e) {
+    const t = this._config.default_cast_device;
+    if (!t) {
       console.warn("JellyHA: No default cast device configured");
       return;
     }
     try {
       await this.hass.callService("jellyha", "play_on_chromecast", {
-        entity_id: e,
-        item_id: t.id,
+        entity_id: t,
+        item_id: e.id,
         server_entity_id: this._config.entity
       });
-    } catch (i) {
-      console.error("JellyHA: Failed to cast media", i);
+    } catch (a) {
+      console.error("JellyHA: Failed to cast media", a);
     }
   }
-  _openExternalUrl(t) {
-    if (!t) return;
-    const i = this.hass?.states[this._config?.entity]?.attributes?.config_external_url;
-    if (i && i.trim() !== "")
-      try {
-        const a = new URL(t), o = new URL(i);
-        a.protocol = o.protocol, a.host = o.host, a.port = o.port || "";
-        const s = o.pathname === "/" ? "" : o.pathname;
-        s && !a.pathname.startsWith(s) && (a.pathname = s + a.pathname), window.open(a.toString(), "_blank");
+  _openExternalUrl(e) {
+    if (!e) return;
+    try {
+      const i = new URL(e);
+      if (i.hostname.includes("youtube.com") || i.hostname.includes("youtu.be") || i.hostname.includes("vimeo.com")) {
+        window.open(e, "_blank");
         return;
-      } catch (a) {
-        console.warn("JellyHA: Failed to parse URLs to inject external URL override, falling back to original", a);
       }
-    window.open(t, "_blank");
+    } catch {
+    }
+    const a = this.hass?.states[this._config?.entity]?.attributes?.config_external_url;
+    if (a && a.trim() !== "")
+      try {
+        const i = new URL(e), o = new URL(a);
+        i.protocol = o.protocol, i.host = o.host, i.port = o.port || "";
+        const s = o.pathname === "/" ? "" : o.pathname;
+        s && !i.pathname.startsWith(s) && (i.pathname = s + i.pathname), window.open(i.toString(), "_blank");
+        return;
+      } catch (i) {
+        console.warn("JellyHA: Failed to parse URLs to inject external URL override, falling back to original", i);
+      }
+    window.open(e, "_blank");
   }
   /**
    * Render empty state
@@ -5465,38 +5852,38 @@ let v = class extends A {
   /**
    * Render error state
    */
-  _renderError(t) {
+  _renderError(e) {
     return n`
       <ha-card>
         <div class="error">
           <ha-icon icon="mdi:alert-circle"></ha-icon>
-          <p>${t}</p>
+          <p>${e}</p>
         </div>
       </ha-card>
     `;
   }
-  _showItemDetails(t) {
+  _showItemDetails(e) {
     this._modal && this._modal.showDialog({
-      item: t,
+      item: e,
       hass: this.hass,
       defaultCastDevice: this._config.default_cast_device,
       serverEntityId: this._config.entity
     });
   }
-  _handleSearchInput(t) {
-    const e = t.target;
-    this._searchQuery = e.value, this._currentPage = 0;
+  _handleSearchInput(e) {
+    const t = e.target;
+    this._searchQuery = t.value, this._currentPage = 0;
   }
-  _handleGenreChange(t) {
-    const e = t.target;
-    this._searchGenre = e.value, this._currentPage = 0;
+  _handleGenreChange(e) {
+    const t = e.target;
+    this._searchGenre = t.value, this._currentPage = 0;
   }
-  _renderSearchBar(t) {
-    const e = /* @__PURE__ */ new Set();
+  _renderSearchBar(e) {
+    const t = /* @__PURE__ */ new Set();
     (this._items || []).forEach((o) => {
-      o.genres && o.genres.forEach((s) => e.add(s));
+      o.genres && o.genres.forEach((s) => t.add(s));
     });
-    const i = Array.from(e).sort(), a = this.hass.locale?.language || this.hass.language;
+    const a = Array.from(t).sort(), i = this.hass.locale?.language || this.hass.language;
     return n`
       <div class="search-container">
         <div class="search-input-wrapper">
@@ -5504,7 +5891,7 @@ let v = class extends A {
           <input 
             type="text" 
             class="search-input" 
-            placeholder="${l(a, "search.placeholder_title")}"
+            placeholder="${l(i, "search.placeholder_title")}"
             .value="${this._searchQuery}"
             @input="${this._handleSearchInput}"
           />
@@ -5514,13 +5901,13 @@ let v = class extends A {
     }}">
               <ha-icon icon="mdi:close"></ha-icon>
             </button>
-          ` : c}
+          ` : d}
         </div>
         
         <div class="search-select-wrapper">
           <select class="search-select" @change="${this._handleGenreChange}" .value="${this._searchGenre}">
-             <option value="">${l(a, "search.all_genres")}</option>
-             ${i.map((o) => n`
+             <option value="">${l(i, "search.all_genres")}</option>
+             ${a.map((o) => n`
                <option value="${o}">${o}</option>
              `)}
           </select>
@@ -5530,100 +5917,100 @@ let v = class extends A {
     `;
   }
 };
-v.styles = Fe;
-b([
+b.styles = Fe;
+y([
   P({ attribute: !1 })
-], v.prototype, "hass", 2);
-b([
+], b.prototype, "hass", 2);
+y([
   g()
-], v.prototype, "_config", 2);
-b([
+], b.prototype, "_config", 2);
+y([
   g()
-], v.prototype, "_currentPage", 2);
-b([
+], b.prototype, "_currentPage", 2);
+y([
   g()
-], v.prototype, "_itemsPerPage", 2);
-b([
+], b.prototype, "_itemsPerPage", 2);
+y([
   g()
-], v.prototype, "_pressStartTime", 2);
-b([
+], b.prototype, "_pressStartTime", 2);
+y([
   g()
-], v.prototype, "_holdTimer", 2);
-b([
+], b.prototype, "_holdTimer", 2);
+y([
   g()
-], v.prototype, "_isHoldActive", 2);
-b([
+], b.prototype, "_isHoldActive", 2);
+y([
   g()
-], v.prototype, "_rewindActive", 2);
-b([
+], b.prototype, "_rewindActive", 2);
+y([
   g()
-], v.prototype, "_items", 2);
-b([
+], b.prototype, "_items", 2);
+y([
   g()
-], v.prototype, "_error", 2);
-b([
+], b.prototype, "_error", 2);
+y([
   g()
-], v.prototype, "_lastUpdate", 2);
-b([
+], b.prototype, "_lastUpdate", 2);
+y([
   g()
-], v.prototype, "_mostRecentNextUpItemId", 2);
-b([
+], b.prototype, "_mostRecentNextUpItemId", 2);
+y([
   g()
-], v.prototype, "_searchQuery", 2);
-b([
+], b.prototype, "_searchQuery", 2);
+y([
   g()
-], v.prototype, "_searchGenre", 2);
-b([
+], b.prototype, "_searchGenre", 2);
+y([
   ut("jellyha-item-details-modal")
-], v.prototype, "_modal", 2);
-b([
+], b.prototype, "_modal", 2);
+y([
   g()
-], v.prototype, "_scrollProgress", 2);
-b([
+], b.prototype, "_scrollProgress", 2);
+y([
   g()
-], v.prototype, "_hasScrollableContent", 2);
-v = b([
-  N("jellyha-library-card")
-], v);
-var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, be = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? Pt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
-    (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && Ct(e, i, o), o;
+], b.prototype, "_hasScrollableContent", 2);
+b = y([
+  L("jellyha-library-card")
+], b);
+var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, ye = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? Pt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+    (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
+  return i && o && Ct(t, a, o), o;
 };
-function jt(t, e, i) {
-  const a = new CustomEvent(e, {
+function jt(e, t, a) {
+  const i = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
-    detail: i
+    detail: a
   });
-  t.dispatchEvent(a);
+  e.dispatchEvent(i);
 }
 let Y = class extends A {
-  setConfig(t) {
-    this._config = t;
+  setConfig(e) {
+    this._config = e;
   }
   render() {
     if (!this.hass || !this._config)
       return n``;
-    const t = Object.keys(this.hass.states).filter(
+    const e = Object.keys(this.hass.states).filter(
       (s) => s.startsWith("media_player.jellyha_") && !s.includes("_library_browser") && !s.endsWith("_browser")
-    ), e = Object.keys(this.hass.states).filter(
+    ), t = Object.keys(this.hass.states).filter(
       (s) => s.startsWith("sensor.jellyha_") && s.includes("now_playing")
-    ), i = [
-      ...t.map((s) => ({
+    ), a = [
+      ...e.map((s) => ({
         entity: s,
         label: `${this.hass.states[s]?.attributes.friendly_name || s} (Media Player)`
       })),
-      ...e.map((s) => ({
+      ...t.map((s) => ({
         entity: s,
         label: `${this.hass.states[s]?.attributes.friendly_name || s} (Legacy Sensor)`
       }))
     ];
-    this._config.entity && !i.some((s) => s.entity === this._config.entity) && i.unshift({
+    this._config.entity && !a.some((s) => s.entity === this._config.entity) && a.unshift({
       entity: this._config.entity,
       label: this.hass.states[this._config.entity]?.attributes.friendly_name || this._config.entity
     });
-    const a = this.hass.locale?.language || this.hass.language, o = l(a, "editor.media_player") || "Media Player";
+    const i = this.hass.locale?.language || this.hass.language, o = l(i, "editor.media_player") || "Media Player";
     return n`
       <div class="card-config">
         <div class="form-row">
@@ -5633,7 +6020,7 @@ let Y = class extends A {
       select: {
         mode: "dropdown",
         custom_value: !0,
-        options: i.map((s) => ({
+        options: a.map((s) => ({
           value: s.entity,
           label: s.label
         }))
@@ -5651,8 +6038,8 @@ let Y = class extends A {
             .hass=${this.hass}
             .selector=${{ text: {} }}
             .value=${this._config.title || ""}
-            .label="${l(a, "editor.title")} (Optional)"
-            label="${l(a, "editor.title")} (Optional)"
+            .label="${l(i, "editor.title")} (Optional)"
+            label="${l(i, "editor.title")} (Optional)"
             @value-changed=${this._titleChanged}
           ></ha-selector>
         </div>
@@ -5663,14 +6050,14 @@ let Y = class extends A {
               .checked=${this._config.show_title !== !1}
               @change=${this._showTitleChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_title")}</span>
+            <span>${l(i, "editor.show_title")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_subtitle !== !1}
               @change=${this._showSubtitleChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_subtitle")}</span>
+            <span>${l(i, "editor.show_subtitle")}</span>
           </div>
         </div>
 
@@ -5679,7 +6066,7 @@ let Y = class extends A {
             .checked=${this._config.show_media_type_badge !== !1}
             @change=${this._showMediaTypeBadgeChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_media_type_badge")}</span>
+          <span>${l(i, "editor.show_media_type_badge")}</span>
         </div>
 
         <div class="checkbox-pair">
@@ -5688,14 +6075,14 @@ let Y = class extends A {
               .checked=${this._config.show_year !== !1}
               @change=${this._showYearChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_year")}</span>
+            <span>${l(i, "editor.show_year")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_genres === !0}
               @change=${this._showGenresChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_genres")}</span>
+            <span>${l(i, "editor.show_genres")}</span>
           </div>
         </div>
 
@@ -5704,7 +6091,7 @@ let Y = class extends A {
             .checked=${this._config.show_runtime === !0}
             @change=${this._showRuntimeChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_runtime")}</span>
+          <span>${l(i, "editor.show_runtime")}</span>
         </div>
 
         <div class="checkbox-row">
@@ -5712,7 +6099,7 @@ let Y = class extends A {
             .checked=${this._config.show_ratings === !0}
             @change=${this._showRatingsChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_rating")}</span>
+          <span>${l(i, "editor.show_rating")}</span>
         </div>
 
         <div class="checkbox-pair">
@@ -5721,14 +6108,14 @@ let Y = class extends A {
               .checked=${this._config.show_user !== !1}
               @change=${this._showUserChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_user")}</span>
+            <span>${l(i, "editor.show_user")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_client !== !1}
               @change=${this._showClientChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_client")}</span>
+            <span>${l(i, "editor.show_client")}</span>
           </div>
         </div>
 
@@ -5737,7 +6124,7 @@ let Y = class extends A {
             .checked=${this._config.show_time === !0}
             @change=${this._showTimeChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_time")}</span>
+          <span>${l(i, "editor.show_time")}</span>
         </div>
 
         <div class="checkbox-row">
@@ -5745,7 +6132,7 @@ let Y = class extends A {
             .checked=${this._config.show_background === !0}
             @change=${this._showBackgroundChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_background")}</span>
+          <span>${l(i, "editor.show_background")}</span>
         </div>
 
         <div class="checkbox-row">
@@ -5753,72 +6140,72 @@ let Y = class extends A {
             .checked=${this._config.use_series_image === !0}
             @change=${this._useSeriesImageChanged}
           ></ha-switch>
-          <span>${l(a, "editor.use_series_image")}</span>
+          <span>${l(i, "editor.use_series_image")}</span>
         </div>
       </div>
     `;
   }
-  _entityChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    e !== void 0 && this._updateConfig("entity", e);
+  _entityChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("entity", t);
   }
-  _titleChanged(t) {
-    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
-    this._updateConfig("title", e);
+  _titleChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    this._updateConfig("title", t);
   }
-  _showTitleChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_title", e.checked);
+  _showTitleChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_title", t.checked);
   }
-  _showSubtitleChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_subtitle", e.checked);
+  _showSubtitleChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_subtitle", t.checked);
   }
-  _showMediaTypeBadgeChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_media_type_badge", e.checked);
+  _showMediaTypeBadgeChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_media_type_badge", t.checked);
   }
-  _showYearChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_year", e.checked);
+  _showYearChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_year", t.checked);
   }
-  _showGenresChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_genres", e.checked);
+  _showGenresChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_genres", t.checked);
   }
-  _showRatingsChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_ratings", e.checked);
+  _showRatingsChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_ratings", t.checked);
   }
-  _showRuntimeChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_runtime", e.checked);
+  _showRuntimeChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_runtime", t.checked);
   }
-  _showUserChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_user", e.checked);
+  _showUserChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_user", t.checked);
   }
-  _showClientChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_client", e.checked);
+  _showClientChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_client", t.checked);
   }
-  _showTimeChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_time", e.checked);
+  _showTimeChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_time", t.checked);
   }
-  _showBackgroundChanged(t) {
-    const e = t.target;
-    this._updateConfig("show_background", e.checked);
+  _showBackgroundChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_background", t.checked);
   }
-  _useSeriesImageChanged(t) {
-    const e = t.target;
-    this._updateConfig("use_series_image", e.checked);
+  _useSeriesImageChanged(e) {
+    const t = e.target;
+    this._updateConfig("use_series_image", t.checked);
   }
-  _updateConfig(t, e) {
+  _updateConfig(e, t) {
     if (!this._config)
       return;
-    const i = { ...this._config, [t]: e };
-    this._config = i, jt(this, "config-changed", { config: i });
+    const a = { ...this._config, [e]: t };
+    this._config = a, jt(this, "config-changed", { config: a });
   }
 };
 Y.styles = X`
@@ -5847,19 +6234,19 @@ Y.styles = X`
       flex: 1;
     }
   `;
-be([
+ye([
   P({ attribute: !1 })
 ], Y.prototype, "hass", 2);
-be([
+ye([
   g()
 ], Y.prototype, "_config", 2);
-Y = be([
-  N("jellyha-now-playing-editor")
+Y = ye([
+  L("jellyha-now-playing-editor")
 ], Y);
-var At = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, j = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? Tt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
-    (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && At(e, i, o), o;
+var At = Object.defineProperty, Et = Object.getOwnPropertyDescriptor, j = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? Et(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+    (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
+  return i && o && At(t, a, o), o;
 };
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -5868,11 +6255,11 @@ window.customCards.push({
   description: "Display currently playing media from Jellyfin",
   preview: !0
 });
-let $ = class extends A {
+let k = class extends A {
   constructor() {
     super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._longPressRaf = null, this._longPressConsumed = !1, this._optimisticFavorites = {}, this._phrases = [];
   }
-  setConfig(t) {
+  setConfig(e) {
     this._config = {
       show_title: !0,
       show_media_type_badge: !0,
@@ -5885,16 +6272,16 @@ let $ = class extends A {
       show_ratings: !0,
       show_runtime: !0,
       use_series_image: !1,
-      ...t
+      ...e
     };
   }
   static getConfigElement() {
     return document.createElement("jellyha-now-playing-editor");
   }
-  static getStubConfig(t) {
-    const e = Object.keys(t.states);
+  static getStubConfig(e) {
+    const t = Object.keys(e.states);
     return {
-      entity: e.find((a) => a.startsWith("media_player.jellyha_") && !a.includes("_library_browser") && !a.endsWith("_browser")) || e.find((a) => a.startsWith("sensor.jellyha_now_playing_")) || "",
+      entity: t.find((i) => i.startsWith("media_player.jellyha_") && !i.includes("_library_browser") && !i.endsWith("_browser")) || t.find((i) => i.startsWith("sensor.jellyha_now_playing_")) || "",
       show_title: !0,
       show_media_type_badge: !0,
       show_year: !0,
@@ -5929,34 +6316,34 @@ let $ = class extends A {
   render() {
     if (!this.hass || !this._config)
       return n``;
-    const t = this._config.entity;
-    if (!t)
-      return this._renderError("Please configure a JellyHA Now Playing entity");
-    const e = this.hass.states[t];
+    const e = this._config.entity;
     if (!e)
+      return this._renderError("Please configure a JellyHA Now Playing entity");
+    const t = this.hass.states[e];
+    if (!t)
       return this._renderError(l(this.hass.locale?.language || this.hass.language, "entity_not_found") || "Entity not found");
-    const i = e.attributes, a = t.startsWith("media_player.");
-    if (!(a && (e.state === "playing" || e.state === "paused") || !!i.item_id))
+    const a = t.attributes, i = e.startsWith("media_player.");
+    if (!(i && (t.state === "playing" || t.state === "paused") || !!a.item_id))
       return this._renderEmpty();
-    const s = this._optimisticSeekPercent !== null ? this._optimisticSeekPercent : i.progress_percent || 0, r = this._config.use_series_image && i.series_image_url ? i.series_image_url : i.image_url || e.attributes.entity_picture, h = r, d = i.item_id || e.attributes.media_content_id;
-    if (d !== this._cachedItemId) {
-      this._cachedItemId = d;
-      const Z = i.backdrop_url || r;
+    const s = this._optimisticSeekPercent !== null ? this._optimisticSeekPercent : a.progress_percent || 0, r = this._config.use_series_image && a.series_image_url ? a.series_image_url : a.image_url || t.attributes.entity_picture, h = r, c = a.item_id || t.attributes.media_content_id;
+    if (c !== this._cachedItemId) {
+      this._cachedItemId = c;
+      const Z = a.backdrop_url || r;
       this._cachedBackdropUrl = Z ? H(Z, 640) : void 0;
     }
-    d !== this._cachedColorItemId && h && (this._cachedColorItemId = d, this._extractDominantColor(H(h, 80)));
-    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", J = [se, re].filter(Boolean).join(" • "), q = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", ye = i.season !== void 0 ? i.season : e.attributes.media_season, we = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && ye !== void 0 && we !== void 0 ? `S${String(ye).padStart(2, "0")}E${String(we).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
+    c !== this._cachedColorItemId && h && (this._cachedColorItemId = c, this._extractDominantColor(H(h, 80)));
+    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = i ? t.state === "paused" : a.is_paused, m = (a.media_type || t.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = a.title || t.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (a.artist_name || t.attributes.media_artist || a.series_title || t.attributes.media_series_title) || "", se = this._config.show_year !== !1 && a.year ? String(a.year) : "", re = this._config.show_genres && a.genres?.length ? a.genres.slice(0, 2).join(", ") : "", J = [se, re].filter(Boolean).join(" • "), q = this._config.show_user !== !1 && a.user_name || "", ne = this._config.show_client !== !1 && a.client || "", ve = a.season !== void 0 ? a.season : t.attributes.media_season, we = a.episode !== void 0 ? a.episode : t.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && ve !== void 0 && we !== void 0 ? `S${String(ve).padStart(2, "0")}E${String(we).padStart(2, "0")}` : a.media_type || "", le = c && this._optimisticFavorites[c] !== void 0 ? this._optimisticFavorites[c] : a.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
     return n`
             <ha-card class="jellyha-now-playing ${u ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${u ? n`
                     <div class="card-background" style="background-image: url('${p}')"></div>
                     <div class="card-overlay"></div>
-                ` : c}
+                ` : d}
                 
                 <div class="card-content">
                     ${this._config.title ? n`
                         <div class="card-header">${this._config.title}</div>
-                    ` : c}
+                    ` : d}
                     
                     <div class="main-container">
                         ${h ? n`
@@ -5965,42 +6352,42 @@ let $ = class extends A {
                                 
                                 ${this._config.show_media_type_badge !== !1 && xe ? n`
                                     <span class="poster-badge media-type-badge ${m}">${xe}</span>
-                                ` : c}
-                                ${this._config.show_ratings && i.community_rating ? n`
+                                ` : d}
+                                ${this._config.show_ratings && a.community_rating ? n`
                                     <span class="poster-badge rating-badge">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${i.community_rating.toFixed(1)}
+                                        ${a.community_rating.toFixed(1)}
                                     </span>
-                                ` : c}
-                                ${this._config.show_runtime && i.runtime_minutes ? n`
+                                ` : d}
+                                ${this._config.show_runtime && a.runtime_minutes ? n`
                                     <span class="poster-badge runtime-badge">
                                         <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${m === "audio" && i.duration_ticks ? `${Math.floor(i.duration_ticks / 1e7 / 60)}m ${Math.floor(i.duration_ticks / 1e7 % 60)}s` : he(i.runtime_minutes)}
+                                        ${m === "audio" && a.duration_ticks ? `${Math.floor(a.duration_ticks / 1e7 / 60)}m ${Math.floor(a.duration_ticks / 1e7 % 60)}s` : he(a.runtime_minutes)}
                                     </span>
-                                ` : c}
+                                ` : d}
 
                                 ${this._rewindActive ? n`
                                     <div class="rewind-overlay">
                                         <span>${l(this.hass.locale?.language || this.hass.language, "rewinding")}</span>
                                     </div>
-                                ` : c}
+                                ` : d}
                             </div>
-                        ` : c}
+                        ` : d}
                         
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== !1 ? n`<div class="title">${x}</div>` : c}
-                                    ${C ? n`<div class="subtitle">${C}</div>` : c}
-                                    ${this._overflowState < 1 && J ? n`<div class="meta-line">${J}</div>` : c}
-                                    ${this._overflowState < 1 && (q || ne) ? n`<div class="client-line">${q ? n`<strong>${q}</strong>` : c}${q && ne ? " " : ""}${ne || c}</div>` : c}
+                                    ${this._config.show_title !== !1 ? n`<div class="title">${x}</div>` : d}
+                                    ${C ? n`<div class="subtitle">${C}</div>` : d}
+                                    ${this._overflowState < 1 && J ? n`<div class="meta-line">${J}</div>` : d}
+                                    ${this._overflowState < 1 && (q || ne) ? n`<div class="client-line">${q ? n`<strong>${q}</strong>` : d}${q && ne ? " " : ""}${ne || d}</div>` : d}
                                 </div>
                             </div>
 
                             <div class="info-bottom">
                                 <div class="playback-controls">
                                     ${f ? n`
-                                        <ha-icon-button class="music-subtle-btn ${le ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(i.item_id, le)}>
+                                        <ha-icon-button class="music-subtle-btn ${le ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(a.item_id, le)}>
                                             <ha-icon icon="${le ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
                                         </ha-icon-button>
                                         <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "previous") || "Previous"} @click=${() => this._handleControl("PreviousTrack")}>
@@ -6052,15 +6439,15 @@ let $ = class extends A {
                                                     stroke-linecap="round"
                                                     transform="rotate(-90 22 22)" />
                                             </svg>
-                                        ` : c}
+                                        ` : d}
                                     </div>
 
                                     ${f ? n`
                                         <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
                                             <ha-icon icon="mdi:skip-next"></ha-icon>
                                         </ha-icon-button>
-                                        <ha-icon-button class="music-subtle-btn ${i.repeat_mode && i.repeat_mode !== "RepeatNone" ? "active" : ""}" .label=${"Repeat"} @click=${() => this._handleRepeatMode(i.session_id, i.repeat_mode || "RepeatNone")}>
-                                            <ha-icon icon="${i.repeat_mode === "RepeatOne" ? "mdi:repeat-once" : "mdi:repeat"}"></ha-icon>
+                                        <ha-icon-button class="music-subtle-btn ${a.repeat_mode && a.repeat_mode !== "RepeatNone" ? "active" : ""}" .label=${"Repeat"} @click=${() => this._handleRepeatMode(a.session_id, a.repeat_mode || "RepeatNone")}>
+                                            <ha-icon icon="${a.repeat_mode === "RepeatOne" ? "mdi:repeat-once" : "mdi:repeat"}"></ha-icon>
                                         </ha-icon-button>
                                     ` : n`
                                         <ha-icon-button class="seek-btn" .label=${"Forward 30s"} @click=${() => this._handleSeekRelative(30)}>
@@ -6081,12 +6468,12 @@ let $ = class extends A {
                                     </div>
                                 </div>
 
-                                ${this._config.show_time && i.duration_ticks ? n`
+                                ${this._config.show_time && a.duration_ticks ? n`
                                     <div class="timestamps">
-                                        <span class="time-elapsed">${this._formatTicks(i.position_ticks || 0)}</span>
-                                        <span class="time-remaining">${this._formatTicks(-((i.duration_ticks || 0) - (i.position_ticks || 0)))}</span>
+                                        <span class="time-elapsed">${this._formatTicks(a.position_ticks || 0)}</span>
+                                        <span class="time-remaining">${this._formatTicks(-((a.duration_ticks || 0) - (a.position_ticks || 0)))}</span>
                                     </div>
-                                ` : c}
+                                ` : d}
                             </div>
                         </div>
                     </div>
@@ -6097,19 +6484,19 @@ let $ = class extends A {
   async _fetchPhrases() {
     if (!(this._phrases.length > 0))
       try {
-        const t = await fetch("/jellyha_static/phrases.json");
-        t.ok && (this._phrases = await t.json());
-      } catch (t) {
-        console.warn("JellyHA: Could not fetch phrases.json", t);
+        const e = await fetch("/jellyha_static/phrases.json");
+        e.ok && (this._phrases = await e.json());
+      } catch (e) {
+        console.warn("JellyHA: Could not fetch phrases.json", e);
       }
   }
   _renderEmpty() {
     this._fetchPhrases();
-    const e = this.hass.themes?.darkMode ? "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/dark_logo.png" : "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/logo.png", i = "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/icon.png";
-    let a = l(this.hass.locale?.language || this.hass.language, "nothing_playing");
+    const t = this.hass.themes?.darkMode ? "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/dark_logo.png" : "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/logo.png", a = "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/icon.png";
+    let i = l(this.hass.locale?.language || this.hass.language, "nothing_playing");
     if (this._phrases.length > 0) {
       const s = Math.floor(Date.now() / 864e5) % this._phrases.length;
-      a = this._phrases[s];
+      i = this._phrases[s];
       const r = this._config?.entity || "";
       let h = "";
       if (r.startsWith("sensor."))
@@ -6118,209 +6505,209 @@ let $ = class extends A {
         const _ = r.replace(/^media_player\./, "");
         h = `sensor.${_.includes("_") ? _.substring(0, _.lastIndexOf("_")) : _}`;
       }
-      const d = h ? `${h}_unwatched` : "";
-      let p = d && this.hass.states[d] ? d : "";
+      const c = h ? `${h}_unwatched` : "";
+      let p = c && this.hass.states[c] ? c : "";
       p || (p = Object.keys(this.hass.states).find((_) => _.startsWith("sensor.") && _.endsWith("_unwatched")) || "");
       const u = p ? this.hass.states[p].state : "0";
-      a = a.replace(/\[number\]/g, u);
+      i = i.replace(/\[number\]/g, u);
     }
     return n`
             <ha-card class="jellyha-now-playing empty-state">
                 <div class="card-content">
                     <div class="logo-container full-logo">
-                        <img src="${e}" alt="JellyHA Logo" />
+                        <img src="${t}" alt="JellyHA Logo" />
                     </div>
                     <div class="logo-container mini-icon">
-                        <img src="${i}" alt="JellyHA Icon" />
+                        <img src="${a}" alt="JellyHA Icon" />
                     </div>
-                    <p>${a}</p>
+                    <p>${i}</p>
                 </div>
             </ha-card>
         `;
   }
-  _renderError(t) {
+  _renderError(e) {
     return n`
             <ha-card class="error-state">
                 <div class="card-content">
-                    <p>${t}</p>
+                    <p>${e}</p>
                 </div>
             </ha-card>
         `;
   }
-  async _handleControl(t) {
+  async _handleControl(e) {
     this._haptic("light");
-    const e = this._config.entity, i = this.hass.states[e];
-    if (e.startsWith("media_player.")) {
+    const t = this._config.entity, a = this.hass.states[t];
+    if (t.startsWith("media_player.")) {
       let s = "";
-      if (t === "Pause" ? s = "media_pause" : t === "Unpause" || t === "Play" ? s = "media_play" : t === "PlayPause" ? s = "media_play_pause" : t === "Stop" ? s = "media_stop" : t === "NextTrack" ? s = "media_next_track" : t === "PreviousTrack" && (s = "media_previous_track"), s) {
+      if (e === "Pause" ? s = "media_pause" : e === "Unpause" || e === "Play" ? s = "media_play" : e === "PlayPause" ? s = "media_play_pause" : e === "Stop" ? s = "media_stop" : e === "NextTrack" ? s = "media_next_track" : e === "PreviousTrack" && (s = "media_previous_track"), s) {
         await this.hass.callService("media_player", s, {
-          entity_id: e
+          entity_id: t
         });
         return;
       }
     }
-    const o = i?.attributes.session_id;
+    const o = a?.attributes.session_id;
     o && await this.hass.callService("jellyha", "session_control", {
-      entity_id: e,
+      entity_id: t,
       session_id: o,
-      command: t
+      command: e
     });
   }
-  async _handleRepeatMode(t, e) {
-    let i = "RepeatAll", a = "all";
-    e === "RepeatAll" || e === "all" ? (i = "RepeatOne", a = "one") : (e === "RepeatOne" || e === "one") && (i = "RepeatNone", a = "off");
+  async _handleRepeatMode(e, t) {
+    let a = "RepeatAll", i = "all";
+    t === "RepeatAll" || t === "all" ? (a = "RepeatOne", i = "one") : (t === "RepeatOne" || t === "one") && (a = "RepeatNone", i = "off");
     const o = this._config.entity;
     if (o.startsWith("media_player.")) {
       await this.hass.callService("media_player", "repeat_set", {
         entity_id: o,
-        repeat: a
+        repeat: i
       });
       return;
     }
     await this.hass.callService("jellyha", "session_general_command", {
       entity_id: o,
-      session_id: t,
+      session_id: e,
       command: "SetRepeatMode",
-      arguments: { RepeatMode: i }
+      arguments: { RepeatMode: a }
     });
   }
-  _haptic(t = "selection") {
-    const e = new CustomEvent("haptic", {
-      detail: t,
+  _haptic(e = "selection") {
+    const t = new CustomEvent("haptic", {
+      detail: e,
       bubbles: !0,
       composed: !0
     });
-    this.dispatchEvent(e);
+    this.dispatchEvent(t);
   }
-  async _handleFavoriteToggle(t, e) {
+  async _handleFavoriteToggle(e, t) {
     this._haptic();
-    const i = !e;
-    this._optimisticFavorites[t] = i, this.requestUpdate(), await this.hass.callService("jellyha", "update_favorite", {
+    const a = !t;
+    this._optimisticFavorites[e] = a, this.requestUpdate(), await this.hass.callService("jellyha", "update_favorite", {
       entity_id: this._config.entity,
-      item_id: t,
-      is_favorite: i
+      item_id: e,
+      is_favorite: a
     });
   }
-  _getDragPercent(t) {
-    const i = t.currentTarget.getBoundingClientRect();
-    let a = t.clientX - i.left;
-    return a < 10 && (a = 0), a > i.width - 10 && (a = i.width), Math.max(0, Math.min(100, a / i.width * 100));
+  _getDragPercent(e) {
+    const a = e.currentTarget.getBoundingClientRect();
+    let i = e.clientX - a.left;
+    return i < 10 && (i = 0), i > a.width - 10 && (i = a.width), Math.max(0, Math.min(100, i / a.width * 100));
   }
-  _startDrag(t) {
-    t.currentTarget.setPointerCapture(t.pointerId), this._isDragging = !0, this._dragPercentage = this._getDragPercent(t), this._haptic("light");
+  _startDrag(e) {
+    e.currentTarget.setPointerCapture(e.pointerId), this._isDragging = !0, this._dragPercentage = this._getDragPercent(e), this._haptic("light");
   }
-  _handleDrag(t) {
-    this._isDragging && (this._dragPercentage = this._getDragPercent(t));
+  _handleDrag(e) {
+    this._isDragging && (this._dragPercentage = this._getDragPercent(e));
   }
-  _cancelDrag(t) {
+  _cancelDrag(e) {
     if (!this._isDragging) return;
-    t.currentTarget.releasePointerCapture(t.pointerId), this._isDragging = !1;
+    e.currentTarget.releasePointerCapture(e.pointerId), this._isDragging = !1;
   }
-  async _endDrag(t) {
+  async _endDrag(e) {
     if (!this._isDragging) return;
-    t.currentTarget.releasePointerCapture(t.pointerId), this._isDragging = !1;
-    const i = this._getDragPercent(t);
-    this._setOptimisticSeek(i);
-    const a = this._config.entity, o = this.hass.states[a];
+    e.currentTarget.releasePointerCapture(e.pointerId), this._isDragging = !1;
+    const a = this._getDragPercent(e);
+    this._setOptimisticSeek(a);
+    const i = this._config.entity, o = this.hass.states[i];
     if (!o) return;
     const s = o.attributes, r = s.session_id, h = s.duration_ticks;
     if (!h) return;
-    if (a.startsWith("media_player.")) {
-      const p = Math.round(h / 1e7 * (i / 100));
+    if (i.startsWith("media_player.")) {
+      const p = Math.round(h / 1e7 * (a / 100));
       await this.hass.callService("media_player", "media_seek", {
-        entity_id: a,
+        entity_id: i,
         seek_position: p
       });
       return;
     }
     if (!r) return;
-    const d = Math.round(h * (i / 100));
+    const c = Math.round(h * (a / 100));
     await this.hass.callService("jellyha", "session_seek", {
-      entity_id: a,
+      entity_id: i,
       session_id: r,
-      position_ticks: d
+      position_ticks: c
     });
   }
-  _setOptimisticSeek(t) {
-    this._optimisticSeekTimer && clearTimeout(this._optimisticSeekTimer), this._optimisticSeekPercent = t, this._optimisticSeekTimer = window.setTimeout(() => {
+  _setOptimisticSeek(e) {
+    this._optimisticSeekTimer && clearTimeout(this._optimisticSeekTimer), this._optimisticSeekPercent = e, this._optimisticSeekTimer = window.setTimeout(() => {
       this._optimisticSeekPercent = null;
     }, 3e3);
   }
-  async _handleSeekRelative(t) {
+  async _handleSeekRelative(e) {
     this._haptic("light");
-    const e = this._config.entity, i = this.hass.states[e];
-    if (!i) return;
-    const a = i.attributes, o = a.session_id, s = a.position_ticks || 0, r = t * 1e7, h = Math.max(0, s + r), d = a.duration_ticks;
-    if (d && this._setOptimisticSeek(h / d * 100), e.startsWith("media_player.")) {
+    const t = this._config.entity, a = this.hass.states[t];
+    if (!a) return;
+    const i = a.attributes, o = i.session_id, s = i.position_ticks || 0, r = e * 1e7, h = Math.max(0, s + r), c = i.duration_ticks;
+    if (c && this._setOptimisticSeek(h / c * 100), t.startsWith("media_player.")) {
       const p = Math.round(h / 1e7);
       await this.hass.callService("media_player", "media_seek", {
-        entity_id: e,
+        entity_id: t,
         seek_position: p
       });
       return;
     }
     o && await this.hass.callService("jellyha", "session_seek", {
-      entity_id: e,
+      entity_id: t,
       session_id: o,
       position_ticks: h
     });
   }
   async _handlePosterRewind() {
-    const t = this._config.entity, e = this.hass.states[t];
-    if (!e) return;
-    const i = e.attributes, a = i.session_id, o = i.position_ticks || 0;
+    const e = this._config.entity, t = this.hass.states[e];
+    if (!t) return;
+    const a = t.attributes, i = a.session_id, o = a.position_ticks || 0;
     this._rewindActive = !0, setTimeout(() => {
       this._rewindActive = !1;
     }, 1e3), this._haptic("selection");
-    const s = 20 * 1e7, r = Math.max(0, o - s), h = i.duration_ticks;
-    if (h && this._setOptimisticSeek(r / h * 100), t.startsWith("media_player.")) {
-      const d = Math.round(r / 1e7);
+    const s = 20 * 1e7, r = Math.max(0, o - s), h = a.duration_ticks;
+    if (h && this._setOptimisticSeek(r / h * 100), e.startsWith("media_player.")) {
+      const c = Math.round(r / 1e7);
       await this.hass.callService("media_player", "media_seek", {
-        entity_id: t,
-        seek_position: d
+        entity_id: e,
+        seek_position: c
       });
       return;
     }
-    a && await this.hass.callService("jellyha", "session_seek", {
-      entity_id: t,
-      session_id: a,
+    i && await this.hass.callService("jellyha", "session_seek", {
+      entity_id: e,
+      session_id: i,
       position_ticks: r
     });
   }
   _startLongPress() {
-    const t = Date.now(), e = 800;
+    const e = Date.now(), t = 800;
     this._haptic("selection");
-    const i = () => {
-      const a = Date.now() - t;
-      if (this._longPressProgress = Math.min(a / e, 1), this._longPressProgress >= 1) {
+    const a = () => {
+      const i = Date.now() - e;
+      if (this._longPressProgress = Math.min(i / t, 1), this._longPressProgress >= 1) {
         this._longPressConsumed = !0, this._handleControl("Stop"), this._haptic("success"), navigator.vibrate && navigator.vibrate(50), this._stopPulse = !0, setTimeout(() => {
           this._stopPulse = !1;
         }, 600), this._endLongPress();
         return;
       }
-      this._longPressRaf = requestAnimationFrame(i);
+      this._longPressRaf = requestAnimationFrame(a);
     };
-    this._longPressRaf = requestAnimationFrame(i);
+    this._longPressRaf = requestAnimationFrame(a);
   }
   _endLongPress() {
     this._longPressRaf && (cancelAnimationFrame(this._longPressRaf), this._longPressRaf = null), this._longPressProgress = 0;
   }
-  _extractDominantColor(t) {
-    const e = new Image();
-    e.crossOrigin = "anonymous", e.onload = () => {
+  _extractDominantColor(e) {
+    const t = new Image();
+    t.crossOrigin = "anonymous", t.onload = () => {
       try {
-        const i = document.createElement("canvas");
-        i.width = 50, i.height = 50;
-        const a = i.getContext("2d");
-        if (!a) return;
-        a.drawImage(e, 0, 0, 50, 50);
-        const o = a.getImageData(0, 0, 50, 50).data;
-        let s = 0, r = 0, h = 0, d = 0;
+        const a = document.createElement("canvas");
+        a.width = 50, a.height = 50;
+        const i = a.getContext("2d");
+        if (!i) return;
+        i.drawImage(t, 0, 0, 50, 50);
+        const o = i.getImageData(0, 0, 50, 50).data;
+        let s = 0, r = 0, h = 0, c = 0;
         for (let p = 0; p < o.length; p += 16) {
           const u = o[p], _ = o[p + 1], m = o[p + 2], f = Math.max(u, _, m), x = Math.min(u, _, m), I = f === 0 ? 0 : (f - x) / f, C = f / 255;
-          I > d && C > 0.15 && C < 0.95 && (d = I, s = u, r = _, h = m);
+          I > c && C > 0.15 && C < 0.95 && (c = I, s = u, r = _, h = m);
         }
-        if (d > 0.1) {
+        if (c > 0.1) {
           const p = s / 255, u = r / 255, _ = h / 255, m = Math.max(p, u, _), f = Math.min(p, u, _);
           let x = 0;
           const I = (m + f) / 2, C = m - f, se = C === 0 ? 0 : C / (1 - Math.abs(2 * I - 1));
@@ -6332,9 +6719,9 @@ let $ = class extends A {
       } catch {
         this._dominantColor = "var(--primary-color)";
       }
-    }, e.onerror = () => {
+    }, t.onerror = () => {
       this._dominantColor = "var(--primary-color)";
-    }, e.src = t;
+    }, t.src = e;
   }
   connectedCallback() {
     super.connectedCallback(), this._resizeObserver = new ResizeObserver(() => {
@@ -6344,8 +6731,8 @@ let $ = class extends A {
   disconnectedCallback() {
     super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect(), this._endLongPress();
   }
-  updated(t) {
-    super.updated(t), t.has("hass") && this._checkLayout();
+  updated(e) {
+    super.updated(e), e.has("hass") && this._checkLayout();
   }
   _checkLayout() {
     requestAnimationFrame(() => {
@@ -6353,18 +6740,18 @@ let $ = class extends A {
     });
   }
   _doLayoutCheck() {
-    const t = this.shadowRoot?.querySelector(".title"), e = this.shadowRoot?.querySelector(".info-bottom");
-    if (!t || !e) return;
-    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 20, d = 18, u = a.bottom - i.top + 22, m = u + h + d;
+    const e = this.shadowRoot?.querySelector(".title"), t = this.shadowRoot?.querySelector(".info-bottom");
+    if (!e || !t) return;
+    const a = this.getBoundingClientRect(), i = e.getBoundingClientRect(), r = t.getBoundingClientRect().top - a.top - 8, h = 20, c = 18, u = i.bottom - a.top + 22, m = u + h + c;
     let f = 0;
     m > r && (f = 1), u > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
   }
-  _formatTicks(t) {
-    const e = t < 0, i = Math.floor(Math.abs(t) / 1e7), a = Math.floor(i / 3600), o = Math.floor(i % 3600 / 60), s = i % 60, r = e ? "-" : "";
-    return a > 0 ? `${r}${a}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
+  _formatTicks(e) {
+    const t = e < 0, a = Math.floor(Math.abs(e) / 1e7), i = Math.floor(a / 3600), o = Math.floor(a % 3600 / 60), s = a % 60, r = t ? "-" : "";
+    return i > 0 ? `${r}${i}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
   }
 };
-$.styles = X`
+k.styles = X`
         :host {
             display: block;
             height: 100%;
@@ -7443,35 +7830,35 @@ $.styles = X`
     `;
 j([
   P({ attribute: !1 })
-], $.prototype, "hass", 2);
+], k.prototype, "hass", 2);
 j([
   g()
-], $.prototype, "_config", 2);
+], k.prototype, "_config", 2);
 j([
   g()
-], $.prototype, "_rewindActive", 2);
+], k.prototype, "_rewindActive", 2);
 j([
   g()
-], $.prototype, "_overflowState", 2);
+], k.prototype, "_overflowState", 2);
 j([
   g()
-], $.prototype, "_dominantColor", 2);
+], k.prototype, "_dominantColor", 2);
 j([
   g()
-], $.prototype, "_longPressProgress", 2);
+], k.prototype, "_longPressProgress", 2);
 j([
   g()
-], $.prototype, "_stopPulse", 2);
+], k.prototype, "_stopPulse", 2);
 j([
   g()
-], $.prototype, "_isDragging", 2);
+], k.prototype, "_isDragging", 2);
 j([
   g()
-], $.prototype, "_dragPercentage", 2);
+], k.prototype, "_dragPercentage", 2);
 j([
   g()
-], $.prototype, "_optimisticSeekPercent", 2);
-$ = j([
-  N("jellyha-now-playing-card")
-], $);
+], k.prototype, "_optimisticSeekPercent", 2);
+k = j([
+  L("jellyha-now-playing-card")
+], k);
 //# sourceMappingURL=jellyha-cards.js.map

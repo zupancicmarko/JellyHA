@@ -287,14 +287,19 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         backdrop_url = None
         backdrop_tags = item.get('BackdropImageTags', [])
-        if backdrop_tags:
+        backdrop_item_id = item_id
+        if not backdrop_tags:
+            backdrop_tags = item.get('ParentBackdropImageTags', [])
+            backdrop_item_id = item.get('ParentBackdropItemId') or item.get('SeriesId') or item_id
+
+        if backdrop_tags and backdrop_item_id:
             backdrop_tag = backdrop_tags[0]
-            backdrop_cache_key = (item_id, "Backdrop", backdrop_tag)
+            backdrop_cache_key = (backdrop_item_id, "Backdrop", backdrop_tag)
             cached = self._url_cache.get(backdrop_cache_key)
             if cached and (now - cached[1]) < _URL_CACHE_TTL:
                 backdrop_url = cached[0]
             else:
-                backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Backdrop?tag={backdrop_tag}"
+                backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{backdrop_item_id}/Backdrop?tag={backdrop_tag}"
                 backdrop_url = async_sign_path(self.hass, backdrop_path, expiration)
                 self._url_cache[backdrop_cache_key] = (backdrop_url, now)
 
@@ -312,6 +317,13 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     series_path = f"/api/jellyha/image/{self.entry.entry_id}/{series_id}/Primary?tag={series_tag}"
                     series_poster_url = async_sign_path(self.hass, series_path, expiration)
                     self._url_cache[series_cache_key] = (series_poster_url, now)
+
+        # Extract media streams if present
+        media_streams = []
+        if "MediaStreams" in item and item["MediaStreams"]:
+            media_streams = item.get("MediaStreams", [])
+        elif "MediaSources" in item and item["MediaSources"]:
+            media_streams = item["MediaSources"][0].get("MediaStreams", [])
 
         # Build music-specific fields conditionally
         artist_name = None
@@ -333,6 +345,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "rating": rating,
             "description": item.get("Overview", ""),
             "poster_url": poster_url,
+            "backdrop_url": backdrop_url,
             "series_poster_url": series_poster_url,
             "date_added": item.get("DateCreated"),
             "jellyfin_url": self._api.get_jellyfin_url(item_id),
@@ -349,6 +362,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "series_id": item.get("SeriesId"),
             "season": item.get("ParentIndexNumber"),
             "episode": item.get("IndexNumber"),
+            "media_streams": media_streams,
             # Music-specific fields (None for non-music items)
             "artist_name": artist_name,
             "album_artist": album_artist,
@@ -474,14 +488,19 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                     
                     # Cache backdrop URL
                     backdrop_tags = item.get("BackdropImageTags", [])
-                    if backdrop_tags:
+                    backdrop_item_id = item_id
+                    if not backdrop_tags:
+                        backdrop_tags = item.get("ParentBackdropImageTags", [])
+                        backdrop_item_id = item.get("ParentBackdropItemId") or item.get("SeriesId") or item_id
+
+                    if backdrop_tags and backdrop_item_id:
                         backdrop_tag = backdrop_tags[0]
-                        backdrop_cache_key = (item_id, "Backdrop", backdrop_tag)
+                        backdrop_cache_key = (backdrop_item_id, "Backdrop", backdrop_tag)
                         cached = self._url_cache.get(backdrop_cache_key)
                         if cached and (now - cached[1]) < _URL_CACHE_TTL:
                             s["jellyha_backdrop_url"] = cached[0]
                         else:
-                            backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Backdrop?tag={backdrop_tag}"
+                            backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{backdrop_item_id}/Backdrop?tag={backdrop_tag}"
                             s["jellyha_backdrop_url"] = async_sign_path(self.hass, backdrop_path, expiration)
                             self._url_cache[backdrop_cache_key] = (s["jellyha_backdrop_url"], now)
                     

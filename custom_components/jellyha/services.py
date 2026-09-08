@@ -68,6 +68,7 @@ DELETE_ITEM_SCHEMA = vol.Schema(
     {
         vol.Required("item_id"): cv.string,
         vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -77,6 +78,7 @@ SESSION_CONTROL_SCHEMA = vol.Schema(
         vol.Required("session_id"): cv.string,
         vol.Required("command"): vol.In(["Pause", "Unpause", "PlayPause", "TogglePause", "Stop", "NextTrack", "PreviousTrack", "Shuffle", "SetRepeatMode"]),
         vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -86,6 +88,7 @@ SESSION_SEEK_SCHEMA = vol.Schema(
         vol.Required("session_id"): cv.string,
         vol.Required("position_ticks"): cv.positive_int,
         vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -96,6 +99,7 @@ SESSION_GENERAL_COMMAND_SCHEMA = vol.Schema(
         vol.Required("command"): cv.string,
         vol.Optional("arguments"): dict,
         vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -117,6 +121,7 @@ SEARCH_SCHEMA = vol.Schema(
         vol.Optional("season"): cv.positive_int,
         vol.Optional("episode"): cv.positive_int,
         vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
 )
@@ -125,6 +130,7 @@ UPDATE_FAVORITE_SCHEMA = vol.Schema({
     vol.Required("item_id"): cv.string,
     vol.Required("is_favorite"): cv.boolean,
     vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
 })
 
@@ -132,6 +138,7 @@ MARK_WATCHED_SCHEMA = vol.Schema({
     vol.Required("item_id"): cv.string,
     vol.Required("is_played"): cv.boolean,
     vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
 })
 
@@ -139,12 +146,14 @@ GET_RECOMMENDATIONS_SCHEMA = vol.Schema({
     vol.Required("item_id"): cv.string,
     vol.Optional("limit", default=5): cv.positive_int,
     vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
 })
 
 GET_ITEM_SCHEMA = vol.Schema({
     vol.Required("item_id"): cv.string,
     vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
 })
 
@@ -235,7 +244,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_search(call: ServiceCall) -> ServiceResponse:
         """Search for media and return results."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
         except ValueError as e:
             raise ValueError(str(e)) from e
             
@@ -263,7 +273,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_delete_item(call: ServiceCall) -> None:
         """Delete an item from Jellyfin library."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             await coordinator._api._request("DELETE", f"/Items/{call.data['item_id']}")
             await coordinator.async_refresh()
         except Exception as e:
@@ -272,7 +283,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_update_favorite(call: ServiceCall) -> None:
         """Update favorite status for an item."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             user_id = coordinator.entry.data.get("user_id")
             await coordinator._api.update_favorite(user_id, call.data["item_id"], call.data["is_favorite"])
             await coordinator.async_refresh()
@@ -282,7 +294,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_mark_watched(call: ServiceCall) -> None:
         """Update watched status for an item."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             user_id = coordinator.entry.data.get("user_id")
             await coordinator._api.update_played_status(user_id, call.data["item_id"], call.data["is_played"])
             await coordinator.async_refresh()
@@ -292,7 +305,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_session_control(call: ServiceCall) -> None:
         """Send control command to session."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             await coordinator._api.session_control(call.data["session_id"], call.data["command"])
         except Exception as e:
             _LOGGER.error("Session control failed: %s", e)
@@ -300,7 +314,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_session_seek(call: ServiceCall) -> None:
         """Send seek command to session."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             await coordinator._api.session_seek(call.data["session_id"], call.data["position_ticks"])
         except Exception as e:
             _LOGGER.error("Session seek failed: %s", e)
@@ -308,7 +323,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_session_general_command(call: ServiceCall) -> None:
         """Send a general command to session."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             await coordinator._api.session_general_command(call.data["session_id"], call.data["command"], call.data.get("arguments"))
         except Exception as e:
             _LOGGER.error("Session general command failed: %s", e)
@@ -316,7 +332,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_get_recommendations(call: ServiceCall) -> ServiceResponse:
         """Get recommendations for an item."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             user_id = coordinator.entry.data.get("user_id")
             items = await coordinator._api.get_similar_items(user_id=user_id, item_id=call.data["item_id"], limit=call.data["limit"])
             results = list(await asyncio.gather(*(coordinator._async_transform_item(item) for item in items)))
@@ -327,21 +344,15 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_get_item(call: ServiceCall) -> ServiceResponse:
         """Get full details for an item."""
         try:
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), call.data.get("entity_id"))
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             user_id = coordinator.entry.data.get("user_id")
-            item = await coordinator._api.get_item(user_id=user_id, item_id=call.data["item_id"])
-            
-            # Enrich with streams
-            if "MediaSources" in item and item["MediaSources"]:
-                 item["media_streams"] = item["MediaSources"][0].get("MediaStreams", [])
-            elif "MediaStreams" in item:
-                 item["media_streams"] = item["MediaStreams"]
-                 
-            user_data = item.get("UserData", {})
-            item["is_favorite"] = user_data.get("IsFavorite", False)
-            item["is_played"] = user_data.get("Played", False)
+            raw_item = await coordinator._api.get_item(user_id=user_id, item_id=call.data["item_id"])
+            if not raw_item:
+                return {"item": None}
 
-            return {"item": item}
+            transformed_item = await coordinator._async_transform_item(raw_item)
+            return {"item": transformed_item}
         except Exception as e:
             raise ValueError(f"Get Item failed: {e}") from e
 

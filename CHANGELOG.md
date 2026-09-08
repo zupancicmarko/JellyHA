@@ -30,9 +30,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Documentation Restructuring**: Streamlined `README.md` by replacing long inline YAML code blocks with references to the new `examples/` directory.
+- **Cinematic Item Details ("More information") Modal**: Completely redesigned the item details modal dialog into a modern, cinematic hero presentation:
+  - Hidden default detached Home Assistant dialog header in favor of an integrated top-right circular close button (`✕`).
+  - Subtle fanart backdrop hero overlay with a smooth gradient fade behind the modal header.
+  - Placed a primary **Play on Cast** pill action button directly beneath the media poster, along with a secondary circular icon toolbar (View Episodes, Watch Trailer, Mark Watched, Favorite, Open in Jellyfin, Delete).
+  - Replaced the "Open in Jellyfin" icon with `mdi:open-in-new` for clear distinction from delete.
+  - Modernized the "Next Up" card for TV series with a 16:9 thumbnail, hover play overlay, `NEXT UP` badge, episode code, runtime, rating, and quick-cast button.
+  - Formatted technical media specs into modern chip badges (4K UHD / 1080p / 720p, Video Codec, Audio Codec, Audio Channels).
 
 ### Fixed
+- **Consistent Poster Border Radius Across Custom Themes**: Decoupled `--jf-poster-radius` from `--ha-card-border-radius` (which custom themes like *Frosted Glass* set to `18px` or higher for entire card containers). Individual poster thumbnails now consistently use the clean `12px` radius across all themes, while still allowing optional `--jellyha-poster-border-radius` overrides.
+- **Unrated Episodes Rendering Crash in "View All Episodes"**: Fixed an issue where series with unrated episodes (such as *Cape Fear* Episode 8 having `rating: null`) crashed the template rendering due to calling `.toFixed(1)` on null, causing the episodes list to appear completely empty. Added safe truthy rating validation, season filter tabs for multi-season shows, `S{season}:E{episode}` prefix formatting, and optional season querying support in `websocket_get_episodes`.
+- **Episode Thumbnails in "View All Episodes"**: Fixed an issue where all episode rows showed the parent series backdrop by prioritizing each episode's individual preview screenshot (`ep.poster_url`).
+- **YouTube Watch Trailer Navigation**: Fixed an issue where clicking "Watch Trailer" redirected YouTube URLs to the local Jellyfin server address by opening YouTube trailers directly in a new tab/app and guarding `_openExternalUrl` against rewriting 3rd-party domains.
+- **Favorite & Watched Service Payload Validation**: Fixed `Failed to perform the action jellyha/update_favorite: not a valid option, did you mean 'entity_id'? at 'server_entity_id'` (and `mark_watched`, `delete_item`) by allowing both `entity_id` and `server_entity_id` in backend Voluptuous service schemas and aligning frontend service calls to pass `entity_id`.
+- **Item Details Modal Backdrop Image**: Fixed missing fanart backdrop image in the modal header by properly returning `backdrop_url` and `media_streams` from `_async_transform_item`, fetching backdrop image tags in API library and episode queries, and rendering an `<img class="backdrop-img">` hero with smooth gradient fade and episode fallback.
 - **Segment-Chapter Decoupling**: Fixed an issue where Intro and Outro segments were missed because Intro Skipper's audio-detected boundaries did not align with coarse embedded chapter start markers. Segments are now evaluated independently based on real-time playback position.
+- **`SnullEnull` Badge in Item Details Modal**: Fixed an issue where movies and series incorrectly rendered an `SnullEnull` badge because `null !== undefined` evaluated to true for non-episode media types. Strictly constrained season/episode badges to `item.type === 'Episode'`.
 
 ## [1.2.0] - 2026-03-22
 

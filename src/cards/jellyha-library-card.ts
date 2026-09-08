@@ -1449,7 +1449,7 @@ export class JellyHALibraryCard extends LitElement {
         break;
       case 'trailer':
         if (item.trailer_url) {
-          this._openExternalUrl(item.trailer_url);
+          window.open(item.trailer_url, '_blank');
         } else {
           fireEvent(this, 'hass-notification', {
             message: localize(this.hass.locale?.language || this.hass.language, 'no_trailer'),
@@ -1481,6 +1481,17 @@ export class JellyHALibraryCard extends LitElement {
 
   private _openExternalUrl(url: string | undefined): void {
     if (!url) return;
+
+    // Never rewrite YouTube or external third-party video services
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
+        window.open(url, '_blank');
+        return;
+      }
+    } catch (e) {
+      // ignore
+    }
 
     // Check if we have an external URL configured on the entity
     const entity = this.hass?.states[this._config?.entity];
