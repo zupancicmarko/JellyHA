@@ -2,6 +2,9 @@
 
 Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-paste ready automations, Lovelace dashboard setups, and smart home recipes designed to get the most out of your Jellyfin media system in Home Assistant.
 
+> 🤖 **Prompting an AI assistant (ChatGPT, Claude, Cursor)?**  
+> Feed our official [**`llms.txt`**](../llms.txt) into your prompt to get 100% accurate, hallucination-free Home Assistant automations tailored for JellyHA.
+
 ---
 
 ## ⚡ Automations
@@ -11,6 +14,9 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 | **[Skip Intro Automatically](automations/skip_intro.yaml)** | Detects TV show intro markers and automatically seeks directly past the opening theme. | `jellyha_event` (`media_segment_change`) |
 | **[Cinema Lighting by Segment](automations/cinema_lighting_segments.yaml)** | Dims lights to 10% on play, warms lights on pause, raises lights to 35% during credits (Outro), and restores 100% on stop. | State + `media_segment_change` |
 | **[Play Random Top Movie](automations/play_random_movie.yaml)** | Dynamically searches your library for high-rated unwatched movies from a specific year and casts one to Chromecast. | Service call / script (`jellyha.search`) |
+| **[Play TV Show / Cartridge (Next Up)](automations/play_cartridge_show.yaml)** | Plays the next unplayed episode of a TV show when an NFC cartridge is inserted (Stock Pots / tag scan). | Tag trigger / `jellyha.play_on_chromecast` |
+| **[Search and Play Specific Episode](automations/search_and_play_episode.yaml)** | Searches for a specific TV show and episode name (or season/episode number) and casts it. | Service call / script (`jellyha.search`) |
+| **[External Player Routing (Plex/Kodi/Apple TV)](automations/card_action_external_player.yaml)** | Routes JellyHA Library Card click actions to external services or scripts (Plex, Apple TV, Kodi) passing full media metadata. | Card click / hold / double-tap action |
 | **[Pause Movie on Doorbell](automations/pause_on_doorbell.yaml)** | Pauses active playback immediately when someone rings the doorbell. | State (`binary_sensor.doorbell`) |
 | **[Simple Movie Time Lights](automations/movie_night_lights.yaml)** | Basic starter automation to turn off room lights when playback starts. | State (`media_player.jellyha_*`) |
 | **[New Movie Mobile Notification](automations/new_movie_notification.yaml)** | Sends a smartphone push notification with movie artwork and rating whenever new content is added. | State (`sensor.jellyha_unwatched_movies`) |

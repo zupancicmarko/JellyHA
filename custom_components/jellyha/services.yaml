@@ -235,6 +235,46 @@ search:
               value: Playlist
             - label: Collection (BoxSet)
               value: BoxSet
+    sort_by:
+      name: Sort By
+      description: Field to sort results by (default Date Added).
+      required: false
+      selector:
+        select:
+          options:
+            - label: Date Added (Default)
+              value: DateCreated
+            - label: Title / Name
+              value: SortName
+            - label: Release Date
+              value: PremiereDate
+            - label: Rating
+              value: CommunityRating
+            - label: Episode / Track Number
+              value: IndexNumber
+            - label: Recently Played
+              value: DatePlayed
+            - label: Play Count
+              value: PlayCount
+            - label: Random / Shuffle
+              value: Random
+    sort_order:
+      name: Sort Order
+      description: Order of sorted results (default Descending).
+      required: false
+      selector:
+        select:
+          options:
+            - label: Descending
+              value: Descending
+            - label: Ascending
+              value: Ascending
+    parent_id:
+      name: Parent / Series ID
+      description: Filter media within a specific TV Series, Season, or Album ID.
+      required: false
+      selector:
+        text:
     is_played:
       name: Is Watched
       description: Filter by watched status.
@@ -272,6 +312,24 @@ search:
           max: 10
           step: 0.1
           mode: box
+    official_rating:
+      name: Parental / Content Rating
+      description: Filter by certification (e.g. "PG", "PG-13", "R", "TV-MA").
+      required: false
+      selector:
+        text:
+    studio:
+      name: Studio / Network
+      description: Filter by studio or network (e.g. "Pixar", "HBO", "Marvel Studios").
+      required: false
+      selector:
+        text:
+    person:
+      name: Person (Actor / Director)
+      description: Filter media featuring a specific actor or director (e.g. "Tom Hanks").
+      required: false
+      selector:
+        text:
     season:
       name: Season Number
       description: Filter by season number (ParentIndexNumber).
@@ -287,6 +345,14 @@ search:
       selector:
         number:
           min: 1
+          mode: box
+    offset:
+      name: Offset
+      description: Number of items to skip (for pagination).
+      required: false
+      selector:
+        number:
+          min: 0
           mode: box
     limit:
       name: Limit

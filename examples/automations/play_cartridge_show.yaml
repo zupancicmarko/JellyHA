@@ -1,0 +1,55 @@
+# ==============================================================================
+# JellyHA Automation Example: Play TV Show via NFC Cartridge (Next Up Episode)
+# ==============================================================================
+# Description:
+#   Designed for physical NFC cartridge players (like Stock Pots 3D Cartridge Reader)
+#   or NFC tags representing TV Shows.
+#
+#   When a TV Show cartridge is inserted (or scanned), JellyHA automatically finds
+#   the next unplayed episode for that series and casts it to your TV/Chromecast.
+#
+#   Two approaches are shown:
+#   1. By Series Item ID (Simplest & Recommended): Pass the Series ID directly
+#      to `jellyha.play_on_chromecast`, which automatically resolves to Next Up.
+#   2. By Show Title (Search): If the NFC tag only stores the show's name,
+#      use `jellyha.search` to resolve the series and play the next unplayed episode.
+# ==============================================================================
+
+alias: "JellyHA: Play TV Cartridge Next Episode"
+description: "Plays the next unplayed episode of a TV show when an NFC cartridge is scanned"
+mode: single
+
+trigger:
+  - trigger: tag
+    tag_id: "your_cartridge_nfc_tag_id_here"
+    id: "nfc_tag_trigger"
+
+actions:
+  # ============================================================================
+  # APPROACH 1 (Recommended): Cartridge stores or maps to the Jellyfin Series ID
+  # `play_on_chromecast` automatically plays the next unplayed episode (or Ep 1).
+  # ============================================================================
+  - action: jellyha.play_on_chromecast
+    data:
+      entity_id: media_player.living_room_tv
+      item_id: "YOUR_JELLYFIN_SERIES_ID_HERE"
+
+  # ============================================================================
+  # APPROACH 2 (Alternative): Cartridge contains Show Title text
+  # Searches for the Series by name and plays it directly.
+  # ============================================================================
+  # - action: jellyha.search
+  #   data:
+  #     query: "Breaking Bad"  # Or dynamic: "{{ trigger.event.data.name }}"
+  #     media_type: Series
+  #     limit: 1
+  #   response_variable: show_search
+  #
+  # - if:
+  #     - condition: template
+  #       value_template: "{{ show_search['items'] | count > 0 }}"
+  #   then:
+  #     - action: jellyha.play_on_chromecast
+  #       data:
+  #         entity_id: media_player.living_room_tv
+  #         item_id: "{{ show_search['items'][0]['id'] }}"

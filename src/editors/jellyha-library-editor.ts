@@ -270,6 +270,7 @@ export class JellyHALibraryEditor extends LitElement {
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
+                    { value: 'call-service', label: localize(lang, 'editor.action_call_service') },
                     { value: 'none', label: localize(lang, 'editor.action_none') },
                   ],
                 },
@@ -292,6 +293,7 @@ export class JellyHALibraryEditor extends LitElement {
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
+                    { value: 'call-service', label: localize(lang, 'editor.action_call_service') },
                     { value: 'none', label: localize(lang, 'editor.action_none') },
                   ],
                 },
@@ -316,6 +318,7 @@ export class JellyHALibraryEditor extends LitElement {
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
+                    { value: 'call-service', label: localize(lang, 'editor.action_call_service') },
                     { value: 'none', label: localize(lang, 'editor.action_none') },
                   ],
                 },
@@ -340,6 +343,63 @@ export class JellyHALibraryEditor extends LitElement {
               `
         : html`<div></div>`}
         </div>
+
+        ${clickAction === 'call-service'
+        ? html`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  entity: {
+                    domain: 'script',
+                  },
+                }}
+                .value=${this._config.click_service || this._config.service || ''}
+                .label=${`${localize(lang, 'editor.click_action')}: ${localize(lang, 'editor.service_to_call')}`}
+                label="${localize(lang, 'editor.click_action')}: ${localize(lang, 'editor.service_to_call')}"
+                @value-changed=${this._clickServiceChanged}
+              ></ha-selector>
+            </div>
+          `
+        : ''}
+
+        ${holdAction === 'call-service'
+        ? html`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  entity: {
+                    domain: 'script',
+                  },
+                }}
+                .value=${this._config.hold_service || this._config.service || ''}
+                .label=${`${localize(lang, 'editor.hold_action')}: ${localize(lang, 'editor.service_to_call')}`}
+                label="${localize(lang, 'editor.hold_action')}: ${localize(lang, 'editor.service_to_call')}"
+                @value-changed=${this._holdServiceChanged}
+              ></ha-selector>
+            </div>
+          `
+        : ''}
+
+        ${doubleTapAction === 'call-service'
+        ? html`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  entity: {
+                    domain: 'script',
+                  },
+                }}
+                .value=${this._config.double_tap_service || this._config.service || ''}
+                .label=${`${localize(lang, 'editor.double_tap_action')}: ${localize(lang, 'editor.service_to_call')}`}
+                label="${localize(lang, 'editor.double_tap_action')}: ${localize(lang, 'editor.service_to_call')}"
+                @value-changed=${this._doubleTapServiceChanged}
+              ></ha-selector>
+            </div>
+          `
+        : ''}
 
         ${clickAction === 'cast' || holdAction === 'cast' || doubleTapAction === 'cast'
         ? html`
@@ -641,6 +701,27 @@ export class JellyHALibraryEditor extends LitElement {
     const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('double_tap_action', value);
+    }
+  }
+
+  private _clickServiceChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('click_service', value);
+    }
+  }
+
+  private _holdServiceChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('hold_service', value);
+    }
+  }
+
+  private _doubleTapServiceChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('double_tap_service', value);
     }
   }
 

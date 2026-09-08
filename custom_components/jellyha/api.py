@@ -221,14 +221,21 @@ class JellyfinApiClient:
         min_rating: float | None = None,
         season: int | None = None,
         episode: int | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
+        parent_id: str | None = None,
+        official_rating: str | None = None,
+        studio: str | None = None,
+        person: str | None = None,
+        offset: int | None = None,
     ) -> list[dict[str, Any]]:
         """Get library items."""
         if item_types is None:
             item_types = [ITEM_TYPE_MOVIE, ITEM_TYPE_SERIES, ITEM_TYPE_VIDEO, ITEM_TYPE_MUSIC_VIDEO]
 
         params = {
-            "SortBy": "DateCreated",
-            "SortOrder": "Descending",
+            "SortBy": sort_by or "DateCreated",
+            "SortOrder": sort_order or "Descending",
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
             "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId,ParentIndexNumber,IndexNumber,SeriesName,SeriesId,SeasonName,SeasonId,SeriesPrimaryImageTag,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,MediaStreams",
@@ -236,6 +243,9 @@ class JellyfinApiClient:
 
         if limit > 0:
             params["Limit"] = limit
+
+        if offset and offset > 0:
+            params["StartIndex"] = offset
 
         if search_term:
             params["SearchTerm"] = search_term
@@ -261,7 +271,18 @@ class JellyfinApiClient:
         if episode is not None:
              params["IndexNumber"] = str(episode)
 
-        if library_ids:
+        if official_rating:
+             params["OfficialRatings"] = official_rating
+
+        if studio:
+             params["Studios"] = studio
+
+        if person:
+             params["Person"] = person
+
+        if parent_id:
+             params["ParentId"] = parent_id
+        elif library_ids:
             # ParentId only accepts a single GUID, so fetch each library
             # separately and merge deduplicated results.
             if len(library_ids) == 1:
@@ -282,6 +303,9 @@ class JellyfinApiClient:
                 if params.get("SortBy") == "DateCreated":
                     reverse = params.get("SortOrder", "Descending").lower() == "descending"
                     all_items.sort(key=lambda x: x.get("DateCreated") or "", reverse=reverse)
+                elif params.get("SortBy") == "SortName":
+                    reverse = params.get("SortOrder", "Descending").lower() == "descending"
+                    all_items.sort(key=lambda x: (x.get("SortName") or x.get("Name") or "").lower(), reverse=reverse)
                 if limit > 0:
                     all_items = all_items[:limit]
                 return all_items

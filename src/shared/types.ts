@@ -68,6 +68,10 @@ export interface MediaItem {
     season_name?: string;
     index_number?: number;
     community_rating?: number;
+    overview?: string;
+    artist_name?: string;
+    album_artist?: string;
+    album?: string;
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
@@ -95,9 +99,17 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
     horizontal_alignment?: 'left' | 'center';
-    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
-    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
-    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'none';
+    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'none';
+    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'none';
+    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'none';
+    click_service?: string;
+    click_service_data?: Record<string, any>;
+    hold_service?: string;
+    hold_service_data?: Record<string, any>;
+    double_tap_service?: string;
+    double_tap_service_data?: Record<string, any>;
+    service?: string;
+    service_data?: Record<string, any>;
     default_cast_device?: string;
     show_now_playing?: boolean;
     image_quality?: number;

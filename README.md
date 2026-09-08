@@ -163,15 +163,19 @@ max_pages: 5
 | `entity` | string | **Required** | The sensor entity ID (e.g. `sensor.jellyha_library`) |
 | `title` | string | `Jellyfin Library` | Card title |
 | `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
-| `media_type` | string | `both` | Filter: `movies`, `series`, `next_up`, or `movies & series` |
+| `media_type` | string | `both` | Filter: `movies`, `series`, `next_up`, or `both` |
+| `tv_content` | string | `series` | Content type when TV shows are active: `series` (Shows / Series) or `episodes` (Individual Episodes) |
 | `columns` | number | `4` | Number of columns for grid & list layout. Changes to number of rows with Grid layout and Auto-Swipe On. |
 | `items_per_page` | number | `3` | Items visible per page. **Note for Height Cut Off:** Use YAML editor to set > 8 rows. |
 | `max_pages` | number | `5` | Maximum number of pages to display (0 = infinite) |
 | `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (0 = disabled) |
 | `new_badge_days` | number | `3` | Items added within X days show "New" badge |
-| `click_action` | string | `jellyfin` | Action on click: `jellyfin`, `more-info`, `cast`, `trailer`, or `none` |
-| `hold_action` | string | `cast` | Action on hold: `jellyfin`, `cast`, `more-info`, `trailer`, or `none` |
-| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `cast`, `more-info`, `trailer`, or `none` |
+| `click_action` | string | `more-info` | Action on click: `more-info`, `cast`, `jellyfin`, `trailer`, `call-service` (Run Script), or `none` |
+| `click_service` | string | `''` | Target Home Assistant script to run on single tap (e.g. `script.play_on_apple_tv`) |
+| `hold_action` | string | `jellyfin` | Action on hold: `jellyfin`, `cast`, `more-info`, `trailer`, `call-service` (Run Script), or `none` |
+| `hold_service` | string | `''` | Target Home Assistant script to run on long press |
+| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `cast`, `more-info`, `trailer`, `call-service` (Run Script), or `none` |
+| `double_tap_service` | string | `''` | Target Home Assistant script to run on double tap |
 | `default_cast_device` | string | `''` | Default media_player entity for casting |
 | `show_now_playing` | boolean | `true` | Show currently playing item banner if active |
 | `show_title` | boolean | `true` | Show media title |
@@ -191,7 +195,39 @@ max_pages: 5
 | `status_filter` | string | `all` | Filter Watch Status: `all`, `unwatched`, `watched` |
 | `filter_favorites` | boolean | `false` | Filter Favorites (Show only favorite items) |
 | `filter_newly_added` | boolean | `false` | Filter New Items (Show only new items) |
-| `use_series_image` | boolean | `false` | (Next Up only) Show series cover instead of episode thumbnail |
+| `use_series_image` | boolean | `false` | (Next Up or Episodes) Show parent series cover instead of episode thumbnail |
+
+### Custom Script Calling (`Run Script`)
+When `click_action`, `hold_action`, or `double_tap_action` is set to `call-service` ("Run Script"):
+- The card editor displays a native Home Assistant script dropdown selector (`domain: 'script'`) with autocomplete search and friendly names.
+- When clicked, the card calls your script and automatically passes the tapped item's metadata as execution variables:
+
+| Variable | Description | Example |
+|---|---|---|
+| `{{ item_id }}` | Jellyfin GUID | `"d8f34a8e..."` |
+| `{{ title }}` / `{{ name }}` | Item title or episode name | `"John Wick: Chapter 2"` / `"Episode 1"` |
+| `{{ media_type }}` | Item type | `"Movie"`, `"Series"`, `"Episode"`, `"Audio"` |
+| `{{ series_name }}` | Parent TV show name (episodes only) | `"Cape Fear"` |
+| `{{ series_id }}` | Parent TV show GUID | `"a7b2c1..."` |
+| `{{ season }}` | Season number | `1` |
+| `{{ episode }}` | Episode number | `3` |
+| `{{ year }}` | Release year | `2017` |
+| `{{ genres }}` | Genres array | `["Action", "Thriller"]` |
+| `{{ rating }}` | Community rating | `7.5` |
+| `{{ poster_url }}` | Authenticated poster image URL | `"http://.../Primary?..."` |
+| `{{ series_poster_url }}` | Parent series poster image URL (episodes) | `"http://.../Primary?..."` |
+| `{{ backdrop_url }}` | Fanart / backdrop image URL | `"http://.../Backdrop?..."` |
+| `{{ date_created }}` / `{{ date_added }}` | ISO date added to Jellyfin | `"2026-09-08T11:20:00Z"` |
+| `{{ last_played_date }}` | Last playback timestamp (or null) | `"2026-09-08T14:30:00Z"` |
+| `{{ artist }}` / `{{ artist_name }}` | Track / album artist (music only) | `"Hans Zimmer"` |
+| `{{ album }}` | Album title (music only) | `"Interstellar OST"` |
+| `{{ album_artist }}` | Primary album artist | `"Hans Zimmer"` |
+| `{{ overview }}` / `{{ description }}` | Plot synopsis or overview | `"An ex-hitman comes out of retirement..."` |
+| `{{ official_rating }}` | Age certification | `"R"`, `"PG-13"`, `"TV-MA"` |
+| `{{ jellyfin_url }}` | Direct link to item in Jellyfin | `"https://jf.domain/..."` |
+| `{{ action_type }}` | Interaction trigger | `"click"`, `"hold"`, `"double_tap"` |
+
+See the **[External Player & Script Example](examples/automations/card_action_external_player.yaml)** for a complete automation recipe.
 
 > **⚠️ Performance Note:** Using **Auto Swipe** with a large number of items may impact performance on some devices. We recommend limiting the number of items for the best experience.
 
@@ -339,9 +375,23 @@ All services support an optional `config_entry_id` parameter for **multi-instanc
 | `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req), `config_entry_id` (Opt) |
 | `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req), `config_entry_id` (Opt) |
 | `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req), `config_entry_id` (Opt) |
-| `jellyha.search` | Search for media and return Item IDs. Supports `Audio`, `MusicAlbum`, `MusicArtist`, `MusicVideo`, and `Video`. | `query` (Opt), `media_type` (Opt), `is_played` (Opt), `min_rating` (Opt), `season` (Opt), `episode` (Opt), `config_entry_id` (Opt) |
+| `jellyha.search` | Search and filter library media with rich sorting and return Item IDs. | `query` (Opt), `media_type` (Opt), `sort_by` (Opt), `sort_order` (Opt), `parent_id` (Opt), `is_played` (Opt), `is_favorite` (Opt), `genre` (Opt), `year` (Opt), `min_rating` (Opt), `official_rating` (Opt), `studio` (Opt), `person` (Opt), `season` (Opt), `episode` (Opt), `offset` (Opt), `limit` (Opt), `config_entry_id` (Opt) |
 | `jellyha.get_recommendations` | Get similar items based on item ID. | `item_id` (Req), `limit` (Opt), `config_entry_id` (Opt) |
 | `jellyha.get_item` | Get full details for an item. | `item_id` (Req), `config_entry_id` (Opt) |
+
+
+## Automations & AI Reference
+
+### ⚡ Examples & Cookbook
+Looking for ready-to-use automations and dashboard layouts? Check out our dedicated **[Examples & Recipe Library](examples/)**:
+- **[Play TV Show / Cartridge (Next Up)](examples/automations/play_cartridge_show.yaml)**
+- **[Search and Play Specific Episode](examples/automations/search_and_play_episode.yaml)**
+- **[Auto-Skip Intro](examples/automations/skip_intro.yaml)**
+- **[Cinema Lighting by Segment](examples/automations/cinema_lighting_segments.yaml)**
+- **[Play Random Top Movie](examples/automations/play_random_movie.yaml)**
+
+### 🤖 Writing Automations with AI (`llms.txt`)
+Building automations using ChatGPT, Claude, Gemini, or Cursor? Provide our official [`llms.txt`](llms.txt) context file to your AI assistant. It contains compact, complete entity definitions, service schemas, return structures, and common gotchas so AI generates 100% accurate, hallucination-free Home Assistant YAML on the first try.
 
 
 ## Session & Now Playing Updates

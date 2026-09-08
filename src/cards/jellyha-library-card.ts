@@ -1456,9 +1456,87 @@ export class JellyHALibraryCard extends LitElement {
           });
         }
         break;
+      case 'call-service':
+        this._callCustomService(item, type);
+        break;
       case 'none':
       default:
         break;
+    }
+  }
+
+  private async _callCustomService(item: MediaItem, type: 'click' | 'hold' | 'double_tap'): Promise<void> {
+    let serviceString = '';
+    let customData: Record<string, any> = {};
+
+    if (type === 'click') {
+      serviceString = this._config.click_service || this._config.service || '';
+      customData = this._config.click_service_data || this._config.service_data || {};
+    } else if (type === 'hold') {
+      serviceString = this._config.hold_service || this._config.service || '';
+      customData = this._config.hold_service_data || this._config.service_data || {};
+    } else if (type === 'double_tap') {
+      serviceString = this._config.double_tap_service || this._config.service || '';
+      customData = this._config.double_tap_service_data || this._config.service_data || {};
+    }
+
+    // Build rich payload with all media attributes
+    const payload: Record<string, any> = {
+      ...customData,
+      item_id: item.id,
+      title: item.name,
+      name: item.name,
+      media_type: item.type,
+      series_name: item.series_name || null,
+      series_id: item.series_id || null,
+      season: item.season != null ? item.season : null,
+      episode: item.episode != null ? item.episode : null,
+      year: item.year || null,
+      genres: item.genres || [],
+      rating: item.rating || null,
+      poster_url: item.poster_url || null,
+      series_poster_url: item.series_poster_url || null,
+      backdrop_url: item.backdrop_url || null,
+      date_created: item.date_added || null,
+      date_added: item.date_added || null,
+      description: item.description || null,
+      overview: item.description || null,
+      official_rating: item.official_rating || null,
+      last_played_date: item.last_played_date || null,
+      // Music attributes (Audio, MusicAlbum, MusicArtist, etc.)
+      artist: item.artist_name || item.album_artist || null,
+      artist_name: item.artist_name || null,
+      album: item.album || null,
+      album_artist: item.album_artist || null,
+      jellyfin_url: item.jellyfin_url || null,
+      is_played: item.is_played ?? false,
+      is_favorite: item.is_favorite ?? false,
+      runtime_minutes: item.runtime_minutes || null,
+      action_type: type,
+    };
+
+    // Always fire Home Assistant DOM event so automations can also trigger via event
+    fireEvent(this, 'jellyha_item_clicked', payload);
+
+    if (!serviceString) {
+      console.warn('JellyHA: "call-service" action selected but no action/service configured.');
+      return;
+    }
+
+    // Parse domain and service name (e.g. "script.play_on_apple_tv" or "media_player.play_media")
+    const parts = serviceString.trim().split('.');
+    const domain = parts[0];
+    const serviceName = parts.slice(1).join('.');
+
+    if (!domain || !serviceName) {
+      console.error(`JellyHA: Invalid service name "${serviceString}". Expected format: domain.service (e.g. script.my_script)`);
+      return;
+    }
+
+    try {
+      await this.hass.callService(domain, serviceName, payload);
+    } catch (err) {
+      console.error(`JellyHA: Failed to call service ${serviceString}`, err);
     }
   }
 

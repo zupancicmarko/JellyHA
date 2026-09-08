@@ -22,8 +22,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TV Content (Shows / Series vs. Episodes)**: Added a `tv_content` sub-option under **TV Shows Only** and **Movies & TV Shows** in the JellyHA Library Card. Users can now choose between showing full series or newly added individual episodes (`Shows / Series` vs `Episodes`).
 - **Use Series Cover Image in Library Cards**: Made the `use_series_image` option available for episode cards (under TV Shows and combined Movies & TV Shows), allowing episode items to optionally display their parent show's portrait cover poster rather than 16:9 episode screenshots for a clean, uniform grid/carousel layout.
 - **WebSocket On-Demand Media Endpoint**: Added `jellyha/get_latest_items` WebSocket command to query newly added episodes or combined media with multi-library deduplication and chronological ordering.
+- **Custom Script Calling (`call-service` / `Run Script`) in Library Card**:
+  - Added `call-service` ("Run Script") option to `click_action`, `hold_action`, and `double_tap_action`.
+  - Built dedicated native `<ha-selector>` entity dropdown pickers filtered strictly to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), presenting friendly names, icons, and live search.
+  - When tapped, the card executes the user's selected Home Assistant script (e.g. `script.play_on_apple_tv`) and automatically injects an extensive metadata payload into Jinja template variables:
+    - **Core**: `item_id`, `title`, `name`, `media_type`, `year`, `runtime_minutes`, `genres`, `rating`, `jellyfin_url`, `action_type`, `is_played`, `is_favorite`
+    - **TV Shows & Episodes**: `series_name`, `series_id`, `season`, `episode`, `series_poster_url`
+    - **Music Tracks & Albums**: `artist`, `artist_name`, `album`, `album_artist`
+    - **Dates**: `date_created`, `date_added`, `last_played_date`
+    - **Artwork & Content**: `poster_url`, `backdrop_url`, `overview`, `description`, `official_rating`
+  - Dispatches `jellyha_item_clicked` DOM event with the identical payload, allowing event-based automation triggers. Unlocks hybrid setups for Apple TV, Plex, Infuse, Kodi, ambient cinema lighting, and custom media routers.
+- **Search Service Supercharging (`jellyha.search`)**:
+  - Added sorting parameters `sort_by` (`DateCreated`, `SortName`, `PremiereDate`, `CommunityRating`, `IndexNumber`, `DatePlayed`, `PlayCount`, `Random`) and `sort_order` (`Ascending`, `Descending`).
+  - Added granular media filtering: `parent_id` (or `series_id`) to search inside specific shows/albums, `official_rating` (age/content certification), `studio` (studio/network), `person` (actor/director), and `offset` (pagination).
+- **TV Series Auto-Resolve & Fallback in `jellyha.play_on_chromecast`**: When passing a Series ID to `play_on_chromecast`, the service now automatically resolves to the next unplayed episode via Next Up, with a seamless fallback to the first unplayed episode or Episode 1 if the series has not yet been started in Jellyfin. This delivers plug-and-play support for physical NFC cartridge players (like Stock Pots) and TV series automations.
 - **Modernized Card Editors**: Replaced legacy MWC elements with Home Assistant's native `<ha-selector>` across dropdowns, number inputs, text inputs, and sliders, fixing invisible form fields (`title`, `columns`, `items_per_page`, `max_pages`, `auto_swipe_interval`, `new_badge_days`) and dropdown selection issues.
 - **Consolidated MediaType Imports**: Updated media player, browse media, and media source components to import `MediaType` and `MediaClass` directly from `homeassistant.components.media_player`.
+- **Jellyfin 12 WebSocket Authentication**: Authenticate WebSocket connections via the `Authorization: MediaBrowser ...` header in addition to the query string parameter, fixing persistent 403 handshake failures on Jellyfin 12+ while maintaining full backward compatibility with Jellyfin 10.x (Fixes #23, PR #24 by @odtgit).
 
 ### Deprecated
 - **`sensor.jellyha_now_playing_<user>` Deprecation**: The legacy Now Playing sensor entity is formally deprecated as of v1.3.0 and will be removed in v2.0.0. All playback state, rich metadata, transport controls, and segment information are fully available on `media_player.jellyha_<user>`. Existing automations and dashboards will continue to function normally during the deprecation period.

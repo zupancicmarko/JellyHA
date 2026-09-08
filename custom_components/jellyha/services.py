@@ -120,6 +120,14 @@ SEARCH_SCHEMA = vol.Schema(
         vol.Optional("min_rating"): vol.Coerce(float),
         vol.Optional("season"): cv.positive_int,
         vol.Optional("episode"): cv.positive_int,
+        vol.Optional("sort_by"): cv.string,
+        vol.Optional("sort_order"): vol.In(["Ascending", "Descending", "ascending", "descending"]),
+        vol.Optional("parent_id"): cv.string,
+        vol.Optional("series_id"): cv.string,
+        vol.Optional("official_rating"): cv.string,
+        vol.Optional("studio"): cv.string,
+        vol.Optional("person"): cv.string,
+        vol.Optional("offset"): vol.All(vol.Coerce(int), vol.Range(min=0)),
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
@@ -208,10 +216,37 @@ async def async_register_services(hass: HomeAssistant) -> None:
             series_id = item_id if item_type == "Series" else item.get("SeriesId")
             if series_id:
                 next_episode = await api.get_next_up_episode(user_id, series_id)
+                if not next_episode:
+                    # Fallback: if next_up returns None (e.g. unstarted series), find the first unplayed episode
+                    first_unplayed = await api.get_library_items(
+                        user_id=user_id,
+                        item_types=["Episode"],
+                        parent_id=series_id,
+                        is_played=False,
+                        sort_by="IndexNumber",
+                        sort_order="Ascending",
+                        limit=1,
+                    )
+                    if first_unplayed:
+                        next_episode = first_unplayed[0]
+                    else:
+                        # If all are played or no unplayed found, fall back to first episode
+                        all_eps = await api.get_library_items(
+                            user_id=user_id,
+                            item_types=["Episode"],
+                            parent_id=series_id,
+                            sort_by="IndexNumber",
+                            sort_order="Ascending",
+                            limit=1,
+                        )
+                        if all_eps:
+                            next_episode = all_eps[0]
+
                 if next_episode:
                     item = next_episode
                     item_id = item.get("Id")
                 else:
+                    _LOGGER.warning("No playable episode found for series %s", series_id)
                     return
 
         # Strategy logic
@@ -253,18 +288,48 @@ async def async_register_services(hass: HomeAssistant) -> None:
         media_type = call.data.get("media_type")
         limit = call.data.get("limit", 5)
         query = call.data.get("query")
+        sort_by = call.data.get("sort_by")
+        sort_order = call.data.get("sort_order")
+        parent_id = call.data.get("parent_id") or call.data.get("series_id")
+        official_rating = call.data.get("official_rating")
+        studio = call.data.get("studio")
+        person = call.data.get("person")
+        offset = call.data.get("offset")
 
         if media_type == "MusicArtist":
-            params = {"SortBy": "SortName", "SortOrder": "Ascending", "Recursive": "true", "Fields": "PrimaryImageAspectRatio", "Limit": str(limit)}
-            if query: params["searchTerm"] = query
+            params = {
+                "SortBy": sort_by or "SortName",
+                "SortOrder": sort_order or "Ascending",
+                "Recursive": "true",
+                "Fields": "PrimaryImageAspectRatio",
+                "Limit": str(limit),
+            }
+            if offset and offset > 0:
+                params["StartIndex"] = str(offset)
+            if query:
+                params["searchTerm"] = query
             result = await coordinator._api._request("GET", "/Artists/AlbumArtists", params=params)
             items = result.get("Items", [])
         else:
             items = await coordinator._api.get_library_items(
-                user_id=user_id, limit=limit, search_term=query, item_types=[media_type] if media_type else None,
-                is_played=call.data.get("is_played"), is_favorite=call.data.get("is_favorite"),
-                genre=call.data.get("genre"), year=call.data.get("year"), min_rating=call.data.get("min_rating"),
-                season=call.data.get("season"), episode=call.data.get("episode")
+                user_id=user_id,
+                limit=limit,
+                search_term=query,
+                item_types=[media_type] if media_type else None,
+                is_played=call.data.get("is_played"),
+                is_favorite=call.data.get("is_favorite"),
+                genre=call.data.get("genre"),
+                year=call.data.get("year"),
+                min_rating=call.data.get("min_rating"),
+                season=call.data.get("season"),
+                episode=call.data.get("episode"),
+                sort_by=sort_by,
+                sort_order=sort_order,
+                parent_id=parent_id,
+                official_rating=official_rating,
+                studio=studio,
+                person=person,
+                offset=offset,
             )
 
         results = list(await asyncio.gather(*(coordinator._async_transform_item(item) for item in items)))

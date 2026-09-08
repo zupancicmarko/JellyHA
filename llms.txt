@@ -1,0 +1,442 @@
+# JellyHA - Home Assistant Integration for Jellyfin
+
+> JellyHA is a custom integration for Home Assistant providing rich Jellyfin media tracking, Lovelace UI cards, real-time media player entities, chapter and intro/outro segment detection, Chromecast streaming, and powerful automation actions.
+
+This document serves as the authoritative, compact technical specification for AI assistants (ChatGPT, Claude, Gemini, Cursor, Copilot) generating Home Assistant automations, scripts, Jinja2 templates, and configurations for JellyHA.
+
+---
+
+## 1. Core Architecture & Entities
+
+### Primary Playback Entity: `media_player.jellyha_<user>`
+Each configured Jellyfin user gets a dedicated media player entity (e.g., `media_player.jellyha_admin`).
+* **States**: `playing`, `paused`, `idle`, `off`
+* **Standard HA Attributes**:
+  * `media_title`: Current item name (Movie title, Episode title, or Song title)
+  * `media_artist`: Artist name (for Audio / MusicVideo)
+  * `media_album_name`: Album name (for Audio)
+  * `media_content_id`: Jellyfin item GUID
+  * `media_content_type`: `movie`, `tvshow`, `music`, or `video`
+  * `media_duration`: Total duration in seconds
+  * `media_position`: Current playback position in seconds
+  * `shuffle`: Boolean (True if shuffle is active)
+  * `repeat`: String (`off`, `all`, `one`)
+  * `entity_picture`: Authenticated, signed proxy image URL
+* **Extra State Attributes** (`state_attr('media_player.jellyha_<user>', 'attribute_name')`):
+  * `title`: String (Item title)
+  * `series_title`: String (TV series name for episodes, null for movies)
+  * `season`: Integer (Season number)
+  * `episode`: Integer (Episode number)
+  * `year`: Integer (Production release year)
+  * `genres`: List of strings
+  * `official_rating`: String (e.g. `PG-13`, `TV-MA`, `R`)
+  * `community_rating`: Float (0.0 to 10.0 score)
+  * `runtime_minutes`: Integer
+  * `progress_percent`: Float (0.0 to 100.0)
+  * `position_ticks`: Integer (1 second = 10,000,000 ticks)
+  * `duration_ticks`: Integer
+  * `is_favorite`: Boolean
+  * `is_played`: Boolean
+  * `media_segment_type`: String or null (`Intro`, `Outro`, `Recap`, `Preview`, `Commercial`)
+  * `segment_end_seconds`: Float or null (Exact second when the active segment ends)
+  * `media_chapter_name`: String or null (Active chapter title)
+  * `media_chapter_index`: Integer (1-indexed chapter number)
+  * `media_chapter_count`: Integer (Total chapters in item)
+  * `is_last_chapter`: Boolean
+  * `series_image_url`: String (Portrait poster of parent series)
+  * `backdrop_url`: String (Fanart / backdrop wallpaper URL)
+
+### Server & Library Sensor Entities:
+* `sensor.jellyha_server_version`: Server version (e.g. `10.10.6`)
+* `sensor.jellyha_active_sessions`: Number of currently active playback sessions
+* `sensor.jellyha_unwatched_movies`: Count of unwatched movies
+* `sensor.jellyha_unwatched_shows`: Count of unwatched TV shows
+* `sensor.jellyha_library`: General library aggregate
+
+---
+
+## 2. Integration Actions / Services (`jellyha.*`)
+
+### 1. `jellyha.play_on_chromecast`
+Casts media to a Google Cast / Chromecast / Android TV device with automatic direct-play or optimized transcoding.
+* **Fields**:
+  * `entity_id` (Required, string): The target Chromecast `media_player` entity (e.g. `media_player.living_room_tv`).
+  * `item_id` (Required, string): Jellyfin item GUID.
+  * `config_entry_id` (Optional, string): Target JellyHA instance in multi-server setups.
+* **CRITICAL BEHAVIOR FOR TV SHOWS**: If `item_id` is a `Series` (or `Season`), `play_on_chromecast` automatically queries Jellyfin's Next Up queue and casts the **next unplayed episode**! If the series has never been started, it automatically falls back to Season 1 Episode 1.
+
+### 2. `jellyha.search`
+Searches the Jellyfin library and returns structured media objects into an automation `response_variable`.
+* **Fields**:
+  * `query` (Optional, string): Text query searching item titles.
+  * `media_type` (Optional, select): `Movie`, `Series`, `Episode`, `Audio`, `MusicAlbum`, `MusicArtist`, `MusicVideo`, `Video`, `Playlist`, `BoxSet`.
+  * `sort_by` (Optional, select): `DateCreated` (default), `SortName` (A-Z), `PremiereDate`, `CommunityRating`, `IndexNumber` (Episode/Track number), `DatePlayed`, `PlayCount`, `Random` (Shuffle picker).
+  * `sort_order` (Optional, select): `Descending` (default), `Ascending`.
+  * `parent_id` or `series_id` (Optional, string): Restricts search *inside* a specific TV series, season, or album GUID.
+  * `is_played` (Optional, boolean): Filter by watched status (`true` or `false`).
+  * `is_favorite` (Optional, boolean): Filter by user favorite status.
+  * `genre` (Optional, string): Filter by genre name (e.g. `Action`, `Comedy`).
+  * `year` (Optional, integer): Filter by release year (e.g. `2025`).
+  * `min_rating` (Optional, float): Minimum community score (0.0 to 10.0).
+  * `official_rating` (Optional, string): Content certification (e.g. `PG`, `PG-13`, `R`, `TV-MA`, `TV-Y`).
+  * `studio` (Optional, string): Studio or TV network (e.g. `Pixar`, `HBO`, `Marvel Studios`, `Disney`).
+  * `person` (Optional, string): Actor, actress, or director (e.g. `Bryan Cranston`, `Christopher Nolan`).
+  * `season` (Optional, integer): Season number (ParentIndexNumber).
+  * `episode` (Optional, integer): Episode number (IndexNumber).
+  * `offset` (Optional, integer): Number of items to skip (pagination).
+  * `limit` (Optional, integer, default 5): Maximum items to return.
+* **Return Structure**:
+  Returns a dictionary `{"items": [...]}` where each item contains:
+  * `id`: Jellyfin item GUID
+  * `name`: Item title (Episode title for episodes, Movie title for movies, Show title for series)
+  * `type`: Media type (`Movie`, `Series`, `Episode`, etc.)
+  * `year`: Release year
+  * `rating`: Community rating (0-10)
+  * `season`: Season number (for episodes)
+  * `episode`: Episode number (for episodes)
+  * `series_name`: Parent series title (for episodes)
+  * `series_id`: Parent series GUID (for episodes)
+  * `is_played`: Boolean
+  * `is_favorite`: Boolean
+  * `runtime_minutes`: Integer
+  * `poster_url`, `backdrop_url`, `jellyfin_url`
+
+### 3. `jellyha.session_control`
+Controls a Jellyfin playback session directly.
+* **Fields**:
+  * `session_id` (Required, string): Session ID.
+  * `command` (Required, select): `Pause`, `Unpause`, `TogglePause`, `Stop`, `NextTrack`, `PreviousTrack`, `Shuffle`, `SetRepeatMode`.
+
+### 4. `jellyha.session_seek`
+Seeks to a specific timestamp in a Jellyfin session.
+* **Fields**:
+  * `session_id` (Required, string): Session ID.
+  * `position_ticks` (Required, integer): Position in ticks (1 sec = 10,000,000 ticks. Use `0` to restart).
+
+### 5. `jellyha.mark_watched` & `jellyha.update_favorite`
+* `jellyha.mark_watched`: `item_id` (Required, string), `is_played` (Required, boolean).
+* `jellyha.update_favorite`: `item_id` (Required, string), `is_favorite` (Required, boolean).
+
+---
+
+## 3. Events & Device Triggers
+
+JellyHA fires custom events on the Home Assistant bus for ambient lighting and auto-skip automations:
+
+### Event: `media_segment_change`
+Fires when entering or exiting an Intro, Outro, Recap, Preview, or Commercial segment.
+* **Trigger syntax**:
+  ```yaml
+  trigger:
+    - trigger: event
+      event_type: jellyha_event
+      event_data:
+        event_type: media_segment_change
+  ```
+* **Payload attributes (`trigger.event.data`)**:
+  * `in_segment`: Boolean (`true` when entering, `false` when exiting)
+  * `segment_type`: String (`Intro`, `Outro`, `Recap`, `Preview`, `Commercial`)
+  * `segment_end_seconds`: Float (Exact timeline position when segment ends)
+  * `current_position_seconds`: Float
+  * `item_id`: Jellyfin item GUID
+  * `session_id`: Jellyfin session GUID
+  * `title`: Media title
+  * `series_title`: Show name (if episode)
+
+### Event: `media_chapter_change`
+Fires when the media crosses into a new chapter.
+* **Payload attributes (`trigger.event.data`)**:
+  * `chapter_name`: String (e.g. `Chapter 1`, `Prologue`)
+  * `chapter_index`: Integer (1-indexed)
+  * `chapter_count`: Integer
+  * `is_last_chapter`: Boolean
+  * `item_id`: Jellyfin item GUID
+
+---
+
+## 4. Critical AI Gotchas & Common Hallucinations
+
+When generating automations for JellyHA, you **MUST NEVER** make the following common errors:
+
+1. **`show_title` is NOT an automation parameter**:
+   * *The Mistake*: Calling `jellyha.play_on_chromecast` or `jellyha.search` with `show_title: "Breaking Bad"`.
+   * *The Reality*: `show_title` is strictly a frontend Lovelace card boolean toggle (`show_title: true/false`).
+   * *The Correct Way*: To search for a show, use `jellyha.search` with `query: "Breaking Bad"` and `media_type: Series`.
+
+2. **Episode `name` vs Show `series_name`**:
+   * *The Mistake*: Searching for an episode of a show using `jellyha.search` with `query: "Breaking Bad"` and `media_type: Episode`.
+   * *The Reality*: An episode's `name` is its individual episode title (e.g. `"Ozymandias"`), NOT the series name! Jellyfin will return 0 results because no episode is titled "Breaking Bad".
+   * *The Correct Way*:
+     * *For next unplayed episode*: Pass the Series ID directly to `jellyha.play_on_chromecast`!
+     * *For a specific episode name*: Search the Series first to get its ID, then search `media_type: Episode` with `parent_id: series_id` and `query: episode_title`.
+
+3. **`sensor.jellyha_now_playing_<user>` is DEPRECATED**:
+   * *The Mistake*: Directing playback controls or state checks to the legacy sensor.
+   * *The Reality*: Always use `media_player.jellyha_<user>`. Standard HA actions (`media_player.media_play`, `media_player.media_pause`, `media_player.media_seek`, `media_player.shuffle_set`, `media_player.repeat_set`) work out-of-the-box.
+
+4. **Series Playback on Chromecast**:
+   * *The Mistake*: Writing complex scripts to fetch all episodes, filter watched ones, and pick one.
+   * *The Reality*: Simply pass the **Series GUID** to `jellyha.play_on_chromecast`. The backend handles Next Up resolution and unstarted series fallback automatically.
+
+5. **Ticks vs Seconds**:
+   * Jellyfin ticks: `1 second = 10,000,000 ticks`.
+   * `jellyha.session_seek` takes `position_ticks`.
+   * Standard `media_player.media_seek` takes **seconds**.
+   * Event payload `segment_end_seconds` is in **seconds**.
+
+6. **Parsing `jellyha.search` Response**:
+   * Always capture with `response_variable: result_name`.
+   * The list of items is at `result_name.items`.
+   * Always check `result_name.items | count > 0` before indexing `[0]`.
+
+---
+
+## 5. Canonical Automation Examples
+
+### Example A: Physical NFC Cartridge Player for TV Shows (Stock Pots / Tags)
+Plays the next unplayed episode of a series when an NFC cartridge is scanned:
+```yaml
+alias: "Play TV Cartridge"
+trigger:
+  - trigger: tag
+    tag_id: "your_nfc_tag_id"
+action:
+  # Passing the Series ID automatically plays the next unplayed episode!
+  - action: jellyha.play_on_chromecast
+    data:
+      entity_id: media_player.living_room_tv
+      item_id: "78234782348723487234" # Jellyfin Series ID
+```
+
+### Example B: Search and Play Specific Series & Episode Name
+Finds a TV show and a specific episode title by text search:
+```yaml
+alias: "Search and Play Specific Episode"
+variables:
+  target_series: "Dexter: New Blood"
+  target_episode: "Cold Snap"
+action:
+  # 1. Search for Series
+  - action: jellyha.search
+    data:
+      query: "{{ target_series }}"
+      media_type: Series
+      limit: 1
+    response_variable: show_result
+
+  # 2. Search for Episode inside that Series using parent_id
+  - if:
+      - condition: template
+        value_template: "{{ show_result.items | count > 0 }}"
+    then:
+      - action: jellyha.search
+        data:
+          query: "{{ target_episode }}"
+          media_type: Episode
+          parent_id: "{{ show_result.items[0].id }}"
+          limit: 1
+        response_variable: ep_result
+
+      - if:
+          - condition: template
+            value_template: "{{ ep_result.items | count > 0 }}"
+        then:
+          - action: jellyha.play_on_chromecast
+            data:
+              entity_id: media_player.living_room_tv
+              item_id: "{{ ep_result.items[0].id }}"
+```
+
+### Example C: Auto-Skip Intro
+Seeks directly past the intro when an Intro marker is detected:
+```yaml
+alias: "Auto-Skip TV Intro"
+mode: single
+trigger:
+  - trigger: event
+    event_type: jellyha_event
+    event_data:
+      event_type: media_segment_change
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.event.data.in_segment == true and 
+         trigger.event.data.segment_type == 'Intro' and 
+         trigger.event.data.segment_end_seconds is not none }}
+action:
+  - action: media_player.media_seek
+    target:
+      entity_id: media_player.jellyha_admin
+    data:
+      seek_position: "{{ trigger.event.data.segment_end_seconds + 1 }}"
+```
+
+### Example D: Cinema Lighting by Playback State & Segment
+Dims room lights on play, turns lights warm on pause, and raises them for end credits:
+```yaml
+alias: "Cinema Lighting"
+mode: restart
+trigger:
+  - trigger: state
+    entity_id: media_player.jellyha_admin
+    to: "playing"
+    id: "playing"
+  - trigger: state
+    entity_id: media_player.jellyha_admin
+    to: "paused"
+    id: "paused"
+  - trigger: state
+    entity_id: media_player.jellyha_admin
+    to: "idle"
+    id: "stopped"
+  - trigger: event
+    event_type: jellyha_event
+    event_data:
+      event_type: media_segment_change
+    id: "segment"
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: "segment"
+          - condition: template
+            value_template: "{{ trigger.event.data.in_segment == true and trigger.event.data.segment_type == 'Outro' }}"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 35
+              transition: 3
+
+      - conditions:
+          - condition: trigger
+            id: "playing"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 10
+              transition: 2
+
+      - conditions:
+          - condition: trigger
+            id: "paused"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 40
+              color_temp_kelvin: 2700
+              transition: 1
+
+      - conditions:
+          - condition: trigger
+            id: "stopped"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.living_room
+            data:
+              brightness_pct: 100
+              transition: 2
+```
+
+### Example E: Cast Random Unwatched Top-Rated Movie
+Picks a random unwatched movie rated above 7 from a specific year:
+```yaml
+alias: "Play Random 2025 Top Movie"
+action:
+  - action: jellyha.search
+    data:
+      media_type: Movie
+      is_played: false
+      year: 2025
+      min_rating: 7.0
+      sort_by: Random
+      limit: 1
+    response_variable: movie_search
+
+  - if:
+      - condition: template
+        value_template: "{{ movie_search.items | count > 0 }}"
+    then:
+      - action: jellyha.play_on_chromecast
+        data:
+          entity_id: media_player.living_room_tv
+          item_id: "{{ movie_search.items[0].id }}"
+```
+
+---
+
+## 6. Lovelace Card Actions & Custom Script Calling (`call-service`)
+
+The `jellyha-library-card` supports `click_action`, `hold_action`, and `double_tap_action`:
+* **Available Actions**: `more-info` (default), `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **When set to `call-service`**:
+  * In the card editor, Home Assistant renders a native `<ha-selector>` entity dropdown picker strictly filtered to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), complete with friendly names, icons, and live search.
+  * In YAML, specify the script entity ID (e.g. `click_service: script.play_on_apple_tv`).
+  * `click_service_data` (or `service_data`): Optional dictionary of static parameters merged into the service payload.
+* **Automatic Metadata Injected into Script Variables**:
+  When tapped, the card automatically injects all media item metadata as top-level execution variables directly into the script's Jinja template context:
+  * **Core Identifiers & Playback**:
+    * `item_id`: Jellyfin item GUID string (e.g. `"d8f34a8e..."`)
+    * `title` / `name`: Item title or episode title (e.g. `"John Wick: Chapter 2"`, `"Episode 1"`)
+    * `media_type`: `"Movie"`, `"Series"`, `"Episode"`, `"Audio"`, `"MusicAlbum"`
+    * `year`: Release year integer (e.g. `2017`)
+    * `runtime_minutes`: Runtime duration in minutes (e.g. `122`)
+    * `genres`: List of genre strings (e.g. `["Action", "Thriller"]`)
+    * `rating`: Community rating float (e.g. `7.5`)
+    * `is_played`: Boolean (true if marked watched)
+    * `is_favorite`: Boolean (true if favorited)
+    * `jellyfin_url`: Direct URL to item in Jellyfin web client
+    * `action_type`: Interaction type string (`"click"`, `"hold"`, or `"double_tap"`)
+  * **TV Shows & Episodes**:
+    * `series_name`: Parent TV show name string (e.g. `"Cape Fear"`), null for movies
+    * `series_id`: Parent TV show GUID string, null for movies
+    * `season`: Season number integer (e.g. `1`)
+    * `episode`: Episode number integer (e.g. `3`)
+    * `series_poster_url`: Parent show's portrait cover poster URL (for episodes)
+  * **Music (Tracks & Albums)**:
+    * `artist` / `artist_name`: Track or album artist string (e.g. `"Hans Zimmer"`)
+    * `album`: Album title string (e.g. `"Interstellar (Original Motion Picture Soundtrack)"`)
+    * `album_artist`: Primary album artist string
+  * **Dates & Timestamps**:
+    * `date_created` / `date_added`: ISO 8601 timestamp string when added to Jellyfin (e.g. `"2026-09-08T11:20:00Z"`)
+    * `last_played_date`: ISO 8601 timestamp string of last playback (or null if unplayed)
+  * **Artwork & Synopsis**:
+    * `poster_url`: Authenticated, signed proxy URL to primary portrait poster
+    * `backdrop_url`: Authenticated, signed proxy URL to fanart / backdrop image
+    * `overview` / `description`: Plot synopsis or album description string
+    * `official_rating`: Content age certification string (e.g. `"PG-13"`, `"R"`, `"TV-MA"`)
+* **Custom Event**:
+  The card also dispatches a `jellyha_item_clicked` DOM event with the exact same payload dictionary, enabling event-based automation triggers (`trigger: event, event_type: jellyha_item_clicked`).
+
+### Example Script Template Receiving JellyHA Card Variables
+```yaml
+sequence:
+  - action: system_log.write
+    data:
+      message: >
+        Tapped {{ media_type }}: {{ title }} ({{ year }})
+        {% if media_type == 'Episode' %}Series: {{ series_name }} S{{ season }}E{{ episode }}{% endif %}
+        {% if artist %}Artist: {{ artist }} | Album: {{ album }}{% endif %}
+        Date Created: {{ date_created }}
+        Poster: {{ poster_url }}
+      level: info
+
+  # Route playback to external player (Apple TV, Infuse, Kodi, Plex)
+  - if:
+      - condition: template
+        value_template: "{{ media_type == 'Episode' }}"
+    then:
+      - action: media_player.play_media
+        target:
+          entity_id: media_player.apple_tv_living_room
+        data:
+          media_content_type: tvshow
+          media_content_id: "{{ jellyfin_url }}"
+```
+
