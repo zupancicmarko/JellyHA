@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Use Series Cover Image in Library Cards**: Made the `use_series_image` option available for episode cards (under TV Shows and combined Movies & TV Shows), allowing episode items to optionally display their parent show's portrait cover poster rather than 16:9 episode screenshots for a clean, uniform grid/carousel layout.
 - **WebSocket On-Demand Media Endpoint**: Added `jellyha/get_latest_items` WebSocket command to query newly added episodes or combined media with multi-library deduplication and chronological ordering.
 - **Custom Script Calling (`call-service` / `Run Script`) in Library Card**:
-  - Added `call-service` ("Run Script") option to `click_action`, `hold_action`, and `double_tap_action`.
+  - Added `call-service` ("Run Script") option to `click_action`, `hold_action`, and `double_tap_action` (Resolves #10).
   - Built dedicated native `<ha-selector>` entity dropdown pickers filtered strictly to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), presenting friendly names, icons, and live search.
   - When tapped, the card executes the user's selected Home Assistant script (e.g. `script.play_on_apple_tv`) and automatically injects an extensive metadata payload into Jinja template variables:
     - **Core**: `item_id`, `title`, `name`, `media_type`, `year`, `runtime_minutes`, `genres`, `rating`, `jellyfin_url`, `action_type`, `is_played`, `is_favorite`
