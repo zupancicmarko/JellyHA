@@ -67,11 +67,17 @@ export interface MediaItem {
     trailer_url?: string;
     last_played_date?: string;
     series_name?: string;
+    series_id?: string;
+    entry_id?: string;
     config_entry_id?: string;
     season_name?: string;
     index_number?: number;
     community_rating?: number;
     overview?: string;
+    total_episodes?: number;
+    video_codec?: string;
+    video_bit_depth?: number;
+    dv_profile?: number;
     artist_name?: string;
     album_artist?: string;
     album?: string;
