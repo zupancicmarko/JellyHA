@@ -22,6 +22,14 @@ play_on_chromecast:
       selector:
         config_entry:
           integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity providing the media (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+
 
 refresh_library:
   name: Refresh Library
@@ -52,6 +60,20 @@ delete_item:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
 
 mark_watched:
   name: Mark Watched
@@ -75,6 +97,20 @@ mark_watched:
       required: false
       selector:
         config_entry:
+          integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
           integration: jellyha
 
 update_favorite:
@@ -100,6 +136,21 @@ update_favorite:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+
 
 session_control:
   name: Session Control
@@ -141,6 +192,20 @@ session_control:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
 
 session_seek:
   name: Session Seek
@@ -166,6 +231,20 @@ session_seek:
       required: false
       selector:
         config_entry:
+          integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
           integration: jellyha
 
 session_general_command:
@@ -197,6 +276,21 @@ session_general_command:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+
 
 search:
   name: Search
@@ -370,6 +464,20 @@ search:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
 
 get_recommendations:
   name: Get Recommendations
@@ -397,6 +505,20 @@ get_recommendations:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
 
 get_item:
   name: Get Item Details
@@ -415,3 +537,18 @@ get_item:
       selector:
         config_entry:
           integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+

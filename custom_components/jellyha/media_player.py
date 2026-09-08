@@ -31,6 +31,7 @@ from .const import (
 )
 from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .device import get_device_info
+from .media_strategy import MediaStrategy
 from . import JellyHAConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
@@ -198,6 +199,15 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
         )
 
 
+def _session_activity_timestamp(s: dict[str, Any]) -> float:
+    """Extract epoch timestamp from session LastPlaybackCheckIn or LastActivityDate."""
+    raw = s.get("LastPlaybackCheckIn") or s.get("LastActivityDate")
+    if not raw:
+        return 0.0
+    parsed = dt_util.parse_datetime(raw)
+    return parsed.timestamp() if parsed else 0.0
+
+
 class JellyHABasePlaybackMediaPlayer(
     CoordinatorEntity[JellyHASessionCoordinator], MediaPlayerEntity
 ):
@@ -208,12 +218,45 @@ class JellyHABasePlaybackMediaPlayer(
     """
 
     _attr_has_entity_name = True
+    def _is_session_remote_controllable(self, session: dict[str, Any] | None) -> bool:
+        """Check if a session can receive remote control commands."""
+        if not session:
+            return True
+        # Explicit remote control flag from Jellyfin API
+        if session.get("SupportsRemoteControl") is True:
+            return True
+        # Check nested capabilities if top-level is omitted
+        caps = session.get("Capabilities") or {}
+        if caps.get("SupportsRemoteControl") is True:
+            return True
+        # Check if there is another session for the same physical client device that supports remote control
+        # (e.g. Android app where playback reports under "Jellyfin for Android" with SupportsRemoteControl: false,
+        # but the companion WebView reports under "Jellyfin Android" with SupportsRemoteControl: true).
+        dev_id = getattr(self, "_device_id", None) or session.get("DeviceId") or ""
+        base_dev_id = dev_id[:16] if len(dev_id) >= 16 else dev_id
+        if base_dev_id and self.coordinator.data:
+            for s in self.coordinator.data:
+                sid = s.get("Id")
+                if sid != session.get("Id"):
+                    s_dev_id = s.get("DeviceId") or ""
+                    if (
+                        s_dev_id == base_dev_id
+                        or s_dev_id.startswith(base_dev_id)
+                        or base_dev_id.startswith(s_dev_id)
+                    ):
+                        if s.get("SupportsRemoteControl") is True:
+                            return True
+        # If session explicitly declares no remote control and no controllable companion session exists
+        if session.get("SupportsRemoteControl") is False:
+            return False
+        return True
+
     @property
     def supported_features(self) -> MediaPlayerEntityFeature:
         """Flag media player features that are supported."""
         session = self._get_active_session()
-        # If session explicitly declares no remote control, disable playback/seek controls
-        if session and session.get("SupportsRemoteControl") is False:
+        # If session explicitly has no remote control capabilities, disable playback/seek controls
+        if session and not self._is_session_remote_controllable(session):
             return MediaPlayerEntityFeature(0)
 
         return (
@@ -462,6 +505,8 @@ class JellyHABasePlaybackMediaPlayer(
     ) -> dict[str, Any]:
         """Extract common playback attributes from active session."""
         attrs: dict[str, Any] = {
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
             "session_id": session.get("Id") if session else None,
             "device_name": session.get("DeviceName") if session else None,
             "client": session.get("Client") if session else None,
@@ -481,7 +526,15 @@ class JellyHABasePlaybackMediaPlayer(
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
-            "supports_remote_control": session.get("SupportsRemoteControl", True) if session else True,
+            "supports_remote_control": self._is_session_remote_controllable(session),
+            "dynamic_range": None,
+            "video_range": None,
+            "video_range_type": None,
+            "video_codec": None,
+            "video_bit_depth": None,
+            "dv_profile": None,
+            "color_transfer": None,
+            "color_primaries": None,
         }
 
         if not session or "NowPlayingItem" not in session:
@@ -495,6 +548,11 @@ class JellyHABasePlaybackMediaPlayer(
         attrs["item_id"] = item_id
         attrs["media_type"] = item_type
         attrs["title"] = item.get("Name")
+
+        # Video stream and dynamic range attributes (SDR, HDR10, Dolby Vision, HLG)
+        if item_type in ("Movie", "Episode", "Video", "MusicVideo"):
+            video_attrs = MediaStrategy.extract_video_stream_attributes(item)
+            attrs.update(video_attrs)
 
         # Ratings & metadata
         attrs["official_rating"] = item.get("OfficialRating")
@@ -581,15 +639,25 @@ class JellyHABasePlaybackMediaPlayer(
     def _get_target_session_ids(self) -> list[str]:
         """Get all target session IDs for this entity to route commands."""
         session = self._get_active_session()
-        if not session:
+        if not session or not self._is_session_remote_controllable(session):
             return []
         target_ids = [session["Id"]]
-        # For device players, also include any other session matching this device
-        if hasattr(self, "_device_id") and self.coordinator.data:
+        # Broadcast to all controllable companion sessions on the same physical device
+        dev_id = getattr(self, "_device_id", None) or session.get("DeviceId") or ""
+        base_dev_id = dev_id[:16] if len(dev_id) >= 16 else dev_id
+        if base_dev_id and self.coordinator.data:
             for s in self.coordinator.data:
                 sid = s.get("Id")
-                if sid and sid not in target_ids and self._is_matching_device_session(s):
-                    target_ids.append(sid)
+                if not sid or sid in target_ids:
+                    continue
+                s_dev_id = s.get("DeviceId") or ""
+                if (
+                    s_dev_id == base_dev_id
+                    or s_dev_id.startswith(base_dev_id)
+                    or base_dev_id.startswith(s_dev_id)
+                ):
+                    if s.get("SupportsRemoteControl") is True:
+                        target_ids.append(sid)
         return target_ids
 
     async def _send_session_control(self, command: str) -> None:
@@ -722,6 +790,7 @@ class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
         user_sessions.sort(
             key=lambda s: (
                 s.get("PlayState", {}).get("IsPaused", False),
+                -_session_activity_timestamp(s),
                 s.get("Id", ""),
             )
         )
@@ -812,6 +881,7 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
             key=lambda s: (
                 0 if "NowPlayingItem" in s else 1,
                 s.get("PlayState", {}).get("IsPaused", False),
+                -_session_activity_timestamp(s),
                 s.get("Id", ""),
             )
         )

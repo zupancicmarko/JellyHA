@@ -38,6 +38,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Search Service Supercharging (`jellyha.search`)**:
   - Added sorting parameters `sort_by` (`DateCreated`, `SortName`, `PremiereDate`, `CommunityRating`, `IndexNumber`, `DatePlayed`, `PlayCount`, `Random`) and `sort_order` (`Ascending`, `Descending`).
   - Added granular media filtering: `parent_id` (or `series_id`) to search inside specific shows/albums, `official_rating` (age/content certification), `studio` (studio/network), `person` (actor/director), and `offset` (pagination).
+  - **TV Series & Episode Metadata in Search Results (Resolves [#13](https://github.com/zupancicmarko/JellyHA/issues/13))**: Enriched episode search results with parent TV series metadata (`series_name`, `series_id`, `season`, `episode`, `season_name`) via transformed response variables, allowing automations and notification scripts to identify the show name when searching for episodes.
+- **Dynamic Range & HDR Video Stream Attributes (Resolves [#18](https://github.com/zupancicmarko/JellyHA/issues/18))**:
+  - Added real-time dynamic range and video stream properties to `extra_state_attributes` on all JellyHA media players (`media_player.jellyha_<user>` and `media_player.jellyha_<device>`):
+    - `dynamic_range`: Clean normalized string (`SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, `HLG`) for triggering TV picture modes and ambient lighting automations (e.g. ADB picture adjustments).
+    - `video_range_type`: Raw Jellyfin classification (e.g. `DOVIWithHDR10`, `DOVIWithEL`, `HDR10Plus`, `HDR10`, `SDR`).
+    - `video_range`: `HDR` or `SDR`.
+    - `dv_profile`: Dolby Vision profile number (e.g. `7`, `8`, `5`).
+    - `color_transfer`: Color transfer function (e.g. `smpte2084`, `arib-std-b67`, `bt709`).
+    - `color_primaries`: Color space primaries (e.g. `bt2020`, `bt709`).
+    - `video_codec`: Active video codec (e.g. `hevc`, `av1`, `h264`).
+    - `video_bit_depth`: Color bit depth (`10`, `8`).
+  - Added `dynamic_range` and video stream metadata to `_async_transform_item` so `jellyha.search` results, library cards, and custom script actions (`Run Script`) include dynamic range information.
+  - Added dynamic range tech badges (`Dolby Vision`, `HDR10+`, `HDR10`, `HLG`) to the cinematic item details modal in the frontend.
 - **TV Series Auto-Resolve & Fallback in `jellyha.play_on_chromecast`**: When passing a Series ID to `play_on_chromecast`, the service now automatically resolves to the next unplayed episode via Next Up, with a seamless fallback to the first unplayed episode or Episode 1 if the series has not yet been started in Jellyfin. This delivers plug-and-play support for physical NFC cartridge players (like Stock Pots) and TV series automations.
 - **Modernized Card Editors**: Replaced legacy MWC elements with Home Assistant's native `<ha-selector>` across dropdowns, number inputs, text inputs, and sliders, fixing invisible form fields (`title`, `columns`, `items_per_page`, `max_pages`, `auto_swipe_interval`, `new_badge_days`) and dropdown selection issues.
 - **Consolidated MediaType Imports**: Updated media player, browse media, and media source components to import `MediaType` and `MediaClass` directly from `homeassistant.components.media_player`.
@@ -61,10 +74,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unrated Episodes Rendering Crash in "View All Episodes"**: Fixed an issue where series with unrated episodes (such as *Cape Fear* Episode 8 having `rating: null`) crashed the template rendering due to calling `.toFixed(1)` on null, causing the episodes list to appear completely empty. Added safe truthy rating validation, season filter tabs for multi-season shows, `S{season}:E{episode}` prefix formatting, and optional season querying support in `websocket_get_episodes`.
 - **Episode Thumbnails in "View All Episodes"**: Fixed an issue where all episode rows showed the parent series backdrop by prioritizing each episode's individual preview screenshot (`ep.poster_url`).
 - **YouTube Watch Trailer Navigation**: Fixed an issue where clicking "Watch Trailer" redirected YouTube URLs to the local Jellyfin server address by opening YouTube trailers directly in a new tab/app and guarding `_openExternalUrl` against rewriting 3rd-party domains.
-- **Favorite & Watched Service Payload Validation**: Fixed `Failed to perform the action jellyha/update_favorite: not a valid option, did you mean 'entity_id'? at 'server_entity_id'` (and `mark_watched`, `delete_item`) by allowing both `entity_id` and `server_entity_id` in backend Voluptuous service schemas and aligning frontend service calls to pass `entity_id`.
+- **Service & WebSocket Payload Validation (Fixes [#28](https://github.com/zupancicmarko/JellyHA/issues/28))**:
+  - Fixed `Failed to perform the action jellyha/mark_watched. extra keys not allowed @ data['server_entity_id']` (as well as on `update_favorite`, `delete_item`, `play_on_chromecast`, `session_control`, `session_seek`, `session_general_command`, `search`, `get_item`, and `get_recommendations`) by supporting `server_entity_id`, `entity_id`, and `config_entry_id` across all service Voluptuous schemas and `services.yaml`.
+  - Enhanced backend coordinator resolution (`_get_coordinator`) to prioritize `config_entry_id`, query the Home Assistant Entity Registry for `server_entity_id` / `entity_id`, check entity state attributes, and gracefully fall back to the active JellyHA instance. This prevents runtime lookup crashes when passing non-JellyHA target devices (such as Chromecast media players).
+  - Injected `config_entry_id` directly into transformed library items (`_async_transform_item`) so card modals and context menus directly target their originating server instance.
+  - Fixed WebSocket endpoints (`jellyha/get_items`, `jellyha/get_next_up`, `jellyha/get_user_next_up`, `jellyha/get_episodes`, `jellyha/search_media`, `jellyha/get_latest_items`) rejecting entities without an `entry_id` attribute (e.g. `sensor.jellyha_watched`, `sensor.jellyha_unwatched`, `media_player.jellyha_*`) by introducing entity registry resolution and instance fallback.
+  - Added `entry_id` and `config_entry_id` attributes to all JellyHA sensor entities (`JellyHABaseSensor`, `JellyHAWatchedCountSensor`, `JellyHAUnwatchedCountSensor`, `JellyHAUserSensor`) and media player entities for complete attribute consistency.
 - **Item Details Modal Backdrop Image**: Fixed missing fanart backdrop image in the modal header by properly returning `backdrop_url` and `media_streams` from `_async_transform_item`, fetching backdrop image tags in API library and episode queries, and rendering an `<img class="backdrop-img">` hero with smooth gradient fade and episode fallback.
 - **Segment-Chapter Decoupling**: Fixed an issue where Intro and Outro segments were missed because Intro Skipper's audio-detected boundaries did not align with coarse embedded chapter start markers. Segments are now evaluated independently based on real-time playback position.
 - **`SnullEnull` Badge in Item Details Modal**: Fixed an issue where movies and series incorrectly rendered an `SnullEnull` badge because `null !== undefined` evaluated to true for non-episode media types. Strictly constrained season/episode badges to `item.type === 'Episode'`.
+- **Truncated Movie Library & Missing Collection Items (Fixes [#22](https://github.com/zupancicmarko/JellyHA/issues/22))**:
+  - Added `"CollapseBoxSetItems": "false"` to library API queries so movies contained within collections/box sets (e.g. Star Wars, Marvel, Harry Potter, James Bond) are returned individually rather than being collapsed into BoxSets or hidden by Jellyfin.
+  - Implemented automatic chunked pagination (`page_size=500`) referencing `TotalRecordCount` when fetching library items (`limit=0`), preventing large library queries (>1,000–3,000+ items) from being truncated after the first batch by Jellyfin or proxy buffers, and eliminating coordinator fetch timeouts.
+- **Episode Count & Watched Sensor Aggregation (Fixes [#22](https://github.com/zupancicmarko/JellyHA/issues/22))**:
+  - Fixed `sensor.jellyha_watched_episodes` which previously duplicated `sensor.jellyha_watched_series` by incorrectly filtering `type == "Series" and is_played == True`. It now accurately computes watched episodes across all TV shows (`total_episodes - unplayed_count`).
+  - Fixed `sensor.jellyha_library`'s `episodes` attribute which erroneously summed `unplayed_count` instead of actual total episodes, causing the total episode count to match the unwatched episode count.
+  - Requested `RecursiveItemCount` and `ChildCount` in API fields and coordinator transforms to accurately reflect total episodes per series.
+  - Added missing `"episodes"` breakdown attribute to `sensor.jellyha_watched` (`JellyHAWatchedCountSensor`).
 
 ## [1.2.0] - 2026-03-22
 

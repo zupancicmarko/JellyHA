@@ -884,7 +884,8 @@ export class JellyHALibraryCard extends LitElement {
       if (this._config.media_type === 'next_up') {
         result = await this.hass.callWS<{ items: MediaItem[] }>({
           type: 'jellyha/get_user_next_up',
-          entity_id: this._config.entity
+          entity_id: this._config.entity,
+          server_entity_id: this._config.entity,
         });
       } else if (
         (this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type) &&
@@ -894,12 +895,14 @@ export class JellyHALibraryCard extends LitElement {
         result = await this.hass.callWS<{ items: MediaItem[] }>({
           type: 'jellyha/get_latest_items',
           entity_id: this._config.entity,
+          server_entity_id: this._config.entity,
           item_types: itemTypes,
         });
       } else {
         result = await this.hass.callWS<{ items: MediaItem[] }>({
           type: 'jellyha/get_items',
-          entity_id: this._config.entity
+          entity_id: this._config.entity,
+          server_entity_id: this._config.entity,
         });
       }
 
@@ -1551,6 +1554,7 @@ export class JellyHALibraryCard extends LitElement {
         entity_id: entityId,
         item_id: item.id,
         server_entity_id: this._config.entity,
+        ...(item.config_entry_id ? { config_entry_id: item.config_entry_id } : {}),
       });
     } catch (err) {
       console.error('JellyHA: Failed to cast media', err);

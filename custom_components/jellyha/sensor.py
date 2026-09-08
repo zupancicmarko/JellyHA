@@ -100,6 +100,14 @@ class JellyHABaseSensor(CoordinatorEntity[JellyHALibraryCoordinator], SensorEnti
         """Return device info for this sensor."""
         return get_device_info(self._entry.entry_id, self._device_name)
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        return {
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
+        }
+
 
 class JellyHALibrarySensor(JellyHABaseSensor):
     """Sensor representing media library from Jellyfin."""
@@ -133,13 +141,14 @@ class JellyHALibrarySensor(JellyHABaseSensor):
         movies = [i for i in items if i.get("type") == "Movie"]
         series = [i for i in items if i.get("type") == "Series"]
         videos = [i for i in items if i.get("type") in ("Video", "MusicVideo")]
-        # Sum up all episode counts from series items (unplayed + watched)
+        # Sum up all episode counts from series items
         total_episodes = sum(
-            (i.get("unplayed_count") or 0) for i in series
+            (i.get("total_episodes") or 0) for i in series
         )
 
         return {
             "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
             "server_name": self.coordinator.data.get("server_name"),
             "last_updated": self.coordinator.last_refresh_time,
             "movies": len(movies),
@@ -206,11 +215,13 @@ class JellyHAUnwatchedCountSensor(JellyHABaseSensor):
             return {}
         items = self.coordinator.data.get("items", [])
         unwatched = [i for i in items if not i.get("is_played", True)]
-        # Sum unplayed episode counts from unwatched series
+        # Sum unplayed episode counts from series
         unwatched_episodes = sum(
-            (i.get("unplayed_count") or 0) for i in unwatched if i.get("type") == "Series"
+            (i.get("unplayed_count") or 0) for i in items if i.get("type") == "Series"
         )
         return {
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
             "movies": len([i for i in unwatched if i.get("type") == "Movie"]),
             "series": len([i for i in unwatched if i.get("type") == "Series"]),
             "episodes": unwatched_episodes,
@@ -416,14 +427,52 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             return "mdi:pause"
         return "mdi:television-play"
 
+    def _is_session_remote_controllable(self, session: dict[str, Any] | None) -> bool:
+        """Check if a session can receive remote control commands."""
+        if not session:
+            return True
+        # Explicit remote control flag from Jellyfin API
+        if session.get("SupportsRemoteControl") is True:
+            return True
+        # Check nested capabilities if top-level is omitted
+        caps = session.get("Capabilities") or {}
+        if caps.get("SupportsRemoteControl") is True:
+            return True
+        # Check if there is another session for the same physical client device that supports remote control
+        dev_id = session.get("DeviceId") or ""
+        base_dev_id = dev_id[:16] if len(dev_id) >= 16 else dev_id
+        if base_dev_id and self.coordinator.data:
+            for s in self.coordinator.data:
+                sid = s.get("Id")
+                if sid != session.get("Id"):
+                    s_dev_id = s.get("DeviceId") or ""
+                    if (
+                        s_dev_id == base_dev_id
+                        or s_dev_id.startswith(base_dev_id)
+                        or base_dev_id.startswith(s_dev_id)
+                    ):
+                        if s.get("SupportsRemoteControl") is True:
+                            return True
+        # If session explicitly declares no remote control and no controllable companion session exists
+        if session.get("SupportsRemoteControl") is False:
+            return False
+        return True
+
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return additional state attributes."""
         session = self._get_active_session()
         if not session:
-             return {"user_id": self._user_id, "user_name": self._username}
+             return {
+                 "user_id": self._user_id,
+                 "user_name": self._username,
+                 "entry_id": self._entry.entry_id,
+                 "config_entry_id": self._entry.entry_id,
+             }
 
         attributes = {
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
             "user_id": self._user_id,
             "user_name": self._username,
             "session_id": session.get("Id"),
@@ -440,7 +489,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
-            "supports_remote_control": session.get("SupportsRemoteControl", True),
+            "supports_remote_control": self._is_session_remote_controllable(session),
         }
 
         if "NowPlayingItem" in session:
@@ -699,20 +748,25 @@ class JellyHAWatchedCountSensor(JellyHABaseSensor):
         items = self.coordinator.data.get("items", [])
         watched = [i for i in items if i.get("is_played", False)]
         
-        # For watched episodes: series that are fully watched don't have unplayed_count
-        # We can't accurately calculate watched episodes without additional API calls
-        # For now, count series with is_played=True
         watched_movies = len([i for i in watched if i.get("type") == "Movie"])
         watched_series = len([i for i in watched if i.get("type") == "Series"])
+        watched_episodes = sum(
+            max(0, (i.get("total_episodes") or 0) - (i.get("unplayed_count") or 0))
+            for i in items
+            if i.get("type") == "Series"
+        )
         
         return {
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
             "movies": watched_movies,
             "series": watched_series,
+            "episodes": watched_episodes,
         }
 
 
 class JellyHAWatchedEpisodesSensor(JellyHABaseSensor):
-    """Sensor for watched episodes count (estimated based on fully watched series)."""
+    """Sensor for watched episodes count."""
 
     _attr_translation_key = "watched_episodes"
     _attr_icon = "mdi:video-check"
@@ -728,19 +782,15 @@ class JellyHAWatchedEpisodesSensor(JellyHABaseSensor):
 
     @property
     def native_value(self) -> int:
-        """Return the number of watched episodes. 
-        
-        Note: This counts series marked as fully played (is_played=True).
-        Individual episode counts require additional API queries.
-        """
+        """Return the number of watched episodes."""
         if not self.coordinator.data:
             return 0
         items = self.coordinator.data.get("items", [])
-        # Count fully watched series (is_played=True means all episodes watched)
-        return len([
-            i for i in items 
-            if i.get("type") == "Series" and i.get("is_played", False)
-        ])
+        return sum(
+            max(0, (i.get("total_episodes") or 0) - (i.get("unplayed_count") or 0))
+            for i in items
+            if i.get("type") == "Series"
+        )
 
 
 class JellyHAWatchedSeriesSensor(JellyHABaseSensor):

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const te = globalThis, _e = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ue = Symbol(), Se = /* @__PURE__ */ new WeakMap();
-let Ne = class {
+let Re = class {
   constructor(t, a, i) {
     if (this._$cssResult$ = !0, i !== ue) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t, this.t = a;
@@ -22,13 +22,13 @@ let Ne = class {
     return this.cssText;
   }
 };
-const Je = (e) => new Ne(typeof e == "string" ? e : e + "", void 0, ue), X = (e, ...t) => {
+const Je = (e) => new Re(typeof e == "string" ? e : e + "", void 0, ue), V = (e, ...t) => {
   const a = e.length === 1 ? e[0] : t.reduce((i, o, s) => i + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(o) + e[s + 1], e[0]);
-  return new Ne(a, e, ue);
+  return new Re(a, e, ue);
 }, Ye = (e, t) => {
   if (_e) e.adoptedStyleSheets = t.map((a) => a instanceof CSSStyleSheet ? a : a.styleSheet);
   else for (const a of t) {
@@ -45,7 +45,7 @@ const Je = (e) => new Ne(typeof e == "string" ? e : e + "", void 0, ue), X = (e,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Xe, defineProperty: Ve, getOwnPropertyDescriptor: qe, getOwnPropertyNames: Ze, getOwnPropertySymbols: Ke, getPrototypeOf: Qe } = Object, oe = globalThis, Pe = oe.trustedTypes, et = Pe ? Pe.emptyScript : "", tt = oe.reactiveElementPolyfillSupport, H = (e, t) => e, ie = { toAttribute(e, t) {
+const { is: Ve, defineProperty: Xe, getOwnPropertyDescriptor: qe, getOwnPropertyNames: Ze, getOwnPropertySymbols: Ke, getPrototypeOf: Qe } = Object, oe = globalThis, Pe = oe.trustedTypes, et = Pe ? Pe.emptyScript : "", tt = oe.reactiveElementPolyfillSupport, H = (e, t) => e, ie = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
       e = e ? et : null;
@@ -73,7 +73,7 @@ const { is: Xe, defineProperty: Ve, getOwnPropertyDescriptor: qe, getOwnProperty
       }
   }
   return a;
-} }, ge = (e, t) => !Xe(e, t), je = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: ge };
+} }, ge = (e, t) => !Ve(e, t), je = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: ge };
 Symbol.metadata ??= Symbol("metadata"), oe.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let O = class extends HTMLElement {
   static addInitializer(t) {
@@ -85,7 +85,7 @@ let O = class extends HTMLElement {
   static createProperty(t, a = je) {
     if (a.state && (a.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((a = Object.create(a)).wrapped = !0), this.elementProperties.set(t, a), !a.noAccessor) {
       const i = Symbol(), o = this.getPropertyDescriptor(t, i, a);
-      o !== void 0 && Ve(this.prototype, t, o);
+      o !== void 0 && Xe(this.prototype, t, o);
     }
   }
   static getPropertyDescriptor(t, a, i) {
@@ -262,8 +262,8 @@ O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[H("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const me = globalThis, Ae = (e) => e, ae = me.trustedTypes, Ee = ae ? ae.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Le = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Re = "?" + T, it = `<${Re}>`, I = document, B = () => I.createComment(""), W = (e) => e === null || typeof e != "object" && typeof e != "function", fe = Array.isArray, at = (e) => fe(e) || typeof e?.[Symbol.iterator] == "function", ce = `[ 	
-\f\r]`, R = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Te = /-->/g, Me = />/g, M = RegExp(`>|${ce}(?:([^\\s"'>=/]+)(${ce}*=${ce}*(?:[^ 	
+const me = globalThis, Ae = (e) => e, ae = me.trustedTypes, Ee = ae ? ae.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Ne = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + T, it = `<${Le}>`, I = document, B = () => I.createComment(""), W = (e) => e === null || typeof e != "object" && typeof e != "function", fe = Array.isArray, at = (e) => fe(e) || typeof e?.[Symbol.iterator] == "function", ce = `[ 	
+\f\r]`, L = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Te = /-->/g, Me = />/g, M = RegExp(`>|${ce}(?:([^\\s"'>=/]+)(${ce}*=${ce}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), ze = /'/g, Ie = /"/g, He = /^(?:script|style|textarea|title)$/i, ot = (e) => (t, ...a) => ({ _$litType$: e, strings: t, values: a }), n = ot(1), U = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
 function Fe(e, t) {
   if (!fe(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
@@ -271,13 +271,13 @@ function Fe(e, t) {
 }
 const st = (e, t) => {
   const a = e.length - 1, i = [];
-  let o, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = R;
+  let o, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = L;
   for (let h = 0; h < a; h++) {
     const c = e[h];
     let p, u, _ = -1, m = 0;
-    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === R ? u[1] === "!--" ? r = Te : u[1] !== void 0 ? r = Me : u[2] !== void 0 ? (He.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? R, _ = -1) : u[1] === void 0 ? _ = -2 : (_ = r.lastIndex - u[2].length, p = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Ie : ze) : r === Ie || r === ze ? r = M : r === Te || r === Me ? r = R : (r = M, o = void 0);
+    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === L ? u[1] === "!--" ? r = Te : u[1] !== void 0 ? r = Me : u[2] !== void 0 ? (He.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? L, _ = -1) : u[1] === void 0 ? _ = -2 : (_ = r.lastIndex - u[2].length, p = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Ie : ze) : r === Ie || r === ze ? r = M : r === Te || r === Me ? r = L : (r = M, o = void 0);
     const f = r === M && e[h + 1].startsWith("/>") ? " " : "";
-    s += r === R ? c + it : _ >= 0 ? (i.push(p), c.slice(0, _) + Le + c.slice(_) + T + f) : c + T + (_ === -2 ? h : f);
+    s += r === L ? c + it : _ >= 0 ? (i.push(p), c.slice(0, _) + Ne + c.slice(_) + T + f) : c + T + (_ === -2 ? h : f);
   }
   return [Fe(e, s + (e[a] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
@@ -293,7 +293,7 @@ class G {
     }
     for (; (o = z.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Le)) {
+        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Ne)) {
           const m = u[r++], f = o.getAttribute(_).split(T), x = /([.?@])?(.*)/.exec(m);
           c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? nt : x[1] === "?" ? lt : x[1] === "@" ? dt : se }), o.removeAttribute(_);
         } else _.startsWith(T) && (c.push({ type: 6, index: s }), o.removeAttribute(_));
@@ -305,7 +305,7 @@ class G {
             o.append(_[m], B());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === Re) c.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === Le) c.push({ type: 2, index: s });
       else {
         let _ = -1;
         for (; (_ = o.data.indexOf(T, _ + 1)) !== -1; ) c.push({ type: 7, index: s }), _ += T.length - 1;
@@ -318,11 +318,11 @@ class G {
     return i.innerHTML = t, i;
   }
 }
-function N(e, t, a = e, i) {
+function R(e, t, a = e, i) {
   if (t === U) return t;
   let o = i !== void 0 ? a._$Co?.[i] : a._$Cl;
   const s = W(t) ? void 0 : t._$litDirective$;
-  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(e), o._$AT(e, a, i)), i !== void 0 ? (a._$Co ??= [])[i] = o : a._$Cl = o), o !== void 0 && (t = N(e, o._$AS(e, t.values), o, i)), t;
+  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(e), o._$AT(e, a, i)), i !== void 0 ? (a._$Co ??= [])[i] = o : a._$Cl = o), o !== void 0 && (t = R(e, o._$AS(e, t.values), o, i)), t;
 }
 class rt {
   constructor(t, a) {
@@ -341,7 +341,7 @@ class rt {
     for (; c !== void 0; ) {
       if (r === c.index) {
         let p;
-        c.type === 2 ? p = new V(s, s.nextSibling, this, t) : c.type === 1 ? p = new c.ctor(s, c.name, c.strings, this, t) : c.type === 6 && (p = new ct(s, this, t)), this._$AV.push(p), c = i[++h];
+        c.type === 2 ? p = new X(s, s.nextSibling, this, t) : c.type === 1 ? p = new c.ctor(s, c.name, c.strings, this, t) : c.type === 6 && (p = new ct(s, this, t)), this._$AV.push(p), c = i[++h];
       }
       r !== c?.index && (s = z.nextNode(), r++);
     }
@@ -352,7 +352,7 @@ class rt {
     for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(t, i, a), a += i.strings.length - 2) : i._$AI(t[a])), a++;
   }
 }
-class V {
+class X {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -371,7 +371,7 @@ class V {
     return this._$AB;
   }
   _$AI(t, a = this) {
-    t = N(this, t, a), W(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== U && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : at(t) ? this.k(t) : this._(t);
+    t = R(this, t, a), W(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== U && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : at(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -398,7 +398,7 @@ class V {
     fe(this._$AH) || (this._$AH = [], this._$AR());
     const a = this._$AH;
     let i, o = 0;
-    for (const s of t) o === a.length ? a.push(i = new V(this.O(B()), this.O(B()), this, this.options)) : i = a[o], i._$AI(s), o++;
+    for (const s of t) o === a.length ? a.push(i = new X(this.O(B()), this.O(B()), this, this.options)) : i = a[o], i._$AI(s), o++;
     o < a.length && (this._$AR(i && i._$AB.nextSibling, o), a.length = o);
   }
   _$AR(t = this._$AA.nextSibling, a) {
@@ -424,11 +424,11 @@ class se {
   _$AI(t, a = this, i, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) t = N(this, t, a, 0), r = !W(t) || t !== this._$AH && t !== U, r && (this._$AH = t);
+    if (s === void 0) t = R(this, t, a, 0), r = !W(t) || t !== this._$AH && t !== U, r && (this._$AH = t);
     else {
       const h = t;
       let c, p;
-      for (t = s[0], c = 0; c < s.length - 1; c++) p = N(this, h[i + c], a, c), p === U && (p = this._$AH[c]), r ||= !W(p) || p !== this._$AH[c], p === d ? t = d : t !== d && (t += (p ?? "") + s[c + 1]), this._$AH[c] = p;
+      for (t = s[0], c = 0; c < s.length - 1; c++) p = R(this, h[i + c], a, c), p === U && (p = this._$AH[c]), r ||= !W(p) || p !== this._$AH[c], p === d ? t = d : t !== d && (t += (p ?? "") + s[c + 1]), this._$AH[c] = p;
     }
     r && !o && this.j(t);
   }
@@ -457,7 +457,7 @@ class dt extends se {
     super(t, a, i, o, s), this.type = 5;
   }
   _$AI(t, a = this) {
-    if ((t = N(this, t, a, 0) ?? d) === U) return;
+    if ((t = R(this, t, a, 0) ?? d) === U) return;
     const i = this._$AH, o = t === d && i !== d || t.capture !== i.capture || t.once !== i.once || t.passive !== i.passive, s = t !== d && (i === d || o);
     o && this.element.removeEventListener(this.name, this, i), s && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
@@ -473,17 +473,17 @@ class ct {
     return this._$AM._$AU;
   }
   _$AI(t) {
-    N(this, t);
+    R(this, t);
   }
 }
 const ht = me.litHtmlPolyfillSupport;
-ht?.(G, V), (me.litHtmlVersions ??= []).push("3.3.2");
+ht?.(G, X), (me.litHtmlVersions ??= []).push("3.3.2");
 const Be = (e, t, a) => {
   const i = a?.renderBefore ?? t;
   let o = i._$litPart$;
   if (o === void 0) {
     const s = a?.renderBefore ?? null;
-    i._$litPart$ = o = new V(t.insertBefore(B(), s), s, void 0, a ?? {});
+    i._$litPart$ = o = new X(t.insertBefore(B(), s), s, void 0, a ?? {});
   }
   return o._$AI(e), o;
 };
@@ -492,7 +492,7 @@ const Be = (e, t, a) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const be = globalThis;
+const ve = globalThis;
 class A extends O {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
@@ -515,16 +515,16 @@ class A extends O {
     return U;
   }
 }
-A._$litElement$ = !0, A.finalized = !0, be.litElementHydrateSupport?.({ LitElement: A });
-const pt = be.litElementPolyfillSupport;
+A._$litElement$ = !0, A.finalized = !0, ve.litElementHydrateSupport?.({ LitElement: A });
+const pt = ve.litElementPolyfillSupport;
 pt?.({ LitElement: A });
-(be.litElementVersions ??= []).push("4.2.2");
+(ve.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const L = (e) => (t, a) => {
+const N = (e) => (t, a) => {
   a !== void 0 ? a.addInitializer(() => {
     customElements.define(e, t);
   }) : customElements.define(e, t);
@@ -615,7 +615,7 @@ function pe(e) {
 function F(e, t) {
   return e && `${e}&width=${t}`;
 }
-const We = X`
+const We = V`
   :host {
     display: block;
     height: 100%;
@@ -2666,8 +2666,8 @@ function l(e, t) {
   const a = e.split("-")[0].toLowerCase();
   return ee[a]?.[t] ? ee[a][t] : ee.en?.[t] ? ee.en[t] : t;
 }
-var ft = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, $ = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? bt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+var ft = Object.defineProperty, vt = Object.getOwnPropertyDescriptor, $ = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? vt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
   return i && o && ft(t, a, o), o;
 };
@@ -2689,11 +2689,11 @@ let y = class extends A {
         return;
       }
       try {
-        await this.hass.callService("jellyha", "play_on_chromecast", {
+        const t = {
           entity_id: this._defaultCastDevice,
-          item_id: e.id,
-          server_entity_id: this._serverEntityId
-        }), this.closeDialog();
+          item_id: e.id
+        };
+        (e.config_entry_id || this._item?.config_entry_id) && (t.config_entry_id = e.config_entry_id || this._item?.config_entry_id), this._serverEntityId && (t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "play_on_chromecast", t), this.closeDialog();
       } catch (t) {
         console.error("Failed to cast episode", t), this.dispatchEvent(new CustomEvent("hass-notification", {
           detail: { message: "Failed to cast episode. Check logs." },
@@ -2713,11 +2713,11 @@ let y = class extends A {
         return;
       }
       try {
-        await this.hass.callService("jellyha", "play_on_chromecast", {
+        const t = {
           entity_id: this._defaultCastDevice,
-          item_id: e.id,
-          server_entity_id: this._serverEntityId
-        }), this.closeDialog();
+          item_id: e.id
+        };
+        (e.config_entry_id || this._item?.config_entry_id) && (t.config_entry_id = e.config_entry_id || this._item?.config_entry_id), this._serverEntityId && (t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "play_on_chromecast", t), this.closeDialog();
       } catch (t) {
         console.error("Failed to cast", t);
       }
@@ -2731,11 +2731,11 @@ let y = class extends A {
         return;
       }
       try {
-        await this.hass.callService("jellyha", "play_on_chromecast", {
+        const e = {
           entity_id: this._defaultCastDevice,
-          item_id: this._nextUpItem.id,
-          server_entity_id: this._serverEntityId
-        }), this.closeDialog();
+          item_id: this._nextUpItem.id
+        };
+        (this._nextUpItem.config_entry_id || this._item?.config_entry_id) && (e.config_entry_id = this._nextUpItem.config_entry_id || this._item?.config_entry_id), this._serverEntityId && (e.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "play_on_chromecast", e), this.closeDialog();
       } catch (e) {
         console.error("Failed to cast next up", e);
       }
@@ -2748,7 +2748,7 @@ let y = class extends A {
         item_id: this._item.id,
         is_favorite: e
       };
-      this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "update_favorite", t), this.requestUpdate();
+      this._item.config_entry_id && (t.config_entry_id = this._item.config_entry_id), this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "update_favorite", t), this.requestUpdate();
     }, this._handleWatched = async () => {
       if (!this._item) return;
       this._haptic();
@@ -2758,7 +2758,7 @@ let y = class extends A {
         item_id: this._item.id,
         is_played: e
       };
-      this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "mark_watched", t), this.requestUpdate();
+      this._item.config_entry_id && (t.config_entry_id = this._item.config_entry_id), this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "mark_watched", t), this.requestUpdate();
     }, this._handleDeleteConfirm = async () => {
       if (!this._item) return;
       this._haptic();
@@ -2767,7 +2767,7 @@ let y = class extends A {
       const t = {
         item_id: e
       };
-      this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "delete_item", t);
+      this._item.config_entry_id && (t.config_entry_id = this._item.config_entry_id), this._serverEntityId && (t.entity_id = this._serverEntityId, t.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "delete_item", t);
     }, this._handleWatchTrailer = () => {
       this._haptic();
       const e = this._item;
@@ -2807,7 +2807,7 @@ let y = class extends A {
         item_id: e.id,
         is_played: t
       };
-      this._serverEntityId && (a.entity_id = this._serverEntityId, a.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "mark_watched", a);
+      (e.config_entry_id || this._item?.config_entry_id) && (a.config_entry_id = e.config_entry_id || this._item?.config_entry_id), this._serverEntityId && (a.entity_id = this._serverEntityId, a.server_entity_id = this._serverEntityId), await this.hass.callService("jellyha", "mark_watched", a);
     }, this._handleModalTouchStart = (e) => {
       const t = e.target, a = this._getScrollParent(t);
       a && a.scrollTop > 0 || (this._touchStartY = e.touches[0].clientY, this._isDragging = !0);
@@ -2857,6 +2857,8 @@ let y = class extends A {
       const i = await this.hass.callWS({
         type: "jellyha/get_next_up",
         entity_id: a,
+        server_entity_id: this._serverEntityId,
+        ...this._item?.config_entry_id ? { config_entry_id: this._item.config_entry_id } : {},
         series_id: e.id
       });
       i && i.item && (this._nextUpItem = i.item);
@@ -2876,6 +2878,8 @@ let y = class extends A {
         a = await this.hass.callWS({
           type: "jellyha/get_episodes",
           entity_id: t,
+          server_entity_id: this._serverEntityId,
+          ...this._item?.config_entry_id ? { config_entry_id: this._item.config_entry_id } : {},
           series_id: this._item.id
         });
       } catch {
@@ -2883,6 +2887,8 @@ let y = class extends A {
         a = await this.hass.callWS({
           type: "jellyha/get_episodes",
           entity_id: t,
+          server_entity_id: this._serverEntityId,
+          ...this._item?.config_entry_id ? { config_entry_id: this._item.config_entry_id } : {},
           series_id: this._item.id,
           season: o
         });
@@ -3329,6 +3335,14 @@ let y = class extends A {
             .tech-chip ha-icon {
                 --mdc-icon-size: 14px;
                 color: #9ea4b5;
+            }
+            .tech-chip-hdr {
+                background: rgba(255, 180, 0, 0.12);
+                border-color: rgba(255, 195, 0, 0.35);
+                color: #ffca28;
+            }
+            .tech-chip-hdr ha-icon {
+                color: #ffca28;
             }
 
             /* Next Up Modern Card */
@@ -3902,10 +3916,12 @@ let y = class extends A {
     const t = [], a = e.media_streams || [], i = a.find((s) => s.Type?.toLowerCase() === "video");
     if (i) {
       if (i.Width && i.Height) {
-        let s = "";
-        i.Width >= 3800 || i.Height >= 2e3 ? s = "4K UHD" : i.Height >= 1e3 || i.Width >= 1900 ? s = "1080p" : i.Height >= 700 || i.Width >= 1200 ? s = "720p" : s = `${i.Width}x${i.Height}`, t.push(n`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${s}</span>`);
+        let u = "";
+        i.Width >= 3800 || i.Height >= 2e3 ? u = "4K UHD" : i.Height >= 1e3 || i.Width >= 1900 ? u = "1080p" : i.Height >= 700 || i.Width >= 1200 ? u = "720p" : u = `${i.Width}x${i.Height}`, t.push(n`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${u}</span>`);
       }
-      i.Codec && t.push(n`<span class="tech-chip">${i.Codec.toUpperCase()}</span>`);
+      const s = (i.VideoRangeType || "").toUpperCase(), r = (i.VideoRange || "").toUpperCase(), h = (i.ColorTransfer || "").toLowerCase(), c = i.DvProfile;
+      let p = e.dynamic_range || "";
+      p || (s.startsWith("DOVI") || c != null ? p = "Dolby Vision" : s === "HDR10PLUS" || s === "HDR10+" ? p = "HDR10+" : s === "HDR10" || h === "smpte2084" ? p = "HDR10" : s === "HLG" || h === "arib-std-b67" ? p = "HLG" : r === "HDR" && (p = "HDR")), p && p !== "SDR" && t.push(n`<span class="tech-chip tech-chip-hdr"><ha-icon icon="mdi:hdr"></ha-icon>${p}</span>`), i.Codec && t.push(n`<span class="tech-chip">${i.Codec.toUpperCase()}</span>`);
     }
     const o = a.find((s) => s.Type?.toLowerCase() === "audio" && !!s.IsDefault) || a.find((s) => s.Type?.toLowerCase() === "audio");
     if (o && (o.Codec && t.push(n`<span class="tech-chip"><ha-icon icon="mdi:volume-high"></ha-icon>${o.Codec.toUpperCase()}</span>`), o.Channels)) {
@@ -3972,7 +3988,7 @@ let y = class extends A {
     return null;
   }
 };
-y.styles = X`
+y.styles = V`
         /* Styles handled in _getPortalStyles */
     `;
 $([
@@ -4015,12 +4031,12 @@ $([
   g()
 ], y.prototype, "_isDragging", 2);
 y = $([
-  L("jellyha-item-details-modal")
+  N("jellyha-item-details-modal")
 ], y);
-var vt = Object.defineProperty, yt = Object.getOwnPropertyDescriptor, ve = (e, t, a, i) => {
+var bt = Object.defineProperty, yt = Object.getOwnPropertyDescriptor, be = (e, t, a, i) => {
   for (var o = i > 1 ? void 0 : i ? yt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && vt(t, a, o), o;
+  return i && o && bt(t, a, o), o;
 };
 function wt(e, t, a) {
   const i = new CustomEvent(t, {
@@ -4714,7 +4730,7 @@ let J = class extends A {
     this._config = a, wt(this, "config-changed", { config: a });
   }
 };
-J.styles = X`
+J.styles = V`
     .form-row {
       margin-bottom: 16px;
     }
@@ -4740,14 +4756,14 @@ J.styles = X`
       margin-bottom: 0;
     }
   `;
-ve([
+be([
   P({ attribute: !1 })
 ], J.prototype, "hass", 2);
-ve([
+be([
   g()
 ], J.prototype, "_config", 2);
-J = ve([
-  L("jellyha-library-editor")
+J = be([
+  N("jellyha-library-editor")
 ], J);
 var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, S = (e, t, a, i) => {
   for (var o = i > 1 ? void 0 : i ? $t(t, a) : t, s = e.length - 1, r; s >= 0; s--)
@@ -5147,9 +5163,9 @@ S([
   g()
 ], w.prototype, "_rewindActive", 2);
 w = S([
-  L("jellyha-media-item")
+  N("jellyha-media-item")
 ], w);
-var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, v = (e, t, a, i) => {
+var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, b = (e, t, a, i) => {
   for (var o = i > 1 ? void 0 : i ? St(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
   return i && o && kt(t, a, o), o;
@@ -5207,7 +5223,7 @@ function Ue(e, t, a) {
   });
   e.dispatchEvent(i);
 }
-let b = class extends A {
+let v = class extends A {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -5549,19 +5565,22 @@ let b = class extends A {
         if (this._config.media_type === "next_up")
           t = await this.hass.callWS({
             type: "jellyha/get_user_next_up",
-            entity_id: this._config.entity
+            entity_id: this._config.entity,
+            server_entity_id: this._config.entity
           });
         else if ((this._config.media_type === "series" || this._config.media_type === "both" || !this._config.media_type) && this._config.tv_content === "episodes") {
           const a = this._config.media_type === "series" ? ["Episode"] : ["Movie", "Episode"];
           t = await this.hass.callWS({
             type: "jellyha/get_latest_items",
             entity_id: this._config.entity,
+            server_entity_id: this._config.entity,
             item_types: a
           });
         } else
           t = await this.hass.callWS({
             type: "jellyha/get_items",
-            entity_id: this._config.entity
+            entity_id: this._config.entity,
+            server_entity_id: this._config.entity
           });
         t && t.items ? (this._items = t.items, this._config.media_type === "next_up" && this._items.length > 0 ? this._mostRecentNextUpItemId = this._items[0].id : this._mostRecentNextUpItemId = void 0) : (this._items = [], this._mostRecentNextUpItemId = void 0);
       } catch (t) {
@@ -5953,7 +5972,8 @@ let b = class extends A {
       await this.hass.callService("jellyha", "play_on_chromecast", {
         entity_id: t,
         item_id: e.id,
-        server_entity_id: this._config.entity
+        server_entity_id: this._config.entity,
+        ...e.config_entry_id ? { config_entry_id: e.config_entry_id } : {}
       });
     } catch (a) {
       console.error("JellyHA: Failed to cast media", a);
@@ -6061,61 +6081,61 @@ let b = class extends A {
     `;
   }
 };
-b.styles = We;
-v([
+v.styles = We;
+b([
   P({ attribute: !1 })
-], b.prototype, "hass", 2);
-v([
+], v.prototype, "hass", 2);
+b([
   g()
-], b.prototype, "_config", 2);
-v([
+], v.prototype, "_config", 2);
+b([
   g()
-], b.prototype, "_currentPage", 2);
-v([
+], v.prototype, "_currentPage", 2);
+b([
   g()
-], b.prototype, "_itemsPerPage", 2);
-v([
+], v.prototype, "_itemsPerPage", 2);
+b([
   g()
-], b.prototype, "_pressStartTime", 2);
-v([
+], v.prototype, "_pressStartTime", 2);
+b([
   g()
-], b.prototype, "_holdTimer", 2);
-v([
+], v.prototype, "_holdTimer", 2);
+b([
   g()
-], b.prototype, "_isHoldActive", 2);
-v([
+], v.prototype, "_isHoldActive", 2);
+b([
   g()
-], b.prototype, "_rewindActive", 2);
-v([
+], v.prototype, "_rewindActive", 2);
+b([
   g()
-], b.prototype, "_items", 2);
-v([
+], v.prototype, "_items", 2);
+b([
   g()
-], b.prototype, "_error", 2);
-v([
+], v.prototype, "_error", 2);
+b([
   g()
-], b.prototype, "_lastUpdate", 2);
-v([
+], v.prototype, "_lastUpdate", 2);
+b([
   g()
-], b.prototype, "_mostRecentNextUpItemId", 2);
-v([
+], v.prototype, "_mostRecentNextUpItemId", 2);
+b([
   g()
-], b.prototype, "_searchQuery", 2);
-v([
+], v.prototype, "_searchQuery", 2);
+b([
   g()
-], b.prototype, "_searchGenre", 2);
-v([
+], v.prototype, "_searchGenre", 2);
+b([
   mt("jellyha-item-details-modal")
-], b.prototype, "_modal", 2);
-v([
+], v.prototype, "_modal", 2);
+b([
   g()
-], b.prototype, "_scrollProgress", 2);
-v([
+], v.prototype, "_scrollProgress", 2);
+b([
   g()
-], b.prototype, "_hasScrollableContent", 2);
-b = v([
-  L("jellyha-library-card")
-], b);
+], v.prototype, "_hasScrollableContent", 2);
+v = b([
+  N("jellyha-library-card")
+], v);
 var Pt = Object.defineProperty, jt = Object.getOwnPropertyDescriptor, ye = (e, t, a, i) => {
   for (var o = i > 1 ? void 0 : i ? jt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
@@ -6286,8 +6306,20 @@ let Y = class extends A {
           ></ha-switch>
           <span>${l(i, "editor.use_series_image")}</span>
         </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_controls !== !1}
+            @change=${this._showControlsChanged}
+          ></ha-switch>
+          <span>${l(i, "editor.show_controls") || "Show Playback Controls"}</span>
+        </div>
       </div>
     `;
+  }
+  _showControlsChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_controls", t.checked);
   }
   _entityChanged(e) {
     const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
@@ -6352,7 +6384,7 @@ let Y = class extends A {
     this._config = a, At(this, "config-changed", { config: a });
   }
 };
-Y.styles = X`
+Y.styles = V`
     .form-row {
       margin-bottom: 16px;
     }
@@ -6385,7 +6417,7 @@ ye([
   g()
 ], Y.prototype, "_config", 2);
 Y = ye([
-  L("jellyha-now-playing-editor")
+  N("jellyha-now-playing-editor")
 ], Y);
 var Et = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, j = (e, t, a, i) => {
   for (var o = i > 1 ? void 0 : i ? Tt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
@@ -6476,7 +6508,7 @@ let k = class extends A {
       this._cachedBackdropUrl = K ? F(K, 640) : void 0;
     }
     c !== this._cachedColorItemId && h && (this._cachedColorItemId = c, this._extractDominantColor(F(h, 80)));
-    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = i ? t.state === "paused" : a.is_paused, m = (a.media_type || t.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = a.title || t.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (a.artist_name || t.attributes.media_artist || a.series_title || t.attributes.media_series_title) || "", re = this._config.show_year !== !1 && a.year ? String(a.year) : "", ne = this._config.show_genres && a.genres?.length ? a.genres.slice(0, 2).join(", ") : "", q = [re, ne].filter(Boolean).join(" • "), Z = this._config.show_user !== !1 && a.user_name || "", le = this._config.show_client !== !1 && a.client || "", we = a.season !== void 0 ? a.season : t.attributes.media_season, xe = a.episode !== void 0 ? a.episode : t.attributes.media_episode, $e = (m === "episode" || m === "tvshow") && we !== void 0 && xe !== void 0 ? `S${String(we).padStart(2, "0")}E${String(xe).padStart(2, "0")}` : a.media_type || "", de = c && this._optimisticFavorites[c] !== void 0 ? this._optimisticFavorites[c] : a.is_favorite || !1, ke = 125.66, Ge = ke * (1 - this._longPressProgress), E = a.supports_remote_control !== !1 && (!i || t.attributes.supported_features === void 0 || t.attributes.supported_features > 0);
+    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = i ? t.state === "paused" : a.is_paused, m = (a.media_type || t.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = a.title || t.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (a.artist_name || t.attributes.media_artist || a.series_title || t.attributes.media_series_title) || "", re = this._config.show_year !== !1 && a.year ? String(a.year) : "", ne = this._config.show_genres && a.genres?.length ? a.genres.slice(0, 2).join(", ") : "", q = [re, ne].filter(Boolean).join(" • "), Z = this._config.show_user !== !1 && a.user_name || "", le = this._config.show_client !== !1 && a.client || "", we = a.season !== void 0 ? a.season : t.attributes.media_season, xe = a.episode !== void 0 ? a.episode : t.attributes.media_episode, $e = (m === "episode" || m === "tvshow") && we !== void 0 && xe !== void 0 ? `S${String(we).padStart(2, "0")}E${String(xe).padStart(2, "0")}` : a.media_type || "", de = c && this._optimisticFavorites[c] !== void 0 ? this._optimisticFavorites[c] : a.is_favorite || !1, ke = 125.66, Ge = ke * (1 - this._longPressProgress), E = this._supportsRemote(t);
     return n`
             <ha-card class="jellyha-now-playing ${u ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${u ? n`
@@ -6680,10 +6712,16 @@ let k = class extends A {
             </ha-card>
         `;
   }
+  _supportsRemote(e) {
+    if (!e || this._config.show_controls === !1) return !1;
+    if (this._config.show_controls === !0) return !0;
+    const t = e.attributes;
+    return !(t.supports_remote_control === !1 || e.entity_id.startsWith("media_player.") && t.supported_features !== void 0 && t.supported_features === 0);
+  }
   async _handleControl(e) {
     this._haptic("light");
     const t = this._config.entity, a = this.hass.states[t];
-    if (!a || a.attributes.supports_remote_control === !1) return;
+    if (!a || !this._supportsRemote(a)) return;
     if (t.startsWith("media_player.")) {
       let s = "";
       if (e === "Pause" ? s = "media_pause" : e === "Unpause" || e === "Play" ? s = "media_play" : e === "PlayPause" ? s = "media_play_pause" : e === "Stop" ? s = "media_stop" : e === "NextTrack" ? s = "media_next_track" : e === "PreviousTrack" && (s = "media_previous_track"), s) {
@@ -6742,7 +6780,7 @@ let k = class extends A {
   }
   _startDrag(e) {
     const t = this._config.entity, a = this.hass?.states[t];
-    if (a && a.attributes.supports_remote_control === !1) return;
+    if (!a || !this._supportsRemote(a)) return;
     e.currentTarget.setPointerCapture(e.pointerId), this._isDragging = !0, this._dragPercentage = this._getDragPercent(e), this._haptic("light");
   }
   _handleDrag(e) {
@@ -6785,7 +6823,7 @@ let k = class extends A {
   async _handleSeekRelative(e) {
     this._haptic("light");
     const t = this._config.entity, a = this.hass.states[t];
-    if (!a || a.attributes.supports_remote_control === !1) return;
+    if (!a || !this._supportsRemote(a)) return;
     const i = a.attributes, o = i.session_id, s = i.position_ticks || 0, r = e * 1e7, h = Math.max(0, s + r), c = i.duration_ticks;
     if (c && this._setOptimisticSeek(h / c * 100), t.startsWith("media_player.")) {
       const p = Math.round(h / 1e7);
@@ -6803,7 +6841,7 @@ let k = class extends A {
   }
   async _handlePosterRewind() {
     const e = this._config.entity, t = this.hass.states[e];
-    if (!t || t.attributes.supports_remote_control === !1) return;
+    if (!t || !this._supportsRemote(t)) return;
     const a = t.attributes, i = a.session_id, o = a.position_ticks || 0;
     this._rewindActive = !0, setTimeout(() => {
       this._rewindActive = !1;
@@ -6900,7 +6938,7 @@ let k = class extends A {
     return i > 0 ? `${r}${i}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
   }
 };
-k.styles = X`
+k.styles = V`
         :host {
             display: block;
             height: 100%;
@@ -8020,6 +8058,6 @@ j([
   g()
 ], k.prototype, "_optimisticSeekPercent", 2);
 k = j([
-  L("jellyha-now-playing-card")
+  N("jellyha-now-playing-card")
 ], k);
 //# sourceMappingURL=jellyha-cards.js.map

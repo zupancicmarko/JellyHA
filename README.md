@@ -22,6 +22,7 @@ Jellyfin for Home Assistant
 - ⏳ Accurate playback tracking: Elapsed/remaining time, +30s/-10s skip controls
 - 🎮 Per-user media players with transport and volume controls
 - 📺 Dedicated per-device media players for client devices (Smart TVs, Android TV, Fire TV sticks) for room-specific automations
+- 🌈 Real-time Dynamic Range detection: Reporting of `SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, and `HLG` on media players for picture mode automations (e.g. ADB TV control)
 - ⏭️ "Next Up" support to resume TV shows
 - 🎨 Three layouts: Carousel, Grid, List
 - 🌙 Automatic dark/light theme adaptation
@@ -353,6 +354,11 @@ Enable physical client devices in **Settings → Devices & Services → JellyHA 
 - `user_name` — Active viewer user name (for device players)
 - `media_chapter_name` / `media_chapter_index` — Current chapter info
 - `media_segment_type` / `segment_end_seconds` — Active intro/outro/recap scene detection
+- `dynamic_range` — Dynamic range (`SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, `HLG`) for TV picture mode automations
+- `video_range_type` — Raw Jellyfin classification (e.g. `DOVIWithHDR10`, `DOVIWithEL`, `HDR10Plus`, `HDR10`, `SDR`)
+- `dv_profile` — Dolby Vision profile number (e.g. `7`, `8`, `5`)
+- `video_codec` — Active video codec (e.g. `hevc`, `av1`, `h264`)
+- `video_bit_depth` — Video bit depth (`10`, `8`)
 
 **Example Usage:**
 ```yaml

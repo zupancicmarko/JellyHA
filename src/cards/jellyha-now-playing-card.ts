@@ -183,11 +183,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const ringCircumference = 125.66;
         const ringOffset = ringCircumference * (1 - this._longPressProgress);
 
-        const supportsRemote = (attributes.supports_remote_control !== false) && (
-            !isMediaPlayer ||
-            stateObj.attributes.supported_features === undefined ||
-            stateObj.attributes.supported_features > 0
-        );
+        const supportsRemote = this._supportsRemote(stateObj);
 
         return html`
             <ha-card class="jellyha-now-playing ${showBackground ? 'has-background' : ''} ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
@@ -407,12 +403,24 @@ export class JellyHANowPlayingCard extends LitElement {
         `;
     }
 
+    private _supportsRemote(stateObj?: HassEntity | null): boolean {
+        if (!stateObj) return false;
+        if (this._config.show_controls === false) return false;
+        if (this._config.show_controls === true) return true;
+        const attrs = stateObj.attributes as any;
+        if (attrs.supports_remote_control === false) return false;
+        const isMediaPlayer = stateObj.entity_id.startsWith('media_player.');
+        if (isMediaPlayer && attrs.supported_features !== undefined && attrs.supported_features === 0) {
+            return false;
+        }
+        return true;
+    }
+
     private async _handleControl(command: string): Promise<void> {
         this._haptic('light');
         const entityId = this._config.entity;
         const stateObj = this.hass.states[entityId];
-        if (!stateObj) return;
-        if ((stateObj.attributes as any).supports_remote_control === false) return;
+        if (!stateObj || !this._supportsRemote(stateObj)) return;
         const isMediaPlayer = entityId.startsWith('media_player.');
 
         if (isMediaPlayer) {
@@ -507,7 +515,7 @@ export class JellyHANowPlayingCard extends LitElement {
     private _startDrag(e: PointerEvent): void {
         const entityId = this._config.entity;
         const stateObj = this.hass?.states[entityId];
-        if (stateObj && (stateObj.attributes as any).supports_remote_control === false) return;
+        if (!stateObj || !this._supportsRemote(stateObj)) return;
 
         const container = e.currentTarget as HTMLElement;
         container.setPointerCapture(e.pointerId);
@@ -581,8 +589,7 @@ export class JellyHANowPlayingCard extends LitElement {
         this._haptic('light');
         const entityId = this._config.entity;
         const stateObj = this.hass.states[entityId];
-        if (!stateObj) return;
-        if ((stateObj.attributes as any).supports_remote_control === false) return;
+        if (!stateObj || !this._supportsRemote(stateObj)) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
@@ -618,8 +625,7 @@ export class JellyHANowPlayingCard extends LitElement {
     private async _handlePosterRewind(): Promise<void> {
         const entityId = this._config.entity;
         const stateObj = this.hass.states[entityId];
-        if (!stateObj) return;
-        if ((stateObj.attributes as any).supports_remote_control === false) return;
+        if (!stateObj || !this._supportsRemote(stateObj)) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;

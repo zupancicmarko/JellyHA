@@ -42,6 +42,73 @@ class MediaStrategy:
         return info
 
     @staticmethod
+    def extract_video_stream_attributes(item: dict[str, Any] | None) -> dict[str, Any]:
+        """Extract dynamic range, HDR profile, and video stream metadata from a Jellyfin item."""
+        empty_attrs = {
+            "dynamic_range": None,
+            "video_range": None,
+            "video_range_type": None,
+            "video_codec": None,
+            "video_bit_depth": None,
+            "dv_profile": None,
+            "color_transfer": None,
+            "color_primaries": None,
+        }
+
+        if not item:
+            return empty_attrs
+
+        streams = item.get("MediaStreams") or []
+        if not streams and "MediaSources" in item and item["MediaSources"]:
+            streams = item["MediaSources"][0].get("MediaStreams", [])
+
+        video_stream = None
+        for s in streams:
+            if s.get("Type") == "Video":
+                video_stream = s
+                break
+
+        if not video_stream:
+            return empty_attrs
+
+        raw_range = video_stream.get("VideoRange")
+        raw_range_type = video_stream.get("VideoRangeType")
+        color_transfer = video_stream.get("ColorTransfer")
+        color_primaries = video_stream.get("ColorPrimaries")
+        dv_profile = video_stream.get("DvProfile")
+        codec = video_stream.get("Codec")
+        bit_depth = video_stream.get("BitDepth")
+
+        dynamic_range = "SDR"
+        range_type_str = str(raw_range_type or "").upper()
+        range_str = str(raw_range or "").upper()
+        transfer_str = str(color_transfer or "").lower()
+
+        if range_type_str.startswith("DOVI") or dv_profile is not None:
+            dynamic_range = "Dolby Vision"
+        elif range_type_str in ("HDR10PLUS", "HDR10+"):
+            dynamic_range = "HDR10+"
+        elif range_type_str == "HDR10" or transfer_str == "smpte2084":
+            dynamic_range = "HDR10"
+        elif range_type_str == "HLG" or transfer_str == "arib-std-b67":
+            dynamic_range = "HLG"
+        elif range_str == "HDR":
+            dynamic_range = "HDR"
+        elif range_str == "SDR" or transfer_str == "bt709":
+            dynamic_range = "SDR"
+
+        return {
+            "dynamic_range": dynamic_range,
+            "video_range": raw_range or ("HDR" if dynamic_range != "SDR" else "SDR"),
+            "video_range_type": raw_range_type or dynamic_range,
+            "video_codec": codec.lower() if codec else None,
+            "video_bit_depth": bit_depth,
+            "dv_profile": dv_profile,
+            "color_transfer": color_transfer,
+            "color_primaries": color_primaries,
+        }
+
+    @staticmethod
     def discover_chromecast_model(hass: Any, entity_id: str) -> tuple[str, bool]:
         """Discover Chromecast model and determining legacy status via pychromecast.
         

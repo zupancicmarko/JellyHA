@@ -228,8 +228,21 @@ export class JellyHANowPlayingEditor extends LitElement {
           ></ha-switch>
           <span>${localize(lang, 'editor.use_series_image')}</span>
         </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_controls !== false}
+            @change=${this._showControlsChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_controls') || 'Show Playback Controls'}</span>
+        </div>
       </div>
     `;
+  }
+
+  private _showControlsChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_controls', target.checked);
   }
 
   private _entityChanged(e: CustomEvent): void {

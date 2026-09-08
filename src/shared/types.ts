@@ -57,6 +57,9 @@ export interface MediaItem {
     is_played?: boolean;
     unplayed_count?: number;
     is_favorite?: boolean;
+    dynamic_range?: string;
+    video_range?: string;
+    video_range_type?: string;
     media_streams?: Record<string, any>[];
     official_rating?: string;
     season?: number;
@@ -180,6 +183,7 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     show_background?: boolean;
     use_series_image?: boolean;
     show_description?: boolean;
+    show_controls?: boolean;
     theme?: 'auto' | 'light' | 'dark';
 }
 

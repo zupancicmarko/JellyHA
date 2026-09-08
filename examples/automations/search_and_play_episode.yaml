@@ -4,12 +4,30 @@
 # Description:
 #   Demonstrates how to search for a specific TV show series by title, then
 #   search for an episode inside that series by episode title (or season & episode
-#   number), and immediately cast the episode to your TV or Chromecast.
+#   number), and immediately play or cast the episode to your media player.
+#
+#   Rich Metadata Returned by `jellyha.search`:
+#   When searching for an Episode, each item in the response variable includes:
+#     - item['name']: Episode title (e.g., "Ozymandias")
+#     - item['series_name']: Series title (e.g., "Breaking Bad")
+#     - item['series_id']: Jellyfin Series ID
+#     - item['season']: Season number (e.g., 5)
+#     - item['episode']: Episode number (e.g., 14)
+#     - item['season_name']: Season name (e.g., "Season 5")
+#     - item['runtime_minutes']: Duration in minutes
+#     - item['rating']: Community rating
+#     - item['poster_url']: Signed episode thumbnail URL
+#
+#   Series Attributes on JellyHA Media Players:
+#   While an episode is playing, the JellyHA media player entity exposes:
+#     - Standard HA attribute: state_attr('media_player.xxx', 'media_series_title')
+#     - JellyHA custom attribute: state_attr('media_player.xxx', 'series_title')
+#     - Season & Episode numbers: state_attr('media_player.xxx', 'media_season') and 'media_episode'
 #
 #   Common Use Cases:
 #   - Voice commands: "Play episode Ozymandias from Breaking Bad"
-#   - NFC tags / physical buttons tied to a specific iconic episode
-#   - Scripts and dashboard shortcut buttons
+#   - NFC tags / physical buttons tied to a specific episode
+#   - Automated notifications announcing new episodes or current playback
 # ==============================================================================
 
 alias: "JellyHA: Search and Play Episode by Name"
@@ -52,6 +70,7 @@ actions:
     then:
       - variables:
           series_id: "{{ series_result['items'][0]['id'] }}"
+          found_series_name: "{{ series_result['items'][0]['name'] }}"
 
       # ------------------------------------------------------------------------
       # Step 3: Search for the Episode title INSIDE that specific series (parent_id)
@@ -71,15 +90,37 @@ actions:
           - condition: template
             value_template: "{{ episode_result['items'] | count > 0 }}"
         then:
-          - action: jellyha.play_on_chromecast
-            data:
+          - variables:
+              ep: "{{ episode_result['items'][0] }}"
+
+          # Play using standard Home Assistant media_player.play_media
+          - action: media_player.play_media
+            target:
               entity_id: "{{ target_player }}"
-              item_id: "{{ episode_result['items'][0]['id'] }}"
+            data:
+              media_content_type: video
+              media_content_id: "{{ ep['id'] }}"
+
+          # OPTIONAL ALTERNATIVE: Direct casting via JellyHA Chromecast service
+          # - action: jellyha.play_on_chromecast
+          #   data:
+          #     entity_id: "{{ target_player }}"
+          #     item_id: "{{ ep['id'] }}"
+
+          # Send notification demonstrating access to series_name, season, episode
+          - action: notify.persistent_notification
+            data:
+              title: "JellyHA: Now Playing"
+              message: >
+                Now playing {{ ep['series_name'] }}
+                - S{{ ep['season'] }}E{{ ep['episode'] }}: "{{ ep['name'] }}"
+                ({{ ep['runtime_minutes'] }} min) on {{ target_player }}.
+
         else:
           - action: notify.persistent_notification
             data:
               title: "JellyHA Episode Search"
-              message: "Episode '{{ target_episode_title }}' was not found in '{{ target_series }}'."
+              message: "Episode '{{ target_episode_title }}' was not found in '{{ found_series_name }}'."
 
     else:
       - action: notify.persistent_notification
@@ -88,7 +129,7 @@ actions:
           message: "TV Series '{{ target_series }}' was not found in your Jellyfin library."
 
 # ==============================================================================
-# BONUS: Searching by Season & Episode Number instead of Episode Title
+# BONUS 1: Searching by Season & Episode Number instead of Episode Title
 # ==============================================================================
 # If you want to find an episode by Season and Episode number (e.g. S01E02):
 #
@@ -101,8 +142,29 @@ actions:
 #       limit: 1
 #     response_variable: ep_by_number
 #
-#   - action: jellyha.play_on_chromecast
+#   - action: media_player.play_media
+#     target:
+#       entity_id: "{{ target_player }}"
 #     data:
-#       entity_id: media_player.living_room_tv
-#       item_id: "{{ ep_by_number['items'][0]['id'] }}"
+#       media_content_type: video
+#       media_content_id: "{{ ep_by_number['items'][0]['id'] }}"
+#
+# ==============================================================================
+# BONUS 2: Accessing Series Name from a Currently Playing Media Player Entity
+# ==============================================================================
+# While media is playing on any JellyHA media player, you can inspect the series
+# name, episode details, and video dynamic range (SDR/HDR/DoVi) in automations:
+#
+#   Series Title (HA Standard):
+#     {{ state_attr('media_player.jellyha_living_room_tv', 'media_series_title') }}
+#
+#   Series Title (JellyHA Custom Attribute):
+#     {{ state_attr('media_player.jellyha_living_room_tv', 'series_title') }}
+#
+#   Season & Episode:
+#     {{ state_attr('media_player.jellyha_living_room_tv', 'media_season') }}
+#     {{ state_attr('media_player.jellyha_living_room_tv', 'media_episode') }}
+#
+#   Dynamic Range (SDR, HDR10, HDR10+, Dolby Vision, HLG):
+#     {{ state_attr('media_player.jellyha_living_room_tv', 'dynamic_range') }}
 # ==============================================================================

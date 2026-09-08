@@ -125,6 +125,8 @@ export class JellyHAItemDetailsModal extends LitElement {
             const result = await this.hass.callWS<{ item: MediaItem | null }>({
                 type: 'jellyha/get_next_up',
                 entity_id: entityId,
+                server_entity_id: this._serverEntityId,
+                ...(this._item?.config_entry_id ? { config_entry_id: this._item.config_entry_id } : {}),
                 series_id: series.id
             });
 
@@ -157,6 +159,8 @@ export class JellyHAItemDetailsModal extends LitElement {
                 result = await this.hass.callWS<{ items: MediaItem[] }>({
                     type: 'jellyha/get_episodes',
                     entity_id: entityId,
+                    server_entity_id: this._serverEntityId,
+                    ...(this._item?.config_entry_id ? { config_entry_id: this._item.config_entry_id } : {}),
                     series_id: this._item.id
                 });
             } catch (wsErr) {
@@ -165,6 +169,8 @@ export class JellyHAItemDetailsModal extends LitElement {
                 result = await this.hass.callWS<{ items: MediaItem[] }>({
                     type: 'jellyha/get_episodes',
                     entity_id: entityId,
+                    server_entity_id: this._serverEntityId,
+                    ...(this._item?.config_entry_id ? { config_entry_id: this._item.config_entry_id } : {}),
                     series_id: this._item.id,
                     season: fallbackSeason
                 });
@@ -652,6 +658,14 @@ export class JellyHAItemDetailsModal extends LitElement {
             .tech-chip ha-icon {
                 --mdc-icon-size: 14px;
                 color: #9ea4b5;
+            }
+            .tech-chip-hdr {
+                background: rgba(255, 180, 0, 0.12);
+                border-color: rgba(255, 195, 0, 0.35);
+                color: #ffca28;
+            }
+            .tech-chip-hdr ha-icon {
+                color: #ffca28;
             }
 
             /* Next Up Modern Card */
@@ -1250,6 +1264,30 @@ export class JellyHAItemDetailsModal extends LitElement {
                 }
                 chips.push(html`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${resLabel}</span>`);
             }
+
+            // Dynamic Range / HDR chip
+            const vrType = (videoStream.VideoRangeType || '').toUpperCase();
+            const vr = (videoStream.VideoRange || '').toUpperCase();
+            const ct = (videoStream.ColorTransfer || '').toLowerCase();
+            const dvProfile = videoStream.DvProfile;
+            let hdrLabel = item.dynamic_range || '';
+            if (!hdrLabel) {
+                if (vrType.startsWith('DOVI') || (dvProfile !== undefined && dvProfile !== null)) {
+                    hdrLabel = 'Dolby Vision';
+                } else if (vrType === 'HDR10PLUS' || vrType === 'HDR10+') {
+                    hdrLabel = 'HDR10+';
+                } else if (vrType === 'HDR10' || ct === 'smpte2084') {
+                    hdrLabel = 'HDR10';
+                } else if (vrType === 'HLG' || ct === 'arib-std-b67') {
+                    hdrLabel = 'HLG';
+                } else if (vr === 'HDR') {
+                    hdrLabel = 'HDR';
+                }
+            }
+            if (hdrLabel && hdrLabel !== 'SDR') {
+                chips.push(html`<span class="tech-chip tech-chip-hdr"><ha-icon icon="mdi:hdr"></ha-icon>${hdrLabel}</span>`);
+            }
+
             if (videoStream.Codec) {
                 chips.push(html`<span class="tech-chip">${videoStream.Codec.toUpperCase()}</span>`);
             }
@@ -1293,11 +1331,17 @@ export class JellyHAItemDetailsModal extends LitElement {
             return;
         }
         try {
-            await this.hass.callService('jellyha', 'play_on_chromecast', {
+            const serviceData: any = {
                 entity_id: this._defaultCastDevice,
                 item_id: episode.id,
-                server_entity_id: this._serverEntityId,
-            });
+            };
+            if (episode.config_entry_id || this._item?.config_entry_id) {
+                serviceData.config_entry_id = episode.config_entry_id || this._item?.config_entry_id;
+            }
+            if (this._serverEntityId) {
+                serviceData.server_entity_id = this._serverEntityId;
+            }
+            await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
             this.closeDialog();
         } catch (err) {
             console.error('Failed to cast episode', err);
@@ -1323,11 +1367,17 @@ export class JellyHAItemDetailsModal extends LitElement {
             return;
         }
         try {
-            await this.hass.callService('jellyha', 'play_on_chromecast', {
+            const serviceData: any = {
                 entity_id: this._defaultCastDevice,
                 item_id: targetItem.id,
-                server_entity_id: this._serverEntityId,
-            });
+            };
+            if (targetItem.config_entry_id || this._item?.config_entry_id) {
+                serviceData.config_entry_id = targetItem.config_entry_id || this._item?.config_entry_id;
+            }
+            if (this._serverEntityId) {
+                serviceData.server_entity_id = this._serverEntityId;
+            }
+            await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
             this.closeDialog();
         } catch (err) {
             console.error('Failed to cast', err);
@@ -1357,11 +1407,17 @@ export class JellyHAItemDetailsModal extends LitElement {
             return;
         }
         try {
-            await this.hass.callService('jellyha', 'play_on_chromecast', {
+            const serviceData: any = {
                 entity_id: this._defaultCastDevice,
                 item_id: this._nextUpItem.id,
-                server_entity_id: this._serverEntityId,
-            });
+            };
+            if (this._nextUpItem.config_entry_id || this._item?.config_entry_id) {
+                serviceData.config_entry_id = this._nextUpItem.config_entry_id || this._item?.config_entry_id;
+            }
+            if (this._serverEntityId) {
+                serviceData.server_entity_id = this._serverEntityId;
+            }
+            await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
             this.closeDialog();
         } catch (err) {
             console.error('Failed to cast next up', err);
@@ -1378,6 +1434,9 @@ export class JellyHAItemDetailsModal extends LitElement {
             item_id: this._item.id,
             is_favorite: newStatus,
         };
+        if (this._item.config_entry_id) {
+            serviceData.config_entry_id = this._item.config_entry_id;
+        }
         if (this._serverEntityId) {
             serviceData.entity_id = this._serverEntityId;
             serviceData.server_entity_id = this._serverEntityId;
@@ -1397,6 +1456,9 @@ export class JellyHAItemDetailsModal extends LitElement {
             item_id: this._item.id,
             is_played: newStatus,
         };
+        if (this._item.config_entry_id) {
+            serviceData.config_entry_id = this._item.config_entry_id;
+        }
         if (this._serverEntityId) {
             serviceData.entity_id = this._serverEntityId;
             serviceData.server_entity_id = this._serverEntityId;
@@ -1415,6 +1477,9 @@ export class JellyHAItemDetailsModal extends LitElement {
         const serviceData: any = {
             item_id: itemId,
         };
+        if (this._item.config_entry_id) {
+            serviceData.config_entry_id = this._item.config_entry_id;
+        }
         if (this._serverEntityId) {
             serviceData.entity_id = this._serverEntityId;
             serviceData.server_entity_id = this._serverEntityId;
@@ -1422,6 +1487,7 @@ export class JellyHAItemDetailsModal extends LitElement {
 
         await this.hass.callService('jellyha', 'delete_item', serviceData);
     }
+
 
     private _handleWatchTrailer = () => {
         this._haptic();
@@ -1557,6 +1623,9 @@ export class JellyHAItemDetailsModal extends LitElement {
             item_id: episode.id,
             is_played: newStatus,
         };
+        if (episode.config_entry_id || this._item?.config_entry_id) {
+            serviceData.config_entry_id = episode.config_entry_id || this._item?.config_entry_id;
+        }
         if (this._serverEntityId) {
             serviceData.entity_id = this._serverEntityId;
             serviceData.server_entity_id = this._serverEntityId;

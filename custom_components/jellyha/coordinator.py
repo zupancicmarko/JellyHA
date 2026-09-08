@@ -28,6 +28,7 @@ from .api import (
     JellyfinConnectionError,
 )
 from .ws_client import JellyfinWebSocketClient
+from .media_strategy import MediaStrategy
 from .const import (
     CONF_API_KEY,
     CONF_LIBRARIES,
@@ -335,8 +336,12 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             artist_name = album_artist or (artists[0] if artists else None)
             album = item.get("Album")
 
+        video_attrs = MediaStrategy.extract_video_stream_attributes(item)
+
         return {
             "id": item_id,
+            "entry_id": self.entry.entry_id,
+            "config_entry_id": self.entry.entry_id,
             "name": item.get("Name", ""),
             "type": item_type,
             "year": item.get("ProductionYear"),
@@ -347,11 +352,11 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "poster_url": poster_url,
             "backdrop_url": backdrop_url,
             "series_poster_url": series_poster_url,
-            "date_added": item.get("DateCreated"),
-            "jellyfin_url": self._api.get_jellyfin_url(item_id),
             "is_played": item.get("UserData", {}).get("Played", False),
-            "unplayed_count": item.get("UserData", {}).get("UnplayedItemCount"),
+            "unplayed_count": (0 if item.get("UserData", {}).get("Played", False) else (item.get("UserData", {}).get("UnplayedItemCount") or 0)) if item_type == "Series" else item.get("UserData", {}).get("UnplayedItemCount"),
+            "total_episodes": (item.get("RecursiveItemCount") if item.get("RecursiveItemCount") is not None else item.get("ChildCount", 0)) if item_type == "Series" else None,
             "is_favorite": item.get("UserData", {}).get("IsFavorite", False),
+
             "official_rating": item.get("OfficialRating"),
             "trailer_url": next((t["Url"] for t in item.get("RemoteTrailers", []) if t.get("Url")), None),
             "last_played_date": item.get("UserData", {}).get("LastPlayedDate"),
@@ -362,6 +367,12 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "series_id": item.get("SeriesId"),
             "season": item.get("ParentIndexNumber"),
             "episode": item.get("IndexNumber"),
+            "dynamic_range": video_attrs["dynamic_range"],
+            "video_range": video_attrs["video_range"],
+            "video_range_type": video_attrs["video_range_type"],
+            "video_codec": video_attrs["video_codec"],
+            "video_bit_depth": video_attrs["video_bit_depth"],
+            "dv_profile": video_attrs["dv_profile"],
             "media_streams": media_streams,
             # Music-specific fields (None for non-music items)
             "artist_name": artist_name,

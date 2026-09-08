@@ -34,17 +34,26 @@ SERVICE_GET_ITEM = "get_item"
 
 def _get_coordinator(hass: HomeAssistant, config_entry_id: str | None = None, entity_id: str | None = None):
     """Get the JellyHA coordinator from config_entry_id or entity_id."""
-    if entity_id:
-        registry = er.async_get(hass)
-        entry = registry.async_get(entity_id)
-        if entry and entry.config_entry_id:
-            config_entry_id = entry.config_entry_id
-
     if config_entry_id:
         entry = hass.config_entries.async_get_entry(config_entry_id)
-        if entry and hasattr(entry, "runtime_data") and entry.runtime_data:
-             return entry.runtime_data.library
-        raise ValueError(f"Config entry {config_entry_id} not found or not loaded")
+        if entry and entry.domain == DOMAIN and hasattr(entry, "runtime_data") and entry.runtime_data:
+            return entry.runtime_data.library
+
+    if entity_id:
+        # Check entity registry first
+        registry = er.async_get(hass)
+        ent = registry.async_get(entity_id)
+        if ent and ent.config_entry_id:
+            c_entry = hass.config_entries.async_get_entry(ent.config_entry_id)
+            if c_entry and c_entry.domain == DOMAIN and hasattr(c_entry, "runtime_data") and c_entry.runtime_data:
+                return c_entry.runtime_data.library
+
+        # Fallback: check state attributes for entry_id
+        state = hass.states.get(entity_id)
+        if state and "entry_id" in state.attributes:
+            c_entry = hass.config_entries.async_get_entry(state.attributes["entry_id"])
+            if c_entry and c_entry.domain == DOMAIN and hasattr(c_entry, "runtime_data") and c_entry.runtime_data:
+                return c_entry.runtime_data.library
 
     # Default to first available entry
     jellyha_entries = hass.config_entries.async_entries(DOMAIN)

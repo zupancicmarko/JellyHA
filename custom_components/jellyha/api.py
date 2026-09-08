@@ -214,6 +214,34 @@ class JellyfinApiClient:
         result = await self._request("GET", f"/Users/{user_id}/Views")
         return result.get("Items", [])
 
+    async def _fetch_items_paginated(
+        self,
+        endpoint: str,
+        params: dict[str, Any],
+        page_size: int = 500,
+    ) -> list[dict[str, Any]]:
+        """Fetch all items from an endpoint using chunked pagination."""
+        all_items: list[dict[str, Any]] = []
+        start_index = int(params.get("StartIndex", 0))
+        req_params = dict(params)
+
+        while True:
+            req_params["StartIndex"] = start_index
+            req_params["Limit"] = page_size
+            result = await self._request("GET", endpoint, params=req_params)
+            page_items = result.get("Items", [])
+            if not page_items:
+                break
+            all_items.extend(page_items)
+            total_records = result.get("TotalRecordCount")
+            if total_records is not None and len(all_items) >= total_records:
+                break
+            if len(page_items) < page_size:
+                break
+            start_index += len(page_items)
+
+        return all_items
+
     async def get_library_items(
         self,
         user_id: str,
@@ -245,7 +273,8 @@ class JellyfinApiClient:
             "SortOrder": sort_order or "Descending",
             "Recursive": "true",
             "IncludeItemTypes": ",".join(item_types),
-            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId,ParentIndexNumber,IndexNumber,SeriesName,SeriesId,SeasonName,SeasonId,SeriesPrimaryImageTag,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,MediaStreams",
+            "Fields": "Genres,RunTimeTicks,DateCreated,CommunityRating,Overview,UserData,RemoteTrailers,AlbumArtist,Artists,ParentId,ParentIndexNumber,IndexNumber,SeriesName,SeriesId,SeasonName,SeasonId,SeriesPrimaryImageTag,BackdropImageTags,ParentBackdropImageTags,ParentBackdropItemId,MediaStreams,RecursiveItemCount,ChildCount",
+            "CollapseBoxSetItems": "false",
         }
 
         if limit > 0:
@@ -299,14 +328,22 @@ class JellyfinApiClient:
                 seen_ids: set[str] = set()
                 for lib_id in library_ids:
                     lib_params = {**params, "ParentId": lib_id}
-                    result = await self._request(
-                        "GET", f"/Users/{user_id}/Items", params=lib_params
-                    )
-                    for item in result.get("Items", []):
+                    if limit > 0:
+                        result = await self._request(
+                            "GET", f"/Users/{user_id}/Items", params=lib_params
+                        )
+                        items_for_lib = result.get("Items", [])
+                    else:
+                        items_for_lib = await self._fetch_items_paginated(
+                            f"/Users/{user_id}/Items", lib_params
+                        )
+
+                    for item in items_for_lib:
                         item_id = item.get("Id")
                         if item_id and item_id not in seen_ids:
                             seen_ids.add(item_id)
                             all_items.append(item)
+
                 if params.get("SortBy") == "DateCreated":
                     reverse = params.get("SortOrder", "Descending").lower() == "descending"
                     all_items.sort(key=lambda x: x.get("DateCreated") or "", reverse=reverse)
@@ -317,8 +354,12 @@ class JellyfinApiClient:
                     all_items = all_items[:limit]
                 return all_items
 
-        result = await self._request("GET", f"/Users/{user_id}/Items", params=params)
-        return result.get("Items", [])
+        if limit > 0:
+            result = await self._request("GET", f"/Users/{user_id}/Items", params=params)
+            return result.get("Items", [])
+
+        return await self._fetch_items_paginated(f"/Users/{user_id}/Items", params)
+
 
     async def get_item(self, user_id: str, item_id: str) -> dict[str, Any]:
         """Get details for a single item."""
