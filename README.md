@@ -241,7 +241,7 @@ The **JellyHA Now Playing Card** shows a rich media control interface for the cu
 
 ```yaml
 type: custom:jellyha-now-playing-card
-entity: sensor.jellyha_now_playing_admin # Replace with your user sensor
+entity: media_player.jellyha_admin # Supports media_player.jellyha_<user>, media_player.jellyha_<device>, or sensor.jellyha_now_playing_<user>
 title: Now Playing
 show_background: true
 ```
@@ -250,7 +250,7 @@ show_background: true
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `entity` | string | **Required** | The user-specific Now Playing sensor (e.g. `sensor.jellyha_now_playing_marko`) |
+| `entity` | string | **Required** | The target media player (e.g. `media_player.jellyha_admin` or `media_player.jellyha_living_room_tv`) or legacy Now Playing sensor |
 | `title` | string | `Jellyfin` | Optional title header |
 | `show_background` | boolean | `true` | Show blurred backdrop fanart as background |
 | `show_title` | boolean | `true` | Show media title text |
@@ -305,13 +305,33 @@ JellyHA provides several sensors to monitor your Jellyfin server and library. Al
 
 ## Media Players
 
-JellyHA provides two types of media_player entities:
+JellyHA provides three types of `media_player` entities:
 
-### Per-User Media Players
+### 1. Per-User Media Players
 
 | Entity ID Pattern | Description | Supported Features |
 |-----------|-------------|--------------------|
-| `media_player.jellyha_[username]` | Tracks and controls each user's active playback session | **Transport:** Play, Pause, Stop, Seek, Next Track, Previous Track<br>**Volume:** Set Volume, Mute/Unmute<br>**Metadata:** Title, Series/Season/Episode, Image, Duration, Position |
+| `media_player.jellyha_[username]` | Tracks and controls each user's active playback session | **Transport:** Play, Pause, Stop, Seek, Next Track, Previous Track<br>**Volume:** Set Volume, Mute/Unmute<br>**Controls:** Shuffle, Repeat<br>**Metadata:** Title, Series/Season/Episode, Image, Backdrop, Duration, Position, Chapters, Segments |
+
+### 2. Client/Device Media Players (Resolves #12)
+
+| Entity ID Pattern | Description | Supported Features |
+|-----------|-------------|--------------------|
+| `media_player.jellyha_[device_name]` | Tracks playback on a specific physical device (e.g. Smart TV, streaming box) regardless of which user is logged in | Same full feature parity as per-user players + exposes current `user_name`, `user_id`, and client device context |
+
+Enable physical client devices in **Settings → Devices & Services → JellyHA → Configure** under **Client/Device Media Players**.
+
+> [!TIP]
+> **Enabling Remote Control (Pause, Stop, Seek) on Mobile Clients:**
+> * **Smart TVs** (e.g., LG webOS, Samsung), **Android TV streaming boxes** (e.g., Wholphin, Moonfin, Shield TV), and **Web Browsers** (Chrome, Firefox, Edge) support remote control (`SupportsRemoteControl: true`) out of the box.
+> * The official **Jellyfin for Android** mobile app defaults to the **"Integrated player" (native ExoPlayer)**, which only reports progress back to the server and does not listen for incoming remote control commands (`SupportsRemoteControl: false`).
+> * **To enable remote control on your Android phone/tablet:**
+>   1. Open the **Jellyfin** app on your phone.
+>   2. Tap your user icon / gear icon in the top right to open **Settings**.
+>   3. Under **App**, select **Client Settings**.
+>   4. Tap **Video player type** and change it from **Integrated player** to **Web player**.
+>
+> In Web player mode, playback runs inside the web engine with a full two-way WebSocket connection, allowing Home Assistant and the Now Playing card to pause, play, stop, rewind, and seek seamlessly.
 
 **State Mapping:**
 - `idle` — No active playback session
@@ -330,6 +350,9 @@ JellyHA provides two types of media_player entities:
 - `session_id` — Active Jellyfin session ID
 - `device_name` — Client device name
 - `client` — Client application name
+- `user_name` — Active viewer user name (for device players)
+- `media_chapter_name` / `media_chapter_index` — Current chapter info
+- `media_segment_type` / `segment_end_seconds` — Active intro/outro/recap scene detection
 
 **Example Usage:**
 ```yaml
@@ -353,7 +376,7 @@ data:
   volume_level: 0.5
 ```
 
-### Library Browser Media Player
+### 3. Library Browser Media Player
 
 | Entity ID | Description | Supported Features |
 |-----------|-------------|--------------------|
