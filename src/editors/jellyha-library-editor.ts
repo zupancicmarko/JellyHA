@@ -96,30 +96,44 @@ export class JellyHALibraryEditor extends LitElement {
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-select
-              label="${localize(lang, 'editor.layout')}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'carousel', label: localize(lang, 'editor.layout_carousel') },
+                    { value: 'grid', label: localize(lang, 'editor.layout_grid') },
+                    { value: 'list', label: localize(lang, 'editor.layout_list') },
+                  ],
+                },
+              }}
               .value=${this._config.layout || 'carousel'}
-              @selected=${this._layoutChanged}
-              @closed=${(e: Event) => e.stopPropagation()}
-            >
-              <mwc-list-item value="carousel">${localize(lang, 'editor.layout_carousel')}</mwc-list-item>
-              <mwc-list-item value="grid">${localize(lang, 'editor.layout_grid')}</mwc-list-item>
-              <mwc-list-item value="list">${localize(lang, 'editor.layout_list')}</mwc-list-item>
-            </ha-select>
+              .label=${localize(lang, 'editor.layout')}
+              label="${localize(lang, 'editor.layout')}"
+              @value-changed=${this._layoutChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-select
-              label="${localize(lang, 'editor.media_type')}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'both', label: localize(lang, 'editor.media_type_both') },
+                    { value: 'movies', label: localize(lang, 'editor.media_type_movies') },
+                    { value: 'series', label: localize(lang, 'editor.media_type_series') },
+                    { value: 'next_up', label: localize(lang, 'editor.media_type_next_up') },
+                  ],
+                },
+              }}
               .value=${this._config.media_type || 'both'}
-              @selected=${this._mediaTypeChanged}
-              @closed=${(e: Event) => e.stopPropagation()}
-            >
-              <mwc-list-item value="both">${localize(lang, 'editor.media_type_both')}</mwc-list-item>
-              <mwc-list-item value="movies">${localize(lang, 'editor.media_type_movies')}</mwc-list-item>
-              <mwc-list-item value="series">${localize(lang, 'editor.media_type_series')}</mwc-list-item>
-              <mwc-list-item value="next_up">${localize(lang, 'editor.media_type_next_up')}</mwc-list-item>
-            </ha-select>
+              .label=${localize(lang, 'editor.media_type')}
+              label="${localize(lang, 'editor.media_type')}"
+              @value-changed=${this._mediaTypeChanged}
+            ></ha-selector>
           </div>
         </div>
 
@@ -188,50 +202,71 @@ export class JellyHALibraryEditor extends LitElement {
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-select
-              label="${localize(lang, 'editor.click_action')}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
+                    { value: 'cast', label: localize(lang, 'editor.action_cast') },
+                    { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
+                    { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
+                    { value: 'none', label: localize(lang, 'editor.action_none') },
+                  ],
+                },
+              }}
               .value=${clickAction}
-              @selected=${this._clickActionChanged}
-              @closed=${(e: Event) => e.stopPropagation()}
-            >
-              <mwc-list-item value="jellyfin">${localize(lang, 'editor.action_jellyfin')}</mwc-list-item>
-              <mwc-list-item value="cast">${localize(lang, 'editor.action_cast')}</mwc-list-item>
-              <mwc-list-item value="more-info">${localize(lang, 'editor.action_more_info')}</mwc-list-item>
-              <mwc-list-item value="trailer">${localize(lang, 'editor.action_trailer')}</mwc-list-item>
-              <mwc-list-item value="none">${localize(lang, 'editor.action_none')}</mwc-list-item>
-            </ha-select>
+              .label=${localize(lang, 'editor.click_action')}
+              label="${localize(lang, 'editor.click_action')}"
+              @value-changed=${this._clickActionChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-select
-              label="${localize(lang, 'editor.hold_action')}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
+                    { value: 'cast', label: localize(lang, 'editor.action_cast') },
+                    { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
+                    { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
+                    { value: 'none', label: localize(lang, 'editor.action_none') },
+                  ],
+                },
+              }}
               .value=${holdAction}
-              @selected=${this._holdActionChanged}
-              @closed=${(e: Event) => e.stopPropagation()}
-            >
-              <mwc-list-item value="jellyfin">${localize(lang, 'editor.action_jellyfin')}</mwc-list-item>
-              <mwc-list-item value="cast">${localize(lang, 'editor.action_cast')}</mwc-list-item>
-              <mwc-list-item value="more-info">${localize(lang, 'editor.action_more_info')}</mwc-list-item>
-              <mwc-list-item value="trailer">${localize(lang, 'editor.action_trailer')}</mwc-list-item>
-              <mwc-list-item value="none">${localize(lang, 'editor.action_none')}</mwc-list-item>
-            </ha-select>
+              .label=${localize(lang, 'editor.hold_action')}
+              label="${localize(lang, 'editor.hold_action')}"
+              @value-changed=${this._holdActionChanged}
+            ></ha-selector>
           </div>
         </div>
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-select
-              label="${localize(lang, 'editor.double_tap_action')}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
+                    { value: 'cast', label: localize(lang, 'editor.action_cast') },
+                    { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
+                    { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
+                    { value: 'none', label: localize(lang, 'editor.action_none') },
+                  ],
+                },
+              }}
               .value=${doubleTapAction}
-              @selected=${this._doubleTapActionChanged}
-              @closed=${(e: Event) => e.stopPropagation()}
-            >
-              <mwc-list-item value="jellyfin">${localize(lang, 'editor.action_jellyfin')}</mwc-list-item>
-              <mwc-list-item value="cast">${localize(lang, 'editor.action_cast')}</mwc-list-item>
-              <mwc-list-item value="more-info">${localize(lang, 'editor.action_more_info')}</mwc-list-item>
-              <mwc-list-item value="trailer">${localize(lang, 'editor.action_trailer')}</mwc-list-item>
-              <mwc-list-item value="none">${localize(lang, 'editor.action_none')}</mwc-list-item>
-            </ha-select>
+              .label=${localize(lang, 'editor.double_tap_action')}
+              label="${localize(lang, 'editor.double_tap_action')}"
+              @value-changed=${this._doubleTapActionChanged}
+            ></ha-selector>
           </div>
 
           ${clickAction === 'cast' || holdAction === 'cast' || doubleTapAction === 'cast'
@@ -342,35 +377,49 @@ export class JellyHALibraryEditor extends LitElement {
 
     <div class="side-by-side">
       <div class="form-row">
-        <ha-select
-          label="${localize(lang, 'editor.metadata_position')}"
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{
+            select: {
+              mode: 'dropdown',
+              options: [
+                { value: 'below', label: localize(lang, 'editor.metadata_below') },
+                { value: 'above', label: localize(lang, 'editor.metadata_above') },
+              ],
+            },
+          }}
           .value=${this._config.metadata_position || 'below'}
-          @selected=${this._metadataPositionChanged}
-          @closed=${(e: Event) => e.stopPropagation()}
-        >
-          <mwc-list-item value="below">${localize(lang, 'editor.metadata_below')}</mwc-list-item>
-          <mwc-list-item value="above">${localize(lang, 'editor.metadata_above')}</mwc-list-item>
-        </ha-select>
+          .label=${localize(lang, 'editor.metadata_position')}
+          label="${localize(lang, 'editor.metadata_position')}"
+          @value-changed=${this._metadataPositionChanged}
+        ></ha-selector>
       </div>
 
       <div class="form-row">
         ${this._config.media_type !== 'next_up'
         ? html`
-            <ha-select
-            label="${localize(lang, 'editor.sort_order')}"
-            .value=${this._config.sort_option || 'date_added_desc'}
-            @selected=${this._sortOptionChanged}
-            @closed=${(e: Event) => e.stopPropagation()}
-            >
-            <mwc-list-item value="date_added_desc">${localize(lang, 'editor.sort_date_added_desc')}</mwc-list-item>
-            <mwc-list-item value="date_added_asc">${localize(lang, 'editor.sort_date_added_asc')}</mwc-list-item>
-            <mwc-list-item value="title_asc">${localize(lang, 'editor.sort_title_asc')}</mwc-list-item>
-            <mwc-list-item value="title_desc">${localize(lang, 'editor.sort_title_desc')}</mwc-list-item>
-            <mwc-list-item value="year_desc">${localize(lang, 'editor.sort_year_desc')}</mwc-list-item>
-            <mwc-list-item value="year_asc">${localize(lang, 'editor.sort_year_asc')}</mwc-list-item>
-            <mwc-list-item value="last_played_desc">${localize(lang, 'editor.sort_last_played_desc')}</mwc-list-item>
-            <mwc-list-item value="last_played_asc">${localize(lang, 'editor.sort_last_played_asc')}</mwc-list-item>
-            </ha-select>
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
+                    { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
+                    { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
+                    { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
+                    { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
+                    { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
+                    { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
+                    { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
+                  ],
+                },
+              }}
+              .value=${this._config.sort_option || 'date_added_desc'}
+              .label=${localize(lang, 'editor.sort_order')}
+              label="${localize(lang, 'editor.sort_order')}"
+              @value-changed=${this._sortOptionChanged}
+            ></ha-selector>
         `
         : html`<div></div>`}
       </div>
@@ -395,16 +444,23 @@ export class JellyHALibraryEditor extends LitElement {
     </div>
 
     <div class="form-row">
-      <ha-select
-        label="${localize(lang, 'editor.filter_watch_status')}"
+      <ha-selector
+        .hass=${this.hass}
+        .selector=${{
+          select: {
+            mode: 'dropdown',
+            options: [
+              { value: 'all', label: localize(lang, 'editor.filter_all') },
+              { value: 'unwatched', label: localize(lang, 'editor.filter_unwatched') },
+              { value: 'watched', label: localize(lang, 'editor.filter_watched') },
+            ],
+          },
+        }}
         .value=${this._config.status_filter || 'all'}
-        @selected=${this._statusFilterChanged}
-        @closed=${(e: Event) => e.stopPropagation()}
-      >
-        <mwc-list-item value="all">${localize(lang, 'editor.filter_all')}</mwc-list-item>
-        <mwc-list-item value="unwatched">${localize(lang, 'editor.filter_unwatched')}</mwc-list-item>
-        <mwc-list-item value="watched">${localize(lang, 'editor.filter_watched')}</mwc-list-item>
-      </ha-select>
+        .label=${localize(lang, 'editor.filter_watch_status')}
+        label="${localize(lang, 'editor.filter_watch_status')}"
+        @value-changed=${this._statusFilterChanged}
+      ></ha-selector>
     </div>
 
     <div class="side-by-side">
@@ -451,9 +507,11 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('title', target.value);
   }
 
-  private _layoutChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('layout', target.value);
+  private _layoutChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('layout', value);
+    }
   }
 
   private _columnsChanged(e: Event): void {
@@ -461,9 +519,11 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('columns', Number(target.value));
   }
 
-  private _mediaTypeChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('media_type', target.value);
+  private _mediaTypeChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('media_type', value);
+    }
   }
 
   private _itemsPerPageChanged(e: Event): void {
@@ -502,19 +562,25 @@ export class JellyHALibraryEditor extends LitElement {
     }
   }
 
-  private _clickActionChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('click_action', target.value);
+  private _clickActionChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('click_action', value);
+    }
   }
 
-  private _holdActionChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('hold_action', target.value);
+  private _holdActionChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('hold_action', value);
+    }
   }
 
-  private _doubleTapActionChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('double_tap_action', target.value);
+  private _doubleTapActionChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('double_tap_action', value);
+    }
   }
 
   private _defaultCastDeviceChanged(e: CustomEvent): void {
@@ -571,9 +637,11 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('show_description_on_hover', target.checked);
   }
 
-  private _metadataPositionChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('metadata_position', target.value);
+  private _metadataPositionChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('metadata_position', value);
+    }
   }
 
   private _horizontalAlignmentChanged(e: Event): void {
@@ -596,9 +664,11 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('filter_favorites', target.checked);
   }
 
-  private _statusFilterChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('status_filter', target.value);
+  private _statusFilterChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('status_filter', value);
+    }
   }
 
   private _filterNewlyAddedChanged(e: Event): void {
@@ -611,9 +681,11 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('show_search', target.checked);
   }
 
-  private _sortOptionChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('sort_option', target.value);
+  private _sortOptionChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('sort_option', value);
+    }
   }
 
   private _useSeriesImageChanged(e: Event): void {

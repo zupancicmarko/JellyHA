@@ -73,7 +73,7 @@ const { is: Ye, defineProperty: Xe, getOwnPropertyDescriptor: Je, getOwnProperty
       }
   }
   return i;
-} }, ge = (t, e) => !Ye(t, e), Pe = { attribute: !0, type: String, converter: te, reflect: !1, useDefault: !1, hasChanged: ge };
+} }, ue = (t, e) => !Ye(t, e), Pe = { attribute: !0, type: String, converter: te, reflect: !1, useDefault: !1, hasChanged: ue };
 Symbol.metadata ??= Symbol("metadata"), ae.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let I = class extends HTMLElement {
   static addInitializer(e) {
@@ -188,7 +188,7 @@ let I = class extends HTMLElement {
   requestUpdate(e, i, a, o = !1, s) {
     if (e !== void 0) {
       const r = this.constructor;
-      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? ge)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
+      if (o === !1 && (s = this[e]), a ??= r.getPropertyOptions(e), !((a.hasChanged ?? ue)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(e) && !this.hasAttribute(r._$Eu(e, a)))) return;
       this.C(e, i, a);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -262,7 +262,7 @@ I.elementStyles = [], I.shadowRootOptions = { mode: "open" }, I[L("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ue = globalThis, je = (t) => t, ie = ue.trustedTypes, Ae = ie ? ie.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ue = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + T, et = `<${Ne}>`, z = document, F = () => z.createComment(""), B = (t) => t === null || typeof t != "object" && typeof t != "function", me = Array.isArray, tt = (t) => me(t) || typeof t?.[Symbol.iterator] == "function", de = `[ 	
+const ge = globalThis, je = (t) => t, ie = ge.trustedTypes, Ae = ie ? ie.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ue = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + T, et = `<${Ne}>`, z = document, F = () => z.createComment(""), B = (t) => t === null || typeof t != "object" && typeof t != "function", me = Array.isArray, tt = (t) => me(t) || typeof t?.[Symbol.iterator] == "function", de = `[ 	
 \f\r]`, R = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Te = /-->/g, Ee = />/g, E = RegExp(`>|${de}(?:([^\\s"'>=/]+)(${de}*=${de}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), Me = /'/g, ze = /"/g, Re = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), n = it(1), O = Symbol.for("lit-noChange"), c = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), M = z.createTreeWalker(z, 129);
 function Le(t, e) {
@@ -274,8 +274,8 @@ const at = (t, e) => {
   let o, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", r = R;
   for (let h = 0; h < i; h++) {
     const d = t[h];
-    let p, g, _ = -1, m = 0;
-    for (; m < d.length && (r.lastIndex = m, g = r.exec(d), g !== null); ) m = r.lastIndex, r === R ? g[1] === "!--" ? r = Te : g[1] !== void 0 ? r = Ee : g[2] !== void 0 ? (Re.test(g[2]) && (o = RegExp("</" + g[2], "g")), r = E) : g[3] !== void 0 && (r = E) : r === E ? g[0] === ">" ? (r = o ?? R, _ = -1) : g[1] === void 0 ? _ = -2 : (_ = r.lastIndex - g[2].length, p = g[1], r = g[3] === void 0 ? E : g[3] === '"' ? ze : Me) : r === ze || r === Me ? r = E : r === Te || r === Ee ? r = R : (r = E, o = void 0);
+    let p, u, _ = -1, m = 0;
+    for (; m < d.length && (r.lastIndex = m, u = r.exec(d), u !== null); ) m = r.lastIndex, r === R ? u[1] === "!--" ? r = Te : u[1] !== void 0 ? r = Ee : u[2] !== void 0 ? (Re.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = E) : u[3] !== void 0 && (r = E) : r === E ? u[0] === ">" ? (r = o ?? R, _ = -1) : u[1] === void 0 ? _ = -2 : (_ = r.lastIndex - u[2].length, p = u[1], r = u[3] === void 0 ? E : u[3] === '"' ? ze : Me) : r === ze || r === Me ? r = E : r === Te || r === Ee ? r = R : (r = E, o = void 0);
     const f = r === E && t[h + 1].startsWith("/>") ? " " : "";
     s += r === R ? d + et : _ >= 0 ? (a.push(p), d.slice(0, _) + Ue + d.slice(_) + T + f) : d + T + (_ === -2 ? h : f);
   }
@@ -286,7 +286,7 @@ class W {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = e.length - 1, d = this.parts, [p, g] = at(e, i);
+    const h = e.length - 1, d = this.parts, [p, u] = at(e, i);
     if (this.el = W.createElement(p, a), M.currentNode = this.el.content, i === 2 || i === 3) {
       const _ = this.el.content.firstChild;
       _.replaceWith(..._.childNodes);
@@ -294,7 +294,7 @@ class W {
     for (; (o = M.nextNode()) !== null && d.length < h; ) {
       if (o.nodeType === 1) {
         if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Ue)) {
-          const m = g[r++], f = o.getAttribute(_).split(T), x = /([.?@])?(.*)/.exec(m);
+          const m = u[r++], f = o.getAttribute(_).split(T), x = /([.?@])?(.*)/.exec(m);
           d.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? st : x[1] === "?" ? rt : x[1] === "@" ? nt : oe }), o.removeAttribute(_);
         } else _.startsWith(T) && (d.push({ type: 6, index: s }), o.removeAttribute(_));
         if (Re.test(o.tagName)) {
@@ -476,8 +476,8 @@ class lt {
     U(this, e);
   }
 }
-const dt = ue.litHtmlPolyfillSupport;
-dt?.(W, J), (ue.litHtmlVersions ??= []).push("3.3.2");
+const dt = ge.litHtmlPolyfillSupport;
+dt?.(W, J), (ge.litHtmlVersions ??= []).push("3.3.2");
 const He = (t, e, i) => {
   const a = i?.renderBefore ?? e;
   let o = a._$litPart$;
@@ -534,7 +534,7 @@ const N = (t) => (e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ht = { attribute: !0, type: String, converter: te, reflect: !1, hasChanged: ge }, pt = (t = ht, e, i) => {
+const ht = { attribute: !0, type: String, converter: te, reflect: !1, hasChanged: ue }, pt = (t = ht, e, i) => {
   const { kind: a, metadata: o } = i;
   let s = globalThis.litPropertyMetadata.get(o);
   if (s === void 0 && globalThis.litPropertyMetadata.set(o, s = /* @__PURE__ */ new Map()), a === "setter" && ((t = Object.create(t)).wrapped = !0), s.set(i.name, t), a === "accessor") {
@@ -566,7 +566,7 @@ function P(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function u(t) {
+function g(t) {
   return P({ ...t, state: !0, attribute: !1 });
 }
 /**
@@ -580,7 +580,7 @@ const _t = (t, e, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorat
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function gt(t, e) {
+function ut(t, e) {
   return (i, a, o) => {
     const s = (r) => r.renderRoot?.querySelector(t) ?? null;
     return _t(i, a, { get() {
@@ -2618,12 +2618,12 @@ function l(t, e) {
   const i = t.split("-")[0].toLowerCase();
   return Q[i]?.[e] ? Q[i][e] : Q.en?.[e] ? Q.en[e] : e;
 }
-var ut = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, k = (t, e, i, a) => {
+var gt = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, k = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? mt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && ut(e, i, o), o;
+  return a && o && gt(e, i, o), o;
 };
-let w = class extends A {
+let v = class extends A {
   constructor() {
     super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
       this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
@@ -3546,54 +3546,54 @@ let w = class extends A {
     return null;
   }
 };
-w.styles = X`
+v.styles = X`
         /* Styles handled in _getPortalStyles */
     `;
 k([
   P({ attribute: !1 })
-], w.prototype, "hass", 2);
+], v.prototype, "hass", 2);
 k([
-  u()
-], w.prototype, "_item", 2);
+  g()
+], v.prototype, "_item", 2);
 k([
-  u()
-], w.prototype, "_nextUpItem", 2);
+  g()
+], v.prototype, "_nextUpItem", 2);
 k([
-  u()
-], w.prototype, "_defaultCastDevice", 2);
+  g()
+], v.prototype, "_defaultCastDevice", 2);
 k([
-  u()
-], w.prototype, "_serverEntityId", 2);
+  g()
+], v.prototype, "_serverEntityId", 2);
 k([
-  u()
-], w.prototype, "_open", 2);
+  g()
+], v.prototype, "_open", 2);
 k([
-  u()
-], w.prototype, "_confirmDelete", 2);
+  g()
+], v.prototype, "_confirmDelete", 2);
 k([
-  u()
-], w.prototype, "_viewMode", 2);
+  g()
+], v.prototype, "_viewMode", 2);
 k([
-  u()
-], w.prototype, "_episodes", 2);
+  g()
+], v.prototype, "_episodes", 2);
 k([
-  u()
-], w.prototype, "_touchStartY", 2);
+  g()
+], v.prototype, "_touchStartY", 2);
 k([
-  u()
-], w.prototype, "_currentTranslateY", 2);
+  g()
+], v.prototype, "_currentTranslateY", 2);
 k([
-  u()
-], w.prototype, "_isDragging", 2);
-w = k([
+  g()
+], v.prototype, "_isDragging", 2);
+v = k([
   N("jellyha-item-details-modal")
-], w);
-var ft = Object.defineProperty, yt = Object.getOwnPropertyDescriptor, ye = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? yt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+], v);
+var ft = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, be = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? bt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && ft(e, i, o), o;
 };
-function bt(t, e, i) {
+function yt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -3631,30 +3631,44 @@ let G = class extends A {
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-select
-              label="${l(a, "editor.layout")}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "carousel", label: l(a, "editor.layout_carousel") },
+          { value: "grid", label: l(a, "editor.layout_grid") },
+          { value: "list", label: l(a, "editor.layout_list") }
+        ]
+      }
+    }}
               .value=${this._config.layout || "carousel"}
-              @selected=${this._layoutChanged}
-              @closed=${(r) => r.stopPropagation()}
-            >
-              <mwc-list-item value="carousel">${l(a, "editor.layout_carousel")}</mwc-list-item>
-              <mwc-list-item value="grid">${l(a, "editor.layout_grid")}</mwc-list-item>
-              <mwc-list-item value="list">${l(a, "editor.layout_list")}</mwc-list-item>
-            </ha-select>
+              .label=${l(a, "editor.layout")}
+              label="${l(a, "editor.layout")}"
+              @value-changed=${this._layoutChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-select
-              label="${l(a, "editor.media_type")}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "both", label: l(a, "editor.media_type_both") },
+          { value: "movies", label: l(a, "editor.media_type_movies") },
+          { value: "series", label: l(a, "editor.media_type_series") },
+          { value: "next_up", label: l(a, "editor.media_type_next_up") }
+        ]
+      }
+    }}
               .value=${this._config.media_type || "both"}
-              @selected=${this._mediaTypeChanged}
-              @closed=${(r) => r.stopPropagation()}
-            >
-              <mwc-list-item value="both">${l(a, "editor.media_type_both")}</mwc-list-item>
-              <mwc-list-item value="movies">${l(a, "editor.media_type_movies")}</mwc-list-item>
-              <mwc-list-item value="series">${l(a, "editor.media_type_series")}</mwc-list-item>
-              <mwc-list-item value="next_up">${l(a, "editor.media_type_next_up")}</mwc-list-item>
-            </ha-select>
+              .label=${l(a, "editor.media_type")}
+              label="${l(a, "editor.media_type")}"
+              @value-changed=${this._mediaTypeChanged}
+            ></ha-selector>
           </div>
         </div>
 
@@ -3721,50 +3735,71 @@ let G = class extends A {
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-select
-              label="${l(a, "editor.click_action")}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "jellyfin", label: l(a, "editor.action_jellyfin") },
+          { value: "cast", label: l(a, "editor.action_cast") },
+          { value: "more-info", label: l(a, "editor.action_more_info") },
+          { value: "trailer", label: l(a, "editor.action_trailer") },
+          { value: "none", label: l(a, "editor.action_none") }
+        ]
+      }
+    }}
               .value=${t}
-              @selected=${this._clickActionChanged}
-              @closed=${(r) => r.stopPropagation()}
-            >
-              <mwc-list-item value="jellyfin">${l(a, "editor.action_jellyfin")}</mwc-list-item>
-              <mwc-list-item value="cast">${l(a, "editor.action_cast")}</mwc-list-item>
-              <mwc-list-item value="more-info">${l(a, "editor.action_more_info")}</mwc-list-item>
-              <mwc-list-item value="trailer">${l(a, "editor.action_trailer")}</mwc-list-item>
-              <mwc-list-item value="none">${l(a, "editor.action_none")}</mwc-list-item>
-            </ha-select>
+              .label=${l(a, "editor.click_action")}
+              label="${l(a, "editor.click_action")}"
+              @value-changed=${this._clickActionChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-select
-              label="${l(a, "editor.hold_action")}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "jellyfin", label: l(a, "editor.action_jellyfin") },
+          { value: "cast", label: l(a, "editor.action_cast") },
+          { value: "more-info", label: l(a, "editor.action_more_info") },
+          { value: "trailer", label: l(a, "editor.action_trailer") },
+          { value: "none", label: l(a, "editor.action_none") }
+        ]
+      }
+    }}
               .value=${e}
-              @selected=${this._holdActionChanged}
-              @closed=${(r) => r.stopPropagation()}
-            >
-              <mwc-list-item value="jellyfin">${l(a, "editor.action_jellyfin")}</mwc-list-item>
-              <mwc-list-item value="cast">${l(a, "editor.action_cast")}</mwc-list-item>
-              <mwc-list-item value="more-info">${l(a, "editor.action_more_info")}</mwc-list-item>
-              <mwc-list-item value="trailer">${l(a, "editor.action_trailer")}</mwc-list-item>
-              <mwc-list-item value="none">${l(a, "editor.action_none")}</mwc-list-item>
-            </ha-select>
+              .label=${l(a, "editor.hold_action")}
+              label="${l(a, "editor.hold_action")}"
+              @value-changed=${this._holdActionChanged}
+            ></ha-selector>
           </div>
         </div>
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-select
-              label="${l(a, "editor.double_tap_action")}"
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "jellyfin", label: l(a, "editor.action_jellyfin") },
+          { value: "cast", label: l(a, "editor.action_cast") },
+          { value: "more-info", label: l(a, "editor.action_more_info") },
+          { value: "trailer", label: l(a, "editor.action_trailer") },
+          { value: "none", label: l(a, "editor.action_none") }
+        ]
+      }
+    }}
               .value=${i}
-              @selected=${this._doubleTapActionChanged}
-              @closed=${(r) => r.stopPropagation()}
-            >
-              <mwc-list-item value="jellyfin">${l(a, "editor.action_jellyfin")}</mwc-list-item>
-              <mwc-list-item value="cast">${l(a, "editor.action_cast")}</mwc-list-item>
-              <mwc-list-item value="more-info">${l(a, "editor.action_more_info")}</mwc-list-item>
-              <mwc-list-item value="trailer">${l(a, "editor.action_trailer")}</mwc-list-item>
-              <mwc-list-item value="none">${l(a, "editor.action_none")}</mwc-list-item>
-            </ha-select>
+              .label=${l(a, "editor.double_tap_action")}
+              label="${l(a, "editor.double_tap_action")}"
+              @value-changed=${this._doubleTapActionChanged}
+            ></ha-selector>
           </div>
 
           ${t === "cast" || e === "cast" || i === "cast" ? n`
@@ -3871,34 +3906,48 @@ let G = class extends A {
 
     <div class="side-by-side">
       <div class="form-row">
-        <ha-select
-          label="${l(a, "editor.metadata_position")}"
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "below", label: l(a, "editor.metadata_below") },
+          { value: "above", label: l(a, "editor.metadata_above") }
+        ]
+      }
+    }}
           .value=${this._config.metadata_position || "below"}
-          @selected=${this._metadataPositionChanged}
-          @closed=${(r) => r.stopPropagation()}
-        >
-          <mwc-list-item value="below">${l(a, "editor.metadata_below")}</mwc-list-item>
-          <mwc-list-item value="above">${l(a, "editor.metadata_above")}</mwc-list-item>
-        </ha-select>
+          .label=${l(a, "editor.metadata_position")}
+          label="${l(a, "editor.metadata_position")}"
+          @value-changed=${this._metadataPositionChanged}
+        ></ha-selector>
       </div>
 
       <div class="form-row">
         ${this._config.media_type !== "next_up" ? n`
-            <ha-select
-            label="${l(a, "editor.sort_order")}"
-            .value=${this._config.sort_option || "date_added_desc"}
-            @selected=${this._sortOptionChanged}
-            @closed=${(r) => r.stopPropagation()}
-            >
-            <mwc-list-item value="date_added_desc">${l(a, "editor.sort_date_added_desc")}</mwc-list-item>
-            <mwc-list-item value="date_added_asc">${l(a, "editor.sort_date_added_asc")}</mwc-list-item>
-            <mwc-list-item value="title_asc">${l(a, "editor.sort_title_asc")}</mwc-list-item>
-            <mwc-list-item value="title_desc">${l(a, "editor.sort_title_desc")}</mwc-list-item>
-            <mwc-list-item value="year_desc">${l(a, "editor.sort_year_desc")}</mwc-list-item>
-            <mwc-list-item value="year_asc">${l(a, "editor.sort_year_asc")}</mwc-list-item>
-            <mwc-list-item value="last_played_desc">${l(a, "editor.sort_last_played_desc")}</mwc-list-item>
-            <mwc-list-item value="last_played_asc">${l(a, "editor.sort_last_played_asc")}</mwc-list-item>
-            </ha-select>
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "date_added_desc", label: l(a, "editor.sort_date_added_desc") },
+          { value: "date_added_asc", label: l(a, "editor.sort_date_added_asc") },
+          { value: "title_asc", label: l(a, "editor.sort_title_asc") },
+          { value: "title_desc", label: l(a, "editor.sort_title_desc") },
+          { value: "year_desc", label: l(a, "editor.sort_year_desc") },
+          { value: "year_asc", label: l(a, "editor.sort_year_asc") },
+          { value: "last_played_desc", label: l(a, "editor.sort_last_played_desc") },
+          { value: "last_played_asc", label: l(a, "editor.sort_last_played_asc") }
+        ]
+      }
+    }}
+              .value=${this._config.sort_option || "date_added_desc"}
+              .label=${l(a, "editor.sort_order")}
+              label="${l(a, "editor.sort_order")}"
+              @value-changed=${this._sortOptionChanged}
+            ></ha-selector>
         ` : n`<div></div>`}
       </div>
     </div>
@@ -3922,16 +3971,23 @@ let G = class extends A {
     </div>
 
     <div class="form-row">
-      <ha-select
-        label="${l(a, "editor.filter_watch_status")}"
+      <ha-selector
+        .hass=${this.hass}
+        .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "all", label: l(a, "editor.filter_all") },
+          { value: "unwatched", label: l(a, "editor.filter_unwatched") },
+          { value: "watched", label: l(a, "editor.filter_watched") }
+        ]
+      }
+    }}
         .value=${this._config.status_filter || "all"}
-        @selected=${this._statusFilterChanged}
-        @closed=${(r) => r.stopPropagation()}
-      >
-        <mwc-list-item value="all">${l(a, "editor.filter_all")}</mwc-list-item>
-        <mwc-list-item value="unwatched">${l(a, "editor.filter_unwatched")}</mwc-list-item>
-        <mwc-list-item value="watched">${l(a, "editor.filter_watched")}</mwc-list-item>
-      </ha-select>
+        .label=${l(a, "editor.filter_watch_status")}
+        label="${l(a, "editor.filter_watch_status")}"
+        @value-changed=${this._statusFilterChanged}
+      ></ha-selector>
     </div>
 
     <div class="side-by-side">
@@ -3974,16 +4030,16 @@ let G = class extends A {
     this._updateConfig("title", e.value);
   }
   _layoutChanged(t) {
-    const e = t.target;
-    this._updateConfig("layout", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("layout", e);
   }
   _columnsChanged(t) {
     const e = t.target;
     this._updateConfig("columns", Number(e.value));
   }
   _mediaTypeChanged(t) {
-    const e = t.target;
-    this._updateConfig("media_type", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("media_type", e);
   }
   _itemsPerPageChanged(t) {
     const i = t.target.value.trim();
@@ -4002,16 +4058,16 @@ let G = class extends A {
     i === "" || i === null ? this._updateConfig("new_badge_days", null) : this._updateConfig("new_badge_days", Number(i));
   }
   _clickActionChanged(t) {
-    const e = t.target;
-    this._updateConfig("click_action", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("click_action", e);
   }
   _holdActionChanged(t) {
-    const e = t.target;
-    this._updateConfig("hold_action", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("hold_action", e);
   }
   _doubleTapActionChanged(t) {
-    const e = t.target;
-    this._updateConfig("double_tap_action", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("double_tap_action", e);
   }
   _defaultCastDeviceChanged(t) {
     this._updateConfig("default_cast_device", t.detail.value);
@@ -4057,8 +4113,8 @@ let G = class extends A {
     this._updateConfig("show_description_on_hover", e.checked);
   }
   _metadataPositionChanged(t) {
-    const e = t.target;
-    this._updateConfig("metadata_position", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("metadata_position", e);
   }
   _horizontalAlignmentChanged(t) {
     const e = t.target;
@@ -4077,8 +4133,8 @@ let G = class extends A {
     this._updateConfig("filter_favorites", e.checked);
   }
   _statusFilterChanged(t) {
-    const e = t.target;
-    this._updateConfig("status_filter", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("status_filter", e);
   }
   _filterNewlyAddedChanged(t) {
     const e = t.target;
@@ -4089,8 +4145,8 @@ let G = class extends A {
     this._updateConfig("show_search", e.checked);
   }
   _sortOptionChanged(t) {
-    const e = t.target;
-    this._updateConfig("sort_option", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== void 0 && this._updateConfig("sort_option", e);
   }
   _useSeriesImageChanged(t) {
     const e = t.target;
@@ -4100,7 +4156,7 @@ let G = class extends A {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, bt(this, "config-changed", { config: i });
+    this._config = i, yt(this, "config-changed", { config: i });
   }
 };
 G.styles = X`
@@ -4129,21 +4185,21 @@ G.styles = X`
       margin-bottom: 0;
     }
   `;
-ye([
+be([
   P({ attribute: !1 })
 ], G.prototype, "hass", 2);
-ye([
-  u()
+be([
+  g()
 ], G.prototype, "_config", 2);
-G = ye([
+G = be([
   N("jellyha-library-editor")
 ], G);
-var wt = Object.defineProperty, vt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
-  for (var o = a > 1 ? void 0 : a ? vt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
+var vt = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+  for (var o = a > 1 ? void 0 : a ? wt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && wt(e, i, o), o;
+  return a && o && vt(e, i, o), o;
 };
-let v = class extends A {
+let w = class extends A {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
@@ -4498,47 +4554,47 @@ let v = class extends A {
     this.dispatchEvent(e);
   }
 };
-v.styles = Fe;
+w.styles = Fe;
 S([
   P({ attribute: !1 })
-], v.prototype, "hass", 2);
+], w.prototype, "hass", 2);
 S([
   P({ attribute: !1 })
-], v.prototype, "config", 2);
+], w.prototype, "config", 2);
 S([
   P({ attribute: !1 })
-], v.prototype, "item", 2);
+], w.prototype, "item", 2);
 S([
   P({ type: String })
-], v.prototype, "layout", 2);
+], w.prototype, "layout", 2);
 S([
   P({ type: Boolean })
-], v.prototype, "isNextUpHighlight", 2);
+], w.prototype, "isNextUpHighlight", 2);
 S([
-  u()
-], v.prototype, "_pressStartTime", 2);
+  g()
+], w.prototype, "_pressStartTime", 2);
 S([
-  u()
-], v.prototype, "_holdTimer", 2);
+  g()
+], w.prototype, "_holdTimer", 2);
 S([
-  u()
-], v.prototype, "_isHoldActive", 2);
+  g()
+], w.prototype, "_isHoldActive", 2);
 S([
-  u()
-], v.prototype, "_itemTouchStartX", 2);
+  g()
+], w.prototype, "_itemTouchStartX", 2);
 S([
-  u()
-], v.prototype, "_itemTouchStartY", 2);
+  g()
+], w.prototype, "_itemTouchStartY", 2);
 S([
-  u()
-], v.prototype, "_clickTimer", 2);
+  g()
+], w.prototype, "_clickTimer", 2);
 S([
-  u()
-], v.prototype, "_rewindActive", 2);
-v = S([
+  g()
+], w.prototype, "_rewindActive", 2);
+w = S([
   N("jellyha-media-item")
-], v);
-var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, b = (t, e, i, a) => {
+], w);
+var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, y = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? $t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && xt(e, i, o), o;
@@ -4596,7 +4652,7 @@ function St(t, e, i) {
   });
   t.dispatchEvent(a);
 }
-let y = class extends A {
+let b = class extends A {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -4703,9 +4759,9 @@ let y = class extends A {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, d = o <= 5, p = o >= h - 5, g = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, d = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
         let _ = !1;
-        if (g) {
+        if (u) {
           const m = this._getTotalPages();
           d && e > 0 && this._currentPage === 0 && (_ = !0), p && e < 0 && this._currentPage >= m - 1 && (_ = !0);
         } else
@@ -4755,9 +4811,9 @@ let y = class extends A {
     if (Math.abs(e) > Math.abs(i)) {
       const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (a && Math.abs(e) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, d = o <= 5, p = o >= h - 5, g = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = a, h = s - r, d = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
         let _ = !1;
-        if (g) {
+        if (u) {
           const m = this._getTotalPages();
           d && e > 0 && this._currentPage === 0 && (_ = !0), p && e < 0 && this._currentPage >= m - 1 && (_ = !0);
         } else
@@ -5093,13 +5149,13 @@ let y = class extends A {
           class="carousel ${e ? "paginated" : "scrollable"}"
           @scroll="${e ? c : this._handleScroll}"
         >
-          ${p.map((g) => n`
+          ${p.map((u) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
-                .item=${g}
+                .item=${u}
                 .layout=${"grid"}
-                .isNextUpHighlight=${this._config.media_type === "next_up" && g.id === this._mostRecentNextUpItemId}
+                .isNextUpHighlight=${this._config.media_type === "next_up" && u.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -5113,7 +5169,7 @@ let y = class extends A {
    * Render list with optional pagination
    */
   _renderList(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t, g = this._effectiveListColumns, _ = g === 1;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t, u = this._effectiveListColumns, _ = u === 1;
     return n`
       <div 
         class="list-wrapper"
@@ -5126,7 +5182,7 @@ let y = class extends A {
       >
         <div 
           class="list ${e ? "paginated" : ""} ${_ ? "single-column" : ""}"
-          style="--jf-list-columns: ${g}"
+          style="--jf-list-columns: ${u}"
         >
           ${p.map((m) => n`
             <jellyha-media-item
@@ -5147,7 +5203,7 @@ let y = class extends A {
    * Render grid with optional pagination
    */
   _renderGrid(t, e) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t, g = this._config.columns || 1, _ = g === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, o = a ? Number(a) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(t.length / i), s), h = this._currentPage * i, d = !e && (this._config.auto_swipe_interval || 0) > 0, p = e ? t.slice(h, h + i) : d ? [...t, ...t] : t, u = this._config.columns || 1, _ = u === 1, m = !e && (this._config.auto_swipe_interval || 0) > 0;
     return n`
       <div class="grid-outer">
         <div 
@@ -5162,7 +5218,7 @@ let y = class extends A {
         >
           <div
             class="grid ${e ? "paginated" : ""} ${_ ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
-            style="--jf-columns: ${g}; --jf-grid-rows: ${g}"
+            style="--jf-columns: ${u}; --jf-grid-rows: ${u}"
           >
             ${p.map((f) => n`
                 <jellyha-media-item
@@ -5219,9 +5275,9 @@ let y = class extends A {
           style="transform: translateX(${h}px); width: ${t * 16}px"
         >
           ${Array.from({ length: t }, (d, p) => {
-      const g = Math.abs(p - this._currentPage);
+      const u = Math.abs(p - this._currentPage);
       let _ = "smart-dot";
-      return p === this._currentPage ? _ += " active" : g > 2 ? _ += " hidden" : g === 2 && (_ += " small"), n`
+      return p === this._currentPage ? _ += " active" : u > 2 ? _ += " hidden" : u === 2 && (_ += " small"), n`
               <button
                 type="button"
                 class="${_}"
@@ -5368,62 +5424,62 @@ let y = class extends A {
     `;
   }
 };
-y.styles = Fe;
-b([
+b.styles = Fe;
+y([
   P({ attribute: !1 })
-], y.prototype, "hass", 2);
-b([
-  u()
-], y.prototype, "_config", 2);
-b([
-  u()
-], y.prototype, "_currentPage", 2);
-b([
-  u()
-], y.prototype, "_itemsPerPage", 2);
-b([
-  u()
-], y.prototype, "_pressStartTime", 2);
-b([
-  u()
-], y.prototype, "_holdTimer", 2);
-b([
-  u()
-], y.prototype, "_isHoldActive", 2);
-b([
-  u()
-], y.prototype, "_rewindActive", 2);
-b([
-  u()
-], y.prototype, "_items", 2);
-b([
-  u()
-], y.prototype, "_error", 2);
-b([
-  u()
-], y.prototype, "_lastUpdate", 2);
-b([
-  u()
-], y.prototype, "_mostRecentNextUpItemId", 2);
-b([
-  u()
-], y.prototype, "_searchQuery", 2);
-b([
-  u()
-], y.prototype, "_searchGenre", 2);
-b([
-  gt("jellyha-item-details-modal")
-], y.prototype, "_modal", 2);
-b([
-  u()
-], y.prototype, "_scrollProgress", 2);
-b([
-  u()
-], y.prototype, "_hasScrollableContent", 2);
-y = b([
+], b.prototype, "hass", 2);
+y([
+  g()
+], b.prototype, "_config", 2);
+y([
+  g()
+], b.prototype, "_currentPage", 2);
+y([
+  g()
+], b.prototype, "_itemsPerPage", 2);
+y([
+  g()
+], b.prototype, "_pressStartTime", 2);
+y([
+  g()
+], b.prototype, "_holdTimer", 2);
+y([
+  g()
+], b.prototype, "_isHoldActive", 2);
+y([
+  g()
+], b.prototype, "_rewindActive", 2);
+y([
+  g()
+], b.prototype, "_items", 2);
+y([
+  g()
+], b.prototype, "_error", 2);
+y([
+  g()
+], b.prototype, "_lastUpdate", 2);
+y([
+  g()
+], b.prototype, "_mostRecentNextUpItemId", 2);
+y([
+  g()
+], b.prototype, "_searchQuery", 2);
+y([
+  g()
+], b.prototype, "_searchGenre", 2);
+y([
+  ut("jellyha-item-details-modal")
+], b.prototype, "_modal", 2);
+y([
+  g()
+], b.prototype, "_scrollProgress", 2);
+y([
+  g()
+], b.prototype, "_hasScrollableContent", 2);
+b = y([
   N("jellyha-library-card")
-], y);
-var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, be = (t, e, i, a) => {
+], b);
+var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, ye = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? Pt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && Ct(e, i, o), o;
@@ -5682,13 +5738,13 @@ Y.styles = X`
       flex: 1;
     }
   `;
-be([
+ye([
   P({ attribute: !1 })
 ], Y.prototype, "hass", 2);
-be([
-  u()
+ye([
+  g()
 ], Y.prototype, "_config", 2);
-Y = be([
+Y = ye([
   N("jellyha-now-playing-editor")
 ], Y);
 var At = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, j = (t, e, i, a) => {
@@ -5780,10 +5836,10 @@ let $ = class extends A {
       this._cachedBackdropUrl = Z ? H(Z, 640) : void 0;
     }
     d !== this._cachedColorItemId && h && (this._cachedColorItemId = d, this._extractDominantColor(H(h, 80)));
-    const p = this._cachedBackdropUrl, g = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", q = [se, re].filter(Boolean).join(" • "), V = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", we = i.season !== void 0 ? i.season : e.attributes.media_season, ve = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && we !== void 0 && ve !== void 0 ? `S${String(we).padStart(2, "0")}E${String(ve).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
+    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", q = [se, re].filter(Boolean).join(" • "), V = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", ve = i.season !== void 0 ? i.season : e.attributes.media_season, we = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && ve !== void 0 && we !== void 0 ? `S${String(ve).padStart(2, "0")}E${String(we).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
     return n`
-            <ha-card class="jellyha-now-playing ${g ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
-                ${g ? n`
+            <ha-card class="jellyha-now-playing ${u ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
+                ${u ? n`
                     <div class="card-background" style="background-image: url('${p}')"></div>
                     <div class="card-overlay"></div>
                 ` : c}
@@ -5956,8 +6012,8 @@ let $ = class extends A {
       const d = h ? `${h}_unwatched` : "";
       let p = d && this.hass.states[d] ? d : "";
       p || (p = Object.keys(this.hass.states).find((_) => _.startsWith("sensor.") && _.endsWith("_unwatched")) || "");
-      const g = p ? this.hass.states[p].state : "0";
-      a = a.replace(/\[number\]/g, g);
+      const u = p ? this.hass.states[p].state : "0";
+      a = a.replace(/\[number\]/g, u);
     }
     return n`
             <ha-card class="jellyha-now-playing empty-state">
@@ -6152,14 +6208,14 @@ let $ = class extends A {
         const o = a.getImageData(0, 0, 50, 50).data;
         let s = 0, r = 0, h = 0, d = 0;
         for (let p = 0; p < o.length; p += 16) {
-          const g = o[p], _ = o[p + 1], m = o[p + 2], f = Math.max(g, _, m), x = Math.min(g, _, m), D = f === 0 ? 0 : (f - x) / f, C = f / 255;
-          D > d && C > 0.15 && C < 0.95 && (d = D, s = g, r = _, h = m);
+          const u = o[p], _ = o[p + 1], m = o[p + 2], f = Math.max(u, _, m), x = Math.min(u, _, m), D = f === 0 ? 0 : (f - x) / f, C = f / 255;
+          D > d && C > 0.15 && C < 0.95 && (d = D, s = u, r = _, h = m);
         }
         if (d > 0.1) {
-          const p = s / 255, g = r / 255, _ = h / 255, m = Math.max(p, g, _), f = Math.min(p, g, _);
+          const p = s / 255, u = r / 255, _ = h / 255, m = Math.max(p, u, _), f = Math.min(p, u, _);
           let x = 0;
           const D = (m + f) / 2, C = m - f, se = C === 0 ? 0 : C / (1 - Math.abs(2 * D - 1));
-          C !== 0 && (m === p ? x = ((g - _) / C + (g < _ ? 6 : 0)) * 60 : m === g ? x = ((_ - p) / C + 2) * 60 : x = ((p - g) / C + 4) * 60);
+          C !== 0 && (m === p ? x = ((u - _) / C + (u < _ ? 6 : 0)) * 60 : m === u ? x = ((_ - p) / C + 2) * 60 : x = ((p - u) / C + 4) * 60);
           const re = Math.max(D * 100, 70), q = Math.max(se * 100, 60);
           this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(q)}%, ${Math.round(re)}%)`;
         } else
@@ -6190,9 +6246,9 @@ let $ = class extends A {
   _doLayoutCheck() {
     const t = this.shadowRoot?.querySelector(".title"), e = this.shadowRoot?.querySelector(".info-bottom");
     if (!t || !e) return;
-    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 20, d = 18, g = a.bottom - i.top + 22, m = g + h + d;
+    const i = this.getBoundingClientRect(), a = t.getBoundingClientRect(), r = e.getBoundingClientRect().top - i.top - 8, h = 20, d = 18, u = a.bottom - i.top + 22, m = u + h + d;
     let f = 0;
-    m > r && (f = 1), g > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
+    m > r && (f = 1), u > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
   }
   _formatTicks(t) {
     const e = t < 0, i = Math.floor(Math.abs(t) / 1e7), a = Math.floor(i / 3600), o = Math.floor(i % 3600 / 60), s = i % 60, r = e ? "-" : "";
@@ -7280,31 +7336,31 @@ j([
   P({ attribute: !1 })
 ], $.prototype, "hass", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_config", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_rewindActive", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_overflowState", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_dominantColor", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_longPressProgress", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_stopPulse", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_isDragging", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_dragPercentage", 2);
 j([
-  u()
+  g()
 ], $.prototype, "_optimisticSeekPercent", 2);
 $ = j([
   N("jellyha-now-playing-card")
