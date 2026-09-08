@@ -21,6 +21,7 @@ Jellyfin for Home Assistant
 - ⏯️ Full playback control: Play, Pause, Stop, Seek, Next/Previous Track, Shuffle, Repeat
 - ⏳ Accurate playback tracking: Elapsed/remaining time, +30s/-10s skip controls
 - 🎮 Per-user media players with transport and volume controls
+- 📺 Dedicated per-device media players for client devices (Smart TVs, Android TV, Fire TV sticks) for room-specific automations
 - ⏭️ "Next Up" support to resume TV shows
 - 🎨 Three layouts: Carousel, Grid, List
 - 🌙 Automatic dark/light theme adaptation
@@ -113,9 +114,10 @@ You can customize how JellyHA behaves directly from the integrations page:
 1. Go to **Settings** → **Devices & Services**
 2. Find **JellyHA** and click **Configure**
 3. Adjust the **Library Refresh Interval** (ranges from `Off` for pure WebSocket push to `24 hours`)
-4. Set an **External URL** if necessary
-5. Toggle **Refresh fetched data immediately** if you want to force an update right away.
-6. Click **Submit**
+4. Select **Client/Device Media Players** to create dedicated media player entities (`media_player.jellyha_<device_name>`) for physical devices (e.g. Living Room TV, Bedroom Android Box), tracking playback per device regardless of which user is watching
+5. Set an **External URL** if necessary
+6. Toggle **Refresh fetched data immediately** if you want to force an update right away.
+7. Click **Submit**
 
 
 ### Jellyfin API Key

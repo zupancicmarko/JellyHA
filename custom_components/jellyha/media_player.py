@@ -21,7 +21,14 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .browse_media import async_browse_media, async_browse_media_search, parse_item_id
-from .const import CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME, DOMAIN, TICKS_PER_SECOND
+from .const import (
+    CONF_DEVICE_NAME,
+    CONF_DEVICE_NAMES,
+    CONF_DEVICE_PLAYERS,
+    DEFAULT_DEVICE_NAME,
+    DOMAIN,
+    TICKS_PER_SECOND,
+)
 from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .device import get_device_info
 from . import JellyHAConfigEntry
@@ -51,6 +58,17 @@ async def async_setup_entry(
                     session_coordinator, entry, user_id, username, device_name
                 )
             )
+
+    # Create a media player for each configured client device
+    device_ids: list[str] = entry.options.get(CONF_DEVICE_PLAYERS, [])
+    device_names: dict[str, str] = entry.options.get(CONF_DEVICE_NAMES, {})
+    for dev_id in device_ids:
+        dev_title = device_names.get(dev_id) or "Device"
+        entities.append(
+            JellyHADeviceMediaPlayer(
+                session_coordinator, entry, dev_id, dev_title, device_name
+            )
+        )
 
     async_add_entities(entities)
 
@@ -180,16 +198,13 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
         )
 
 
-class JellyHAUserMediaPlayer(
+class JellyHABasePlaybackMediaPlayer(
     CoordinatorEntity[JellyHASessionCoordinator], MediaPlayerEntity
 ):
-    """Media player entity tracking a Jellyfin user's active playback session.
+    """Base media player entity for Jellyfin playback sessions.
 
-    One entity is created per Jellyfin user.  When the user is not playing
-    anything the entity reports IDLE.  During playback it exposes the
-    standard Home Assistant media_player transport controls (play, pause,
-    stop, seek, next/previous track) and volume controls by delegating to
-    the Jellyfin remote-session API.
+    Provides common playback state extraction, media metadata properties,
+    chapter/segment awareness, and transport controls.
     """
 
     _attr_has_entity_name = True
@@ -210,19 +225,12 @@ class JellyHAUserMediaPlayer(
         self,
         coordinator: JellyHASessionCoordinator,
         entry: ConfigEntry,
-        user_id: str,
-        username: str,
         device_name: str,
     ) -> None:
-        """Initialize the user media player."""
+        """Initialize the base media player."""
         super().__init__(coordinator)
         self._entry = entry
-        self._user_id = user_id
-        self._username = username
         self._device_name = device_name
-        self._attr_unique_id = f"{entry.entry_id}_media_player_{user_id}"
-        self._attr_name = f"{username}"
-        self._attr_icon = "mdi:account-play"
 
     # ------------------------------------------------------------------
     # Device info
@@ -234,35 +242,12 @@ class JellyHAUserMediaPlayer(
         return get_device_info(self._entry.entry_id, self._device_name)
 
     # ------------------------------------------------------------------
-    # Session lookup — reuses same priority logic as JellyHAUserSensor
+    # Active session lookup (implemented by subclasses)
     # ------------------------------------------------------------------
 
     def _get_active_session(self) -> dict[str, Any] | None:
-        """Get the active session for this user with stable priority.
-
-        If the user has multiple active sessions (e.g. phone + TV), prefer
-        the one that is currently playing (not paused).  Ties are broken by
-        session ID for determinism.
-        """
-        if not self.coordinator.data:
-            return None
-
-        user_sessions = [
-            s
-            for s in self.coordinator.data
-            if s.get("UserId") == self._user_id and "NowPlayingItem" in s
-        ]
-
-        if not user_sessions:
-            return None
-
-        user_sessions.sort(
-            key=lambda s: (
-                s.get("PlayState", {}).get("IsPaused", False),
-                s.get("Id", ""),
-            )
-        )
-        return user_sessions[0]
+        """Get the active session for this media player entity."""
+        raise NotImplementedError
 
     # ------------------------------------------------------------------
     # State
@@ -272,7 +257,7 @@ class JellyHAUserMediaPlayer(
     def state(self) -> MediaPlayerState:
         """Return the current state of the media player."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return MediaPlayerState.IDLE
 
         if session.get("PlayState", {}).get("IsPaused", False):
@@ -288,7 +273,7 @@ class JellyHAUserMediaPlayer(
     def media_content_type(self) -> MediaType | str | None:
         """Return the content type of current playing media."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item_type = session.get("NowPlayingItem", {}).get("Type", "")
         if item_type == "Episode":
@@ -303,7 +288,7 @@ class JellyHAUserMediaPlayer(
     def media_title(self) -> str | None:
         """Return the title of current playing media."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item = session.get("NowPlayingItem", {})
         return item.get("Name")
@@ -312,7 +297,7 @@ class JellyHAUserMediaPlayer(
     def media_artist(self) -> str | None:
         """Return the artist of current playing media (music track)."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item = session.get("NowPlayingItem", {})
         album_artist = item.get("AlbumArtist")
@@ -323,7 +308,7 @@ class JellyHAUserMediaPlayer(
     def media_album_name(self) -> str | None:
         """Return the album name of current playing media (music track)."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item = session.get("NowPlayingItem", {})
         return item.get("Album")
@@ -332,7 +317,7 @@ class JellyHAUserMediaPlayer(
     def media_series_title(self) -> str | None:
         """Return the series title (TV shows only)."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item = session.get("NowPlayingItem", {})
         return item.get("SeriesName")
@@ -341,7 +326,7 @@ class JellyHAUserMediaPlayer(
     def media_season(self) -> str | None:
         """Return the season number (TV shows only)."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item = session.get("NowPlayingItem", {})
         season = item.get("ParentIndexNumber")
@@ -351,7 +336,7 @@ class JellyHAUserMediaPlayer(
     def media_episode(self) -> str | None:
         """Return the episode number (TV shows only)."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         item = session.get("NowPlayingItem", {})
         episode = item.get("IndexNumber")
@@ -361,7 +346,7 @@ class JellyHAUserMediaPlayer(
     def media_content_id(self) -> str | None:
         """Return the content ID of current playing media."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         return session.get("NowPlayingItem", {}).get("Id")
 
@@ -369,7 +354,7 @@ class JellyHAUserMediaPlayer(
     def media_image_url(self) -> str | None:
         """Return the image URL of current playing media (signed poster)."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         return session.get("jellyha_poster_url")
 
@@ -382,7 +367,7 @@ class JellyHAUserMediaPlayer(
     def media_duration(self) -> int | None:
         """Return the duration of current playing media in seconds."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         ticks = session.get("NowPlayingItem", {}).get("RunTimeTicks", 0)
         if ticks and ticks > 0:
@@ -393,7 +378,7 @@ class JellyHAUserMediaPlayer(
     def media_position(self) -> int | None:
         """Return the current position in seconds."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         ticks = session.get("PlayState", {}).get("PositionTicks", 0)
         return int(ticks / TICKS_PER_SECOND) if ticks else 0
@@ -406,7 +391,7 @@ class JellyHAUserMediaPlayer(
         current position in the UI without polling every second.
         """
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         return dt_util.utcnow()
 
@@ -414,7 +399,7 @@ class JellyHAUserMediaPlayer(
     def shuffle(self) -> bool | None:
         """Return True if shuffle is enabled."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         play_state = session.get("PlayState", {})
         return (
@@ -426,7 +411,7 @@ class JellyHAUserMediaPlayer(
     def repeat(self) -> RepeatMode | str | None:
         """Return current repeat mode."""
         session = self._get_active_session()
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return None
         play_state = session.get("PlayState", {})
         mode = play_state.get("RepeatMode", "RepeatNone")
@@ -450,8 +435,6 @@ class JellyHAUserMediaPlayer(
         session = self._get_active_session()
         if not session:
             return None
-        # Jellyfin stores volume as 0-100 int in TranscodingInfo or
-        # may not expose it at all depending on the client.
         return None
 
     @property
@@ -463,33 +446,36 @@ class JellyHAUserMediaPlayer(
         return session.get("PlayState", {}).get("IsMuted", False)
 
     # ------------------------------------------------------------------
-    # Extra state attributes
+    # Extra state attributes base helper
     # ------------------------------------------------------------------
 
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return additional state attributes."""
-        session = self._get_active_session()
+    def _get_common_extra_attributes(
+        self, session: dict[str, Any] | None
+    ) -> dict[str, Any]:
+        """Extract common playback attributes from active session."""
         attrs: dict[str, Any] = {
-            "user_id": self._user_id,
-            "user_name": self._username,
-            "session_id": None,
-            "device_name": None,
-            "client": None,
+            "session_id": session.get("Id") if session else None,
+            "device_name": session.get("DeviceName") if session else None,
+            "client": session.get("Client") if session else None,
             "item_id": None,
             "title": None,
             "progress_percent": 0,
             "position_ticks": 0,
+            "duration_ticks": 0,
+            "runtime_minutes": 0,
             "image_url": None,
             "backdrop_url": None,
             "media_type": None,
             "is_paused": False,
+            "repeat_mode": "RepeatNone",
+            "shuffle_mode": "Sorted",
+            "is_favorite": False,
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
         }
 
-        if not session:
+        if not session or "NowPlayingItem" not in session:
             return attrs
 
         item = session.get("NowPlayingItem", {})
@@ -497,9 +483,6 @@ class JellyHAUserMediaPlayer(
         item_type = item.get("Type")
         item_id = item.get("Id")
 
-        attrs["session_id"] = session.get("Id")
-        attrs["device_name"] = session.get("DeviceName")
-        attrs["client"] = session.get("Client")
         attrs["item_id"] = item_id
         attrs["media_type"] = item_type
         attrs["title"] = item.get("Name")
@@ -590,7 +573,7 @@ class JellyHAUserMediaPlayer(
         """Send play (unpause) command to session."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot play", self._username)
+            _LOGGER.debug("No active session for %s, cannot play", self.name)
             return
         await self.coordinator.api.session_control(session["Id"], "Unpause")
 
@@ -598,7 +581,7 @@ class JellyHAUserMediaPlayer(
         """Send pause command to session."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot pause", self._username)
+            _LOGGER.debug("No active session for %s, cannot pause", self.name)
             return
         await self.coordinator.api.session_control(session["Id"], "Pause")
 
@@ -606,7 +589,7 @@ class JellyHAUserMediaPlayer(
         """Send stop command to session."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot stop", self._username)
+            _LOGGER.debug("No active session for %s, cannot stop", self.name)
             return
         await self.coordinator.api.session_control(session["Id"], "Stop")
 
@@ -614,7 +597,7 @@ class JellyHAUserMediaPlayer(
         """Seek to a position (in seconds)."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot seek", self._username)
+            _LOGGER.debug("No active session for %s, cannot seek", self.name)
             return
         position_ticks = int(position * TICKS_PER_SECOND)
         await self.coordinator.api.session_seek(session["Id"], position_ticks)
@@ -623,7 +606,7 @@ class JellyHAUserMediaPlayer(
         """Send next track command to session."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot skip", self._username)
+            _LOGGER.debug("No active session for %s, cannot skip", self.name)
             return
         await self.coordinator.api.session_control(session["Id"], "NextTrack")
 
@@ -631,7 +614,7 @@ class JellyHAUserMediaPlayer(
         """Send previous track command to session."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot go back", self._username)
+            _LOGGER.debug("No active session for %s, cannot go back", self.name)
             return
         await self.coordinator.api.session_control(session["Id"], "PreviousTrack")
 
@@ -639,9 +622,8 @@ class JellyHAUserMediaPlayer(
         """Set volume level (0.0 to 1.0)."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot set volume", self._username)
+            _LOGGER.debug("No active session for %s, cannot set volume", self.name)
             return
-        # Jellyfin expects 0-100 integer
         volume_int = str(int(volume * 100))
         await self.coordinator.api.session_general_command(
             session["Id"], "SetVolume", {"Volume": volume_int}
@@ -651,7 +633,7 @@ class JellyHAUserMediaPlayer(
         """Mute or unmute the volume."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot mute", self._username)
+            _LOGGER.debug("No active session for %s, cannot mute", self.name)
             return
         command = "Mute" if mute else "Unmute"
         await self.coordinator.api.session_general_command(session["Id"], command)
@@ -660,7 +642,7 @@ class JellyHAUserMediaPlayer(
         """Enable or disable shuffle mode."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot set shuffle", self._username)
+            _LOGGER.debug("No active session for %s, cannot set shuffle", self.name)
             return
         mode = "Shuffle" if shuffle else "Sorted"
         await self.coordinator.api.session_general_command(
@@ -671,7 +653,7 @@ class JellyHAUserMediaPlayer(
         """Set repeat mode."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for user %s, cannot set repeat", self._username)
+            _LOGGER.debug("No active session for %s, cannot set repeat", self.name)
             return
         if repeat == RepeatMode.ALL:
             mode = "RepeatAll"
@@ -682,5 +664,169 @@ class JellyHAUserMediaPlayer(
         await self.coordinator.api.session_general_command(
             session["Id"], "SetRepeatMode", {"RepeatMode": mode}
         )
+
+
+class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
+    """Media player entity tracking a Jellyfin user's active playback session.
+
+    One entity is created per Jellyfin user. When the user is not playing
+    anything the entity reports IDLE. During playback it exposes the
+    standard Home Assistant media_player transport controls and rich
+    metadata attributes.
+    """
+
+    def __init__(
+        self,
+        coordinator: JellyHASessionCoordinator,
+        entry: ConfigEntry,
+        user_id: str,
+        username: str,
+        device_name: str,
+    ) -> None:
+        """Initialize the user media player."""
+        super().__init__(coordinator, entry, device_name)
+        self._user_id = user_id
+        self._username = username
+        self._attr_unique_id = f"{entry.entry_id}_media_player_{user_id}"
+        self._attr_name = f"{username}"
+        self._attr_icon = "mdi:account-play"
+
+    def _get_active_session(self) -> dict[str, Any] | None:
+        """Get the active session for this user with stable priority.
+
+        If the user has multiple active sessions (e.g. phone + TV), prefer
+        the one that is currently playing (not paused). Ties are broken by
+        session ID for determinism.
+        """
+        if not self.coordinator.data:
+            return None
+
+        user_sessions = [
+            s
+            for s in self.coordinator.data
+            if s.get("UserId") == self._user_id and "NowPlayingItem" in s
+        ]
+
+        if not user_sessions:
+            return None
+
+        user_sessions.sort(
+            key=lambda s: (
+                s.get("PlayState", {}).get("IsPaused", False),
+                s.get("Id", ""),
+            )
+        )
+        return user_sessions[0]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        session = self._get_active_session()
+        attrs = self._get_common_extra_attributes(session)
+        attrs["user_id"] = self._user_id
+        attrs["user_name"] = self._username
+        return attrs
+
+
+class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
+    """Media player entity tracking a physical client device's playback session.
+
+    Entities are created for client devices selected in integration options
+    (e.g., Smart TVs, streaming boxes, media PCs). State and variables are
+    tracked per client device regardless of which user is currently logged in.
+    """
+
+    def __init__(
+        self,
+        coordinator: JellyHASessionCoordinator,
+        entry: ConfigEntry,
+        device_id: str,
+        custom_device_name: str,
+        base_device_name: str,
+    ) -> None:
+        """Initialize the device media player."""
+        super().__init__(coordinator, entry, base_device_name)
+        self._device_id = device_id
+        self._custom_device_name = custom_device_name
+        self._attr_unique_id = f"{entry.entry_id}_device_player_{device_id}"
+        self._attr_name = f"{custom_device_name}"
+        lower_name = custom_device_name.lower()
+        if any(w in lower_name for w in ("phone", "s20", "s21", "s22", "s23", "s24", "s25", "pixel", "iphone", "mobile")):
+            self._attr_icon = "mdi:cellphone-play"
+        elif any(w in lower_name for w in ("tablet", "ipad", "pad", "tab")):
+            self._attr_icon = "mdi:tablet-play"
+        else:
+            self._attr_icon = "mdi:television-play"
+
+    def _is_matching_device_session(self, s: dict[str, Any]) -> bool:
+        """Check if a session belongs to this device."""
+        session_dev_id = s.get("DeviceId") or ""
+        if not session_dev_id or not self._device_id:
+            return False
+        # Exact match
+        if session_dev_id == self._device_id:
+            return True
+        # Prefix match: Jellyfin mobile apps (e.g. Android ExoPlayer) append user ID or sub-id to DeviceId during playback
+        if session_dev_id.startswith(self._device_id):
+            return True
+        # Reverse prefix match if registered device ID contains extra suffix
+        if self._device_id.startswith(session_dev_id) and len(session_dev_id) >= 8:
+            return True
+        # Fallback: device name matches and device IDs share a common prefix (at least 8 chars)
+        dev_name = s.get("DeviceName")
+        if dev_name and self._custom_device_name and dev_name.strip().lower() == self._custom_device_name.strip().lower():
+            if len(session_dev_id) >= 8 and len(self._device_id) >= 8:
+                if session_dev_id[:8] == self._device_id[:8]:
+                    return True
+        return False
+
+    def _get_active_session(self) -> dict[str, Any] | None:
+        """Get the active session for this device with stable priority.
+
+        If multiple sessions share the DeviceId, prefer sessions that have
+        NowPlayingItem and are currently playing (not paused). Ties are broken
+        by session ID for determinism.
+        """
+        if not self.coordinator.data:
+            return None
+
+        device_sessions = [
+            s
+            for s in self.coordinator.data
+            if self._is_matching_device_session(s)
+        ]
+
+        if not device_sessions:
+            return None
+
+        device_sessions.sort(
+            key=lambda s: (
+                0 if "NowPlayingItem" in s else 1,
+                s.get("PlayState", {}).get("IsPaused", False),
+                s.get("Id", ""),
+            )
+        )
+        selected = device_sessions[0]
+        _LOGGER.debug(
+            "Device player '%s' matched %d sessions. Selected session %s (NowPlaying=%s, Item=%s)",
+            self._custom_device_name,
+            len(device_sessions),
+            selected.get("Id"),
+            "NowPlayingItem" in selected,
+            selected.get("NowPlayingItem", {}).get("Name"),
+        )
+        return selected
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional state attributes."""
+        session = self._get_active_session()
+        attrs = self._get_common_extra_attributes(session)
+        attrs["device_id"] = self._device_id
+        if not attrs.get("device_name"):
+            attrs["device_name"] = self._custom_device_name
+        attrs["user_id"] = session.get("UserId") if session else None
+        attrs["user_name"] = session.get("UserName") if session else None
+        return attrs
 
 

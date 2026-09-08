@@ -79,9 +79,15 @@
                 "title": "Server Settings",
                 "data": {
                     "server_url": "Server URL",
+                    "external_url": "External URL (Optional, for UI links)",
+                    "libraries": "Libraries",
                     "refresh_interval": "Library Refresh Interval",
+                    "device_players": "Client/Device Media Players (Optional)",
                     "trigger_library_refresh": "Refresh fetched data immediately",
                     "update_credentials": "Update Credentials / Switch User"
+                },
+                "data_description": {
+                    "device_players": "Select client devices (e.g. Smart TVs, Android TV boxes) to create dedicated media player entities for. These maintain state and attributes per device regardless of which user is watching."
                 }
             },
             "auth_method": {

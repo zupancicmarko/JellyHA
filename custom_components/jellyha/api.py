@@ -198,6 +198,13 @@ class JellyfinApiClient:
         """Get list of users."""
         return await self._request("GET", "/Users")
 
+    async def get_devices(self) -> list[dict[str, Any]]:
+        """Get list of registered devices from Jellyfin."""
+        result = await self._request("GET", "/Devices")
+        if isinstance(result, dict):
+            return result.get("Items", [])
+        return result or []
+
     async def get_user(self, user_id: str) -> dict[str, Any]:
         """Get user by ID."""
         return await self._request("GET", f"/Users/{user_id}")

@@ -46,6 +46,17 @@ Each configured Jellyfin user gets a dedicated media player entity (e.g., `media
   * `series_image_url`: String (Portrait poster of parent series)
   * `backdrop_url`: String (Fanart / backdrop wallpaper URL)
 
+### Client / Device Playback Entity: `media_player.jellyha_<device_name>`
+Users can opt-in to dedicated media player entities per physical client device (e.g., `media_player.jellyha_living_room_tv`, `media_player.jellyha_bedroom_shield`) configured in Integration Options.
+* **States & Attributes**: 100% attribute parity with per-user media players (all standard HA attributes, extra attributes, chapter/segment detection, and transport controls).
+* **Device-Specific Attributes**:
+  * `device_id`: Jellyfin physical client device GUID
+  * `device_name`: Name of client device
+  * `client`: Jellyfin client app name (e.g. `Jellyfin Android TV`, `Jellyfin Web`)
+  * `user_name`: Dynamically reflects the Jellyfin username currently watching on this device (or `null` when idle)
+  * `user_id`: Dynamically reflects the Jellyfin user ID currently watching on this device
+* **Use Case**: Room-based automations (e.g., cinema lighting, motorized shades, pause-on-doorbell) tied to a specific room TV regardless of which family member is logged in.
+
 ### Server & Library Sensor Entities:
 * `sensor.jellyha_server_version`: Server version (e.g. `10.10.6`)
 * `sensor.jellyha_active_sessions`: Number of currently active playback sessions

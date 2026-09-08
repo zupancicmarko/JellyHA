@@ -16,6 +16,8 @@ CONF_LIBRARIES = "libraries"
 CONF_REFRESH_INTERVAL = "refresh_interval"
 CONF_DEVICE_NAME = "device_name"
 CONF_INSTANCE_LABEL = "instance_label"
+CONF_DEVICE_PLAYERS = "device_players"
+CONF_DEVICE_NAMES = "device_names"
 
 # Defaults
 DEFAULT_REFRESH_INTERVAL = 3600  # 1 hour

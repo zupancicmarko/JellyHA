@@ -22,6 +22,8 @@ from .const import (
     CONF_API_KEY,
     CONF_AUTH_METHOD,
     CONF_DEVICE_NAME,
+    CONF_DEVICE_NAMES,
+    CONF_DEVICE_PLAYERS,
     CONF_LIBRARIES,
     CONF_PASSWORD,
     CONF_REFRESH_INTERVAL,
@@ -462,24 +464,48 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
         user_id = self._config_entry.data.get(CONF_USER_ID)
         current_libraries = self._config_entry.data.get(CONF_LIBRARIES, [])
         
-        if self._server_url and self._api_key and user_id:
+        # Fetch available devices for the dropdown
+        device_options: list[selector.SelectOptionDict] = []
+        device_map: dict[str, str] = {}
+
+        if self._server_url and self._api_key:
             try:
                 session = async_get_clientsession(self.hass)
                 api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
-                libraries = await api.get_libraries(user_id)
-                library_options = [
-                    selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
-                    for lib in libraries
-                    if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
-                ]
+                if user_id:
+                    libraries = await api.get_libraries(user_id)
+                    library_options = [
+                        selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
+                        for lib in libraries
+                        if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
+                    ]
+                devices = await api.get_devices()
+                for d in devices:
+                    dev_id = d.get("Id")
+                    if not dev_id:
+                        continue
+                    dev_name = d.get("Name") or d.get("AppName") or "Unknown Device"
+                    app_name = d.get("AppName")
+                    label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
+                    device_options.append(selector.SelectOptionDict(value=dev_id, label=label))
+                    device_map[dev_id] = dev_name
             except Exception as err:
-                _LOGGER.error("Failed to fetch Jellyfin libraries for Options Flow: %s", err)
+                _LOGGER.error("Failed to fetch Jellyfin data for Options Flow: %s", err)
 
         if not library_options:
             library_options = [
                 selector.SelectOptionDict(value="none", label="No compatible libraries found")
             ]
-        
+
+        # Ensure any currently configured device IDs are present in the list
+        existing_device_ids = self._config_entry.options.get(CONF_DEVICE_PLAYERS, [])
+        existing_names = self._config_entry.options.get(CONF_DEVICE_NAMES, {})
+        for dev_id in existing_device_ids:
+            if not any(opt["value"] == dev_id for opt in device_options):
+                cached_name = existing_names.get(dev_id, dev_id)
+                device_options.append(selector.SelectOptionDict(value=dev_id, label=f"{cached_name} (Saved)"))
+                device_map[dev_id] = cached_name
+
         if user_input is not None:
             # Update generic options
             new_data = dict(self._config_entry.data)
@@ -493,6 +519,7 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 except JellyfinConnectionError:
                     errors["base"] = "cannot_connect"
             
+            if not errors:
                 if CONF_REFRESH_INTERVAL in user_input:
                     new_options[CONF_REFRESH_INTERVAL] = int(user_input[CONF_REFRESH_INTERVAL])
 
@@ -502,11 +529,23 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 if CONF_LIBRARIES in user_input:
                     new_data[CONF_LIBRARIES] = user_input[CONF_LIBRARIES]
 
-                # Update the entry with these preliminary changes
+                if CONF_DEVICE_PLAYERS in user_input:
+                    selected_devs = user_input[CONF_DEVICE_PLAYERS]
+                    new_options[CONF_DEVICE_PLAYERS] = selected_devs
+                    current_names = dict(self._config_entry.options.get(CONF_DEVICE_NAMES, {}))
+                    for dev_id in selected_devs:
+                        if dev_id in device_map:
+                            current_names[dev_id] = device_map[dev_id]
+                    # Retain only selected devices in name cache
+                    new_options[CONF_DEVICE_NAMES] = {
+                        k: v for k, v in current_names.items() if k in selected_devs
+                    }
+
+                # Update the entry with any data changes
                 self.hass.config_entries.async_update_entry(
                     self._config_entry,
                     data=new_data,
-                    options=new_options
+                    options=new_options,
                 )
 
                 # Check if user wants to update credentials
@@ -517,7 +556,7 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 if user_input.get("trigger_library_refresh"):
                     await self.hass.config_entries.async_reload(self._config_entry.entry_id)
 
-                return self.async_abort(reason="configuration_saved")
+                return self.async_create_entry(title="", data=new_options)
 
         return self.async_show_form(
             step_id="init",
@@ -562,6 +601,16 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                                 selector.SelectOptionDict(value=str(v), label=label)
                                 for label, v in REFRESH_INTERVAL_OPTIONS
                             ],
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                    vol.Optional(
+                        CONF_DEVICE_PLAYERS,
+                        default=self._config_entry.options.get(CONF_DEVICE_PLAYERS, []),
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=device_options,
+                            multiple=True,
                             mode=selector.SelectSelectorMode.DROPDOWN,
                         )
                     ),

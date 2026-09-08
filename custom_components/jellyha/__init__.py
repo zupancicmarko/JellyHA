@@ -128,6 +128,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
     entry.async_on_unload(
         hass.bus.async_listen(f"{DOMAIN}_event", _handle_media_event)
     )
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     
     return True
 
