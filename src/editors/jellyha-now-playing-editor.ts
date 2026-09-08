@@ -120,11 +120,14 @@ export class JellyHANowPlayingEditor extends LitElement {
         </div>
 
         <div class="form-row">
-          <ha-textfield
-            label="${localize(lang, 'editor.title')} (Optional)"
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{ text: {} }}
             .value=${this._config.title || ''}
-            @input=${this._titleChanged}
-          ></ha-textfield>
+            .label="${localize(lang, 'editor.title')} (Optional)"
+            label="${localize(lang, 'editor.title')} (Optional)"
+            @value-changed=${this._titleChanged}
+          ></ha-selector>
         </div>
 
         <div class="checkbox-pair">
@@ -236,9 +239,9 @@ export class JellyHANowPlayingEditor extends LitElement {
     }
   }
 
-  private _titleChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._updateConfig('title', target.value);
+  private _titleChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('title', value);
   }
 
   private _showTitleChanged(e: Event): void {

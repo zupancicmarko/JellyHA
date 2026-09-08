@@ -87,11 +87,14 @@ export class JellyHALibraryEditor extends LitElement {
         </div>
 
         <div class="form-row">
-          <ha-textfield
-            label="${localize(lang, 'editor.title')}"
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{ text: {} }}
             .value=${this._config.title || ''}
-            @input=${this._titleChanged}
-          ></ha-textfield>
+            .label=${localize(lang, 'editor.title')}
+            label="${localize(lang, 'editor.title')}"
+            @value-changed=${this._titleChanged}
+          ></ha-selector>
         </div>
 
         <div class="side-by-side">
@@ -140,63 +143,95 @@ export class JellyHALibraryEditor extends LitElement {
         ${this._config.layout === 'grid' || this._config.layout === 'list'
         ? html`
               <div class="form-row">
-                <ha-slider
-                  labeled
-                  min="1"
-                  max="${this._config.layout === 'list' ? 8 : 12}"
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+                    number: {
+                      min: 1,
+                      max: this._config.layout === 'list' ? 8 : 12,
+                      mode: 'slider',
+                    },
+                  }}
                   .value=${this._config.columns || 1}
-                  @change=${this._columnsChanged}
-                ></ha-slider>
-                <span>${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}</span>
+                  .label=${`${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}`}
+                  label="${`${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}`}"
+                  @value-changed=${this._columnsChanged}
+                ></ha-selector>
               </div>
             `
         : ''}
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                number: {
+                  min: 1,
+                  max: 50,
+                  mode: 'box',
+                },
+              }}
+              .value=${this._config.items_per_page !== undefined && this._config.items_per_page !== null ? this._config.items_per_page : 5}
+              .label=${localize(lang, 'editor.items_per_page')}
               label="${localize(lang, 'editor.items_per_page')}"
-              type="number"
-              min="1"
-              required
-              .value=${this._config.items_per_page !== undefined && this._config.items_per_page !== null ? String(this._config.items_per_page) : ''}
-              @input=${this._itemsPerPageChanged}
-            ></ha-textfield>
+              @value-changed=${this._itemsPerPageChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                number: {
+                  min: 0,
+                  max: 20,
+                  mode: 'box',
+                },
+              }}
+              .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? this._config.max_pages : 5}
+              .label=${localize(lang, 'editor.max_pages')}
               label="${localize(lang, 'editor.max_pages')}"
-              type="number"
-              min="0"
-              max="20"
-              .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? String(this._config.max_pages) : ''}
-              @input=${this._maxPagesChanged}
-            ></ha-textfield>
+              @value-changed=${this._maxPagesChanged}
+            ></ha-selector>
           </div>
         </div>
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                number: {
+                  min: 0,
+                  max: 60,
+                  mode: 'box',
+                  unit_of_measurement: 's',
+                },
+              }}
+              .value=${this._config.auto_swipe_interval !== undefined && this._config.auto_swipe_interval !== null ? this._config.auto_swipe_interval : 0}
+              .label=${localize(lang, 'editor.auto_swipe')}
               label="${localize(lang, 'editor.auto_swipe')}"
-              type="number"
-              min="0"
-              max="60"
-              .value=${String(this._config.auto_swipe_interval || 0)}
-              @input=${this._autoSwipeIntervalChanged}
-            ></ha-textfield>
+              @value-changed=${this._autoSwipeIntervalChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                number: {
+                  min: 0,
+                  max: 30,
+                  mode: 'box',
+                  unit_of_measurement: 'days',
+                },
+              }}
+              .value=${this._config.new_badge_days !== undefined && this._config.new_badge_days !== null ? this._config.new_badge_days : 3}
+              .label=${localize(lang, 'editor.new_badge_days')}
               label="${localize(lang, 'editor.new_badge_days')}"
-              type="number"
-              min="0"
-              max="30"
-              .value=${this._config.new_badge_days !== undefined && this._config.new_badge_days !== null ? String(this._config.new_badge_days) : ''}
-              @input=${this._newBadgeDaysChanged}
-            ></ha-textfield>
+              @value-changed=${this._newBadgeDaysChanged}
+            ></ha-selector>
           </div>
         </div>
 
@@ -502,9 +537,9 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('entity', e.detail.value);
   }
 
-  private _titleChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._updateConfig('title', target.value);
+  private _titleChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('title', value);
   }
 
   private _layoutChanged(e: CustomEvent): void {
@@ -514,9 +549,9 @@ export class JellyHALibraryEditor extends LitElement {
     }
   }
 
-  private _columnsChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._updateConfig('columns', Number(target.value));
+  private _columnsChanged(e: CustomEvent): void {
+    const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('columns', Number(raw));
   }
 
   private _mediaTypeChanged(e: CustomEvent): void {
@@ -526,39 +561,35 @@ export class JellyHALibraryEditor extends LitElement {
     }
   }
 
-  private _itemsPerPageChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    const value = target.value.trim();
-    if (value !== '') {
-      this._updateConfig('items_per_page', Number(value));
+  private _itemsPerPageChanged(e: CustomEvent): void {
+    const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (raw !== '' && raw !== null && raw !== undefined) {
+      this._updateConfig('items_per_page', Number(raw));
     } else {
-      // Allow clearing (will use default later or in card)
       this._updateConfig('items_per_page', null);
     }
   }
 
-  private _maxPagesChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    const value = target.value;
-    if (value === '' || value === null) {
+  private _maxPagesChanged(e: CustomEvent): void {
+    const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (raw === '' || raw === null || raw === undefined) {
       this._updateConfig('max_pages', null);
     } else {
-      this._updateConfig('max_pages', Number(value));
+      this._updateConfig('max_pages', Number(raw));
     }
   }
 
-  private _autoSwipeIntervalChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    this._updateConfig('auto_swipe_interval', Number(target.value));
+  private _autoSwipeIntervalChanged(e: CustomEvent): void {
+    const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('auto_swipe_interval', Number(raw || 0));
   }
 
-  private _newBadgeDaysChanged(e: Event): void {
-    const target = e.target as HTMLInputElement;
-    const value = target.value;
-    if (value === '' || value === null) {
+  private _newBadgeDaysChanged(e: CustomEvent): void {
+    const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (raw === '' || raw === null || raw === undefined) {
       this._updateConfig('new_badge_days', null);
     } else {
-      this._updateConfig('new_badge_days', Number(value));
+      this._updateConfig('new_badge_days', Number(raw));
     }
   }
 

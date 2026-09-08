@@ -2623,7 +2623,7 @@ var gt = Object.defineProperty, mt = Object.getOwnPropertyDescriptor, k = (t, e,
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && gt(e, i, o), o;
 };
-let v = class extends A {
+let y = class extends A {
   constructor() {
     super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this.closeDialog = () => {
       this._open = !1, this._confirmDelete = !1, this.dispatchEvent(new CustomEvent("closed", { bubbles: !0, composed: !0 })), this.requestUpdate();
@@ -3546,54 +3546,54 @@ let v = class extends A {
     return null;
   }
 };
-v.styles = X`
+y.styles = X`
         /* Styles handled in _getPortalStyles */
     `;
 k([
   P({ attribute: !1 })
-], v.prototype, "hass", 2);
+], y.prototype, "hass", 2);
 k([
   g()
-], v.prototype, "_item", 2);
+], y.prototype, "_item", 2);
 k([
   g()
-], v.prototype, "_nextUpItem", 2);
+], y.prototype, "_nextUpItem", 2);
 k([
   g()
-], v.prototype, "_defaultCastDevice", 2);
+], y.prototype, "_defaultCastDevice", 2);
 k([
   g()
-], v.prototype, "_serverEntityId", 2);
+], y.prototype, "_serverEntityId", 2);
 k([
   g()
-], v.prototype, "_open", 2);
+], y.prototype, "_open", 2);
 k([
   g()
-], v.prototype, "_confirmDelete", 2);
+], y.prototype, "_confirmDelete", 2);
 k([
   g()
-], v.prototype, "_viewMode", 2);
+], y.prototype, "_viewMode", 2);
 k([
   g()
-], v.prototype, "_episodes", 2);
+], y.prototype, "_episodes", 2);
 k([
   g()
-], v.prototype, "_touchStartY", 2);
+], y.prototype, "_touchStartY", 2);
 k([
   g()
-], v.prototype, "_currentTranslateY", 2);
+], y.prototype, "_currentTranslateY", 2);
 k([
   g()
-], v.prototype, "_isDragging", 2);
-v = k([
+], y.prototype, "_isDragging", 2);
+y = k([
   N("jellyha-item-details-modal")
-], v);
+], y);
 var ft = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, be = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? bt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && ft(e, i, o), o;
 };
-function yt(t, e, i) {
+function vt(t, e, i) {
   const a = new CustomEvent(e, {
     bubbles: !0,
     composed: !0,
@@ -3622,11 +3622,14 @@ let G = class extends A {
         </div>
 
         <div class="form-row">
-          <ha-textfield
-            label="${l(a, "editor.title")}"
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{ text: {} }}
             .value=${this._config.title || ""}
-            @input=${this._titleChanged}
-          ></ha-textfield>
+            .label=${l(a, "editor.title")}
+            label="${l(a, "editor.title")}"
+            @value-changed=${this._titleChanged}
+          ></ha-selector>
         </div>
 
         <div class="side-by-side">
@@ -3674,62 +3677,94 @@ let G = class extends A {
 
         ${this._config.layout === "grid" || this._config.layout === "list" ? n`
               <div class="form-row">
-                <ha-slider
-                  labeled
-                  min="1"
-                  max="${this._config.layout === "list" ? 8 : 12}"
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+      number: {
+        min: 1,
+        max: this._config.layout === "list" ? 8 : 12,
+        mode: "slider"
+      }
+    }}
                   .value=${this._config.columns || 1}
-                  @change=${this._columnsChanged}
-                ></ha-slider>
-                <span>${s}: ${(this._config.columns || 1) === 1 ? l(a, "editor.auto") : this._config.columns}</span>
+                  .label=${`${s}: ${(this._config.columns || 1) === 1 ? l(a, "editor.auto") : this._config.columns}`}
+                  label="${`${s}: ${(this._config.columns || 1) === 1 ? l(a, "editor.auto") : this._config.columns}`}"
+                  @value-changed=${this._columnsChanged}
+                ></ha-selector>
               </div>
             ` : ""}
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      number: {
+        min: 1,
+        max: 50,
+        mode: "box"
+      }
+    }}
+              .value=${this._config.items_per_page !== void 0 && this._config.items_per_page !== null ? this._config.items_per_page : 5}
+              .label=${l(a, "editor.items_per_page")}
               label="${l(a, "editor.items_per_page")}"
-              type="number"
-              min="1"
-              required
-              .value=${this._config.items_per_page !== void 0 && this._config.items_per_page !== null ? String(this._config.items_per_page) : ""}
-              @input=${this._itemsPerPageChanged}
-            ></ha-textfield>
+              @value-changed=${this._itemsPerPageChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      number: {
+        min: 0,
+        max: 20,
+        mode: "box"
+      }
+    }}
+              .value=${this._config.max_pages !== void 0 && this._config.max_pages !== null ? this._config.max_pages : 5}
+              .label=${l(a, "editor.max_pages")}
               label="${l(a, "editor.max_pages")}"
-              type="number"
-              min="0"
-              max="20"
-              .value=${this._config.max_pages !== void 0 && this._config.max_pages !== null ? String(this._config.max_pages) : ""}
-              @input=${this._maxPagesChanged}
-            ></ha-textfield>
+              @value-changed=${this._maxPagesChanged}
+            ></ha-selector>
           </div>
         </div>
 
         <div class="side-by-side">
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      number: {
+        min: 0,
+        max: 60,
+        mode: "box",
+        unit_of_measurement: "s"
+      }
+    }}
+              .value=${this._config.auto_swipe_interval !== void 0 && this._config.auto_swipe_interval !== null ? this._config.auto_swipe_interval : 0}
+              .label=${l(a, "editor.auto_swipe")}
               label="${l(a, "editor.auto_swipe")}"
-              type="number"
-              min="0"
-              max="60"
-              .value=${String(this._config.auto_swipe_interval || 0)}
-              @input=${this._autoSwipeIntervalChanged}
-            ></ha-textfield>
+              @value-changed=${this._autoSwipeIntervalChanged}
+            ></ha-selector>
           </div>
 
           <div class="form-row">
-            <ha-textfield
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      number: {
+        min: 0,
+        max: 30,
+        mode: "box",
+        unit_of_measurement: "days"
+      }
+    }}
+              .value=${this._config.new_badge_days !== void 0 && this._config.new_badge_days !== null ? this._config.new_badge_days : 3}
+              .label=${l(a, "editor.new_badge_days")}
               label="${l(a, "editor.new_badge_days")}"
-              type="number"
-              min="0"
-              max="30"
-              .value=${this._config.new_badge_days !== void 0 && this._config.new_badge_days !== null ? String(this._config.new_badge_days) : ""}
-              @input=${this._newBadgeDaysChanged}
-            ></ha-textfield>
+              @value-changed=${this._newBadgeDaysChanged}
+            ></ha-selector>
           </div>
         </div>
 
@@ -4026,36 +4061,36 @@ let G = class extends A {
     this._updateConfig("entity", t.detail.value);
   }
   _titleChanged(t) {
-    const e = t.target;
-    this._updateConfig("title", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    this._updateConfig("title", e);
   }
   _layoutChanged(t) {
     const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
     e !== void 0 && this._updateConfig("layout", e);
   }
   _columnsChanged(t) {
-    const e = t.target;
-    this._updateConfig("columns", Number(e.value));
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    this._updateConfig("columns", Number(e));
   }
   _mediaTypeChanged(t) {
     const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
     e !== void 0 && this._updateConfig("media_type", e);
   }
   _itemsPerPageChanged(t) {
-    const i = t.target.value.trim();
-    i !== "" ? this._updateConfig("items_per_page", Number(i)) : this._updateConfig("items_per_page", null);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e !== "" && e !== null && e !== void 0 ? this._updateConfig("items_per_page", Number(e)) : this._updateConfig("items_per_page", null);
   }
   _maxPagesChanged(t) {
-    const i = t.target.value;
-    i === "" || i === null ? this._updateConfig("max_pages", null) : this._updateConfig("max_pages", Number(i));
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e === "" || e === null || e === void 0 ? this._updateConfig("max_pages", null) : this._updateConfig("max_pages", Number(e));
   }
   _autoSwipeIntervalChanged(t) {
-    const e = t.target;
-    this._updateConfig("auto_swipe_interval", Number(e.value));
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    this._updateConfig("auto_swipe_interval", Number(e || 0));
   }
   _newBadgeDaysChanged(t) {
-    const i = t.target.value;
-    i === "" || i === null ? this._updateConfig("new_badge_days", null) : this._updateConfig("new_badge_days", Number(i));
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    e === "" || e === null || e === void 0 ? this._updateConfig("new_badge_days", null) : this._updateConfig("new_badge_days", Number(e));
   }
   _clickActionChanged(t) {
     const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
@@ -4156,7 +4191,7 @@ let G = class extends A {
     if (!this._config)
       return;
     const i = { ...this._config, [t]: e };
-    this._config = i, yt(this, "config-changed", { config: i });
+    this._config = i, vt(this, "config-changed", { config: i });
   }
 };
 G.styles = X`
@@ -4194,10 +4229,10 @@ be([
 G = be([
   N("jellyha-library-editor")
 ], G);
-var vt = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
+var yt = Object.defineProperty, wt = Object.getOwnPropertyDescriptor, S = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? wt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
-  return a && o && vt(e, i, o), o;
+  return a && o && yt(e, i, o), o;
 };
 let w = class extends A {
   constructor() {
@@ -4594,7 +4629,7 @@ S([
 w = S([
   N("jellyha-media-item")
 ], w);
-var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, y = (t, e, i, a) => {
+var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, v = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? $t(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && xt(e, i, o), o;
@@ -5425,61 +5460,61 @@ let b = class extends A {
   }
 };
 b.styles = Fe;
-y([
+v([
   P({ attribute: !1 })
 ], b.prototype, "hass", 2);
-y([
+v([
   g()
 ], b.prototype, "_config", 2);
-y([
+v([
   g()
 ], b.prototype, "_currentPage", 2);
-y([
+v([
   g()
 ], b.prototype, "_itemsPerPage", 2);
-y([
+v([
   g()
 ], b.prototype, "_pressStartTime", 2);
-y([
+v([
   g()
 ], b.prototype, "_holdTimer", 2);
-y([
+v([
   g()
 ], b.prototype, "_isHoldActive", 2);
-y([
+v([
   g()
 ], b.prototype, "_rewindActive", 2);
-y([
+v([
   g()
 ], b.prototype, "_items", 2);
-y([
+v([
   g()
 ], b.prototype, "_error", 2);
-y([
+v([
   g()
 ], b.prototype, "_lastUpdate", 2);
-y([
+v([
   g()
 ], b.prototype, "_mostRecentNextUpItemId", 2);
-y([
+v([
   g()
 ], b.prototype, "_searchQuery", 2);
-y([
+v([
   g()
 ], b.prototype, "_searchGenre", 2);
-y([
+v([
   ut("jellyha-item-details-modal")
 ], b.prototype, "_modal", 2);
-y([
+v([
   g()
 ], b.prototype, "_scrollProgress", 2);
-y([
+v([
   g()
 ], b.prototype, "_hasScrollableContent", 2);
-b = y([
+b = v([
   N("jellyha-library-card")
 ], b);
-var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, ye = (t, e, i, a) => {
+var Ct = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, ve = (t, e, i, a) => {
   for (var o = a > 1 ? void 0 : a ? Pt(e, i) : e, s = t.length - 1, r; s >= 0; s--)
     (r = t[s]) && (o = (a ? r(e, i, o) : r(o)) || o);
   return a && o && Ct(e, i, o), o;
@@ -5541,11 +5576,14 @@ let Y = class extends A {
         </div>
 
         <div class="form-row">
-          <ha-textfield
-            label="${l(a, "editor.title")} (Optional)"
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{ text: {} }}
             .value=${this._config.title || ""}
-            @input=${this._titleChanged}
-          ></ha-textfield>
+            .label="${l(a, "editor.title")} (Optional)"
+            label="${l(a, "editor.title")} (Optional)"
+            @value-changed=${this._titleChanged}
+          ></ha-selector>
         </div>
 
         <div class="checkbox-pair">
@@ -5654,8 +5692,8 @@ let Y = class extends A {
     e !== void 0 && this._updateConfig("entity", e);
   }
   _titleChanged(t) {
-    const e = t.target;
-    this._updateConfig("title", e.value);
+    const e = t.detail?.value !== void 0 ? t.detail.value : t.target?.value;
+    this._updateConfig("title", e);
   }
   _showTitleChanged(t) {
     const e = t.target;
@@ -5738,13 +5776,13 @@ Y.styles = X`
       flex: 1;
     }
   `;
-ye([
+ve([
   P({ attribute: !1 })
 ], Y.prototype, "hass", 2);
-ye([
+ve([
   g()
 ], Y.prototype, "_config", 2);
-Y = ye([
+Y = ve([
   N("jellyha-now-playing-editor")
 ], Y);
 var At = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, j = (t, e, i, a) => {
@@ -5836,7 +5874,7 @@ let $ = class extends A {
       this._cachedBackdropUrl = Z ? H(Z, 640) : void 0;
     }
     d !== this._cachedColorItemId && h && (this._cachedColorItemId = d, this._extractDominantColor(H(h, 80)));
-    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", q = [se, re].filter(Boolean).join(" • "), V = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", ve = i.season !== void 0 ? i.season : e.attributes.media_season, we = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && ve !== void 0 && we !== void 0 ? `S${String(ve).padStart(2, "0")}E${String(we).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
+    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = a ? e.state === "paused" : i.is_paused, m = (i.media_type || e.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = i.title || e.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (i.artist_name || e.attributes.media_artist || i.series_title || e.attributes.media_series_title) || "", se = this._config.show_year !== !1 && i.year ? String(i.year) : "", re = this._config.show_genres && i.genres?.length ? i.genres.slice(0, 2).join(", ") : "", q = [se, re].filter(Boolean).join(" • "), V = this._config.show_user !== !1 && i.user_name || "", ne = this._config.show_client !== !1 && i.client || "", ye = i.season !== void 0 ? i.season : e.attributes.media_season, we = i.episode !== void 0 ? i.episode : e.attributes.media_episode, xe = (m === "episode" || m === "tvshow") && ye !== void 0 && we !== void 0 ? `S${String(ye).padStart(2, "0")}E${String(we).padStart(2, "0")}` : i.media_type || "", le = d && this._optimisticFavorites[d] !== void 0 ? this._optimisticFavorites[d] : i.is_favorite || !1, $e = 125.66, Be = $e * (1 - this._longPressProgress);
     return n`
             <ha-card class="jellyha-now-playing ${u ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${u ? n`
