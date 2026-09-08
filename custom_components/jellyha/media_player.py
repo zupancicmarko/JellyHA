@@ -569,101 +569,101 @@ class JellyHABasePlaybackMediaPlayer(
     # Transport controls
     # ------------------------------------------------------------------
 
-    async def async_media_play(self) -> None:
-        """Send play (unpause) command to session."""
+    def _get_target_session_ids(self) -> list[str]:
+        """Get all target session IDs for this entity to route commands."""
         session = self._get_active_session()
         if not session:
-            _LOGGER.debug("No active session for %s, cannot play", self.name)
+            return []
+        target_ids = [session["Id"]]
+        # For device players, also include any other session matching this device
+        if hasattr(self, "_device_id") and self.coordinator.data:
+            for s in self.coordinator.data:
+                sid = s.get("Id")
+                if sid and sid not in target_ids and self._is_matching_device_session(s):
+                    target_ids.append(sid)
+        return target_ids
+
+    async def _send_session_control(self, command: str) -> None:
+        """Send playstate control command to target sessions."""
+        target_ids = self._get_target_session_ids()
+        if not target_ids:
+            _LOGGER.debug("No active session for %s, cannot send %s", self.name, command)
             return
-        await self.coordinator.api.session_control(session["Id"], "Unpause")
+        _LOGGER.debug("%s: sending %s to session(s): %s", self.name, command, target_ids)
+        for sid in target_ids:
+            await self.coordinator.api.session_control(sid, command)
+
+    async def _send_session_seek(self, position_ticks: int) -> None:
+        """Send seek command to target sessions."""
+        target_ids = self._get_target_session_ids()
+        if not target_ids:
+            _LOGGER.debug("No active session for %s, cannot seek", self.name)
+            return
+        _LOGGER.debug("%s: sending seek (%d ticks) to session(s): %s", self.name, position_ticks, target_ids)
+        for sid in target_ids:
+            await self.coordinator.api.session_seek(sid, position_ticks)
+
+    async def _send_session_general_command(
+        self, command: str, arguments: dict[str, str] | None = None
+    ) -> None:
+        """Send general command to target sessions."""
+        target_ids = self._get_target_session_ids()
+        if not target_ids:
+            _LOGGER.debug("No active session for %s, cannot send %s", self.name, command)
+            return
+        _LOGGER.debug("%s: sending general command %s to session(s): %s", self.name, command, target_ids)
+        for sid in target_ids:
+            await self.coordinator.api.session_general_command(sid, command, arguments)
+
+    async def async_media_play(self) -> None:
+        """Send play (unpause) command to session."""
+        await self._send_session_control("Unpause")
 
     async def async_media_pause(self) -> None:
         """Send pause command to session."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot pause", self.name)
-            return
-        await self.coordinator.api.session_control(session["Id"], "Pause")
+        await self._send_session_control("Pause")
 
     async def async_media_stop(self) -> None:
         """Send stop command to session."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot stop", self.name)
-            return
-        await self.coordinator.api.session_control(session["Id"], "Stop")
+        await self._send_session_control("Stop")
 
     async def async_media_seek(self, position: float) -> None:
         """Seek to a position (in seconds)."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot seek", self.name)
-            return
         position_ticks = int(position * TICKS_PER_SECOND)
-        await self.coordinator.api.session_seek(session["Id"], position_ticks)
+        await self._send_session_seek(position_ticks)
 
     async def async_media_next_track(self) -> None:
         """Send next track command to session."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot skip", self.name)
-            return
-        await self.coordinator.api.session_control(session["Id"], "NextTrack")
+        await self._send_session_control("NextTrack")
 
     async def async_media_previous_track(self) -> None:
         """Send previous track command to session."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot go back", self.name)
-            return
-        await self.coordinator.api.session_control(session["Id"], "PreviousTrack")
+        await self._send_session_control("PreviousTrack")
 
     async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level (0.0 to 1.0)."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot set volume", self.name)
-            return
         volume_int = str(int(volume * 100))
-        await self.coordinator.api.session_general_command(
-            session["Id"], "SetVolume", {"Volume": volume_int}
-        )
+        await self._send_session_general_command("SetVolume", {"Volume": volume_int})
 
     async def async_mute_volume(self, mute: bool) -> None:
         """Mute or unmute the volume."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot mute", self.name)
-            return
         command = "Mute" if mute else "Unmute"
-        await self.coordinator.api.session_general_command(session["Id"], command)
+        await self._send_session_general_command(command)
 
     async def async_set_shuffle(self, shuffle: bool) -> None:
         """Enable or disable shuffle mode."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot set shuffle", self.name)
-            return
         mode = "Shuffle" if shuffle else "Sorted"
-        await self.coordinator.api.session_general_command(
-            session["Id"], "SetShuffleQueue", {"ShuffleMode": mode}
-        )
+        await self._send_session_general_command("SetShuffleQueue", {"ShuffleMode": mode})
 
     async def async_set_repeat(self, repeat: RepeatMode) -> None:
         """Set repeat mode."""
-        session = self._get_active_session()
-        if not session:
-            _LOGGER.debug("No active session for %s, cannot set repeat", self.name)
-            return
         if repeat == RepeatMode.ALL:
             mode = "RepeatAll"
         elif repeat == RepeatMode.ONE:
             mode = "RepeatOne"
         else:
             mode = "RepeatNone"
-        await self.coordinator.api.session_general_command(
-            session["Id"], "SetRepeatMode", {"RepeatMode": mode}
-        )
+        await self._send_session_general_command("SetRepeatMode", {"RepeatMode": mode})
 
 
 class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
