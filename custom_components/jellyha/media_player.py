@@ -208,18 +208,26 @@ class JellyHABasePlaybackMediaPlayer(
     """
 
     _attr_has_entity_name = True
-    _attr_supported_features = (
-        MediaPlayerEntityFeature.PAUSE
-        | MediaPlayerEntityFeature.PLAY
-        | MediaPlayerEntityFeature.STOP
-        | MediaPlayerEntityFeature.SEEK
-        | MediaPlayerEntityFeature.NEXT_TRACK
-        | MediaPlayerEntityFeature.PREVIOUS_TRACK
-        | MediaPlayerEntityFeature.VOLUME_SET
-        | MediaPlayerEntityFeature.VOLUME_MUTE
-        | MediaPlayerEntityFeature.SHUFFLE_SET
-        | MediaPlayerEntityFeature.REPEAT_SET
-    )
+    @property
+    def supported_features(self) -> MediaPlayerEntityFeature:
+        """Flag media player features that are supported."""
+        session = self._get_active_session()
+        # If session explicitly declares no remote control, disable playback/seek controls
+        if session and session.get("SupportsRemoteControl") is False:
+            return MediaPlayerEntityFeature(0)
+
+        return (
+            MediaPlayerEntityFeature.PAUSE
+            | MediaPlayerEntityFeature.PLAY
+            | MediaPlayerEntityFeature.STOP
+            | MediaPlayerEntityFeature.SEEK
+            | MediaPlayerEntityFeature.NEXT_TRACK
+            | MediaPlayerEntityFeature.PREVIOUS_TRACK
+            | MediaPlayerEntityFeature.VOLUME_SET
+            | MediaPlayerEntityFeature.VOLUME_MUTE
+            | MediaPlayerEntityFeature.SHUFFLE_SET
+            | MediaPlayerEntityFeature.REPEAT_SET
+        )
 
     def __init__(
         self,
@@ -473,6 +481,7 @@ class JellyHABasePlaybackMediaPlayer(
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
+            "supports_remote_control": session.get("SupportsRemoteControl", True) if session else True,
         }
 
         if not session or "NowPlayingItem" not in session:

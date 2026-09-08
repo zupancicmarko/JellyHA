@@ -161,6 +161,7 @@ export interface NowPlayingSensorData {
     repeat_mode?: string;
     shuffle_mode?: string;
     is_favorite?: boolean;
+    supports_remote_control?: boolean;
 }
 
 export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {

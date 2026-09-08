@@ -440,6 +440,7 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
+            "supports_remote_control": session.get("SupportsRemoteControl", True),
         }
 
         if "NowPlayingItem" in session:

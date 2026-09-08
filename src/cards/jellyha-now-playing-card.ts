@@ -183,6 +183,12 @@ export class JellyHANowPlayingCard extends LitElement {
         const ringCircumference = 125.66;
         const ringOffset = ringCircumference * (1 - this._longPressProgress);
 
+        const supportsRemote = (attributes.supports_remote_control !== false) && (
+            !isMediaPlayer ||
+            stateObj.attributes.supported_features === undefined ||
+            stateObj.attributes.supported_features > 0
+        );
+
         return html`
             <ha-card class="jellyha-now-playing ${showBackground ? 'has-background' : ''} ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
                 ${showBackground ? html`
@@ -197,7 +203,7 @@ export class JellyHANowPlayingCard extends LitElement {
                     
                     <div class="main-container">
                         ${imageUrl ? html`
-                            <div class="poster-container" @click=${this._handlePosterRewind}>
+                            <div class="poster-container ${supportsRemote ? '' : 'no-rewind'}" @click=${supportsRemote ? this._handlePosterRewind : undefined}>
                                 <img src="${addImageParams(imageUrl, 160)}" alt="${displayTitle}" loading="eager" fetchpriority="high" />
                                 
                                 ${this._config.show_media_type_badge !== false && badgeText ? html`
@@ -237,70 +243,72 @@ export class JellyHANowPlayingCard extends LitElement {
                             </div>
 
                             <div class="info-bottom">
-                                <div class="playback-controls">
-                                    ${isMusic ? html`
-                                        <ha-icon-button class="music-subtle-btn ${isFavorite ? 'active' : ''}" .label=${'Favorite'} @click=${() => this._handleFavoriteToggle(attributes.item_id!, isFavorite)}>
-                                            <ha-icon icon="${isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
-                                        </ha-icon-button>
-                                        <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'previous') || 'Previous'} @click=${() => this._handleControl('PreviousTrack')}>
-                                            <ha-icon icon="mdi:skip-previous"></ha-icon>
-                                        </ha-icon-button>
-                                    ` : html`
-                                        <ha-icon-button class="seek-btn" .label=${'Rewind 10s'} @click=${() => this._handleSeekRelative(-10)}>
-                                            <ha-icon icon="mdi:rewind-10"></ha-icon>
-                                        </ha-icon-button>
-                                    `}
-
-                                    <div class="play-pause-wrapper ${this._stopPulse ? 'stop-pulse' : ''}"
-                                        @pointerdown=${this._startLongPress}
-                                        @pointerup=${this._endLongPress}
-                                        @pointerleave=${this._endLongPress}
-                                        @contextmenu=${(e: Event) => e.preventDefault()}
-                                    >
-                                        ${this._rewindActive ? html`
-                                            <ha-icon-button class="play-pause-btn spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
-                                                <ha-icon icon="mdi:loading"></ha-icon>
+                                ${supportsRemote ? html`
+                                    <div class="playback-controls">
+                                        ${isMusic ? html`
+                                            <ha-icon-button class="music-subtle-btn ${isFavorite ? 'active' : ''}" .label=${'Favorite'} @click=${() => this._handleFavoriteToggle(attributes.item_id!, isFavorite)}>
+                                                <ha-icon icon="${isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
                                             </ha-icon-button>
-                                        ` : isPaused ? html`
-                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl(isMusic ? 'PlayPause' : 'Unpause'); }}>
-                                                <ha-icon icon="mdi:play"></ha-icon>
+                                            <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'previous') || 'Previous'} @click=${() => this._handleControl('PreviousTrack')}>
+                                                <ha-icon icon="mdi:skip-previous"></ha-icon>
                                             </ha-icon-button>
                                         ` : html`
-                                            <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl('Pause'); }}>
-                                                <ha-icon icon="mdi:pause"></ha-icon>
+                                            <ha-icon-button class="seek-btn" .label=${'Rewind 10s'} @click=${() => this._handleSeekRelative(-10)}>
+                                                <ha-icon icon="mdi:rewind-10"></ha-icon>
                                             </ha-icon-button>
                                         `}
-                                        ${this._longPressProgress > 0 ? html`
-                                            <svg class="stop-ring" viewBox="0 0 44 44">
-                                                <circle cx="22" cy="22" r="20"
-                                                    stroke="#ef4444" stroke-width="3" fill="none"
-                                                    stroke-dasharray="${ringCircumference}"
-                                                    stroke-dashoffset="${ringOffset}"
-                                                    stroke-linecap="round"
-                                                    transform="rotate(-90 22 22)" />
-                                            </svg>
-                                        ` : nothing}
+
+                                        <div class="play-pause-wrapper ${this._stopPulse ? 'stop-pulse' : ''}"
+                                            @pointerdown=${this._startLongPress}
+                                            @pointerup=${this._endLongPress}
+                                            @pointerleave=${this._endLongPress}
+                                            @contextmenu=${(e: Event) => e.preventDefault()}
+                                        >
+                                            ${this._rewindActive ? html`
+                                                <ha-icon-button class="play-pause-btn spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
+                                                    <ha-icon icon="mdi:loading"></ha-icon>
+                                                </ha-icon-button>
+                                            ` : isPaused ? html`
+                                                <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl(isMusic ? 'PlayPause' : 'Unpause'); }}>
+                                                    <ha-icon icon="mdi:play"></ha-icon>
+                                                </ha-icon-button>
+                                            ` : html`
+                                                <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl('Pause'); }}>
+                                                    <ha-icon icon="mdi:pause"></ha-icon>
+                                                </ha-icon-button>
+                                            `}
+                                            ${this._longPressProgress > 0 ? html`
+                                                <svg class="stop-ring" viewBox="0 0 44 44">
+                                                    <circle cx="22" cy="22" r="20"
+                                                        stroke="#ef4444" stroke-width="3" fill="none"
+                                                        stroke-dasharray="${ringCircumference}"
+                                                        stroke-dashoffset="${ringOffset}"
+                                                        stroke-linecap="round"
+                                                        transform="rotate(-90 22 22)" />
+                                                </svg>
+                                            ` : nothing}
+                                        </div>
+
+                                        ${isMusic ? html`
+                                            <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'next') || 'Next'} @click=${() => this._handleControl('NextTrack')}>
+                                                <ha-icon icon="mdi:skip-next"></ha-icon>
+                                            </ha-icon-button>
+                                            <ha-icon-button class="music-subtle-btn ${(attributes.repeat_mode && attributes.repeat_mode !== 'RepeatNone') ? 'active' : ''}" .label=${'Repeat'} @click=${() => this._handleRepeatMode(attributes.session_id!, attributes.repeat_mode || 'RepeatNone')}>
+                                                <ha-icon icon="${attributes.repeat_mode === 'RepeatOne' ? 'mdi:repeat-once' : 'mdi:repeat'}"></ha-icon>
+                                            </ha-icon-button>
+                                        ` : html`
+                                            <ha-icon-button class="seek-btn" .label=${'Forward 30s'} @click=${() => this._handleSeekRelative(30)}>
+                                                <ha-icon icon="mdi:fast-forward-30"></ha-icon>
+                                            </ha-icon-button>
+                                        `}
                                     </div>
+                                ` : nothing}
 
-                                    ${isMusic ? html`
-                                        <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'next') || 'Next'} @click=${() => this._handleControl('NextTrack')}>
-                                            <ha-icon icon="mdi:skip-next"></ha-icon>
-                                        </ha-icon-button>
-                                        <ha-icon-button class="music-subtle-btn ${(attributes.repeat_mode && attributes.repeat_mode !== 'RepeatNone') ? 'active' : ''}" .label=${'Repeat'} @click=${() => this._handleRepeatMode(attributes.session_id!, attributes.repeat_mode || 'RepeatNone')}>
-                                            <ha-icon icon="${attributes.repeat_mode === 'RepeatOne' ? 'mdi:repeat-once' : 'mdi:repeat'}"></ha-icon>
-                                        </ha-icon-button>
-                                    ` : html`
-                                        <ha-icon-button class="seek-btn" .label=${'Forward 30s'} @click=${() => this._handleSeekRelative(30)}>
-                                            <ha-icon icon="mdi:fast-forward-30"></ha-icon>
-                                        </ha-icon-button>
-                                    `}
-                                </div>
-
-                                <div class="progress-container"
-                                    @pointerdown=${this._startDrag}
-                                    @pointermove=${this._handleDrag}
-                                    @pointerup=${this._endDrag}
-                                    @pointercancel=${this._cancelDrag}
+                                <div class="progress-container ${supportsRemote ? '' : 'readonly'}"
+                                    @pointerdown=${supportsRemote ? this._startDrag : undefined}
+                                    @pointermove=${supportsRemote ? this._handleDrag : undefined}
+                                    @pointerup=${supportsRemote ? this._endDrag : undefined}
+                                    @pointercancel=${supportsRemote ? this._cancelDrag : undefined}
                                 >
                                     <div class="progress-bar">
                                         <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
@@ -403,6 +411,8 @@ export class JellyHANowPlayingCard extends LitElement {
         this._haptic('light');
         const entityId = this._config.entity;
         const stateObj = this.hass.states[entityId];
+        if (!stateObj) return;
+        if ((stateObj.attributes as any).supports_remote_control === false) return;
         const isMediaPlayer = entityId.startsWith('media_player.');
 
         if (isMediaPlayer) {
@@ -495,6 +505,10 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private _startDrag(e: PointerEvent): void {
+        const entityId = this._config.entity;
+        const stateObj = this.hass?.states[entityId];
+        if (stateObj && (stateObj.attributes as any).supports_remote_control === false) return;
+
         const container = e.currentTarget as HTMLElement;
         container.setPointerCapture(e.pointerId);
         this._isDragging = true;
@@ -568,6 +582,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const entityId = this._config.entity;
         const stateObj = this.hass.states[entityId];
         if (!stateObj) return;
+        if ((stateObj.attributes as any).supports_remote_control === false) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
@@ -604,6 +619,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const entityId = this._config.entity;
         const stateObj = this.hass.states[entityId];
         if (!stateObj) return;
+        if ((stateObj.attributes as any).supports_remote_control === false) return;
 
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const sessionId = attributes.session_id;
@@ -944,6 +960,12 @@ export class JellyHANowPlayingCard extends LitElement {
         .poster-container:hover {
             transform: scale(1.02);
         }
+        .poster-container.no-rewind {
+            cursor: default;
+        }
+        .poster-container.no-rewind:hover {
+            transform: none;
+        }
         .poster-container img {
             width: 100%;
             height: 100%;
@@ -1206,6 +1228,12 @@ export class JellyHANowPlayingCard extends LitElement {
             padding: 4px 0;
             box-sizing: border-box;
             touch-action: none;
+        }
+        .progress-container.readonly {
+            cursor: default;
+        }
+        .progress-container.readonly .seek-handle {
+            display: none;
         }
         .progress-bar {
             height: 6px;
