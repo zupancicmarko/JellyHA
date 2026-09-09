@@ -3,8 +3,8 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const te = globalThis, _e = te.ShadowRoot && (te.ShadyCSS === void 0 || te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ue = Symbol(), Se = /* @__PURE__ */ new WeakMap();
-let Re = class {
+const oe = globalThis, ge = oe.ShadowRoot && (oe.ShadyCSS === void 0 || oe.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ue = Symbol(), Ae = /* @__PURE__ */ new WeakMap();
+let He = class {
   constructor(t, a, i) {
     if (this._$cssResult$ = !0, i !== ue) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t, this.t = a;
@@ -12,9 +12,9 @@ let Re = class {
   get styleSheet() {
     let t = this.o;
     const a = this.t;
-    if (_e && t === void 0) {
+    if (ge && t === void 0) {
       const i = a !== void 0 && a.length === 1;
-      i && (t = Se.get(a)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), i && Se.set(a, t));
+      i && (t = Ae.get(a)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), i && Ae.set(a, t));
     }
     return t;
   }
@@ -22,33 +22,33 @@ let Re = class {
     return this.cssText;
   }
 };
-const Je = (e) => new Re(typeof e == "string" ? e : e + "", void 0, ue), V = (e, ...t) => {
+const Ze = (e) => new He(typeof e == "string" ? e : e + "", void 0, ue), K = (e, ...t) => {
   const a = e.length === 1 ? e[0] : t.reduce((i, o, s) => i + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(o) + e[s + 1], e[0]);
-  return new Re(a, e, ue);
-}, Ye = (e, t) => {
-  if (_e) e.adoptedStyleSheets = t.map((a) => a instanceof CSSStyleSheet ? a : a.styleSheet);
+  return new He(a, e, ue);
+}, Ke = (e, t) => {
+  if (ge) e.adoptedStyleSheets = t.map((a) => a instanceof CSSStyleSheet ? a : a.styleSheet);
   else for (const a of t) {
-    const i = document.createElement("style"), o = te.litNonce;
+    const i = document.createElement("style"), o = oe.litNonce;
     o !== void 0 && i.setAttribute("nonce", o), i.textContent = a.cssText, e.appendChild(i);
   }
-}, Ce = _e ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
+}, Ee = ge ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
   let a = "";
   for (const i of t.cssRules) a += i.cssText;
-  return Je(a);
+  return Ze(a);
 })(e) : e;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Ve, defineProperty: Xe, getOwnPropertyDescriptor: qe, getOwnPropertyNames: Ze, getOwnPropertySymbols: Ke, getPrototypeOf: Qe } = Object, oe = globalThis, Pe = oe.trustedTypes, et = Pe ? Pe.emptyScript : "", tt = oe.reactiveElementPolyfillSupport, H = (e, t) => e, ie = { toAttribute(e, t) {
+const { is: Qe, defineProperty: et, getOwnPropertyDescriptor: tt, getOwnPropertyNames: it, getOwnPropertySymbols: at, getPrototypeOf: ot } = Object, ne = globalThis, Te = ne.trustedTypes, st = Te ? Te.emptyScript : "", rt = ne.reactiveElementPolyfillSupport, G = (e, t) => e, se = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
-      e = e ? et : null;
+      e = e ? st : null;
       break;
     case Object:
     case Array:
@@ -73,23 +73,23 @@ const { is: Ve, defineProperty: Xe, getOwnPropertyDescriptor: qe, getOwnProperty
       }
   }
   return a;
-} }, ge = (e, t) => !Ve(e, t), je = { attribute: !0, type: String, converter: ie, reflect: !1, useDefault: !1, hasChanged: ge };
-Symbol.metadata ??= Symbol("metadata"), oe.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let O = class extends HTMLElement {
+} }, me = (e, t) => !Qe(e, t), Me = { attribute: !0, type: String, converter: se, reflect: !1, useDefault: !1, hasChanged: me };
+Symbol.metadata ??= Symbol("metadata"), ne.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+let L = class extends HTMLElement {
   static addInitializer(t) {
     this._$Ei(), (this.l ??= []).push(t);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(t, a = je) {
+  static createProperty(t, a = Me) {
     if (a.state && (a.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((a = Object.create(a)).wrapped = !0), this.elementProperties.set(t, a), !a.noAccessor) {
       const i = Symbol(), o = this.getPropertyDescriptor(t, i, a);
-      o !== void 0 && Xe(this.prototype, t, o);
+      o !== void 0 && et(this.prototype, t, o);
     }
   }
   static getPropertyDescriptor(t, a, i) {
-    const { get: o, set: s } = qe(this.prototype, t) ?? { get() {
+    const { get: o, set: s } = tt(this.prototype, t) ?? { get() {
       return this[a];
     }, set(r) {
       this[a] = r;
@@ -100,17 +100,17 @@ let O = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(t) {
-    return this.elementProperties.get(t) ?? je;
+    return this.elementProperties.get(t) ?? Me;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(H("elementProperties"))) return;
-    const t = Qe(this);
+    if (this.hasOwnProperty(G("elementProperties"))) return;
+    const t = ot(this);
     t.finalize(), t.l !== void 0 && (this.l = [...t.l]), this.elementProperties = new Map(t.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(H("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(H("properties"))) {
-      const a = this.properties, i = [...Ze(a), ...Ke(a)];
+    if (this.hasOwnProperty(G("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(G("properties"))) {
+      const a = this.properties, i = [...it(a), ...at(a)];
       for (const o of i) this.createProperty(o, a[o]);
     }
     const t = this[Symbol.metadata];
@@ -129,8 +129,8 @@ let O = class extends HTMLElement {
     const a = [];
     if (Array.isArray(t)) {
       const i = new Set(t.flat(1 / 0).reverse());
-      for (const o of i) a.unshift(Ce(o));
-    } else t !== void 0 && a.push(Ce(t));
+      for (const o of i) a.unshift(Ee(o));
+    } else t !== void 0 && a.push(Ee(t));
     return a;
   }
   static _$Eu(t, a) {
@@ -156,7 +156,7 @@ let O = class extends HTMLElement {
   }
   createRenderRoot() {
     const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Ye(t, this.constructor.elementStyles), t;
+    return Ke(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((t) => t.hostConnected?.());
@@ -172,14 +172,14 @@ let O = class extends HTMLElement {
   _$ET(t, a) {
     const i = this.constructor.elementProperties.get(t), o = this.constructor._$Eu(t, i);
     if (o !== void 0 && i.reflect === !0) {
-      const s = (i.converter?.toAttribute !== void 0 ? i.converter : ie).toAttribute(a, i.type);
+      const s = (i.converter?.toAttribute !== void 0 ? i.converter : se).toAttribute(a, i.type);
       this._$Em = t, s == null ? this.removeAttribute(o) : this.setAttribute(o, s), this._$Em = null;
     }
   }
   _$AK(t, a) {
     const i = this.constructor, o = i._$Eh.get(t);
     if (o !== void 0 && this._$Em !== o) {
-      const s = i.getPropertyOptions(o), r = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : ie;
+      const s = i.getPropertyOptions(o), r = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : se;
       this._$Em = o;
       const h = r.fromAttribute(a, s.type);
       this[o] = h ?? this._$Ej?.get(o) ?? h, this._$Em = null;
@@ -188,7 +188,7 @@ let O = class extends HTMLElement {
   requestUpdate(t, a, i, o = !1, s) {
     if (t !== void 0) {
       const r = this.constructor;
-      if (o === !1 && (s = this[t]), i ??= r.getPropertyOptions(t), !((i.hasChanged ?? ge)(s, a) || i.useDefault && i.reflect && s === this._$Ej?.get(t) && !this.hasAttribute(r._$Eu(t, i)))) return;
+      if (o === !1 && (s = this[t]), i ??= r.getPropertyOptions(t), !((i.hasChanged ?? me)(s, a) || i.useDefault && i.reflect && s === this._$Ej?.get(t) && !this.hasAttribute(r._$Eu(t, i)))) return;
       this.C(t, a, i);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -256,75 +256,75 @@ let O = class extends HTMLElement {
   firstUpdated(t) {
   }
 };
-O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[H("elementProperties")] = /* @__PURE__ */ new Map(), O[H("finalized")] = /* @__PURE__ */ new Map(), tt?.({ ReactiveElement: O }), (oe.reactiveElementVersions ??= []).push("2.1.2");
+L.elementStyles = [], L.shadowRootOptions = { mode: "open" }, L[G("elementProperties")] = /* @__PURE__ */ new Map(), L[G("finalized")] = /* @__PURE__ */ new Map(), rt?.({ ReactiveElement: L }), (ne.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const me = globalThis, Ae = (e) => e, ae = me.trustedTypes, Ee = ae ? ae.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Ne = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + T, it = `<${Le}>`, I = document, B = () => I.createComment(""), W = (e) => e === null || typeof e != "object" && typeof e != "function", fe = Array.isArray, at = (e) => fe(e) || typeof e?.[Symbol.iterator] == "function", ce = `[ 	
-\f\r]`, L = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, Te = /-->/g, Me = />/g, M = RegExp(`>|${ce}(?:([^\\s"'>=/]+)(${ce}*=${ce}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ze = /'/g, Ie = /"/g, He = /^(?:script|style|textarea|title)$/i, ot = (e) => (t, ...a) => ({ _$litType$: e, strings: t, values: a }), n = ot(1), U = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), De = /* @__PURE__ */ new WeakMap(), z = I.createTreeWalker(I, 129);
-function Fe(e, t) {
-  if (!fe(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return Ee !== void 0 ? Ee.createHTML(t) : t;
+const fe = globalThis, Ie = (e) => e, re = fe.trustedTypes, ze = re ? re.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Fe = "$lit$", I = `lit$${Math.random().toFixed(9).slice(2)}$`, We = "?" + I, nt = `<${We}>`, U = document, Y = () => U.createComment(""), V = (e) => e === null || typeof e != "object" && typeof e != "function", ve = Array.isArray, lt = (e) => ve(e) || typeof e?.[Symbol.iterator] == "function", he = `[ 	
+\f\r]`, W = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, De = /-->/g, Ue = />/g, z = RegExp(`>|${he}(?:([^\\s"'>=/]+)(${he}*=${he}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Le = /'/g, Re = /"/g, Be = /^(?:script|style|textarea|title)$/i, dt = (e) => (t, ...a) => ({ _$litType$: e, strings: t, values: a }), n = dt(1), R = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ne = /* @__PURE__ */ new WeakMap(), D = U.createTreeWalker(U, 129);
+function Ge(e, t) {
+  if (!ve(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return ze !== void 0 ? ze.createHTML(t) : t;
 }
-const st = (e, t) => {
+const ct = (e, t) => {
   const a = e.length - 1, i = [];
-  let o, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = L;
+  let o, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = W;
   for (let h = 0; h < a; h++) {
     const c = e[h];
-    let p, u, _ = -1, m = 0;
-    for (; m < c.length && (r.lastIndex = m, u = r.exec(c), u !== null); ) m = r.lastIndex, r === L ? u[1] === "!--" ? r = Te : u[1] !== void 0 ? r = Me : u[2] !== void 0 ? (He.test(u[2]) && (o = RegExp("</" + u[2], "g")), r = M) : u[3] !== void 0 && (r = M) : r === M ? u[0] === ">" ? (r = o ?? L, _ = -1) : u[1] === void 0 ? _ = -2 : (_ = r.lastIndex - u[2].length, p = u[1], r = u[3] === void 0 ? M : u[3] === '"' ? Ie : ze) : r === Ie || r === ze ? r = M : r === Te || r === Me ? r = L : (r = M, o = void 0);
-    const f = r === M && e[h + 1].startsWith("/>") ? " " : "";
-    s += r === L ? c + it : _ >= 0 ? (i.push(p), c.slice(0, _) + Ne + c.slice(_) + T + f) : c + T + (_ === -2 ? h : f);
+    let p, g, _ = -1, m = 0;
+    for (; m < c.length && (r.lastIndex = m, g = r.exec(c), g !== null); ) m = r.lastIndex, r === W ? g[1] === "!--" ? r = De : g[1] !== void 0 ? r = Ue : g[2] !== void 0 ? (Be.test(g[2]) && (o = RegExp("</" + g[2], "g")), r = z) : g[3] !== void 0 && (r = z) : r === z ? g[0] === ">" ? (r = o ?? W, _ = -1) : g[1] === void 0 ? _ = -2 : (_ = r.lastIndex - g[2].length, p = g[1], r = g[3] === void 0 ? z : g[3] === '"' ? Re : Le) : r === Re || r === Le ? r = z : r === De || r === Ue ? r = W : (r = z, o = void 0);
+    const f = r === z && e[h + 1].startsWith("/>") ? " " : "";
+    s += r === W ? c + nt : _ >= 0 ? (i.push(p), c.slice(0, _) + Fe + c.slice(_) + I + f) : c + I + (_ === -2 ? h : f);
   }
-  return [Fe(e, s + (e[a] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
+  return [Ge(e, s + (e[a] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
-class G {
+class q {
   constructor({ strings: t, _$litType$: a }, i) {
     let o;
     this.parts = [];
     let s = 0, r = 0;
-    const h = t.length - 1, c = this.parts, [p, u] = st(t, a);
-    if (this.el = G.createElement(p, i), z.currentNode = this.el.content, a === 2 || a === 3) {
+    const h = t.length - 1, c = this.parts, [p, g] = ct(t, a);
+    if (this.el = q.createElement(p, i), D.currentNode = this.el.content, a === 2 || a === 3) {
       const _ = this.el.content.firstChild;
       _.replaceWith(..._.childNodes);
     }
-    for (; (o = z.nextNode()) !== null && c.length < h; ) {
+    for (; (o = D.nextNode()) !== null && c.length < h; ) {
       if (o.nodeType === 1) {
-        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Ne)) {
-          const m = u[r++], f = o.getAttribute(_).split(T), x = /([.?@])?(.*)/.exec(m);
-          c.push({ type: 1, index: s, name: x[2], strings: f, ctor: x[1] === "." ? nt : x[1] === "?" ? lt : x[1] === "@" ? dt : se }), o.removeAttribute(_);
-        } else _.startsWith(T) && (c.push({ type: 6, index: s }), o.removeAttribute(_));
-        if (He.test(o.tagName)) {
-          const _ = o.textContent.split(T), m = _.length - 1;
+        if (o.hasAttributes()) for (const _ of o.getAttributeNames()) if (_.endsWith(Fe)) {
+          const m = g[r++], f = o.getAttribute(_).split(I), v = /([.?@])?(.*)/.exec(m);
+          c.push({ type: 1, index: s, name: v[2], strings: f, ctor: v[1] === "." ? pt : v[1] === "?" ? _t : v[1] === "@" ? gt : le }), o.removeAttribute(_);
+        } else _.startsWith(I) && (c.push({ type: 6, index: s }), o.removeAttribute(_));
+        if (Be.test(o.tagName)) {
+          const _ = o.textContent.split(I), m = _.length - 1;
           if (m > 0) {
-            o.textContent = ae ? ae.emptyScript : "";
-            for (let f = 0; f < m; f++) o.append(_[f], B()), z.nextNode(), c.push({ type: 2, index: ++s });
-            o.append(_[m], B());
+            o.textContent = re ? re.emptyScript : "";
+            for (let f = 0; f < m; f++) o.append(_[f], Y()), D.nextNode(), c.push({ type: 2, index: ++s });
+            o.append(_[m], Y());
           }
         }
-      } else if (o.nodeType === 8) if (o.data === Le) c.push({ type: 2, index: s });
+      } else if (o.nodeType === 8) if (o.data === We) c.push({ type: 2, index: s });
       else {
         let _ = -1;
-        for (; (_ = o.data.indexOf(T, _ + 1)) !== -1; ) c.push({ type: 7, index: s }), _ += T.length - 1;
+        for (; (_ = o.data.indexOf(I, _ + 1)) !== -1; ) c.push({ type: 7, index: s }), _ += I.length - 1;
       }
       s++;
     }
   }
   static createElement(t, a) {
-    const i = I.createElement("template");
+    const i = U.createElement("template");
     return i.innerHTML = t, i;
   }
 }
-function R(e, t, a = e, i) {
-  if (t === U) return t;
+function N(e, t, a = e, i) {
+  if (t === R) return t;
   let o = i !== void 0 ? a._$Co?.[i] : a._$Cl;
-  const s = W(t) ? void 0 : t._$litDirective$;
-  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(e), o._$AT(e, a, i)), i !== void 0 ? (a._$Co ??= [])[i] = o : a._$Cl = o), o !== void 0 && (t = R(e, o._$AS(e, t.values), o, i)), t;
+  const s = V(t) ? void 0 : t._$litDirective$;
+  return o?.constructor !== s && (o?._$AO?.(!1), s === void 0 ? o = void 0 : (o = new s(e), o._$AT(e, a, i)), i !== void 0 ? (a._$Co ??= [])[i] = o : a._$Cl = o), o !== void 0 && (t = N(e, o._$AS(e, t.values), o, i)), t;
 }
-class rt {
+class ht {
   constructor(t, a) {
     this._$AV = [], this._$AN = void 0, this._$AD = t, this._$AM = a;
   }
@@ -335,24 +335,24 @@ class rt {
     return this._$AM._$AU;
   }
   u(t) {
-    const { el: { content: a }, parts: i } = this._$AD, o = (t?.creationScope ?? I).importNode(a, !0);
-    z.currentNode = o;
-    let s = z.nextNode(), r = 0, h = 0, c = i[0];
+    const { el: { content: a }, parts: i } = this._$AD, o = (t?.creationScope ?? U).importNode(a, !0);
+    D.currentNode = o;
+    let s = D.nextNode(), r = 0, h = 0, c = i[0];
     for (; c !== void 0; ) {
       if (r === c.index) {
         let p;
-        c.type === 2 ? p = new X(s, s.nextSibling, this, t) : c.type === 1 ? p = new c.ctor(s, c.name, c.strings, this, t) : c.type === 6 && (p = new ct(s, this, t)), this._$AV.push(p), c = i[++h];
+        c.type === 2 ? p = new Q(s, s.nextSibling, this, t) : c.type === 1 ? p = new c.ctor(s, c.name, c.strings, this, t) : c.type === 6 && (p = new ut(s, this, t)), this._$AV.push(p), c = i[++h];
       }
-      r !== c?.index && (s = z.nextNode(), r++);
+      r !== c?.index && (s = D.nextNode(), r++);
     }
-    return z.currentNode = I, o;
+    return D.currentNode = U, o;
   }
   p(t) {
     let a = 0;
     for (const i of this._$AV) i !== void 0 && (i.strings !== void 0 ? (i._$AI(t, i, a), a += i.strings.length - 2) : i._$AI(t[a])), a++;
   }
 }
-class X {
+class Q {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -371,7 +371,7 @@ class X {
     return this._$AB;
   }
   _$AI(t, a = this) {
-    t = R(this, t, a), W(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== U && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : at(t) ? this.k(t) : this._(t);
+    t = N(this, t, a), V(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== R && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : lt(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -380,38 +380,38 @@ class X {
     this._$AH !== t && (this._$AR(), this._$AH = this.O(t));
   }
   _(t) {
-    this._$AH !== d && W(this._$AH) ? this._$AA.nextSibling.data = t : this.T(I.createTextNode(t)), this._$AH = t;
+    this._$AH !== d && V(this._$AH) ? this._$AA.nextSibling.data = t : this.T(U.createTextNode(t)), this._$AH = t;
   }
   $(t) {
-    const { values: a, _$litType$: i } = t, o = typeof i == "number" ? this._$AC(t) : (i.el === void 0 && (i.el = G.createElement(Fe(i.h, i.h[0]), this.options)), i);
+    const { values: a, _$litType$: i } = t, o = typeof i == "number" ? this._$AC(t) : (i.el === void 0 && (i.el = q.createElement(Ge(i.h, i.h[0]), this.options)), i);
     if (this._$AH?._$AD === o) this._$AH.p(a);
     else {
-      const s = new rt(o, this), r = s.u(this.options);
+      const s = new ht(o, this), r = s.u(this.options);
       s.p(a), this.T(r), this._$AH = s;
     }
   }
   _$AC(t) {
-    let a = De.get(t.strings);
-    return a === void 0 && De.set(t.strings, a = new G(t)), a;
+    let a = Ne.get(t.strings);
+    return a === void 0 && Ne.set(t.strings, a = new q(t)), a;
   }
   k(t) {
-    fe(this._$AH) || (this._$AH = [], this._$AR());
+    ve(this._$AH) || (this._$AH = [], this._$AR());
     const a = this._$AH;
     let i, o = 0;
-    for (const s of t) o === a.length ? a.push(i = new X(this.O(B()), this.O(B()), this, this.options)) : i = a[o], i._$AI(s), o++;
+    for (const s of t) o === a.length ? a.push(i = new Q(this.O(Y()), this.O(Y()), this, this.options)) : i = a[o], i._$AI(s), o++;
     o < a.length && (this._$AR(i && i._$AB.nextSibling, o), a.length = o);
   }
   _$AR(t = this._$AA.nextSibling, a) {
     for (this._$AP?.(!1, !0, a); t !== this._$AB; ) {
-      const i = Ae(t).nextSibling;
-      Ae(t).remove(), t = i;
+      const i = Ie(t).nextSibling;
+      Ie(t).remove(), t = i;
     }
   }
   setConnected(t) {
     this._$AM === void 0 && (this._$Cv = t, this._$AP?.(t));
   }
 }
-class se {
+class le {
   get tagName() {
     return this.element.tagName;
   }
@@ -424,11 +424,11 @@ class se {
   _$AI(t, a = this, i, o) {
     const s = this.strings;
     let r = !1;
-    if (s === void 0) t = R(this, t, a, 0), r = !W(t) || t !== this._$AH && t !== U, r && (this._$AH = t);
+    if (s === void 0) t = N(this, t, a, 0), r = !V(t) || t !== this._$AH && t !== R, r && (this._$AH = t);
     else {
       const h = t;
       let c, p;
-      for (t = s[0], c = 0; c < s.length - 1; c++) p = R(this, h[i + c], a, c), p === U && (p = this._$AH[c]), r ||= !W(p) || p !== this._$AH[c], p === d ? t = d : t !== d && (t += (p ?? "") + s[c + 1]), this._$AH[c] = p;
+      for (t = s[0], c = 0; c < s.length - 1; c++) p = N(this, h[i + c], a, c), p === R && (p = this._$AH[c]), r ||= !V(p) || p !== this._$AH[c], p === d ? t = d : t !== d && (t += (p ?? "") + s[c + 1]), this._$AH[c] = p;
     }
     r && !o && this.j(t);
   }
@@ -436,7 +436,7 @@ class se {
     t === d ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t ?? "");
   }
 }
-class nt extends se {
+class pt extends le {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -444,7 +444,7 @@ class nt extends se {
     this.element[this.name] = t === d ? void 0 : t;
   }
 }
-class lt extends se {
+class _t extends le {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -452,12 +452,12 @@ class lt extends se {
     this.element.toggleAttribute(this.name, !!t && t !== d);
   }
 }
-class dt extends se {
+class gt extends le {
   constructor(t, a, i, o, s) {
     super(t, a, i, o, s), this.type = 5;
   }
   _$AI(t, a = this) {
-    if ((t = R(this, t, a, 0) ?? d) === U) return;
+    if ((t = N(this, t, a, 0) ?? d) === R) return;
     const i = this._$AH, o = t === d && i !== d || t.capture !== i.capture || t.once !== i.once || t.passive !== i.passive, s = t !== d && (i === d || o);
     o && this.element.removeEventListener(this.name, this, i), s && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
@@ -465,7 +465,7 @@ class dt extends se {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, t) : this._$AH.handleEvent(t);
   }
 }
-class ct {
+class ut {
   constructor(t, a, i) {
     this.element = t, this.type = 6, this._$AN = void 0, this._$AM = a, this.options = i;
   }
@@ -473,17 +473,17 @@ class ct {
     return this._$AM._$AU;
   }
   _$AI(t) {
-    R(this, t);
+    N(this, t);
   }
 }
-const ht = me.litHtmlPolyfillSupport;
-ht?.(G, X), (me.litHtmlVersions ??= []).push("3.3.2");
-const Be = (e, t, a) => {
+const mt = fe.litHtmlPolyfillSupport;
+mt?.(q, Q), (fe.litHtmlVersions ??= []).push("3.3.2");
+const Je = (e, t, a) => {
   const i = a?.renderBefore ?? t;
   let o = i._$litPart$;
   if (o === void 0) {
     const s = a?.renderBefore ?? null;
-    i._$litPart$ = o = new X(t.insertBefore(B(), s), s, void 0, a ?? {});
+    i._$litPart$ = o = new Q(t.insertBefore(Y(), s), s, void 0, a ?? {});
   }
   return o._$AI(e), o;
 };
@@ -492,8 +492,8 @@ const Be = (e, t, a) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ve = globalThis;
-class A extends O {
+const be = globalThis;
+class T extends L {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -503,7 +503,7 @@ class A extends O {
   }
   update(t) {
     const a = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = Be(a, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = Je(a, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -512,19 +512,19 @@ class A extends O {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return U;
+    return R;
   }
 }
-A._$litElement$ = !0, A.finalized = !0, ve.litElementHydrateSupport?.({ LitElement: A });
-const pt = ve.litElementPolyfillSupport;
-pt?.({ LitElement: A });
-(ve.litElementVersions ??= []).push("4.2.2");
+T._$litElement$ = !0, T.finalized = !0, be.litElementHydrateSupport?.({ LitElement: T });
+const ft = be.litElementPolyfillSupport;
+ft?.({ LitElement: T });
+(be.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const N = (e) => (t, a) => {
+const O = (e) => (t, a) => {
   a !== void 0 ? a.addInitializer(() => {
     customElements.define(e, t);
   }) : customElements.define(e, t);
@@ -534,7 +534,7 @@ const N = (e) => (t, a) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const _t = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged: ge }, ut = (e = _t, t, a) => {
+const vt = { attribute: !0, type: String, converter: se, reflect: !1, hasChanged: me }, bt = (e = vt, t, a) => {
   const { kind: i, metadata: o } = a;
   let s = globalThis.litPropertyMetadata.get(o);
   if (s === void 0 && globalThis.litPropertyMetadata.set(o, s = /* @__PURE__ */ new Map()), i === "setter" && ((e = Object.create(e)).wrapped = !0), s.set(a.name, e), i === "accessor") {
@@ -555,8 +555,8 @@ const _t = { attribute: !0, type: String, converter: ie, reflect: !1, hasChanged
   }
   throw Error("Unsupported decorator location: " + i);
 };
-function P(e) {
-  return (t, a) => typeof a == "object" ? ut(e, t, a) : ((i, o, s) => {
+function j(e) {
+  return (t, a) => typeof a == "object" ? bt(e, t, a) : ((i, o, s) => {
     const r = o.hasOwnProperty(s);
     return o.constructor.createProperty(s, i), r ? Object.getOwnPropertyDescriptor(o, s) : void 0;
   })(e, t, a);
@@ -566,35 +566,35 @@ function P(e) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function g(e) {
-  return P({ ...e, state: !0, attribute: !1 });
+function u(e) {
+  return j({ ...e, state: !0, attribute: !1 });
 }
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const gt = (e, t, a) => (a.configurable = !0, a.enumerable = !0, Reflect.decorate && typeof t != "object" && Object.defineProperty(e, t, a), a);
+const yt = (e, t, a) => (a.configurable = !0, a.enumerable = !0, Reflect.decorate && typeof t != "object" && Object.defineProperty(e, t, a), a);
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function mt(e, t) {
+function wt(e, t) {
   return (a, i, o) => {
     const s = (r) => r.renderRoot?.querySelector(e) ?? null;
-    return gt(a, i, { get() {
+    return yt(a, i, { get() {
       return s(this);
     } });
   };
 }
-function he(e, t) {
+function pe(e, t) {
   if (!t || !e.date_added)
     return !1;
   const a = new Date(e.date_added);
   return ((/* @__PURE__ */ new Date()).getTime() - a.getTime()) / (1e3 * 60 * 60 * 24) <= t;
 }
-function Q(e, t = "en") {
+function ie(e, t = "en") {
   try {
     const a = new Date(e);
     return new Intl.DateTimeFormat(t, {
@@ -606,16 +606,18 @@ function Q(e, t = "en") {
     return e;
   }
 }
-function pe(e) {
+function _e(e) {
   if (e < 60)
     return `${e}m`;
   const t = Math.floor(e / 60), a = e % 60;
   return a > 0 ? `${t}h ${a}m` : `${t}h`;
 }
-function F(e, t) {
-  return e && `${e}&width=${t}`;
+function J(e, t) {
+  if (!e || e.includes("width=")) return e;
+  const a = e.includes("?") ? "&" : "?";
+  return `${e}${a}width=${t}`;
 }
-const We = V`
+const Ye = K`
   :host {
     display: block;
     height: 100%;
@@ -631,7 +633,6 @@ const We = V`
     --jf-poster-radius: var(--jellyha-poster-border-radius, 12px);
     --jf-transition: 0.2s ease-out;
     --jf-movie-badge: #AA5CC3;
-    --jf-series-badge: #F2A218;
     --jf-series-badge: #F2A218;
     --jf-border-color: var(--divider-color, rgba(255, 255, 255, 0.15));
     --jf-highlight: var(--primary-color, #18BCF2);
@@ -1940,7 +1941,7 @@ const We = V`
       transition: none !important;
     }
   }
-`, ee = {
+`, ae = {
   en: {
     loading: "Loading…",
     no_media: "No recent media found",
@@ -1950,6 +1951,8 @@ const We = V`
     play: "Play",
     pause: "Pause",
     stop: "Stop",
+    previous: "Previous",
+    next: "Next",
     nothing_playing: "Nothing is currently playing",
     entity_not_found: "Entity not found",
     rewinding: "REWINDING",
@@ -2027,6 +2030,10 @@ const We = V`
     "editor.now_playing_sensor": "Media Player",
     "editor.auto": "Auto",
     "editor.show_search": "Show Search Bar",
+    "editor.show_controls": "Show Playback Controls",
+    "editor.horizontal_alignment": "Carousel Alignment",
+    "editor.alignment_center": "Center",
+    "editor.alignment_left": "Left",
     "search.placeholder_title": "Search Title",
     "search.placeholder_genre": "Genre",
     "search.all_genres": "All Genres"
@@ -2040,6 +2047,8 @@ const We = V`
     play: "Abspielen",
     pause: "Pause",
     stop: "Stopp",
+    previous: "Zurück",
+    next: "Weiter",
     nothing_playing: "Nichts wird abgespielt",
     entity_not_found: "Entität nicht gefunden",
     rewinding: "SPULEN",
@@ -2117,6 +2126,10 @@ const We = V`
     "editor.now_playing_sensor": "Medienplayer",
     "editor.auto": "Automatisch",
     "editor.show_search": "Suchleiste anzeigen",
+    "editor.show_controls": "Wiedergabesteuerung anzeigen",
+    "editor.horizontal_alignment": "Karussell-Ausrichtung",
+    "editor.alignment_center": "Zentriert",
+    "editor.alignment_left": "Links",
     "search.placeholder_title": "Titel suchen",
     "search.placeholder_genre": "Genre",
     "search.all_genres": "Alle Genres"
@@ -2130,6 +2143,8 @@ const We = V`
     play: "Lire",
     pause: "Pause",
     stop: "Arrêt",
+    previous: "Précédent",
+    next: "Suivant",
     nothing_playing: "Rien en lecture",
     entity_not_found: "Entité non trouvée",
     rewinding: "BOBINAGE",
@@ -2207,6 +2222,10 @@ const We = V`
     "editor.now_playing_sensor": "Lecteur multimédia",
     "editor.auto": "Auto",
     "editor.show_search": "Afficher la barre de recherche",
+    "editor.show_controls": "Afficher les commandes de lecture",
+    "editor.horizontal_alignment": "Alignement du carrousel",
+    "editor.alignment_center": "Centré",
+    "editor.alignment_left": "Gauche",
     "search.placeholder_title": "Rechercher un titre",
     "search.placeholder_genre": "Genre",
     "search.all_genres": "Tous les genres"
@@ -2220,6 +2239,8 @@ const We = V`
     play: "Reproducir",
     pause: "Pausa",
     stop: "Detener",
+    previous: "Anterior",
+    next: "Siguiente",
     nothing_playing: "Nada sonando",
     entity_not_found: "Entidad no encontrada",
     rewinding: "REBOBINANDO",
@@ -2297,6 +2318,10 @@ const We = V`
     "editor.now_playing_sensor": "Reproductor multimedia",
     "editor.auto": "Auto",
     "editor.show_search": "Mostrar barra de búsqueda",
+    "editor.show_controls": "Mostrar controles de reproducción",
+    "editor.horizontal_alignment": "Alineación del carrusel",
+    "editor.alignment_center": "Centrado",
+    "editor.alignment_left": "Izquierda",
     "search.placeholder_title": "Buscar título",
     "search.placeholder_genre": "Género",
     "search.all_genres": "Todos los géneros"
@@ -2310,6 +2335,8 @@ const We = V`
     play: "Riproduci",
     pause: "Pausa",
     stop: "Stop",
+    previous: "Precedente",
+    next: "Successivo",
     nothing_playing: "Niente in riproduzione",
     entity_not_found: "Entità non trovata",
     rewinding: "RIAVVOLGIMENTO",
@@ -2387,6 +2414,10 @@ const We = V`
     "editor.now_playing_sensor": "Lettore multimediale",
     "editor.auto": "Auto",
     "editor.show_search": "Mostra barra di ricerca",
+    "editor.show_controls": "Mostra controlli di riproduzione",
+    "editor.horizontal_alignment": "Allineamento carosello",
+    "editor.alignment_center": "Centro",
+    "editor.alignment_left": "Sinistra",
     "search.placeholder_title": "Cerca titolo",
     "search.placeholder_genre": "Genere",
     "search.all_genres": "Tutti i generi"
@@ -2400,6 +2431,8 @@ const We = V`
     play: "Afspelen",
     pause: "Pauze",
     stop: "Stop",
+    previous: "Vorige",
+    next: "Volgende",
     nothing_playing: "Niets aan het spelen",
     entity_not_found: "Entiteit niet gevonden",
     rewinding: "TERUGSPOELEN",
@@ -2477,6 +2510,10 @@ const We = V`
     "editor.now_playing_sensor": "Mediaspeler",
     "editor.auto": "Auto",
     "editor.show_search": "Zoekbalk tonen",
+    "editor.show_controls": "Afspeelknoppen tonen",
+    "editor.horizontal_alignment": "Carrousel uitlijning",
+    "editor.alignment_center": "Midden",
+    "editor.alignment_left": "Links",
     "search.placeholder_title": "Zoek titel",
     "search.placeholder_genre": "Genre",
     "search.all_genres": "Alle genres"
@@ -2490,6 +2527,8 @@ const We = V`
     play: "Predvajaj",
     pause: "Premor",
     stop: "Stop",
+    previous: "Prejšnji",
+    next: "Naslednji",
     nothing_playing: "Nič se ne predvaja",
     entity_not_found: "Entiteta ni najdena",
     rewinding: "PREVIJANJE",
@@ -2567,6 +2606,10 @@ const We = V`
     "editor.now_playing_sensor": "Predvajalnik medijev",
     "editor.auto": "Avtomatsko",
     "editor.show_search": "Prikaži iskalno vrstico",
+    "editor.show_controls": "Prikaži kontrolnike za predvajanje",
+    "editor.horizontal_alignment": "Poravnava vrtiljaka",
+    "editor.alignment_center": "Na sredino",
+    "editor.alignment_left": "Levo",
     "search.placeholder_title": "Išči naslov",
     "search.placeholder_genre": "Žanr",
     "search.all_genres": "Vsi žanri"
@@ -2580,6 +2623,8 @@ const We = V`
     play: "Воспроизвести",
     pause: "Пауза",
     stop: "Остановить",
+    previous: "Предыдущий",
+    next: "Следующий",
     nothing_playing: "Ничего не воспроизводится",
     entity_not_found: "Объект не найден",
     rewinding: "ПЕРЕМОТКА",
@@ -2657,21 +2702,26 @@ const We = V`
     "editor.now_playing_sensor": "Медиаплеер",
     "editor.auto": "Авто",
     "editor.show_search": "Показывать панель поиска",
+    "editor.show_controls": "Показывать управление воспроизведением",
+    "editor.horizontal_alignment": "Выравнивание карусели",
+    "editor.alignment_center": "По центру",
+    "editor.alignment_left": "Слева",
     "search.placeholder_title": "Поиск по названию",
     "search.placeholder_genre": "Жанр",
     "search.all_genres": "Все жанры"
   }
 };
-function l(e, t) {
-  const a = e.split("-")[0].toLowerCase();
-  return ee[a]?.[t] ? ee[a][t] : ee.en?.[t] ? ee.en[t] : t;
+function l(e, t, a) {
+  if (!t) return "";
+  const i = (e || "en").split("-")[0].toLowerCase();
+  return ae[i]?.[t] ? ae[i][t] : ae.en?.[t] ? ae.en[t] : "";
 }
-var ft = Object.defineProperty, vt = Object.getOwnPropertyDescriptor, $ = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? vt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, k = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? $t(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && ft(t, a, o), o;
+  return i && o && xt(t, a, o), o;
 };
-let y = class extends A {
+let w = class extends T {
   constructor() {
     super(...arguments), this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._selectedSeason = "all", this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._portalContainer = null, this._handleKeyDown = (e) => {
       e.key === "Escape" && this._open && this.closeDialog();
@@ -2900,7 +2950,7 @@ let y = class extends A {
   }
   updated() {
     if (this._portalContainer) {
-      Be(this._renderDialogContent(), this._portalContainer);
+      Je(this._renderDialogContent(), this._portalContainer);
       const e = this._portalContainer.querySelector(".jellyha-modal-surface");
       e && (e.removeEventListener("touchstart", this._handleModalTouchStart), e.removeEventListener("touchmove", this._handleModalTouchMove), e.removeEventListener("touchend", this._handleModalTouchEnd), e.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), e.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), e.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
     }
@@ -3916,8 +3966,8 @@ let y = class extends A {
     const t = [], a = e.media_streams || [], i = a.find((s) => s.Type?.toLowerCase() === "video");
     if (i) {
       if (i.Width && i.Height) {
-        let u = "";
-        i.Width >= 3800 || i.Height >= 2e3 ? u = "4K UHD" : i.Height >= 1e3 || i.Width >= 1900 ? u = "1080p" : i.Height >= 700 || i.Width >= 1200 ? u = "720p" : u = `${i.Width}x${i.Height}`, t.push(n`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${u}</span>`);
+        let g = "";
+        i.Width >= 3800 || i.Height >= 2e3 ? g = "4K UHD" : i.Height >= 1e3 || i.Width >= 1900 ? g = "1080p" : i.Height >= 700 || i.Width >= 1200 ? g = "720p" : g = `${i.Width}x${i.Height}`, t.push(n`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${g}</span>`);
       }
       const s = (i.VideoRangeType || "").toUpperCase(), r = (i.VideoRange || "").toUpperCase(), h = (i.ColorTransfer || "").toLowerCase(), c = i.DvProfile;
       let p = e.dynamic_range || "";
@@ -3988,57 +4038,57 @@ let y = class extends A {
     return null;
   }
 };
-y.styles = V`
+w.styles = K`
         /* Styles handled in _getPortalStyles */
     `;
-$([
-  P({ attribute: !1 })
-], y.prototype, "hass", 2);
-$([
-  g()
-], y.prototype, "_item", 2);
-$([
-  g()
-], y.prototype, "_nextUpItem", 2);
-$([
-  g()
-], y.prototype, "_defaultCastDevice", 2);
-$([
-  g()
-], y.prototype, "_serverEntityId", 2);
-$([
-  g()
-], y.prototype, "_open", 2);
-$([
-  g()
-], y.prototype, "_confirmDelete", 2);
-$([
-  g()
-], y.prototype, "_viewMode", 2);
-$([
-  g()
-], y.prototype, "_episodes", 2);
-$([
-  g()
-], y.prototype, "_selectedSeason", 2);
-$([
-  g()
-], y.prototype, "_touchStartY", 2);
-$([
-  g()
-], y.prototype, "_currentTranslateY", 2);
-$([
-  g()
-], y.prototype, "_isDragging", 2);
-y = $([
-  N("jellyha-item-details-modal")
-], y);
-var bt = Object.defineProperty, yt = Object.getOwnPropertyDescriptor, be = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? yt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+k([
+  j({ attribute: !1 })
+], w.prototype, "hass", 2);
+k([
+  u()
+], w.prototype, "_item", 2);
+k([
+  u()
+], w.prototype, "_nextUpItem", 2);
+k([
+  u()
+], w.prototype, "_defaultCastDevice", 2);
+k([
+  u()
+], w.prototype, "_serverEntityId", 2);
+k([
+  u()
+], w.prototype, "_open", 2);
+k([
+  u()
+], w.prototype, "_confirmDelete", 2);
+k([
+  u()
+], w.prototype, "_viewMode", 2);
+k([
+  u()
+], w.prototype, "_episodes", 2);
+k([
+  u()
+], w.prototype, "_selectedSeason", 2);
+k([
+  u()
+], w.prototype, "_touchStartY", 2);
+k([
+  u()
+], w.prototype, "_currentTranslateY", 2);
+k([
+  u()
+], w.prototype, "_isDragging", 2);
+w = k([
+  O("jellyha-item-details-modal")
+], w);
+var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, ye = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? St(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && bt(t, a, o), o;
+  return i && o && kt(t, a, o), o;
 };
-function wt(e, t, a) {
+function Ct(e, t, a) {
   const i = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
@@ -4046,7 +4096,7 @@ function wt(e, t, a) {
   });
   e.dispatchEvent(i);
 }
-let J = class extends A {
+let X = class extends T {
   setConfig(e) {
     this._config = e;
   }
@@ -4119,6 +4169,27 @@ let J = class extends A {
             ></ha-selector>
           </div>
         </div>
+
+        ${!this._config.layout || this._config.layout === "carousel" ? n`
+          <div class="form-row">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "center", label: l(i, "editor.alignment_center") || "Center" },
+          { value: "left", label: l(i, "editor.alignment_left") || "Left" }
+        ]
+      }
+    }}
+              .value=${this._config.horizontal_alignment || "center"}
+              .label=${l(i, "editor.horizontal_alignment") || "Carousel Alignment"}
+              label="${l(i, "editor.horizontal_alignment") || "Carousel Alignment"}"
+              @value-changed=${this._horizontalAlignmentChanged}
+            ></ha-selector>
+          </div>
+        ` : ""}
 
         ${this._config.media_type === "series" || this._config.media_type === "both" || !this._config.media_type ? n`
           <div class="form-row">
@@ -4405,7 +4476,7 @@ let J = class extends A {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.show_runtime === !0}
+        .checked=${this._config.show_runtime !== !1}
         @change=${this._showRuntimeChanged}
       ></ha-switch>
       <span>${l(i, "editor.show_runtime")}</span>
@@ -4421,7 +4492,7 @@ let J = class extends A {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.show_genres === !0}
+        .checked=${this._config.show_genres !== !1}
         @change=${this._showGenresChanged}
       ></ha-switch>
       <span>${l(i, "editor.show_genres")}</span>
@@ -4688,8 +4759,8 @@ let J = class extends A {
     t !== void 0 && this._updateConfig("metadata_position", t);
   }
   _horizontalAlignmentChanged(e) {
-    const t = e.target;
-    this._updateConfig("horizontal_alignment", t.value);
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    t !== void 0 && this._updateConfig("horizontal_alignment", t);
   }
   _enablePaginationChanged(e) {
     const t = e.target;
@@ -4727,10 +4798,10 @@ let J = class extends A {
     if (!this._config)
       return;
     const a = { ...this._config, [e]: t };
-    this._config = a, wt(this, "config-changed", { config: a });
+    this._config = a, Ct(this, "config-changed", { config: a });
   }
 };
-J.styles = V`
+X.styles = K`
     .form-row {
       margin-bottom: 16px;
     }
@@ -4756,21 +4827,21 @@ J.styles = V`
       margin-bottom: 0;
     }
   `;
-be([
-  P({ attribute: !1 })
-], J.prototype, "hass", 2);
-be([
-  g()
-], J.prototype, "_config", 2);
-J = be([
-  N("jellyha-library-editor")
-], J);
-var xt = Object.defineProperty, $t = Object.getOwnPropertyDescriptor, S = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? $t(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+ye([
+  j({ attribute: !1 })
+], X.prototype, "hass", 2);
+ye([
+  u()
+], X.prototype, "_config", 2);
+X = ye([
+  O("jellyha-library-editor")
+], X);
+var Pt = Object.defineProperty, jt = Object.getOwnPropertyDescriptor, C = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? jt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && xt(t, a, o), o;
+  return i && o && Pt(t, a, o), o;
 };
-let w = class extends A {
+let $ = class extends T {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
@@ -4778,7 +4849,7 @@ let w = class extends A {
     return !this.item || !this.config || !this.hass ? n`` : this.layout === "list" ? this._renderListItem() : this._renderMediaItem();
   }
   _renderListItem() {
-    const e = this.item, t = he(e, this.config.new_badge_days || 0), a = this._getRating(e), i = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(e);
+    const e = this.item, t = pe(e, this.config.new_badge_days || 0), a = this._getRating(e), i = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(e);
     return n`
       <div
         class="media-item list-item ${o ? "playing" : ""} ${this.config.show_title ? "" : "no-title"} ${this.config.metadata_position === "above" ? "metadata-above" : ""}"
@@ -4795,12 +4866,12 @@ let w = class extends A {
         @contextmenu="${this._handleContextMenu}"
       >
         <div class="list-poster-wrapper">
-          ${this.config.metadata_position === "above" && this.config.show_date_added && e.date_added ? n`<p class="list-date-added">${Q(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+          ${this.config.metadata_position === "above" && this.config.show_date_added && e.date_added ? n`<p class="list-date-added">${ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
           <div class="poster-container" id="poster-${e.id}">
             <div class="poster-inner">
               <img
                 class="poster"
-                src="${F(
+                src="${J(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       160
     )}"
@@ -4828,7 +4899,7 @@ let w = class extends A {
               ${this._renderNowPlayingOverlay(e)}
             </div>
           </div>
-          ${this.config.metadata_position !== "above" && this.config.show_date_added && e.date_added ? n`<p class="list-date-added">${Q(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+          ${this.config.metadata_position !== "above" && this.config.show_date_added && e.date_added ? n`<p class="list-date-added">${ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
         </div>
         
         <div class="list-info">
@@ -4845,7 +4916,7 @@ let w = class extends A {
                 </span>` : d}
             ${this.config.show_runtime && e.runtime_minutes ? n`<span class="list-runtime">
                   <ha-icon icon="mdi:clock-outline"></ha-icon>
-                  ${pe(e.runtime_minutes)}
+                  ${_e(e.runtime_minutes)}
                 </span>` : d}
           </div>
           
@@ -4857,7 +4928,7 @@ let w = class extends A {
     `;
   }
   _renderMediaItem() {
-    const e = this.item, t = he(e, this.config.new_badge_days || 0), a = this._getRating(e), i = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(e);
+    const e = this.item, t = pe(e, this.config.new_badge_days || 0), a = this._getRating(e), i = this.config.show_media_type_badge !== !1, o = this._isItemPlaying(e);
     return n`
       <div
         class="media-item ${o ? "playing" : ""}"
@@ -4877,14 +4948,14 @@ let w = class extends A {
               <div class="media-info-above">
                 ${this.config.show_title ? n`<p class="media-title">${e.name}</p>` : d}
                 ${this.config.show_year && e.year ? n`<p class="media-year">${e.year}</p>` : d}
-                ${this.config.show_date_added && e.date_added ? n`<p class="media-date-added">${Q(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+                ${this.config.show_date_added && e.date_added ? n`<p class="media-date-added">${ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
               </div>
             ` : d}
         <div class="poster-container" id="poster-${e.id}">
           <div class="poster-inner">
             <img
               class="poster"
-              src="${F(
+              src="${J(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       300
     )}"
@@ -4922,7 +4993,7 @@ let w = class extends A {
             ${this.config.show_runtime && e.runtime_minutes && !o ? n`
                   <span class="runtime">
                     <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${pe(e.runtime_minutes)}
+                    ${_e(e.runtime_minutes)}
                   </span>
                 ` : d}
             
@@ -4942,7 +5013,7 @@ let w = class extends A {
               <div class="media-info-below">
                 ${this.config.show_title ? n`<p class="media-title">${e.name}</p>` : d}
                 ${this.config.show_year && e.year ? n`<p class="media-year">${e.year}</p>` : d}
-                ${this.config.show_date_added && e.date_added ? n`<p class="media-date-added">${Q(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
+                ${this.config.show_date_added && e.date_added ? n`<p class="media-date-added">${ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : d}
               </div>
             ` : d}
       </div>
@@ -5125,54 +5196,54 @@ let w = class extends A {
     this.dispatchEvent(t);
   }
 };
-w.styles = We;
-S([
-  P({ attribute: !1 })
-], w.prototype, "hass", 2);
-S([
-  P({ attribute: !1 })
-], w.prototype, "config", 2);
-S([
-  P({ attribute: !1 })
-], w.prototype, "item", 2);
-S([
-  P({ type: String })
-], w.prototype, "layout", 2);
-S([
-  P({ type: Boolean })
-], w.prototype, "isNextUpHighlight", 2);
-S([
-  g()
-], w.prototype, "_pressStartTime", 2);
-S([
-  g()
-], w.prototype, "_holdTimer", 2);
-S([
-  g()
-], w.prototype, "_isHoldActive", 2);
-S([
-  g()
-], w.prototype, "_itemTouchStartX", 2);
-S([
-  g()
-], w.prototype, "_itemTouchStartY", 2);
-S([
-  g()
-], w.prototype, "_clickTimer", 2);
-S([
-  g()
-], w.prototype, "_rewindActive", 2);
-w = S([
-  N("jellyha-media-item")
-], w);
-var kt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, b = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? St(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+$.styles = Ye;
+C([
+  j({ attribute: !1 })
+], $.prototype, "hass", 2);
+C([
+  j({ attribute: !1 })
+], $.prototype, "config", 2);
+C([
+  j({ attribute: !1 })
+], $.prototype, "item", 2);
+C([
+  j({ type: String })
+], $.prototype, "layout", 2);
+C([
+  j({ type: Boolean })
+], $.prototype, "isNextUpHighlight", 2);
+C([
+  u()
+], $.prototype, "_pressStartTime", 2);
+C([
+  u()
+], $.prototype, "_holdTimer", 2);
+C([
+  u()
+], $.prototype, "_isHoldActive", 2);
+C([
+  u()
+], $.prototype, "_itemTouchStartX", 2);
+C([
+  u()
+], $.prototype, "_itemTouchStartY", 2);
+C([
+  u()
+], $.prototype, "_clickTimer", 2);
+C([
+  u()
+], $.prototype, "_rewindActive", 2);
+$ = C([
+  O("jellyha-media-item")
+], $);
+var At = Object.defineProperty, Et = Object.getOwnPropertyDescriptor, y = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? Et(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && kt(t, a, o), o;
+  return i && o && At(t, a, o), o;
 };
-const Ct = "1.0.0";
+const Tt = "1.0.0";
 console.info(
-  `%c JELLYHA-LIBRARY-CARD %c v${Ct} `,
+  `%c JELLYHA-LIBRARY-CARD %c v${Tt} `,
   "color: white; background: #00a4dc; font-weight: bold;",
   "color: #00a4dc; background: white; font-weight: bold;"
 );
@@ -5187,6 +5258,7 @@ const Oe = {
   title: "",
   layout: "carousel",
   media_type: "both",
+  tv_content: "series",
   items_per_page: 3,
   max_pages: 5,
   auto_swipe_interval: 0,
@@ -5200,7 +5272,9 @@ const Oe = {
   show_genres: !0,
   show_description_on_hover: !0,
   enable_pagination: !0,
+  show_pagination_dots: !0,
   metadata_position: "below",
+  horizontal_alignment: "center",
   show_date_added: !1,
   rating_source: "auto",
   new_badge_days: 3,
@@ -5208,14 +5282,17 @@ const Oe = {
   show_watched_status: !0,
   click_action: "more-info",
   hold_action: "jellyfin",
+  double_tap_action: "none",
   default_cast_device: "",
   show_now_playing: !0,
+  use_series_image: !1,
+  show_search: !1,
   filter_favorites: !1,
   status_filter: "all",
   filter_newly_added: !1,
   sort_option: "date_added_desc"
 };
-function Ue(e, t, a) {
+function B(e, t, a) {
   const i = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
@@ -5223,7 +5300,7 @@ function Ue(e, t, a) {
   });
   e.dispatchEvent(i);
 }
-let v = class extends A {
+let b = class extends T {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -5330,9 +5407,9 @@ let v = class extends A {
     if (Math.abs(t) > Math.abs(a)) {
       const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (i && Math.abs(t) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i, h = s - r, c = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i, h = s - r, c = o <= 5, p = o >= h - 5, g = this._config.show_pagination !== !1;
         let _ = !1;
-        if (u) {
+        if (g) {
           const m = this._getTotalPages();
           c && t > 0 && this._currentPage === 0 && (_ = !0), p && t < 0 && this._currentPage >= m - 1 && (_ = !0);
         } else
@@ -5382,9 +5459,9 @@ let v = class extends A {
     if (Math.abs(t) > Math.abs(a)) {
       const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
       if (i && Math.abs(t) > 0) {
-        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i, h = s - r, c = o <= 5, p = o >= h - 5, u = this._config.show_pagination !== !1;
+        const { scrollLeft: o, scrollWidth: s, clientWidth: r } = i, h = s - r, c = o <= 5, p = o >= h - 5, g = this._config.show_pagination !== !1;
         let _ = !1;
-        if (u) {
+        if (g) {
           const m = this._getTotalPages();
           c && t > 0 && this._currentPage === 0 && (_ = !0), p && t < 0 && this._currentPage >= m - 1 && (_ = !0);
         } else
@@ -5651,13 +5728,9 @@ let v = class extends A {
       const s = this._searchQuery.toLowerCase();
       t = t.filter((r) => r.name.toLowerCase().includes(s));
     }
-    if (this._searchGenre && (t = t.filter((s) => s.genres && s.genres.includes(this._searchGenre))), this._config.media_type === "movies")
-      t = t.filter((s) => s.type === "Movie");
-    else if (this._config.media_type === "series")
-      this._config.tv_content === "episodes" ? t = t.filter((s) => s.type === "Episode") : t = t.filter((s) => s.type === "Series");
-    else if (this._config.media_type === "both" || !this._config.media_type)
-      this._config.tv_content === "episodes" ? t = t.filter((s) => s.type === "Movie" || s.type === "Episode") : t = t.filter((s) => s.type !== "Episode");
-    else if (this._config.media_type === "next_up") {
+    this._searchGenre && (t = t.filter((s) => s.genres && s.genres.includes(this._searchGenre))), this._config.media_type === "movies" ? t = t.filter((s) => s.type === "Movie") : this._config.media_type === "series" ? this._config.tv_content === "episodes" ? t = t.filter((s) => s.type === "Episode") : t = t.filter((s) => s.type === "Series") : this._config.media_type === "both" || !this._config.media_type ? this._config.tv_content === "episodes" ? t = t.filter((s) => s.type === "Movie" || s.type === "Episode") : t = t.filter((s) => s.type !== "Episode") : this._config.media_type, this._config.filter_favorites && (t = t.filter((s) => s.is_favorite === !0));
+    const a = this._config.status_filter || "all";
+    if (a === "unwatched" ? t = t.filter((s) => !s.is_played) : a === "watched" && (t = t.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (t = t.filter((s) => pe(s, this._config.new_badge_days || 0))), this._config.media_type === "next_up") {
       const s = this._config.max_pages;
       if (s != null && s > 0) {
         const r = (this._config.items_per_page || 5) * s;
@@ -5665,9 +5738,6 @@ let v = class extends A {
       }
       return t;
     }
-    this._config.filter_favorites && (t = t.filter((s) => s.is_favorite === !0));
-    const a = this._config.status_filter || "all";
-    a === "unwatched" ? t = t.filter((s) => !s.is_played) : a === "watched" && (t = t.filter((s) => s.is_played === !0)), this._config.filter_newly_added && (t = t.filter((s) => he(s, this._config.new_badge_days || 0)));
     const i = this._config.sort_option || "date_added_desc";
     t.sort((s, r) => {
       switch (i) {
@@ -5743,13 +5813,13 @@ let v = class extends A {
           class="carousel ${t ? "paginated" : "scrollable"}"
           @scroll="${t ? d : this._handleScroll}"
         >
-          ${p.map((u) => n`
+          ${p.map((g) => n`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
-                .item=${u}
+                .item=${g}
                 .layout=${"grid"}
-                .isNextUpHighlight=${this._config.media_type === "next_up" && u.id === this._mostRecentNextUpItemId}
+                .isNextUpHighlight=${this._config.media_type === "next_up" && g.id === this._mostRecentNextUpItemId}
                 @jellyha-action=${this._handleItemAction}
             ></jellyha-media-item>
           `)}
@@ -5763,7 +5833,7 @@ let v = class extends A {
    * Render list with optional pagination
    */
   _renderList(e, t) {
-    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e, u = this._effectiveListColumns, _ = u === 1;
+    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e, g = this._effectiveListColumns, _ = g === 1;
     return n`
       <div 
         class="list-wrapper"
@@ -5776,7 +5846,7 @@ let v = class extends A {
       >
         <div 
           class="list ${t ? "paginated" : ""} ${_ ? "single-column" : ""}"
-          style="--jf-list-columns: ${u}"
+          style="--jf-list-columns: ${g}"
         >
           ${p.map((m) => n`
             <jellyha-media-item
@@ -5797,7 +5867,7 @@ let v = class extends A {
    * Render grid with optional pagination
    */
   _renderGrid(e, t) {
-    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e, u = this._config.columns || 1, _ = u === 1, m = !t && (this._config.auto_swipe_interval || 0) > 0;
+    const a = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages, o = i ? Number(i) : 0, s = o > 0 ? o : 1 / 0, r = Math.min(Math.ceil(e.length / a), s), h = this._currentPage * a, c = !t && (this._config.auto_swipe_interval || 0) > 0, p = t ? e.slice(h, h + a) : c ? [...e, ...e] : e, g = this._config.columns || 1, _ = g === 1, m = !t && (this._config.auto_swipe_interval || 0) > 0;
     return n`
       <div class="grid-outer">
         <div 
@@ -5812,7 +5882,7 @@ let v = class extends A {
         >
           <div
             class="grid ${t ? "paginated" : ""} ${_ ? "auto-columns" : ""} ${m ? "horizontal" : ""}"
-            style="--jf-columns: ${u}; --jf-grid-rows: ${u}"
+            style="--jf-columns: ${g}; --jf-grid-rows: ${g}"
           >
             ${p.map((f) => n`
                 <jellyha-media-item
@@ -5869,9 +5939,9 @@ let v = class extends A {
           style="transform: translateX(${h}px); width: ${e * 16}px"
         >
           ${Array.from({ length: e }, (c, p) => {
-      const u = Math.abs(p - this._currentPage);
+      const g = Math.abs(p - this._currentPage);
       let _ = "smart-dot";
-      return p === this._currentPage ? _ += " active" : u > 2 ? _ += " hidden" : u === 2 && (_ += " small"), n`
+      return p === this._currentPage ? _ += " active" : g > 2 ? _ += " hidden" : g === 2 && (_ += " small"), n`
               <button
                 type="button"
                 class="${_}"
@@ -5902,7 +5972,7 @@ let v = class extends A {
         this._showItemDetails(e);
         break;
       case "trailer":
-        e.trailer_url ? window.open(e.trailer_url, "_blank") : Ue(this, "hass-notification", {
+        e.trailer_url ? window.open(e.trailer_url, "_blank") : B(this, "hass-notification", {
           message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
@@ -5947,19 +6017,25 @@ let v = class extends A {
       runtime_minutes: e.runtime_minutes || null,
       action_type: t
     };
-    if (Ue(this, "jellyha_item_clicked", o), !a) {
-      console.warn('JellyHA: "call-service" action selected but no action/service configured.');
+    if (B(this, "jellyha_item_clicked", o), !a) {
+      console.warn('JellyHA: "call-service" action selected but no action/service configured.'), B(this, "hass-notification", {
+        message: 'No script configured for "Run Script" action. Please select a script in the card editor.'
+      });
       return;
     }
     const s = a.trim().split("."), r = s[0], h = s.slice(1).join(".");
     if (!r || !h) {
-      console.error(`JellyHA: Invalid service name "${a}". Expected format: domain.service (e.g. script.my_script)`);
+      console.error(`JellyHA: Invalid service name "${a}". Expected format: domain.service (e.g. script.my_script)`), B(this, "hass-notification", {
+        message: `Invalid script/service name: "${a}". Expected format: script.your_script_name`
+      });
       return;
     }
     try {
       await this.hass.callService(r, h, o);
     } catch (c) {
-      console.error(`JellyHA: Failed to call service ${a}`, c);
+      console.error(`JellyHA: Failed to call service ${a}`, c), B(this, "hass-notification", {
+        message: `Failed to call ${a}: ${c?.message || c}`
+      });
     }
   }
   async _castMedia(e) {
@@ -6081,67 +6157,67 @@ let v = class extends A {
     `;
   }
 };
-v.styles = We;
-b([
-  P({ attribute: !1 })
-], v.prototype, "hass", 2);
-b([
-  g()
-], v.prototype, "_config", 2);
-b([
-  g()
-], v.prototype, "_currentPage", 2);
-b([
-  g()
-], v.prototype, "_itemsPerPage", 2);
-b([
-  g()
-], v.prototype, "_pressStartTime", 2);
-b([
-  g()
-], v.prototype, "_holdTimer", 2);
-b([
-  g()
-], v.prototype, "_isHoldActive", 2);
-b([
-  g()
-], v.prototype, "_rewindActive", 2);
-b([
-  g()
-], v.prototype, "_items", 2);
-b([
-  g()
-], v.prototype, "_error", 2);
-b([
-  g()
-], v.prototype, "_lastUpdate", 2);
-b([
-  g()
-], v.prototype, "_mostRecentNextUpItemId", 2);
-b([
-  g()
-], v.prototype, "_searchQuery", 2);
-b([
-  g()
-], v.prototype, "_searchGenre", 2);
-b([
-  mt("jellyha-item-details-modal")
-], v.prototype, "_modal", 2);
-b([
-  g()
-], v.prototype, "_scrollProgress", 2);
-b([
-  g()
-], v.prototype, "_hasScrollableContent", 2);
-v = b([
-  N("jellyha-library-card")
-], v);
-var Pt = Object.defineProperty, jt = Object.getOwnPropertyDescriptor, ye = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? jt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+b.styles = Ye;
+y([
+  j({ attribute: !1 })
+], b.prototype, "hass", 2);
+y([
+  u()
+], b.prototype, "_config", 2);
+y([
+  u()
+], b.prototype, "_currentPage", 2);
+y([
+  u()
+], b.prototype, "_itemsPerPage", 2);
+y([
+  u()
+], b.prototype, "_pressStartTime", 2);
+y([
+  u()
+], b.prototype, "_holdTimer", 2);
+y([
+  u()
+], b.prototype, "_isHoldActive", 2);
+y([
+  u()
+], b.prototype, "_rewindActive", 2);
+y([
+  u()
+], b.prototype, "_items", 2);
+y([
+  u()
+], b.prototype, "_error", 2);
+y([
+  u()
+], b.prototype, "_lastUpdate", 2);
+y([
+  u()
+], b.prototype, "_mostRecentNextUpItemId", 2);
+y([
+  u()
+], b.prototype, "_searchQuery", 2);
+y([
+  u()
+], b.prototype, "_searchGenre", 2);
+y([
+  wt("jellyha-item-details-modal")
+], b.prototype, "_modal", 2);
+y([
+  u()
+], b.prototype, "_scrollProgress", 2);
+y([
+  u()
+], b.prototype, "_hasScrollableContent", 2);
+b = y([
+  O("jellyha-library-card")
+], b);
+var Mt = Object.defineProperty, It = Object.getOwnPropertyDescriptor, we = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? It(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && Pt(t, a, o), o;
+  return i && o && Mt(t, a, o), o;
 };
-function At(e, t, a) {
+function zt(e, t, a) {
   const i = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
@@ -6149,7 +6225,7 @@ function At(e, t, a) {
   });
   e.dispatchEvent(i);
 }
-let Y = class extends A {
+let Z = class extends T {
   setConfig(e) {
     this._config = e;
   }
@@ -6172,7 +6248,7 @@ let Y = class extends A {
     ];
     this._config.entity && !a.some((s) => s.entity === this._config.entity) && a.unshift({
       entity: this._config.entity,
-      label: this.hass.states[this._config.entity]?.attributes.friendly_name || this._config.entity
+      label: String(this.hass.states[this._config.entity]?.attributes?.friendly_name || this._config.entity)
     });
     const i = this.hass.locale?.language || this.hass.language, o = l(i, "editor.media_player") || "Media Player";
     return n`
@@ -6243,7 +6319,7 @@ let Y = class extends A {
           </div>
           <div class="checkbox-row">
             <ha-switch
-              .checked=${this._config.show_genres === !0}
+              .checked=${this._config.show_genres !== !1}
               @change=${this._showGenresChanged}
             ></ha-switch>
             <span>${l(i, "editor.show_genres")}</span>
@@ -6252,7 +6328,7 @@ let Y = class extends A {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_runtime === !0}
+            .checked=${this._config.show_runtime !== !1}
             @change=${this._showRuntimeChanged}
           ></ha-switch>
           <span>${l(i, "editor.show_runtime")}</span>
@@ -6260,7 +6336,7 @@ let Y = class extends A {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_ratings === !0}
+            .checked=${this._config.show_ratings !== !1}
             @change=${this._showRatingsChanged}
           ></ha-switch>
           <span>${l(i, "editor.show_rating")}</span>
@@ -6293,7 +6369,7 @@ let Y = class extends A {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_background === !0}
+            .checked=${this._config.show_background !== !1}
             @change=${this._showBackgroundChanged}
           ></ha-switch>
           <span>${l(i, "editor.show_background")}</span>
@@ -6381,10 +6457,10 @@ let Y = class extends A {
     if (!this._config)
       return;
     const a = { ...this._config, [e]: t };
-    this._config = a, At(this, "config-changed", { config: a });
+    this._config = a, zt(this, "config-changed", { config: a });
   }
 };
-Y.styles = V`
+Z.styles = K`
     .form-row {
       margin-bottom: 16px;
     }
@@ -6410,19 +6486,19 @@ Y.styles = V`
       flex: 1;
     }
   `;
-ye([
-  P({ attribute: !1 })
-], Y.prototype, "hass", 2);
-ye([
-  g()
-], Y.prototype, "_config", 2);
-Y = ye([
-  N("jellyha-now-playing-editor")
-], Y);
-var Et = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, j = (e, t, a, i) => {
-  for (var o = i > 1 ? void 0 : i ? Tt(t, a) : t, s = e.length - 1, r; s >= 0; s--)
+we([
+  j({ attribute: !1 })
+], Z.prototype, "hass", 2);
+we([
+  u()
+], Z.prototype, "_config", 2);
+Z = we([
+  O("jellyha-now-playing-editor")
+], Z);
+var Dt = Object.defineProperty, Ut = Object.getOwnPropertyDescriptor, A = (e, t, a, i) => {
+  for (var o = i > 1 ? void 0 : i ? Ut(t, a) : t, s = e.length - 1, r; s >= 0; s--)
     (r = e[s]) && (o = (i ? r(t, a, o) : r(o)) || o);
-  return i && o && Et(t, a, o), o;
+  return i && o && Dt(t, a, o), o;
 };
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -6431,13 +6507,14 @@ window.customCards.push({
   description: "Display currently playing media from Jellyfin",
   preview: !0
 });
-let k = class extends A {
+let S = class extends T {
   constructor() {
-    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._longPressRaf = null, this._longPressConsumed = !1, this._optimisticFavorites = {}, this._phrases = [];
+    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._longPressRaf = null, this._longPressConsumed = !1, this._optimisticFavorites = {}, this._resolvedImages = {}, this._fetchingImageKey = null, this._phrases = [];
   }
   setConfig(e) {
     this._config = {
       show_title: !0,
+      show_subtitle: !0,
       show_media_type_badge: !0,
       show_year: !0,
       show_client: !0,
@@ -6448,6 +6525,7 @@ let k = class extends A {
       show_ratings: !0,
       show_runtime: !0,
       use_series_image: !1,
+      show_controls: !0,
       ...e
     };
   }
@@ -6459,6 +6537,7 @@ let k = class extends A {
     return {
       entity: t.find((i) => i.startsWith("media_player.jellyha_") && !i.includes("_library_browser") && !i.endsWith("_browser")) || t.find((i) => i.startsWith("sensor.jellyha_now_playing_")) || "",
       show_title: !0,
+      show_subtitle: !0,
       show_media_type_badge: !0,
       show_year: !0,
       show_client: !0,
@@ -6468,7 +6547,8 @@ let k = class extends A {
       show_genres: !0,
       show_ratings: !0,
       show_runtime: !0,
-      use_series_image: !1
+      use_series_image: !1,
+      show_controls: !0
     };
   }
   getCardSize() {
@@ -6501,18 +6581,21 @@ let k = class extends A {
     const a = t.attributes, i = e.startsWith("media_player.");
     if (!(i && (t.state === "playing" || t.state === "paused") || !!a.item_id))
       return this._renderEmpty();
-    const s = this._optimisticSeekPercent !== null ? this._optimisticSeekPercent : a.progress_percent || 0, r = this._config.use_series_image && a.series_image_url ? a.series_image_url : a.image_url || t.attributes.entity_picture, h = r, c = a.item_id || t.attributes.media_content_id;
-    if (c !== this._cachedItemId) {
-      this._cachedItemId = c;
-      const K = a.backdrop_url || r;
-      this._cachedBackdropUrl = K ? F(K, 640) : void 0;
+    const s = this._getDurationSeconds(t), r = this._getCurrentPositionSeconds(t);
+    let h = 0;
+    this._optimisticSeekPercent !== null ? h = this._optimisticSeekPercent : s > 0 ? h = Math.min(100, Math.max(0, r / s * 100)) : typeof a.progress_percent == "number" && (h = a.progress_percent);
+    const c = this._isDragging && s > 0 ? this._dragPercentage / 100 * s : this._optimisticSeekPercent !== null && s > 0 ? this._optimisticSeekPercent / 100 * s : r, { seriesImageUrl: p, episodeImageUrl: g } = this._resolveImages(t), _ = this._config.use_series_image && p ? p : g || a.image_url || t.attributes.entity_picture, m = _, f = a.item_id || t.attributes.media_content_id, v = `${f}_${this._config.use_series_image ? "series" : "item"}`;
+    if (v !== this._cachedItemId) {
+      this._cachedItemId = v;
+      const te = a.backdrop_url || _;
+      this._cachedBackdropUrl = te ? J(te, 640) : void 0;
     }
-    c !== this._cachedColorItemId && h && (this._cachedColorItemId = c, this._extractDominantColor(F(h, 80)));
-    const p = this._cachedBackdropUrl, u = this._config.show_background && p, _ = i ? t.state === "paused" : a.is_paused, m = (a.media_type || t.attributes.media_content_type || "").toLowerCase(), f = m === "audio" || m === "music", x = a.title || t.attributes.media_title || "", C = this._config.show_subtitle !== !1 && (a.artist_name || t.attributes.media_artist || a.series_title || t.attributes.media_series_title) || "", re = this._config.show_year !== !1 && a.year ? String(a.year) : "", ne = this._config.show_genres && a.genres?.length ? a.genres.slice(0, 2).join(", ") : "", q = [re, ne].filter(Boolean).join(" • "), Z = this._config.show_user !== !1 && a.user_name || "", le = this._config.show_client !== !1 && a.client || "", we = a.season !== void 0 ? a.season : t.attributes.media_season, xe = a.episode !== void 0 ? a.episode : t.attributes.media_episode, $e = (m === "episode" || m === "tvshow") && we !== void 0 && xe !== void 0 ? `S${String(we).padStart(2, "0")}E${String(xe).padStart(2, "0")}` : a.media_type || "", de = c && this._optimisticFavorites[c] !== void 0 ? this._optimisticFavorites[c] : a.is_favorite || !1, ke = 125.66, Ge = ke * (1 - this._longPressProgress), E = this._supportsRemote(t);
+    v !== this._cachedColorItemId && m && (this._cachedColorItemId = v, this._extractDominantColor(J(m, 80)));
+    const P = this._cachedBackdropUrl, x = this._config.show_background !== !1 && P, H = i ? t.state === "paused" : a.is_paused, E = (a.media_type || t.attributes.media_content_type || "").toLowerCase(), F = E === "audio" || E === "music", xe = a.title || t.attributes.media_title || "", $e = this._config.show_subtitle !== !1 && (a.artist_name || t.attributes.media_artist || a.series_title || t.attributes.media_series_title) || "", Ve = this._config.show_year !== !1 && a.year ? String(a.year) : "", qe = this._config.show_genres !== !1 && a.genres?.length ? a.genres.slice(0, 2).join(", ") : "", ke = [Ve, qe].filter(Boolean).join(" • "), ee = this._config.show_user !== !1 && a.user_name || "", de = this._config.show_client !== !1 && a.client || "", Se = a.season !== void 0 ? a.season : t.attributes.media_season, Ce = a.episode !== void 0 ? a.episode : t.attributes.media_episode, Pe = (E === "episode" || E === "tvshow") && Se !== void 0 && Ce !== void 0 ? `S${String(Se).padStart(2, "0")}E${String(Ce).padStart(2, "0")}` : a.media_type || "", ce = f && this._optimisticFavorites[f] !== void 0 ? this._optimisticFavorites[f] : a.is_favorite || !1, je = 125.66, Xe = je * (1 - this._longPressProgress), M = this._supportsRemote(t);
     return n`
-            <ha-card class="jellyha-now-playing ${u ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
-                ${u ? n`
-                    <div class="card-background" style="background-image: url('${p}')"></div>
+            <ha-card class="jellyha-now-playing ${x ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
+                ${x ? n`
+                    <div class="card-background" style="background-image: url('${P}')"></div>
                     <div class="card-overlay"></div>
                 ` : d}
                 
@@ -6522,23 +6605,24 @@ let k = class extends A {
                     ` : d}
                     
                     <div class="main-container">
-                        ${h ? n`
-                            <div class="poster-container ${E ? "" : "no-rewind"}" @click=${E ? this._handlePosterRewind : void 0}>
-                                <img src="${F(h, 160)}" alt="${x}" loading="eager" fetchpriority="high" />
+                        ${m ? n`
+                            <div class="poster-container ${M ? "" : "no-rewind"}" @click=${M ? this._handlePosterRewind : void 0}>
+                                <img src="${J(m, 160)}" alt="${xe}" loading="eager" fetchpriority="high" />
                                 
-                                ${this._config.show_media_type_badge !== !1 && $e ? n`
-                                    <span class="poster-badge media-type-badge ${m}">${$e}</span>
+                                ${this._config.show_media_type_badge !== !1 && Pe ? n`
+                                    <span class="poster-badge media-type-badge ${E}">${Pe}</span>
+                                
                                 ` : d}
-                                ${this._config.show_ratings && a.community_rating ? n`
+                                ${this._config.show_ratings !== !1 && a.community_rating ? n`
                                     <span class="poster-badge rating-badge">
                                         <ha-icon icon="mdi:star"></ha-icon>
                                         ${a.community_rating.toFixed(1)}
                                     </span>
                                 ` : d}
-                                ${this._config.show_runtime && a.runtime_minutes ? n`
+                                ${this._config.show_runtime !== !1 && (a.runtime_minutes || s > 0) ? n`
                                     <span class="poster-badge runtime-badge">
                                         <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${m === "audio" && a.duration_ticks ? `${Math.floor(a.duration_ticks / 1e7 / 60)}m ${Math.floor(a.duration_ticks / 1e7 % 60)}s` : pe(a.runtime_minutes)}
+                                        ${E === "audio" && s > 0 ? `${Math.floor(s / 60)}m ${Math.floor(s % 60)}s` : _e(a.runtime_minutes || Math.round(s / 60))}
                                     </span>
                                 ` : d}
 
@@ -6553,19 +6637,19 @@ let k = class extends A {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== !1 ? n`<div class="title">${x}</div>` : d}
-                                    ${C ? n`<div class="subtitle">${C}</div>` : d}
-                                    ${this._overflowState < 1 && q ? n`<div class="meta-line">${q}</div>` : d}
-                                    ${this._overflowState < 1 && (Z || le) ? n`<div class="client-line">${Z ? n`<strong>${Z}</strong>` : d}${Z && le ? " " : ""}${le || d}</div>` : d}
+                                    ${this._config.show_title !== !1 ? n`<div class="title">${xe}</div>` : d}
+                                    ${$e ? n`<div class="subtitle">${$e}</div>` : d}
+                                    ${this._overflowState < 1 && ke ? n`<div class="meta-line">${ke}</div>` : d}
+                                    ${this._overflowState < 1 && (ee || de) ? n`<div class="client-line">${ee ? n`<strong>${ee}</strong>` : d}${ee && de ? " " : ""}${de || d}</div>` : d}
                                 </div>
                             </div>
 
                             <div class="info-bottom">
-                                ${E ? n`
+                                ${M && this._config.show_controls !== !1 ? n`
                                     <div class="playback-controls">
-                                        ${f ? n`
-                                            <ha-icon-button class="music-subtle-btn ${de ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(a.item_id, de)}>
-                                                <ha-icon icon="${de ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
+                                        ${F ? n`
+                                            <ha-icon-button class="music-subtle-btn ${ce ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(a.item_id, ce)}>
+                                                <ha-icon icon="${ce ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
                                             </ha-icon-button>
                                             <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "previous") || "Previous"} @click=${() => this._handleControl("PreviousTrack")}>
                                                 <ha-icon icon="mdi:skip-previous"></ha-icon>
@@ -6580,19 +6664,19 @@ let k = class extends A {
                                             @pointerdown=${this._startLongPress}
                                             @pointerup=${this._endLongPress}
                                             @pointerleave=${this._endLongPress}
-                                            @contextmenu=${(K) => K.preventDefault()}
+                                            @contextmenu=${(te) => te.preventDefault()}
                                         >
                                             ${this._rewindActive ? n`
                                                 <ha-icon-button class="play-pause-btn spinning" .label=${l(this.hass.locale?.language || this.hass.language, "loading")}>
                                                     <ha-icon icon="mdi:loading"></ha-icon>
                                                 </ha-icon-button>
-                                            ` : _ ? n`
+                                            ` : H ? n`
                                                 <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => {
       if (this._longPressConsumed) {
         this._longPressConsumed = !1;
         return;
       }
-      this._handleControl(f ? "PlayPause" : "Unpause");
+      this._handleControl(F ? "PlayPause" : "Unpause");
     }}>
                                                     <ha-icon icon="mdi:play"></ha-icon>
                                                 </ha-icon-button>
@@ -6611,15 +6695,15 @@ let k = class extends A {
                                                 <svg class="stop-ring" viewBox="0 0 44 44">
                                                     <circle cx="22" cy="22" r="20"
                                                         stroke="#ef4444" stroke-width="3" fill="none"
-                                                        stroke-dasharray="${ke}"
-                                                        stroke-dashoffset="${Ge}"
+                                                        stroke-dasharray="${je}"
+                                                        stroke-dashoffset="${Xe}"
                                                         stroke-linecap="round"
                                                         transform="rotate(-90 22 22)" />
                                                 </svg>
                                             ` : d}
                                         </div>
 
-                                        ${f ? n`
+                                        ${F ? n`
                                             <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
                                                 <ha-icon icon="mdi:skip-next"></ha-icon>
                                             </ha-icon-button>
@@ -6634,22 +6718,22 @@ let k = class extends A {
                                     </div>
                                 ` : d}
 
-                                <div class="progress-container ${E ? "" : "readonly"}"
-                                    @pointerdown=${E ? this._startDrag : void 0}
-                                    @pointermove=${E ? this._handleDrag : void 0}
-                                    @pointerup=${E ? this._endDrag : void 0}
-                                    @pointercancel=${E ? this._cancelDrag : void 0}
+                                <div class="progress-container ${M ? "" : "readonly"}"
+                                    @pointerdown=${M ? this._startDrag : void 0}
+                                    @pointermove=${M ? this._handleDrag : void 0}
+                                    @pointerup=${M ? this._endDrag : void 0}
+                                    @pointercancel=${M ? this._cancelDrag : void 0}
                                 >
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : s}%; transition: ${this._isDragging ? "none" : "width 1s linear"}; background: ${this._dominantColor}"></div>
-                                        <div class="seek-handle" style="left: ${this._isDragging ? this._dragPercentage : s}%; transition: ${this._isDragging ? "none" : "left 1s linear"}; transform: translate(-50%, -50%) ${this._isDragging ? "scale(1.3)" : "scale(1)"}; background: ${this._dominantColor}"></div>
+                                        <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : h}%; transition: ${this._isDragging ? "none" : "width 1s linear"}; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${this._isDragging ? this._dragPercentage : h}%; transition: ${this._isDragging ? "none" : "left 1s linear"}; transform: translate(-50%, -50%) ${this._isDragging ? "scale(1.3)" : "scale(1)"}; background: ${this._dominantColor}"></div>
                                     </div>
                                 </div>
 
-                                ${this._config.show_time && a.duration_ticks ? n`
+                                ${this._config.show_time && s > 0 ? n`
                                     <div class="timestamps">
-                                        <span class="time-elapsed">${this._formatTicks(a.position_ticks || 0)}</span>
-                                        <span class="time-remaining">${this._formatTicks(-((a.duration_ticks || 0) - (a.position_ticks || 0)))}</span>
+                                        <span class="time-elapsed">${this._formatSeconds(c)}</span>
+                                        <span class="time-remaining">${this._formatSeconds(-(s - c))}</span>
                                     </div>
                                 ` : d}
                             </div>
@@ -6686,8 +6770,8 @@ let k = class extends A {
       const c = h ? `${h}_unwatched` : "";
       let p = c && this.hass.states[c] ? c : "";
       p || (p = Object.keys(this.hass.states).find((_) => _.startsWith("sensor.") && _.endsWith("_unwatched")) || "");
-      const u = p ? this.hass.states[p].state : "0";
-      i = i.replace(/\[number\]/g, u);
+      const g = p ? this.hass.states[p].state : "0";
+      i = i.replace(/\[number\]/g, g);
     }
     return n`
             <ha-card class="jellyha-now-playing empty-state">
@@ -6712,9 +6796,69 @@ let k = class extends A {
             </ha-card>
         `;
   }
+  _resolveImages(e) {
+    const t = e.attributes;
+    let a = t.series_image_url, i = t.image_url;
+    const o = (t.media_type || e.attributes.media_content_type || "").toLowerCase(), s = t.series_title || e.attributes.media_series_title, r = t.title || e.attributes.media_title, h = o === "episode" || o === "tvshow" || !!s || e.attributes.media_season !== void 0, c = e.attributes.media_content_id || "", p = e.attributes.entity_picture || "", g = t.item_id || c || s || e.entity_id;
+    if (g && this._resolvedImages[g] && (a || (a = this._resolvedImages[g].seriesImageUrl), i || (i = this._resolvedImages[g].episodeImageUrl)), !h || a && i)
+      return { seriesImageUrl: a, episodeImageUrl: i };
+    const _ = c.match(/^(https?:\/\/[^\/]+)\/(?:Videos|Items)\/([a-zA-Z0-9_-]+)/i), m = p.match(/^(https?:\/\/[^\/]+)\/Items\/([a-zA-Z0-9_-]+)\/Images\/Primary/i), f = _ ? _[1] : m ? m[1] : "", v = _ ? _[2] : t.item_id || null, P = m ? m[2] : null, x = c.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i) || p.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i), H = x ? `&api_key=${x[1]}` : "";
+    if (f && v) {
+      const E = `${f}/Items/${v}/Images/Primary?maxHeight=300&quality=90${H}`;
+      i || (P === v ? i = p : i = E), P && P !== v && !a && (a = p);
+    } else m && !i && !a && (i = p);
+    return g && (a || i) && (this._resolvedImages[g] = {
+      ...this._resolvedImages[g],
+      ...a ? { seriesImageUrl: a } : {},
+      ...i ? { episodeImageUrl: i } : {}
+    }), h && (!a || !i) && this._fetchingImageKey !== g && this._fetchMissingImages(s, r, g), { seriesImageUrl: a, episodeImageUrl: i };
+  }
+  async _fetchMissingImages(e, t, a) {
+    if (a) {
+      this._fetchingImageKey = a;
+      try {
+        if (t) {
+          const o = (await this.hass.callWS({
+            type: "jellyha/search_media",
+            query: t,
+            media_type: "Episode",
+            limit: 1
+          }))?.items;
+          if (o && o.length > 0) {
+            const s = o[0], r = s.poster_url || s.image_url, h = s.series_poster_url;
+            if (r || h) {
+              this._resolvedImages[a] = {
+                ...this._resolvedImages[a],
+                ...r ? { episodeImageUrl: r } : {},
+                ...h ? { seriesImageUrl: h } : {}
+              }, this.requestUpdate();
+              return;
+            }
+          }
+        }
+        if (e && !this._resolvedImages[a]?.seriesImageUrl) {
+          const o = (await this.hass.callWS({
+            type: "jellyha/search_media",
+            query: e,
+            media_type: "Series",
+            limit: 1
+          }))?.items;
+          if (o && o.length > 0) {
+            const s = o[0].poster_url || o[0].series_poster_url || o[0].image_url;
+            s && (this._resolvedImages[a] = {
+              ...this._resolvedImages[a],
+              seriesImageUrl: s
+            }, this.requestUpdate());
+          }
+        }
+      } catch {
+      } finally {
+        this._fetchingImageKey = null;
+      }
+    }
+  }
   _supportsRemote(e) {
     if (!e || this._config.show_controls === !1) return !1;
-    if (this._config.show_controls === !0) return !0;
     const t = e.attributes;
     return !(t.supports_remote_control === !1 || e.entity_id.startsWith("media_player.") && t.supported_features !== void 0 && t.supported_features === 0);
   }
@@ -6788,78 +6932,98 @@ let k = class extends A {
   }
   _cancelDrag(e) {
     if (!this._isDragging) return;
-    e.currentTarget.releasePointerCapture(e.pointerId), this._isDragging = !1;
+    const t = e.currentTarget;
+    if (t?.releasePointerCapture)
+      try {
+        t.releasePointerCapture(e.pointerId);
+      } catch {
+      }
+    this._isDragging = !1, this.requestUpdate();
+  }
+  _getDurationSeconds(e) {
+    const t = e.attributes;
+    if (t.duration_ticks && t.duration_ticks > 0)
+      return t.duration_ticks / 1e7;
+    const a = e.attributes.media_duration;
+    return typeof a == "number" && a > 0 ? a : t.runtime_minutes && t.runtime_minutes > 0 ? t.runtime_minutes * 60 : 0;
+  }
+  _getCurrentPositionSeconds(e) {
+    const t = e.attributes, a = this._getDurationSeconds(e);
+    let i = 0, o;
+    const s = e.attributes.media_position;
+    if (typeof s == "number" ? (i = s, o = e.attributes.media_position_updated_at || e.last_updated) : typeof t.position_ticks == "number" ? (i = t.position_ticks / 1e7, o = e.last_updated) : typeof t.progress_percent == "number" && a > 0 && (i = t.progress_percent / 100 * a, o = e.last_updated), (e.entity_id.startsWith("media_player.") ? e.state === "playing" : !t.is_paused && !!t.item_id) && o) {
+      const c = new Date(o).getTime();
+      if (!isNaN(c)) {
+        const p = Math.max(0, (Date.now() - c) / 1e3), g = i + p;
+        return a > 0 ? Math.min(a, Math.max(0, g)) : Math.max(0, g);
+      }
+    }
+    return a > 0 ? Math.min(a, Math.max(0, i)) : Math.max(0, i);
   }
   async _endDrag(e) {
     if (!this._isDragging) return;
-    e.currentTarget.releasePointerCapture(e.pointerId), this._isDragging = !1;
+    const t = e.currentTarget;
+    if (t?.releasePointerCapture)
+      try {
+        t.releasePointerCapture(e.pointerId);
+      } catch {
+      }
+    this._isDragging = !1;
     const a = this._getDragPercent(e);
     this._setOptimisticSeek(a);
     const i = this._config.entity, o = this.hass.states[i];
     if (!o) return;
-    const s = o.attributes, r = s.session_id, h = s.duration_ticks;
-    if (!h) return;
+    const s = this._getDurationSeconds(o);
+    if (s <= 0) return;
+    const h = o.attributes.session_id;
     if (i.startsWith("media_player.")) {
-      const p = Math.round(h / 1e7 * (a / 100));
+      const p = Math.round(s * (a / 100));
       await this.hass.callService("media_player", "media_seek", {
         entity_id: i,
         seek_position: p
       });
       return;
     }
-    if (!r) return;
-    const c = Math.round(h * (a / 100));
+    if (!h) return;
+    const c = Math.round(s * 1e7 * (a / 100));
     await this.hass.callService("jellyha", "session_seek", {
       entity_id: i,
-      session_id: r,
+      session_id: h,
       position_ticks: c
     });
   }
   _setOptimisticSeek(e) {
-    this._optimisticSeekTimer && clearTimeout(this._optimisticSeekTimer), this._optimisticSeekPercent = e, this._optimisticSeekTimer = window.setTimeout(() => {
-      this._optimisticSeekPercent = null;
-    }, 3e3);
+    this._optimisticSeekTimer && clearTimeout(this._optimisticSeekTimer), this._optimisticSeekPercent = e, this.requestUpdate(), this._optimisticSeekTimer = window.setTimeout(() => {
+      this._optimisticSeekPercent = null, this.requestUpdate();
+    }, 2500);
   }
   async _handleSeekRelative(e) {
     this._haptic("light");
     const t = this._config.entity, a = this.hass.states[t];
     if (!a || !this._supportsRemote(a)) return;
-    const i = a.attributes, o = i.session_id, s = i.position_ticks || 0, r = e * 1e7, h = Math.max(0, s + r), c = i.duration_ticks;
-    if (c && this._setOptimisticSeek(h / c * 100), t.startsWith("media_player.")) {
-      const p = Math.round(h / 1e7);
+    const i = this._getDurationSeconds(a), o = this._getCurrentPositionSeconds(a), s = Math.max(
+      0,
+      i > 0 ? Math.min(i, o + e) : o + e
+    );
+    if (i > 0 && this._setOptimisticSeek(s / i * 100), t.startsWith("media_player.")) {
       await this.hass.callService("media_player", "media_seek", {
         entity_id: t,
-        seek_position: p
+        seek_position: Math.round(s)
       });
       return;
     }
-    o && await this.hass.callService("jellyha", "session_seek", {
+    const h = a.attributes.session_id;
+    h && await this.hass.callService("jellyha", "session_seek", {
       entity_id: t,
-      session_id: o,
-      position_ticks: h
+      session_id: h,
+      position_ticks: Math.round(s * 1e7)
     });
   }
   async _handlePosterRewind() {
     const e = this._config.entity, t = this.hass.states[e];
-    if (!t || !this._supportsRemote(t)) return;
-    const a = t.attributes, i = a.session_id, o = a.position_ticks || 0;
-    this._rewindActive = !0, setTimeout(() => {
+    !t || !this._supportsRemote(t) || (this._rewindActive = !0, setTimeout(() => {
       this._rewindActive = !1;
-    }, 1e3), this._haptic("selection");
-    const s = 20 * 1e7, r = Math.max(0, o - s), h = a.duration_ticks;
-    if (h && this._setOptimisticSeek(r / h * 100), e.startsWith("media_player.")) {
-      const c = Math.round(r / 1e7);
-      await this.hass.callService("media_player", "media_seek", {
-        entity_id: e,
-        seek_position: c
-      });
-      return;
-    }
-    i && await this.hass.callService("jellyha", "session_seek", {
-      entity_id: e,
-      session_id: i,
-      position_ticks: r
-    });
+    }, 1e3), this._haptic("selection"), await this._handleSeekRelative(-20));
   }
   _startLongPress() {
     const e = Date.now(), t = 800;
@@ -6891,16 +7055,16 @@ let k = class extends A {
         const o = i.getImageData(0, 0, 50, 50).data;
         let s = 0, r = 0, h = 0, c = 0;
         for (let p = 0; p < o.length; p += 16) {
-          const u = o[p], _ = o[p + 1], m = o[p + 2], f = Math.max(u, _, m), x = Math.min(u, _, m), D = f === 0 ? 0 : (f - x) / f, C = f / 255;
-          D > c && C > 0.15 && C < 0.95 && (c = D, s = u, r = _, h = m);
+          const g = o[p], _ = o[p + 1], m = o[p + 2], f = Math.max(g, _, m), v = Math.min(g, _, m), P = f === 0 ? 0 : (f - v) / f, x = f / 255;
+          P > c && x > 0.15 && x < 0.95 && (c = P, s = g, r = _, h = m);
         }
         if (c > 0.1) {
-          const p = s / 255, u = r / 255, _ = h / 255, m = Math.max(p, u, _), f = Math.min(p, u, _);
-          let x = 0;
-          const D = (m + f) / 2, C = m - f, re = C === 0 ? 0 : C / (1 - Math.abs(2 * D - 1));
-          C !== 0 && (m === p ? x = ((u - _) / C + (u < _ ? 6 : 0)) * 60 : m === u ? x = ((_ - p) / C + 2) * 60 : x = ((p - u) / C + 4) * 60);
-          const ne = Math.max(D * 100, 70), q = Math.max(re * 100, 60);
-          this._dominantColor = `hsl(${Math.round(x)}, ${Math.round(q)}%, ${Math.round(ne)}%)`;
+          const p = s / 255, g = r / 255, _ = h / 255, m = Math.max(p, g, _), f = Math.min(p, g, _);
+          let v = 0;
+          const P = (m + f) / 2, x = m - f, H = x === 0 ? 0 : x / (1 - Math.abs(2 * P - 1));
+          x !== 0 && (m === p ? v = ((g - _) / x + (g < _ ? 6 : 0)) * 60 : m === g ? v = ((_ - p) / x + 2) * 60 : v = ((p - g) / x + 4) * 60);
+          const E = Math.max(P * 100, 70), F = Math.max(H * 100, 60);
+          this._dominantColor = `hsl(${Math.round(v)}, ${Math.round(F)}%, ${Math.round(E)}%)`;
         } else
           this._dominantColor = "var(--primary-color)";
       } catch {
@@ -6913,10 +7077,21 @@ let k = class extends A {
   connectedCallback() {
     super.connectedCallback(), this._resizeObserver = new ResizeObserver(() => {
       this._checkLayout();
-    }), this._resizeObserver.observe(this);
+    }), this._resizeObserver.observe(this), this._startProgressTimer();
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect(), this._endLongPress();
+    super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect(), this._stopProgressTimer(), this._endLongPress();
+  }
+  _startProgressTimer() {
+    this._stopProgressTimer(), this._progressTimer = window.setInterval(() => {
+      if (!this.isConnected || !this.hass || !this._config?.entity) return;
+      const e = this.hass.states[this._config.entity];
+      if (!e) return;
+      (this._config.entity.startsWith("media_player.") ? e.state === "playing" : !e.attributes?.is_paused && !!e.attributes?.item_id) && !this._isDragging && this.requestUpdate();
+    }, 1e3);
+  }
+  _stopProgressTimer() {
+    this._progressTimer && (clearInterval(this._progressTimer), this._progressTimer = void 0);
   }
   updated(e) {
     super.updated(e), e.has("hass") && this._checkLayout();
@@ -6927,18 +7102,23 @@ let k = class extends A {
     });
   }
   _doLayoutCheck() {
-    const e = this.shadowRoot?.querySelector(".title"), t = this.shadowRoot?.querySelector(".info-bottom");
-    if (!e || !t) return;
-    const a = this.getBoundingClientRect(), i = e.getBoundingClientRect(), r = t.getBoundingClientRect().top - a.top - 8, h = 20, c = 18, u = i.bottom - a.top + 22, m = u + h + c;
-    let f = 0;
-    m > r && (f = 1), u > r && (f = 2), this._overflowState !== f && (this._overflowState = f);
+    const e = this.getBoundingClientRect(), t = this.shadowRoot?.querySelector("ha-card");
+    t && e.height > 0 && (t.classList.toggle("compact-height", e.height <= 195), t.classList.toggle("micro-height", e.height <= 180), t.classList.toggle("tall-narrow", e.height >= 240 && e.width <= 400), t.classList.toggle("very-tall-narrow", e.height >= 300 && e.width <= 450));
+    const a = this.shadowRoot?.querySelector(".title"), i = this.shadowRoot?.querySelector(".info-bottom");
+    if (!a || !i) return;
+    const o = a.getBoundingClientRect(), h = i.getBoundingClientRect().top - e.top - 8, c = 20, p = 18, _ = o.bottom - e.top + 22, f = _ + c + p;
+    let v = 0;
+    f > h && (v = 1), _ > h && (v = 2), this._overflowState !== v && (this._overflowState = v);
   }
-  _formatTicks(e) {
-    const t = e < 0, a = Math.floor(Math.abs(e) / 1e7), i = Math.floor(a / 3600), o = Math.floor(a % 3600 / 60), s = a % 60, r = t ? "-" : "";
+  _formatSeconds(e) {
+    const t = e < 0, a = Math.floor(Math.abs(e)), i = Math.floor(a / 3600), o = Math.floor(a % 3600 / 60), s = a % 60, r = t ? "-" : "";
     return i > 0 ? `${r}${i}:${String(o).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${r}${o}:${String(s).padStart(2, "0")}`;
   }
+  _formatTicks(e) {
+    return this._formatSeconds(e / 1e7);
+  }
 };
-k.styles = V`
+S.styles = K`
         :host {
             display: block;
             height: 100%;
@@ -6949,6 +7129,7 @@ k.styles = V`
         }
         ha-card {
             height: 100%;
+            min-height: 0;
             overflow: hidden;
             position: relative;
             background: var(--ha-card-background, var(--card-background-color, #fff));
@@ -6956,12 +7137,11 @@ k.styles = V`
             box-shadow: var(--ha-card-box-shadow, none);
             border: var(--ha-card-border, 1px solid var(--ha-card-border-color, var(--divider-color, #e0e0e0)));
             transition: all 0.3s ease-out;
-            container-type: size;
+            container-type: inline-size;
             container-name: now-playing;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
-            min-height: 0;
             padding: 0;
             width: 100%;
             margin: 0;
@@ -7035,7 +7215,7 @@ k.styles = V`
         .main-container {
             display: flex;
             gap: 20px;
-            align-items: flex-start;
+            align-items: stretch;
             flex: 1;
             min-height: 0;
             overflow: visible;
@@ -7174,7 +7354,8 @@ k.styles = V`
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            justify-content: space-between;
+            align-self: stretch;
             min-height: 0;
             min-width: 0;
             overflow: visible;
@@ -7389,6 +7570,7 @@ k.styles = V`
             align-items: center;
             justify-content: center;
             height: 100%;
+            min-height: 140px;
             box-sizing: border-box;
         }
         .empty-state .card-content {
@@ -7400,6 +7582,7 @@ k.styles = V`
             justify-content: center;
             overflow: visible;
             height: auto;
+            min-height: 0;
         }
         .empty-state .logo-container.mini-icon {
             display: none;
@@ -7486,12 +7669,33 @@ k.styles = V`
                 gap: 8px;
             }
             .poster-container {
+                min-height: 0;
                 --short-badge-padding: 1px !important;
             }
         }
+        ha-card.compact-height .meta-line,
+        ha-card.compact-height .client-line,
+        ha-card.compact-height .card-header {
+            display: none !important;
+        }
+        ha-card.compact-height .title {
+            font-size: 1.2rem;
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+        ha-card.compact-height .main-container {
+            gap: 12px;
+        }
+        ha-card.compact-height .card-content {
+            gap: 8px;
+        }
+        ha-card.compact-height .poster-container {
+            min-height: 0;
+            --short-badge-padding: 1px !important;
+        }
 
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
-        @container now-playing (max-width: 350px) {
+        @container now-playing (max-width: 250px) {
             .card-header {
                 display: none !important;
             }
@@ -8027,37 +8231,37 @@ k.styles = V`
         }
 
     `;
-j([
-  P({ attribute: !1 })
-], k.prototype, "hass", 2);
-j([
-  g()
-], k.prototype, "_config", 2);
-j([
-  g()
-], k.prototype, "_rewindActive", 2);
-j([
-  g()
-], k.prototype, "_overflowState", 2);
-j([
-  g()
-], k.prototype, "_dominantColor", 2);
-j([
-  g()
-], k.prototype, "_longPressProgress", 2);
-j([
-  g()
-], k.prototype, "_stopPulse", 2);
-j([
-  g()
-], k.prototype, "_isDragging", 2);
-j([
-  g()
-], k.prototype, "_dragPercentage", 2);
-j([
-  g()
-], k.prototype, "_optimisticSeekPercent", 2);
-k = j([
-  N("jellyha-now-playing-card")
-], k);
+A([
+  j({ attribute: !1 })
+], S.prototype, "hass", 2);
+A([
+  u()
+], S.prototype, "_config", 2);
+A([
+  u()
+], S.prototype, "_rewindActive", 2);
+A([
+  u()
+], S.prototype, "_overflowState", 2);
+A([
+  u()
+], S.prototype, "_dominantColor", 2);
+A([
+  u()
+], S.prototype, "_longPressProgress", 2);
+A([
+  u()
+], S.prototype, "_stopPulse", 2);
+A([
+  u()
+], S.prototype, "_isDragging", 2);
+A([
+  u()
+], S.prototype, "_dragPercentage", 2);
+A([
+  u()
+], S.prototype, "_optimisticSeekPercent", 2);
+S = A([
+  O("jellyha-now-playing-card")
+], S);
 //# sourceMappingURL=jellyha-cards.js.map

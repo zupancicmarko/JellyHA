@@ -63,3 +63,34 @@ filter_favorites: true
 show_ratings: true
 show_runtime: true
 click_action: jellyfin
+
+# ------------------------------------------------------------------------------
+# 5. Newly Added TV Episodes (Individual Episodes with Show Covers)
+# ------------------------------------------------------------------------------
+# Uses 'tv_content: episodes' to display latest episodes instead of series containers.
+# 'use_series_image: true' formats thumbnails as uniform portrait show posters.
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "Recent Episodes"
+layout: carousel
+media_type: series
+tv_content: episodes
+use_series_image: true
+items_per_page: 4
+click_action: more-info
+
+# ------------------------------------------------------------------------------
+# 6. Custom Script Calling ("Run Script" / External Player on Click)
+# ------------------------------------------------------------------------------
+# Executes your chosen Home Assistant script when tapped or held, injecting
+# full media metadata (item_id, title, series_name, jellyfin_url, etc.) as variables.
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "Living Room Hub (Apple TV & Kodi)"
+layout: carousel
+media_type: both
+items_per_page: 4
+click_action: call-service
+click_service: script.play_on_apple_tv
+hold_action: call-service
+hold_service: script.play_on_kodi

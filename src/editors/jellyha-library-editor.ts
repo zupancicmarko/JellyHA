@@ -140,6 +140,29 @@ export class JellyHALibraryEditor extends LitElement {
           </div>
         </div>
 
+        ${(!this._config.layout || this._config.layout === 'carousel')
+        ? html`
+          <div class="form-row">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'center', label: localize(lang, 'editor.alignment_center') || 'Center' },
+                    { value: 'left', label: localize(lang, 'editor.alignment_left') || 'Left' },
+                  ],
+                },
+              }}
+              .value=${this._config.horizontal_alignment || 'center'}
+              .label=${localize(lang, 'editor.horizontal_alignment') || 'Carousel Alignment'}
+              label="${localize(lang, 'editor.horizontal_alignment') || 'Carousel Alignment'}"
+              @value-changed=${this._horizontalAlignmentChanged}
+            ></ha-selector>
+          </div>
+        `
+        : ''}
+
         ${(this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type)
         ? html`
           <div class="form-row">
@@ -439,7 +462,7 @@ export class JellyHALibraryEditor extends LitElement {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.show_runtime === true}
+        .checked=${this._config.show_runtime !== false}
         @change=${this._showRuntimeChanged}
       ></ha-switch>
       <span>${localize(lang, 'editor.show_runtime')}</span>
@@ -455,7 +478,7 @@ export class JellyHALibraryEditor extends LitElement {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.show_genres === true}
+        .checked=${this._config.show_genres !== false}
         @change=${this._showGenresChanged}
       ></ha-switch>
       <span>${localize(lang, 'editor.show_genres')}</span>
@@ -786,9 +809,11 @@ export class JellyHALibraryEditor extends LitElement {
     }
   }
 
-  private _horizontalAlignmentChanged(e: Event): void {
-    const target = e.target as HTMLSelectElement;
-    this._updateConfig('horizontal_alignment', target.value);
+  private _horizontalAlignmentChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('horizontal_alignment', value);
+    }
   }
 
   private _enablePaginationChanged(e: Event): void {

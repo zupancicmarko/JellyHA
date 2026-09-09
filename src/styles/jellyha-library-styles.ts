@@ -18,7 +18,6 @@ export const cardStyles = css`
     --jf-transition: 0.2s ease-out;
     --jf-movie-badge: #AA5CC3;
     --jf-series-badge: #F2A218;
-    --jf-series-badge: #F2A218;
     --jf-border-color: var(--divider-color, rgba(255, 255, 255, 0.15));
     --jf-highlight: var(--primary-color, #18BCF2);
   }

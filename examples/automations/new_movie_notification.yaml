@@ -2,36 +2,115 @@
 # JellyHA Automation Example: New Content Mobile Notification
 # ==============================================================================
 # Description:
-#   Monitors unwatched movie count changes. When a new movie is added, it queries
-#   Jellyfin for the latest item details and sends an actionable mobile notification
-#   with poster fanart and IMDB rating to your phone.
+#   Sends an actionable mobile notification with movie artwork, technical video
+#   quality badges (4K HDR/DV), runtime, and rating whenever a new movie is added
+#   to your Jellyfin library.
+#
+# Implementation Options:
+#   - Option 1 (Recommended, v1.3.0+): Direct State Trigger on `sensor.jellyha_latest_movie`
+#       Instant, zero overhead, and accesses all rich metadata (resolution, dynamic
+#       range, runtime, poster URL, trailer URL) directly from sensor attributes
+#       without requiring any service calls.
+#   - Option 2: Counter Trigger on `sensor.jellyha_unwatched_movies` + `jellyha.search`
+#       Useful if you prefer triggering strictly when the unwatched count increments.
+#   - Option 3: TV Episode Notification using `sensor.jellyha_latest_episode`
 # ==============================================================================
 
-alias: "JellyHA: Notify New Movie"
-description: "Send push notification when a new movie is added to the library"
+# ------------------------------------------------------------------------------
+# Option 1 (Recommended): Direct State Trigger on sensor.jellyha_latest_movie
+# ------------------------------------------------------------------------------
+alias: "JellyHA: Notify New Movie (Latest Movie Sensor)"
+description: "Sends rich push notification when a new movie is detected by sensor.jellyha_latest_movie"
 mode: single
 
 trigger:
   - trigger: state
-    entity_id: sensor.jellyha_unwatched_movies
+    entity_id: sensor.jellyha_latest_movie
 
 conditions:
-  # Verify that the count actually increased
+  # Ensure the sensor transitioned between valid movie titles (ignores restarts / unavailable)
   - condition: template
-    value_template: "{{ trigger.to_state.state | int > trigger.from_state.state | int }}"
+    value_template: >
+      {{ trigger.from_state is not none and
+         trigger.to_state.state not in ['unknown', 'unavailable'] and
+         trigger.to_state.state != trigger.from_state.state }}
 
 actions:
-  # 1. Fetch the single newest movie
-  - action: jellyha.search
+  - action: notify.notify # Replace with your device: notify.mobile_app_<your_phone>
     data:
-      media_type: Movie
-      limit: 1
-    response_variable: new_items
+      title: "🎬 New Movie: {{ trigger.to_state.state }}"
+      message: >
+        {% set attr = trigger.to_state.attributes %}
+        {{ attr.year | default('', true) }} • {{ attr.resolution | default('HD', true) }} {{ attr.dynamic_range | default('', true) }} • {{ attr.runtime_minutes | default('?', true) }} min
+        ★ {{ attr.rating | default('N/A', true) }}/10
 
-  # 2. Send mobile push notification
-  - action: notify.notify # Replace with notify.mobile_app_<your_device>
-    data:
-      title: "🎬 New Movie Added to Jellyfin"
-      message: "{{ new_items['items'][0]['name'] }} ({{ new_items['items'][0]['year'] }}) — Rating: {{ new_items['items'][0]['rating'] }}/10 is now available!"
+        {{ attr.overview | default('No synopsis available.', true) | truncate(160) }}
       data:
-        image: "{{ new_items['items'][0]['image_url'] }}"
+        image: "{{ trigger.to_state.attributes.poster_url }}"
+        clickAction: "{{ trigger.to_state.attributes.trailer_url | default('/lovelace/media', true) }}"
+        url: "{{ trigger.to_state.attributes.trailer_url | default('/lovelace/media', true) }}"
+
+# ------------------------------------------------------------------------------
+# Option 2: Unwatched Count Trigger + jellyha.search Service Call
+# ------------------------------------------------------------------------------
+# If you prefer triggering on unwatched count changes (e.g., bulk library imports):
+#
+# alias: "JellyHA: Notify New Movie (Unwatched Count)"
+# description: "Send push notification when unwatched movie count increments"
+# mode: single
+#
+# trigger:
+#   - trigger: state
+#     entity_id: sensor.jellyha_unwatched_movies
+#
+# conditions:
+#   # Verify that the count actually increased
+#   - condition: template
+#     value_template: "{{ trigger.to_state.state | int(0) > trigger.from_state.state | int(0) }}"
+#
+# actions:
+#   # 1. Fetch the single newest movie
+#   - action: jellyha.search
+#     data:
+#       media_type: Movie
+#       limit: 1
+#     response_variable: new_items
+#
+#   # 2. Send mobile push notification
+#   - action: notify.notify
+#     data:
+#       title: "🎬 New Movie Added to Jellyfin"
+#       message: "{{ new_items['items'][0]['name'] }} ({{ new_items['items'][0]['year'] }}) — Rating: {{ new_items['items'][0]['rating'] }}/10 is now available!"
+#       data:
+#         image: "{{ new_items['items'][0]['poster_url'] }}"
+#
+# ------------------------------------------------------------------------------
+# Option 3: New TV Episode Notification (sensor.jellyha_latest_episode)
+# ------------------------------------------------------------------------------
+# You can use the exact same pattern for TV series using sensor.jellyha_latest_episode:
+#
+# alias: "JellyHA: Notify New TV Episode"
+# description: "Send push notification when a new TV episode is added"
+# mode: single
+#
+# trigger:
+#   - trigger: state
+#     entity_id: sensor.jellyha_latest_episode
+#
+# conditions:
+#   - condition: template
+#     value_template: >
+#       {{ trigger.from_state is not none and
+#          trigger.to_state.state not in ['unknown', 'unavailable'] and
+#          trigger.to_state.state != trigger.from_state.state }}
+#
+# actions:
+#   - action: notify.notify
+#     data:
+#       title: "📺 New Episode: {{ trigger.to_state.attributes.series_name }}"
+#       message: >
+#         {% set attr = trigger.to_state.attributes %}
+#         S{{ "%02d" | format(attr.season | int(1)) }}E{{ "%02d" | format(attr.episode | int(1)) }} — "{{ attr.title }}"
+#         {{ attr.resolution | default('HD', true) }} {{ attr.dynamic_range | default('', true) }} • {{ attr.runtime_minutes }} min
+#       data:
+#         image: "{{ trigger.to_state.attributes.poster_url or trigger.to_state.attributes.series_poster_url }}"

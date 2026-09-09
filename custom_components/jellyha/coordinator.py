@@ -18,6 +18,7 @@ from homeassistant.components.http.auth import async_sign_path
 import asyncio
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.issue_registry import async_create_issue, IssueSeverity
 from homeassistant.util import dt as dt_util
 
@@ -70,6 +71,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     ) -> None:
         """Initialize the coordinator."""
         self.entry = entry
+        self.config_entry = entry
         self.storage = storage
         self._api: JellyfinApiClient | None = None
         self._server_name: str | None = None
@@ -79,6 +81,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.last_refresh_duration: float | None = None  # Duration of last refresh in seconds
         self._previous_item_ids: set[str] = set()
         self._previous_item_hash: str = ""
+        self._favorite_series_ids: set[str] = set()
         # Cache signed URLs by (item_id, image_type, tag) -> (url, monotonic timestamp)
         self._url_cache: dict[tuple[str, str, str], tuple[str, float]] = {}
 
@@ -98,6 +101,11 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=update_interval,
             always_update=False,
         )
+
+    @property
+    def api(self) -> JellyfinApiClient | None:
+        """Return the API client."""
+        return self._api
 
     async def _async_setup(self) -> None:
         """Set up the coordinator (called once during first refresh)."""
@@ -148,6 +156,17 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 library_ids=libraries if libraries else None,
             )
 
+            # Pre-compute favorite series IDs from raw items or API so episode transforms inherit favorite status
+            self._favorite_series_ids = {
+                item["Id"] for item in raw_items
+                if item.get("Type") == "Series" and item.get("UserData", {}).get("IsFavorite", False) and item.get("Id")
+            }
+            if not self._favorite_series_ids:
+                try:
+                    self._favorite_series_ids = set(await self._api.get_favorite_series_ids(user_id))
+                except Exception as err:
+                    _LOGGER.debug("Could not fetch favorite series IDs: %s", err)
+
             items = await asyncio.gather(*(self._async_transform_item(item) for item in raw_items))
 
             # Fetch Next Up items (limit 20)
@@ -162,6 +181,53 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     i["episode"] = raw.get("IndexNumber")
                     i["season_name"] = raw.get("SeasonName")
                     i["series_name"] = raw.get("SeriesName")
+                    series_id = raw.get("SeriesId")
+                    i["series_id"] = series_id
+                    if series_id and series_id in self._favorite_series_ids:
+                        i["is_favorite"] = True
+
+            # Fetch latest items
+            latest_movie = None
+            latest_episode = None
+            try:
+                raw_latest_movies = await self._api.get_latest_items(
+                    user_id=user_id,
+                    item_types=["Movie"],
+                    limit=1,
+                    library_ids=libraries if libraries else None,
+                )
+                if raw_latest_movies:
+                    latest_movie = await self._async_transform_item(raw_latest_movies[0])
+            except Exception as err:
+                _LOGGER.debug("Failed to fetch latest movie: %s", err)
+
+            try:
+                raw_latest_episodes = await self._api.get_latest_items(
+                    user_id=user_id,
+                    item_types=["Episode"],
+                    limit=1,
+                    library_ids=libraries if libraries else None,
+                )
+                if raw_latest_episodes:
+                    latest_episode = await self._async_transform_item(raw_latest_episodes[0])
+                    raw_ep = raw_latest_episodes[0]
+                    latest_episode["season"] = raw_ep.get("ParentIndexNumber")
+                    latest_episode["episode"] = raw_ep.get("IndexNumber")
+                    latest_episode["season_name"] = raw_ep.get("SeasonName")
+                    latest_episode["series_name"] = raw_ep.get("SeriesName")
+                    series_id = raw_ep.get("SeriesId")
+                    latest_episode["series_id"] = series_id
+                    if series_id and series_id in self._favorite_series_ids:
+                        latest_episode["is_favorite"] = True
+            except Exception as err:
+                _LOGGER.debug("Failed to fetch latest episode: %s", err)
+
+            # Fetch storage info
+            storage_info = None
+            try:
+                storage_info = await self._api.get_storage_info()
+            except Exception as err:
+                _LOGGER.debug("Failed to fetch storage info: %s", err)
 
             # Update last refresh time (always updates)
             self.last_refresh_time = dt_util.utcnow()
@@ -214,6 +280,9 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "last_refresh": self.last_refresh_time.isoformat(),
                 "last_data_change": self.last_data_change_time.isoformat() if self.last_data_change_time else None,
                 "next_up_items": next_up_items,
+                "latest_movie": latest_movie,
+                "latest_episode": latest_episode,
+                "storage": storage_info,
             }
 
         except JellyfinAuthError as err:
@@ -308,8 +377,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         series_poster_url = None
         if item_type == "Episode":
             series_id = item.get("SeriesId")
-            series_tag = item.get("SeriesPrimaryImageTag")
-            if series_id and series_tag:
+            series_tag = item.get("SeriesPrimaryImageTag") or ""
+            if series_id:
                 series_cache_key = (series_id, "Primary", series_tag)
                 cached = self._url_cache.get(series_cache_key)
                 if cached and (now - cached[1]) < _URL_CACHE_TTL:
@@ -338,24 +407,40 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         video_attrs = MediaStrategy.extract_video_stream_attributes(item)
 
+        is_fav = item.get("UserData", {}).get("IsFavorite", False)
+        if not is_fav and item_type == "Episode":
+            series_id = item.get("SeriesId")
+            if series_id and series_id in getattr(self, "_favorite_series_ids", set()):
+                is_fav = True
+
+        year = item.get("ProductionYear")
+        if not year and item.get("PremiereDate"):
+            try:
+                year = int(item["PremiereDate"][:4])
+            except (ValueError, TypeError):
+                pass
+
         return {
             "id": item_id,
             "entry_id": self.entry.entry_id,
             "config_entry_id": self.entry.entry_id,
             "name": item.get("Name", ""),
             "type": item_type,
-            "year": item.get("ProductionYear"),
+            "year": year,
             "runtime_minutes": runtime_minutes,
             "genres": item.get("Genres", []),
             "rating": rating,
             "description": item.get("Overview", ""),
             "poster_url": poster_url,
+            "image_url": poster_url,
             "backdrop_url": backdrop_url,
             "series_poster_url": series_poster_url,
             "is_played": item.get("UserData", {}).get("Played", False),
             "unplayed_count": (0 if item.get("UserData", {}).get("Played", False) else (item.get("UserData", {}).get("UnplayedItemCount") or 0)) if item_type == "Series" else item.get("UserData", {}).get("UnplayedItemCount"),
             "total_episodes": (item.get("RecursiveItemCount") if item.get("RecursiveItemCount") is not None else item.get("ChildCount", 0)) if item_type == "Series" else None,
-            "is_favorite": item.get("UserData", {}).get("IsFavorite", False),
+            "is_favorite": is_fav,
+            "date_added": item.get("DateCreated"),
+            "date_created": item.get("DateCreated"),
 
             "official_rating": item.get("OfficialRating"),
             "trailer_url": next((t["Url"] for t in item.get("RemoteTrailers", []) if t.get("Url")), None),
@@ -373,6 +458,12 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "video_codec": video_attrs["video_codec"],
             "video_bit_depth": video_attrs["video_bit_depth"],
             "dv_profile": video_attrs["dv_profile"],
+            "critic_rating": item.get("CriticRating"),
+            "container": (item.get("Container") or "").lower() or None,
+            "width": video_attrs.get("width"),
+            "height": video_attrs.get("height"),
+            "aspect_ratio": video_attrs.get("aspect_ratio"),
+            "resolution": video_attrs.get("resolution"),
             "media_streams": media_streams,
             # Music-specific fields (None for non-music items)
             "artist_name": artist_name,
@@ -518,8 +609,8 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                     # Cache series poster URL for episodes
                     if item.get("Type") == "Episode":
                         series_id = item.get("SeriesId")
-                        series_tag = item.get("SeriesPrimaryImageTag")
-                        if series_id and series_tag:
+                        series_tag = item.get("SeriesPrimaryImageTag") or ""
+                        if series_id:
                             series_cache_key = (series_id, "Primary", series_tag)
                             cached = self._url_cache.get(series_cache_key)
                             if cached and (now - cached[1]) < _URL_CACHE_TTL:
@@ -566,9 +657,16 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         """Fire events based on session state changes."""
         if not self._device_id:
             dev_reg = dr.async_get(self.hass)
-            device = dev_reg.async_get_device(identifiers={(DOMAIN, self.entry.entry_id)})
-            if device:
-                self._device_id = device.id
+            try:
+                devices = dr.async_entries_for_config_entry(dev_reg, self.entry.entry_id)
+                for d in devices:
+                    if (DOMAIN, self.entry.entry_id) in d.identifiers:
+                        self._device_id = d.id
+                        break
+                if not self._device_id and devices:
+                    self._device_id = devices[0].id
+            except Exception as ex:
+                _LOGGER.debug("Could not resolve device_id for %s: %s", self.entry.entry_id, ex)
         
         if not self._device_id:
             return
@@ -627,13 +725,17 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
     async def _handle_ws_connect(self) -> None:
         """Handle WebSocket connection."""
         _LOGGER.info("WebSocket connected, switching to push updates")
-        self.update_interval = None
-        # We don't need to do anything else, WS will send data.
+        # Keep a 10s safety polling interval as fallback so sessions never go stale if WS drops
+        self.update_interval = timedelta(seconds=10)
+        async_dispatcher_send(self.hass, f"{DOMAIN}_{self.entry.entry_id}_ws_status")
+        # Trigger an immediate refresh to ensure we have fresh data on connect
+        await self.async_request_refresh()
 
     async def _handle_ws_disconnect(self) -> None:
         """Handle WebSocket disconnection."""
         _LOGGER.info("WebSocket disconnected, switching to polling updates")
         self.update_interval = timedelta(seconds=5)
+        async_dispatcher_send(self.hass, f"{DOMAIN}_{self.entry.entry_id}_ws_status")
         # Trigger an immediate refresh to ensure we have data and restart the timer
         await self.async_request_refresh()
 

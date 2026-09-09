@@ -126,8 +126,8 @@ You can customize how JellyHA behaves directly from the integrations page:
 To get your Jellyfin API key:
 
 1. Open Jellyfin Dashboard
-2. Go to **Administration** → **API Keys**
-3. Click **+** to create a new key
+2. Go to **Advanced** → **API Keys**
+3. Click **+ New API Key** to create a new key
 4. Copy the generated key
 
 
@@ -137,15 +137,11 @@ To get your Jellyfin API key:
 |---|---|---|---|
 | Movies | ✅ | ✅ | ✅ |
 | TV Shows | ✅ | ✅ | ✅ |
-| Home Videos | ✅ | ✅ | ✅ |
-| Music Videos | ✅ | ✅ | ✅ |
-| Music | ❌ (too large) | ✅ | ✅ |
-| Photos | ❌ (too large) | ✅ | N/A |
 
 
 ## Library Card Configuration
 
-The **JellyHA Library** provides a beautiful way to browse and play your media collection directly in Home Assistant.
+The **JellyHA Library** provides a beautiful way to browse and play your media collection directly in/from Home Assistant.
 
 > **ℹ️ Info:** Use **Add to dashboard** and search for JellyHA Card. YAML below is just informational.
 
@@ -227,10 +223,15 @@ When `click_action`, `hold_action`, or `double_tap_action` is set to `call-servi
 | `{{ album_artist }}` | Primary album artist | `"Hans Zimmer"` |
 | `{{ overview }}` / `{{ description }}` | Plot synopsis or overview | `"An ex-hitman comes out of retirement..."` |
 | `{{ official_rating }}` | Age certification | `"R"`, `"PG-13"`, `"TV-MA"` |
+| `{{ dynamic_range }}` | Dynamic range classification | `"SDR"`, `"HDR10"`, `"Dolby Vision"` |
+| `{{ is_played }}` | Watched status boolean | `true`, `false` |
+| `{{ is_favorite }}` | Favorite status boolean | `true`, `false` |
+| `{{ runtime_minutes }}` | Duration in minutes | `122` |
 | `{{ jellyfin_url }}` | Direct link to item in Jellyfin | `"https://jf.domain/..."` |
+| `{{ config_entry_id }}` | Target JellyHA instance GUID | `"01KM6..."` |
 | `{{ action_type }}` | Interaction trigger | `"click"`, `"hold"`, `"double_tap"` |
 
-See the **[External Player & Script Example](examples/automations/card_action_external_player.yaml)** for a complete automation recipe.
+See the scripts in **[examples/scripts/](examples/scripts/)** (including **[Wholphin for Android TV](examples/scripts/card_action_play_on_wholpin.yaml)**, **[Apple TV Infuse](examples/scripts/card_action_play_on_apple_tv.yaml)**, and **[Kodi](examples/scripts/card_action_play_on_kodi.yaml)**) for complete external player integration recipes.
 
 > **⚠️ Performance Note:** Using **Auto Swipe** with a large number of items may impact performance on some devices. We recommend limiting the number of items for the best experience.
 
@@ -269,39 +270,52 @@ show_background: true
 
 ## Sensors
 
-JellyHA provides several sensors to monitor your Jellyfin server and library. All sensors are prefixed with `sensor.jellyha_` (unless a custom device name was used during setup).
+JellyHA provides several sensors to monitor your Jellyfin server, libraries, latest media additions, and storage capacity. All sensors are prefixed with `sensor.jellyha_` (unless a custom device name was used during setup).
 
 ### Library Sensors
 
 | Entity ID | Description | State | Attributes |
 |-----------|-------------|-------|------------|
-| `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `videos`, `episodes` |
-| `sensor.jellyha_favorites` | Favorite items | Count | - |
-| `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series` |
-| `sensor.jellyha_unwatched_movies` | Unwatched movies | Count | - |
-| `sensor.jellyha_unwatched_series` | Unwatched TV series | Count | - |
-| `sensor.jellyha_unwatched_episodes` | Unwatched individual episodes | Count | - |
-| `sensor.jellyha_watched` | Total watched content | Count | `movies`, `series` |
-| `sensor.jellyha_watched_movies` | Fully watched movies | Count | - |
-| `sensor.jellyha_watched_series` | Fully watched TV series | Count | - |
-| `sensor.jellyha_watched_episodes` | Fully watched series count | Count | - |
+| `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `videos`, `episodes`, `entry_id` |
+| `sensor.jellyha_movies` | Total movies in library | Count of movies | `watched`, `unwatched`, `favorites`, `entry_id` |
+| `sensor.jellyha_series` | Total TV series in library | Count of series | `watched`, `unwatched`, `favorites`, `total_episodes`, `unwatched_episodes`, `entry_id` |
+| `sensor.jellyha_episodes` | Total episodes count across all shows | Count of episodes | `watched`, `unwatched`, `entry_id` |
+| `sensor.jellyha_favorites` | Favorite items | Count | `entry_id` |
+| `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series`, `episodes`, `entry_id` |
+| `sensor.jellyha_unwatched_movies` | Unwatched movies | Count | `entry_id` |
+| `sensor.jellyha_unwatched_series` | Unwatched TV series | Count | `entry_id` |
+| `sensor.jellyha_unwatched_episodes` | Unwatched individual episodes | Count | `entry_id` |
+| `sensor.jellyha_watched` | Total watched content | Count | `movies`, `series`, `episodes`, `entry_id` |
+| `sensor.jellyha_watched_movies` | Fully watched movies | Count | `entry_id` |
+| `sensor.jellyha_watched_series` | Fully watched TV series | Count | `entry_id` |
+| `sensor.jellyha_watched_episodes` | Total watched episodes count across all shows | Count | `entry_id` |
 
-### Server Status Sensors
+### Latest Content Sensors
+
+| Entity ID | Description | State | Key Attributes |
+|-----------|-------------|-------|----------------|
+| `sensor.jellyha_latest_movie` | Most recently added movie | Movie title (e.g. `Moana`) | `item_id`, `title`, `year`, `overview`, `genres`, `rating`, `runtime_minutes`, `date_added`, `poster_url`, `backdrop_url`, `dynamic_range` (SDR/HDR10/Dolby Vision), `resolution`, `video_codec`, `container` |
+| `sensor.jellyha_latest_episode` | Most recently added TV episode | Formatted episode name (e.g. `Severance - S02E01 - Hello`) | `item_id`, `title`, `series_name`, `series_id`, `season`, `episode`, `year`, `overview`, `genres`, `rating`, `runtime_minutes`, `date_added`, `poster_url`, `series_poster_url`, `backdrop_url`, `dynamic_range`, `resolution`, `video_codec`, `container` |
+
+### Server & Storage Sensors
 
 | Entity ID | Description | State | Attributes |
 |-----------|-------------|-------|------------|
-| `sensor.jellyha_websocket` | WebSocket connection status | `connected`/`disconnected` | - |
-| `sensor.jellyha_version` | Jellyfin server version | e.g. `10.11.6` | - |
-| `sensor.jellyha_active_sessions` | Number of active playbacks | Count | `sessions` (list of active session info) |
+| `sensor.jellyha_websocket_status` | WebSocket connection status | `connected`/`disconnected` | - |
+| `sensor.jellyha_jellyfin_version` | Jellyfin server version | e.g. `12.0.0` | - |
+| `sensor.jellyha_active_sessions` | Number of active playback sessions | Count | `sessions` (list of active session info) |
+| `sensor.jellyha_transcoding_streams` | Active transcoding video/audio streams | Count | `transcode_sessions` (detailed codec, transcode reason, container, framerate) |
+| `sensor.jellyha_media_storage_free` | Free disk space on primary media drive | GB (e.g. `13853.9`) | `free_bytes`, `used_bytes`, `total_bytes`, `free_tb`, `used_tb`, `total_tb`, `used_percent`, `free_percent`, `devices` |
+| `sensor.jellyha_media_storage_free_percentage` | Free disk space percentage on media drive | Percentage (e.g. `62` %) | `free_bytes`, `used_bytes`, `total_bytes`, `free_gb`, `used_gb`, `total_gb`, `free_tb`, `used_tb`, `total_tb`, `used_percent`, `free_percent`, `devices` |
 | `sensor.jellyha_last_refresh` | Last time data was fetched | Timestamp | - |
-| `sensor.jellyha_last_data_change` | Last time library data changed | Timestamp | - |
-| `sensor.jellyha_refresh_duration` | Duration of the last library refresh | `5.2s`, `1m 30s` | `duration_seconds` (float) |
+| `sensor.jellyha_last_library_update` | Last time library data changed | Timestamp | - |
+| `sensor.jellyha_refresh_duration` | Duration of the last library refresh | `0.9s`, `1m 30s` | `duration_seconds` (float) |
 
 ### User Sensors
 
 | Entity ID Prefix | Description | State | Key Attributes |
 |-----------|-------------|-------|----------------|
-| `sensor.jellyha_now_playing_[user]` | Real-time monitoring for specific user | `playing`, `paused`, `idle` | `title`, `series_title`, `season`, `episode`, `progress_percent`, `image_url`, `media_type`, `client`, `device_name` |
+| `sensor.jellyha_now_playing_[user]` | Real-time monitoring for specific user *(⚠️ Deprecated in v1.3.0, use `media_player.jellyha_[user]`)* | `playing`, `paused`, `idle` | `title`, `series_title`, `season`, `episode`, `progress_percent`, `image_url`, `media_type`, `client`, `device_name`, `entry_id` |
 
 
 ## Media Players
@@ -359,6 +373,8 @@ Enable physical client devices in **Settings → Devices & Services → JellyHA 
 - `dv_profile` — Dolby Vision profile number (e.g. `7`, `8`, `5`)
 - `video_codec` — Active video codec (e.g. `hevc`, `av1`, `h264`)
 - `video_bit_depth` — Video bit depth (`10`, `8`)
+- `supports_remote_control` — Boolean (`true` / `false`) indicating if the client accepts remote control commands
+- `entry_id` / `config_entry_id` — JellyHA integration instance GUID
 
 **Example Usage:**
 ```yaml
@@ -395,31 +411,33 @@ This entity integrates with Home Assistant's Media Browser and allows you to exp
 
 JellyHA provides several services to control and manage your library.
 
-All services support an optional `config_entry_id` parameter for **multi-instance targeting**. If you have multiple JellyHA instances configured, use this to specify which server to target. If omitted, the first available instance is used.
+All services support targeting via `config_entry_id`, `entity_id`, or `server_entity_id` for **multi-instance setups**. If omitted, the first available JellyHA instance is used automatically.
 
 | Service | Description | Parameters |
 |---------|-------------|------------|
-| `jellyha.play_on_chromecast` | Play an item on Chromecast with optimized transcoding. | `entity_id` (Req), `item_id` (Req), `config_entry_id` (Opt) |
-| `jellyha.refresh_library` | Force refresh library data from Jellyfin. | `config_entry_id` (Opt) |
-| `jellyha.delete_item` | Delete an item from library/disk. ⚠️ **Use with caution.** | `item_id` (Req), `config_entry_id` (Opt) |
-| `jellyha.mark_watched` | Mark an item as watched or unwatched. | `item_id` (Req), `is_played` (Req), `config_entry_id` (Opt) |
-| `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req), `config_entry_id` (Opt) |
-| `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`). | `session_id` (Req), `command` (Req), `config_entry_id` (Opt) |
-| `jellyha.session_seek` | Seek to position in ticks. Use `0` to rewind. | `session_id` (Req), `position_ticks` (Req), `config_entry_id` (Opt) |
-| `jellyha.search` | Search and filter library media with rich sorting and return Item IDs. | `query` (Opt), `media_type` (Opt), `sort_by` (Opt), `sort_order` (Opt), `parent_id` (Opt), `is_played` (Opt), `is_favorite` (Opt), `genre` (Opt), `year` (Opt), `min_rating` (Opt), `official_rating` (Opt), `studio` (Opt), `person` (Opt), `season` (Opt), `episode` (Opt), `offset` (Opt), `limit` (Opt), `config_entry_id` (Opt) |
-| `jellyha.get_recommendations` | Get similar items based on item ID. | `item_id` (Req), `limit` (Opt), `config_entry_id` (Opt) |
-| `jellyha.get_item` | Get full details for an item. | `item_id` (Req), `config_entry_id` (Opt) |
+| `jellyha.play_on_chromecast` | Play an item on Chromecast. **TV Series Auto-Resolve:** Passing a Series ID automatically resolves and casts the next unplayed episode (or Ep 1). | `entity_id` (Req), `item_id` (Req), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.refresh_library` | Force refresh library data from Jellyfin. | `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.delete_item` | Delete an item from library/disk. ⚠️ **Use with caution.** | `item_id` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.mark_watched` | Mark an item as watched or unwatched. | `item_id` (Req), `is_played` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`, `NextTrack`, `PreviousTrack`, `Shuffle`, `SetRepeatMode`). | `session_id` (Req), `command` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.session_seek` | Seek to position. Accepts `position_ticks` (ticks) or `position_seconds` (seconds). Use `0` to rewind. | `session_id` (Req), `position_ticks` (Opt), `position_seconds` (Opt), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.search` | Search and filter media with rich sorting (`Random`, `DateCreated`, etc.), returning full metadata into `response_variable`. | `query` (Opt), `media_type` (Opt), `sort_by` (Opt), `sort_order` (Opt), `parent_id` (Opt), `is_played` (Opt), `is_favorite` (Opt), `genre` (Opt), `year` (Opt), `min_rating` (Opt), `official_rating` (Opt), `studio` (Opt), `person` (Opt), `season` (Opt), `episode` (Opt), `offset` (Opt), `limit` (Opt), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.get_recommendations` | Get similar items based on item ID into a response variable. | `item_id` (Req), `limit` (Opt), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
+| `jellyha.get_item` | Get full details for an item into a response variable. | `item_id` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
 
 
 ## Automations & AI Reference
 
 ### ⚡ Examples & Cookbook
-Looking for ready-to-use automations and dashboard layouts? Check out our dedicated **[Examples & Recipe Library](examples/)**:
-- **[Play TV Show / Cartridge (Next Up)](examples/automations/play_cartridge_show.yaml)**
-- **[Search and Play Specific Episode](examples/automations/search_and_play_episode.yaml)**
+Looking for ready-to-use automations, scripts, and dashboard layouts? Check out our dedicated **[Examples & Recipe Library](examples/)**:
 - **[Auto-Skip Intro](examples/automations/skip_intro.yaml)**
 - **[Cinema Lighting by Segment](examples/automations/cinema_lighting_segments.yaml)**
-- **[Play Random Top Movie](examples/automations/play_random_movie.yaml)**
+- **[Play TV Show / Cartridge (Next Up)](examples/automations/play_cartridge_show.yaml)**
+- **[Play Random Top Movie (Script)](examples/scripts/play_random_movie.yaml)**
+- **[Play on Android TV / Wholphin (Script)](examples/scripts/card_action_play_on_wholpin.yaml)**
+- **[Play on Apple TV / Infuse (Script)](examples/scripts/card_action_play_on_apple_tv.yaml)**
+- **[Play on Kodi (Script)](examples/scripts/card_action_play_on_kodi.yaml)**
 
 ### 🤖 Writing Automations with AI (`llms.txt`)
 Building automations using ChatGPT, Claude, Gemini, or Cursor? Provide our official [`llms.txt`](llms.txt) context file to your AI assistant. It contains compact, complete entity definitions, service schemas, return structures, and common gotchas so AI generates 100% accurate, hallucination-free Home Assistant YAML on the first try.
@@ -440,7 +458,7 @@ JellyHA uses a **WebSocket-first, API-fallback** strategy for real-time session 
 3. If WebSocket disconnects (network issue, server restart), it automatically falls back to API polling
 4. When WebSocket reconnects, polling stops and push updates resume
 
-The `sensor.jellyha_websocket` sensor shows the current connection status (`connected`/`disconnected`).
+The `sensor.jellyha_websocket_status` sensor shows the current connection status (`connected`/`disconnected`).
 
 
 ## Media Browser
@@ -457,15 +475,16 @@ JellyHA integrates directly with the Home Assistant Media Browser with **full mu
 
 Looking for ready-to-use automations, cinema lighting setups, or dashboard configurations? Check out our dedicated **[Examples & Cookbook Library](examples/)**!
 
-### ⚡ Popular Automations
+### ⚡ Popular Automations & Scripts
 - **[Skip Intro Automatically](examples/automations/skip_intro.yaml)** — Automatically detects TV show intros and jumps straight to the episode content.
 - **[Cinema Lighting Experience](examples/automations/cinema_lighting_segments.yaml)** — Dims lights to 10% on play, warms lights on pause, and raises lights when credits roll (Outro segment).
-- **[Play Random Top Movie](examples/automations/play_random_movie.yaml)** — Dynamically queries your library for top-rated unwatched movies and casts one to Chromecast.
+- **[New Movie & Episode Notification](examples/automations/new_movie_notification.yaml)** — Sends a push notification with movie artwork, video quality, and rating when new media is added.
+- **[Play Random Top Movie (Script)](examples/scripts/play_random_movie.yaml)** — Dynamically queries your library for top-rated unwatched movies and casts one to Chromecast.
+- **[Search and Play Specific Episode (Script)](examples/scripts/search_and_play_episode.yaml)** — Searches for a TV show and episode by title, and starts playback immediately.
 - **[Pause on Doorbell](examples/automations/pause_on_doorbell.yaml)** — Automatically pauses active playback when your doorbell rings.
-- **[New Movie Mobile Notification](examples/automations/new_movie_notification.yaml)** — Sends a push notification with movie artwork and rating when new media is added.
 
 ### 🎛️ Dashboard Setups
-- **[System & Library Monitoring Stack](examples/dashboards/system_monitoring_card.yaml)** — Complete vertical stack with version, WebSocket status, active sessions gauge, and library counters.
+- **[System & Library Monitoring Stack](examples/dashboards/system_monitoring_card.yaml)** — Complete vertical stack with server version, WebSocket status, library breakdown (movies/series/episodes), latest media additions, transcoding & active sessions gauges, and modern storage percentage meter.
 - **[Library Card Variations](examples/dashboards/library_cards.yaml)** — Carousel, Grid with search bar, Next Up for binge watching, and Favorites views.
 - **[Now Playing Card Variations](examples/dashboards/now_playing_cards.yaml)** — Cinematic backdrop, compact mobile, and multi-instance configurations.
 

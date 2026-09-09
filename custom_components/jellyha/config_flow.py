@@ -346,6 +346,8 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     unique_id = f"{unique_id}_{instance_label.lower().replace(' ', '_')}"
                 
                 await self.async_set_unique_id(unique_id)
+                if self.context.get("source") == config_entries.SOURCE_REAUTH:
+                    return await self._async_update_existing_entry()
                 self._abort_if_unique_id_configured()
 
             # Build the smart device name
@@ -413,21 +415,25 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
     async def _async_update_existing_entry(self) -> FlowResult:
         """Update existing entry with new credentials."""
-        entry_id = self.context.get("entry_id")
-        if entry_id:
+        entry: config_entries.ConfigEntry | None = None
+        try:
+            entry = self._get_reauth_entry()
+        except Exception:
+            entry = None
+
+        if not entry and (entry_id := self.context.get("entry_id")):
             entry = self.hass.config_entries.async_get_entry(entry_id)
-            if entry:
-                self.hass.config_entries.async_update_entry(
-                    entry,
-                    data={
-                        **entry.data,
-                        CONF_SERVER_URL: self._server_url,
-                        CONF_API_KEY: self._api_key,
-                    },
-                )
-                await self.hass.config_entries.async_reload(entry.entry_id)
-                return self.async_abort(reason="reauth_successful")
-        
+
+        if entry:
+            return self.async_update_reload_and_abort(
+                entry,
+                data={
+                    **entry.data,
+                    CONF_SERVER_URL: self._server_url,
+                    CONF_API_KEY: self._api_key,
+                },
+            )
+
         return self.async_abort(reason="reauth_failed")
 
     @staticmethod

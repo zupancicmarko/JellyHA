@@ -44,6 +44,7 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   title: '',
   layout: 'carousel',
   media_type: 'both',
+  tv_content: 'series',
   items_per_page: 3,
   max_pages: 5,
   auto_swipe_interval: 0, // 0 = disabled, otherwise seconds
@@ -56,7 +57,9 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   show_genres: true,
   show_description_on_hover: true,
   enable_pagination: true,
+  show_pagination_dots: true,
   metadata_position: 'below',
+  horizontal_alignment: 'center',
   show_date_added: false,
   rating_source: 'auto',
   new_badge_days: 3,
@@ -64,8 +67,11 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   show_watched_status: true,
   click_action: 'more-info',
   hold_action: 'jellyfin',
+  double_tap_action: 'none',
   default_cast_device: '',
   show_now_playing: true,
+  use_series_image: false,
+  show_search: false,
   filter_favorites: false,
   status_filter: 'all',
   filter_newly_added: false,
@@ -1055,19 +1061,6 @@ export class JellyHALibraryCard extends LitElement {
       }
     } else if (this._config.media_type === 'next_up') {
       // Next Up items are already filtered by backend
-      // But we might want to ensure they are valid
-
-      // CRITICAL: For Next Up, we MUST respect the server's order (which is by Last Played).
-      // If we let the card re-sort by default (Date Added), it scrambles the order.
-      // So we bypass the entire client-side sorting block below.
-
-      // Apply limit based on items_per_page * max_pages (same as below)
-      const maxPages = this._config.max_pages;
-      if (maxPages !== undefined && maxPages !== null && maxPages > 0) {
-        const limit = (this._config.items_per_page || 5) * maxPages;
-        filtered = filtered.slice(0, limit);
-      }
-      return filtered;
     }
 
     // Filter by favorites
@@ -1075,7 +1068,6 @@ export class JellyHALibraryCard extends LitElement {
       filtered = filtered.filter((item) => item.is_favorite === true);
     }
 
-    // Filter by unwatched
     // Filter by watch status
     const statusFilter = this._config.status_filter || 'all';
     if (statusFilter === 'unwatched') {
@@ -1083,9 +1075,22 @@ export class JellyHALibraryCard extends LitElement {
     } else if (statusFilter === 'watched') {
       filtered = filtered.filter((item) => item.is_played === true);
     }
+
     // Filter by newly added
     if (this._config.filter_newly_added) {
       filtered = filtered.filter((item) => isNewItem(item, this._config.new_badge_days || 0));
+    }
+
+    // CRITICAL: For Next Up, we MUST respect the server's order (which is by Last Played).
+    // If we let the card re-sort by default (Date Added), it scrambles the order.
+    // So we bypass the client-side sorting block below.
+    if (this._config.media_type === 'next_up') {
+      const maxPages = this._config.max_pages;
+      if (maxPages !== undefined && maxPages !== null && maxPages > 0) {
+        const limit = (this._config.items_per_page || 5) * maxPages;
+        filtered = filtered.slice(0, limit);
+      }
+      return filtered;
     }
 
     // Sorting
@@ -1523,6 +1528,9 @@ export class JellyHALibraryCard extends LitElement {
 
     if (!serviceString) {
       console.warn('JellyHA: "call-service" action selected but no action/service configured.');
+      fireEvent(this, 'hass-notification', {
+        message: 'No script configured for "Run Script" action. Please select a script in the card editor.',
+      });
       return;
     }
 
@@ -1533,13 +1541,19 @@ export class JellyHALibraryCard extends LitElement {
 
     if (!domain || !serviceName) {
       console.error(`JellyHA: Invalid service name "${serviceString}". Expected format: domain.service (e.g. script.my_script)`);
+      fireEvent(this, 'hass-notification', {
+        message: `Invalid script/service name: "${serviceString}". Expected format: script.your_script_name`,
+      });
       return;
     }
 
     try {
       await this.hass.callService(domain, serviceName, payload);
-    } catch (err) {
+    } catch (err: any) {
       console.error(`JellyHA: Failed to call service ${serviceString}`, err);
+      fireEvent(this, 'hass-notification', {
+        message: `Failed to call ${serviceString}: ${err?.message || err}`,
+      });
     }
   }
 

@@ -166,6 +166,30 @@
             },
             "refresh_duration": {
                 "name": "Trajanje osvežitve"
+            },
+            "movies": {
+                "name": "Filmi"
+            },
+            "series": {
+                "name": "Serije"
+            },
+            "episodes": {
+                "name": "Epizode"
+            },
+            "latest_movie": {
+                "name": "Zadnji film"
+            },
+            "latest_episode": {
+                "name": "Zadnja epizoda"
+            },
+            "transcoding_streams": {
+                "name": "Prekodirni tokovi"
+            },
+            "storage_free": {
+                "name": "Prost medijski prostor"
+            },
+            "storage_free_percent": {
+                "name": "Odstotek prostega prostora"
             }
         },
         "media_player": {

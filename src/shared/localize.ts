@@ -12,6 +12,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Play',
         pause: 'Pause',
         stop: 'Stop',
+        previous: 'Previous',
+        next: 'Next',
         nothing_playing: 'Nothing is currently playing',
         entity_not_found: 'Entity not found',
         rewinding: 'REWINDING',
@@ -90,6 +92,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Media Player',
         'editor.auto': 'Auto',
         'editor.show_search': 'Show Search Bar',
+        'editor.show_controls': 'Show Playback Controls',
+        'editor.horizontal_alignment': 'Carousel Alignment',
+        'editor.alignment_center': 'Center',
+        'editor.alignment_left': 'Left',
         'search.placeholder_title': 'Search Title',
         'search.placeholder_genre': 'Genre',
         'search.all_genres': 'All Genres',
@@ -103,6 +109,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Abspielen',
         pause: 'Pause',
         stop: 'Stopp',
+        previous: 'Zurück',
+        next: 'Weiter',
         nothing_playing: 'Nichts wird abgespielt',
         entity_not_found: 'Entität nicht gefunden',
         rewinding: 'SPULEN',
@@ -181,6 +189,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Medienplayer',
         'editor.auto': 'Automatisch',
         'editor.show_search': 'Suchleiste anzeigen',
+        'editor.show_controls': 'Wiedergabesteuerung anzeigen',
+        'editor.horizontal_alignment': 'Karussell-Ausrichtung',
+        'editor.alignment_center': 'Zentriert',
+        'editor.alignment_left': 'Links',
         'search.placeholder_title': 'Titel suchen',
         'search.placeholder_genre': 'Genre',
         'search.all_genres': 'Alle Genres',
@@ -194,6 +206,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Lire',
         pause: 'Pause',
         stop: 'Arrêt',
+        previous: 'Précédent',
+        next: 'Suivant',
         nothing_playing: 'Rien en lecture',
         entity_not_found: 'Entité non trouvée',
         rewinding: 'BOBINAGE',
@@ -272,6 +286,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Lecteur multimédia',
         'editor.auto': 'Auto',
         'editor.show_search': 'Afficher la barre de recherche',
+        'editor.show_controls': 'Afficher les commandes de lecture',
+        'editor.horizontal_alignment': 'Alignement du carrousel',
+        'editor.alignment_center': 'Centré',
+        'editor.alignment_left': 'Gauche',
         'search.placeholder_title': 'Rechercher un titre',
         'search.placeholder_genre': 'Genre',
         'search.all_genres': 'Tous les genres',
@@ -285,6 +303,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Reproducir',
         pause: 'Pausa',
         stop: 'Detener',
+        previous: 'Anterior',
+        next: 'Siguiente',
         nothing_playing: 'Nada sonando',
         entity_not_found: 'Entidad no encontrada',
         rewinding: 'REBOBINANDO',
@@ -363,6 +383,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Reproductor multimedia',
         'editor.auto': 'Auto',
         'editor.show_search': 'Mostrar barra de búsqueda',
+        'editor.show_controls': 'Mostrar controles de reproducción',
+        'editor.horizontal_alignment': 'Alineación del carrusel',
+        'editor.alignment_center': 'Centrado',
+        'editor.alignment_left': 'Izquierda',
         'search.placeholder_title': 'Buscar título',
         'search.placeholder_genre': 'Género',
         'search.all_genres': 'Todos los géneros',
@@ -376,6 +400,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Riproduci',
         pause: 'Pausa',
         stop: 'Stop',
+        previous: 'Precedente',
+        next: 'Successivo',
         nothing_playing: 'Niente in riproduzione',
         entity_not_found: 'Entità non trovata',
         rewinding: 'RIAVVOLGIMENTO',
@@ -454,6 +480,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Lettore multimediale',
         'editor.auto': 'Auto',
         'editor.show_search': 'Mostra barra di ricerca',
+        'editor.show_controls': 'Mostra controlli di riproduzione',
+        'editor.horizontal_alignment': 'Allineamento carosello',
+        'editor.alignment_center': 'Centro',
+        'editor.alignment_left': 'Sinistra',
         'search.placeholder_title': 'Cerca titolo',
         'search.placeholder_genre': 'Genere',
         'search.all_genres': 'Tutti i generi',
@@ -467,6 +497,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Afspelen',
         pause: 'Pauze',
         stop: 'Stop',
+        previous: 'Vorige',
+        next: 'Volgende',
         nothing_playing: 'Niets aan het spelen',
         entity_not_found: 'Entiteit niet gevonden',
         rewinding: 'TERUGSPOELEN',
@@ -545,6 +577,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Mediaspeler',
         'editor.auto': 'Auto',
         'editor.show_search': 'Zoekbalk tonen',
+        'editor.show_controls': 'Afspeelknoppen tonen',
+        'editor.horizontal_alignment': 'Carrousel uitlijning',
+        'editor.alignment_center': 'Midden',
+        'editor.alignment_left': 'Links',
         'search.placeholder_title': 'Zoek titel',
         'search.placeholder_genre': 'Genre',
         'search.all_genres': 'Alle genres',
@@ -558,6 +594,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Predvajaj',
         pause: 'Premor',
         stop: 'Stop',
+        previous: 'Prejšnji',
+        next: 'Naslednji',
         nothing_playing: 'Nič se ne predvaja',
         entity_not_found: 'Entiteta ni najdena',
         rewinding: 'PREVIJANJE',
@@ -636,6 +674,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Predvajalnik medijev',
         'editor.auto': 'Avtomatsko',
         'editor.show_search': 'Prikaži iskalno vrstico',
+        'editor.show_controls': 'Prikaži kontrolnike za predvajanje',
+        'editor.horizontal_alignment': 'Poravnava vrtiljaka',
+        'editor.alignment_center': 'Na sredino',
+        'editor.alignment_left': 'Levo',
         'search.placeholder_title': 'Išči naslov',
         'search.placeholder_genre': 'Žanr',
         'search.all_genres': 'Vsi žanri',
@@ -650,6 +692,8 @@ const translations: Record<string, Record<string, string>> = {
         play: 'Воспроизвести',
         pause: 'Пауза',
         stop: 'Остановить',
+        previous: 'Предыдущий',
+        next: 'Следующий',
         nothing_playing: 'Ничего не воспроизводится',
         entity_not_found: 'Объект не найден',
         rewinding: 'ПЕРЕМОТКА',
@@ -728,6 +772,10 @@ const translations: Record<string, Record<string, string>> = {
         'editor.now_playing_sensor': 'Медиаплеер',
         'editor.auto': 'Авто',
         'editor.show_search': 'Показывать панель поиска',
+        'editor.show_controls': 'Показывать управление воспроизведением',
+        'editor.horizontal_alignment': 'Выравнивание карусели',
+        'editor.alignment_center': 'По центру',
+        'editor.alignment_left': 'Слева',
         'search.placeholder_title': 'Поиск по названию',
         'search.placeholder_genre': 'Жанр',
         'search.all_genres': 'Все жанры',
@@ -740,8 +788,9 @@ const translations: Record<string, Record<string, string>> = {
  * @param key - Translation key
  * @returns Translated string or key if not found
  */
-export function localize(language: string, key: string): string {
-    const lang = language.split('-')[0].toLowerCase();
+export function localize(language?: string, key?: string, fallback?: string): string {
+    if (!key) return fallback || '';
+    const lang = (language || 'en').split('-')[0].toLowerCase();
 
     // Try exact language
     if (translations[lang]?.[key]) {
@@ -753,6 +802,6 @@ export function localize(language: string, key: string): string {
         return translations.en[key];
     }
 
-    // Return key if nothing found
-    return key;
+    // Return fallback if provided, otherwise empty string (so `localize(...) || 'Default'` triggers)
+    return fallback !== undefined ? fallback : '';
 }

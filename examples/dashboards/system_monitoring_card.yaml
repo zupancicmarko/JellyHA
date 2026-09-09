@@ -3,8 +3,9 @@
 # ==============================================================================
 # Description:
 #   A complete Home Assistant Lovelace vertical stack displaying JellyHA system
-#   status, WebSocket connectivity, library item counts, active sessions gauge,
-#   favorites tile, and refresh diagnostics.
+#   status, WebSocket connectivity, full library breakdowns (movies, series,
+#   episodes), latest content added with rich metadata, active & transcoding
+#   sessions, modern storage percentage meter, and refresh diagnostics.
 # ==============================================================================
 
 type: vertical-stack
@@ -14,9 +15,9 @@ cards:
     content: >
       # 🪼 JellyHA System Status
 
-      **Version:** {{ states('sensor.jellyha_version') }} | **Status:** {{ states('sensor.jellyha_websocket') }}
+      **Jellyfin Version:** {{ states('sensor.jellyha_jellyfin_version') }} | **Status:** {{ states('sensor.jellyha_websocket_status') | title }}
 
-  # Library Content Breakdown
+  # Library Content Breakdown (Total & Watch Status)
   - type: entities
     title: Library Content
     state_color: true
@@ -26,9 +27,19 @@ cards:
         icon: mdi:video-vintage
         secondary_info: last-changed
       - type: divider
+      - entity: sensor.jellyha_movies
+        name: Total Movies
+        icon: mdi:movie-open
+      - entity: sensor.jellyha_series
+        name: Total TV Series
+        icon: mdi:video
+      - entity: sensor.jellyha_episodes
+        name: Total Episodes
+        icon: mdi:filmstrip
+      - type: divider
       - entity: sensor.jellyha_unwatched_movies
         name: Unwatched Movies
-        icon: mdi:movie-open
+        icon: mdi:movie-open-outline
       - entity: sensor.jellyha_watched_movies
         name: Watched Movies
         icon: mdi:movie-check
@@ -39,14 +50,29 @@ cards:
       - entity: sensor.jellyha_watched_series
         name: Watched Series
         icon: mdi:video-check-outline
+      - type: divider
       - entity: sensor.jellyha_unwatched_episodes
         name: Unwatched Episodes
-        icon: mdi:video
+        icon: mdi:television
       - entity: sensor.jellyha_watched_episodes
         name: Watched Episodes
-        icon: mdi:video-check
+        icon: mdi:television-check
 
-  # Quick Gauges & Tiles
+  # Latest Added Media with Rich Attributes
+  - type: entities
+    title: 🎬 Latest Additions
+    state_color: true
+    entities:
+      - entity: sensor.jellyha_latest_movie
+        name: Latest Movie
+        icon: mdi:movie-star
+        secondary_info: last-changed
+      - entity: sensor.jellyha_latest_episode
+        name: Latest Episode
+        icon: mdi:television-play
+        secondary_info: last-changed
+
+  # Activity & Transcoding Gauges
   - type: horizontal-stack
     cards:
       - type: gauge
@@ -58,19 +84,42 @@ cards:
           green: 0
           yellow: 3
           red: 7
-      - type: tile
-        entity: sensor.jellyha_favorites
-        name: Favorites
-        icon: mdi:heart
+      - type: gauge
+        entity: sensor.jellyha_transcoding_streams
+        name: Transcoding Streams
+        min: 0
+        max: 5
+        severity:
+          green: 0
+          yellow: 2
+          red: 4
 
-  # Refresh & Diagnostics
+  # Media Storage Gauge (Modern Percentage Meter)
+  - type: gauge
+    entity: sensor.jellyha_media_storage_free_percentage
+    name: Media Storage Free Space
+    needle: true
+    min: 0
+    max: 100
+    severity:
+      red: 0
+      yellow: 15
+      green: 30
+
+  # Sync, Favorites & Storage Diagnostics
   - type: entities
     title: Sync & Activity
     entities:
       - entity: media_player.jellyha_admin # Preferred in v1.3.0+ (or legacy sensor.jellyha_now_playing_admin)
         name: Admin Now Playing
         icon: mdi:account
+      - entity: sensor.jellyha_favorites
+        name: Favorites
+        icon: mdi:heart
       - type: divider
+      - entity: sensor.jellyha_media_storage_free
+        name: Storage Free (GB)
+        icon: mdi:harddisk
       - entity: sensor.jellyha_last_data_change
         name: Last Library Update
       - entity: sensor.jellyha_last_refresh

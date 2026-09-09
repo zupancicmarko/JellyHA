@@ -45,10 +45,18 @@ Each configured Jellyfin user gets a dedicated media player entity (e.g., `media
   * `is_last_chapter`: Boolean
   * `series_image_url`: String (Portrait poster of parent series)
   * `backdrop_url`: String (Fanart / backdrop wallpaper URL)
+  * `dynamic_range`: String (`SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, `HLG`)
+  * `video_range`: String (`HDR`, `SDR`)
+  * `video_range_type`: String (e.g. `DOVIWithHDR10`, `DOVIWithEL`, `HDR10Plus`, `HDR10`, `SDR`)
+  * `dv_profile`: Integer or null (Dolby Vision profile number, e.g. `7`, `8`, `5`)
+  * `video_codec`: String (e.g. `hevc`, `av1`, `h264`)
+  * `video_bit_depth`: Integer (`10`, `8`)
+  * `supports_remote_control`: Boolean (True if remote controllable, False if non-controllable like mobile ExoPlayer)
+  * `entry_id` / `config_entry_id`: String (JellyHA integration instance GUID)
 
 ### Client / Device Playback Entity: `media_player.jellyha_<device_name>`
 Users can opt-in to dedicated media player entities per physical client device (e.g., `media_player.jellyha_living_room_tv`, `media_player.jellyha_bedroom_shield`) configured in Integration Options.
-* **States & Attributes**: 100% attribute parity with per-user media players (all standard HA attributes, extra attributes, chapter/segment detection, and transport controls).
+* **States & Attributes**: 100% attribute parity with per-user media players (all standard HA attributes, extra attributes, chapter/segment detection, dynamic range, and transport controls).
 * **Device-Specific Attributes**:
   * `device_id`: Jellyfin physical client device GUID
   * `device_name`: Name of client device
@@ -58,22 +66,43 @@ Users can opt-in to dedicated media player entities per physical client device (
 * **Use Case**: Room-based automations (e.g., cinema lighting, motorized shades, pause-on-doorbell) tied to a specific room TV regardless of which family member is logged in.
 
 ### Server & Library Sensor Entities:
-* `sensor.jellyha_server_version`: Server version (e.g. `10.10.6`)
-* `sensor.jellyha_active_sessions`: Number of currently active playback sessions
-* `sensor.jellyha_unwatched_movies`: Count of unwatched movies
-* `sensor.jellyha_unwatched_shows`: Count of unwatched TV shows
-* `sensor.jellyha_library`: General library aggregate
+* `sensor.jellyha_jellyfin_version`: Server version (e.g. `12.0.0`)
+* `sensor.jellyha_websocket_status`: WebSocket connection health status (`connected` / `disconnected`)
+* `sensor.jellyha_active_sessions`: Count of currently active playback sessions (attribute `sessions` lists session metadata)
+* `sensor.jellyha_transcoding_streams`: Count of active media streams currently being transcoded (attribute `transcode_sessions` contains codec, reason, framerate)
+* `sensor.jellyha_media_storage_free`: Free storage space on primary media drive in GB (attributes: `free_bytes`, `used_bytes`, `total_bytes`, `free_tb`, `used_percent`)
+* `sensor.jellyha_media_storage_free_percentage`: Free storage space percentage on primary media drive (e.g. `62` %)
+* `sensor.jellyha_library`: General library aggregate count (attributes: `movies`, `series`, `videos`, `episodes`, `entry_id`)
+* `sensor.jellyha_movies`: Total movies in library (attributes: `watched`, `unwatched`, `favorites`)
+* `sensor.jellyha_series`: Total TV series in library (attributes: `watched`, `unwatched`, `favorites`, `total_episodes`, `unwatched_episodes`)
+* `sensor.jellyha_episodes`: Total episodes count across all shows (attributes: `watched`, `unwatched`)
+* `sensor.jellyha_latest_movie`: Title and metadata of the most recently added movie (attributes: `item_id`, `title`, `year`, `overview`, `genres`, `rating`, `runtime_minutes`, `date_added`, `poster_url`, `backdrop_url`, `dynamic_range`, `resolution`, `video_codec`, `container`)
+* `sensor.jellyha_latest_episode`: Formatted title and metadata of the most recently added TV episode (attributes: `item_id`, `title`, `series_name`, `series_id`, `season`, `episode`, `year`, `overview`, `genres`, `rating`, `runtime_minutes`, `date_added`, `poster_url`, `series_poster_url`, `backdrop_url`, `dynamic_range`, `resolution`, `video_codec`, `container`)
+* `sensor.jellyha_watched`: Total watched content count (attributes: `movies`, `series`, `episodes`, `entry_id`)
+* `sensor.jellyha_unwatched`: Total unwatched content count (attributes: `movies`, `series`, `episodes`, `entry_id`)
+* `sensor.jellyha_watched_movies`: Fully watched movies count
+* `sensor.jellyha_unwatched_movies`: Unwatched movies count
+* `sensor.jellyha_watched_series`: Fully watched TV series count
+* `sensor.jellyha_unwatched_series`: Unwatched TV series count
+* `sensor.jellyha_watched_episodes`: Total watched episodes count across all TV shows
+* `sensor.jellyha_unwatched_episodes`: Total unwatched episodes count across all TV shows
+* `sensor.jellyha_favorites`: Count of user favorite items
+* `sensor.jellyha_last_refresh`: Timestamp of last API refresh
+* `sensor.jellyha_last_library_update`: Timestamp of last detected library update
+* `sensor.jellyha_refresh_duration`: Duration of last refresh (e.g. `0.9s`)
 
 ---
 
 ## 2. Integration Actions / Services (`jellyha.*`)
+
+All JellyHA services accept `config_entry_id` (or `entity_id` / `server_entity_id`) to target a specific server in multi-instance setups. If omitted, the active instance is automatically resolved.
 
 ### 1. `jellyha.play_on_chromecast`
 Casts media to a Google Cast / Chromecast / Android TV device with automatic direct-play or optimized transcoding.
 * **Fields**:
   * `entity_id` (Required, string): The target Chromecast `media_player` entity (e.g. `media_player.living_room_tv`).
   * `item_id` (Required, string): Jellyfin item GUID.
-  * `config_entry_id` (Optional, string): Target JellyHA instance in multi-server setups.
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance in multi-server setups.
 * **CRITICAL BEHAVIOR FOR TV SHOWS**: If `item_id` is a `Series` (or `Season`), `play_on_chromecast` automatically queries Jellyfin's Next Up queue and casts the **next unplayed episode**! If the series has never been started, it automatically falls back to Season 1 Episode 1.
 
 ### 2. `jellyha.search`
@@ -96,6 +125,7 @@ Searches the Jellyfin library and returns structured media objects into an autom
   * `episode` (Optional, integer): Episode number (IndexNumber).
   * `offset` (Optional, integer): Number of items to skip (pagination).
   * `limit` (Optional, integer, default 5): Maximum items to return.
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance.
 * **Return Structure**:
   Returns a dictionary `{"items": [...]}` where each item contains:
   * `id`: Jellyfin item GUID
@@ -110,23 +140,37 @@ Searches the Jellyfin library and returns structured media objects into an autom
   * `is_played`: Boolean
   * `is_favorite`: Boolean
   * `runtime_minutes`: Integer
-  * `poster_url`, `backdrop_url`, `jellyfin_url`
+  * `dynamic_range`: String (`SDR`, `HDR10`, `Dolby Vision`, `HLG`)
+  * `video_range`: String (`HDR`, `SDR`)
+  * `video_range_type`: String (e.g. `DOVIWithHDR10`, `HDR10`, `SDR`)
+  * `video_codec`: String (e.g. `hevc`, `av1`)
+  * `video_bit_depth`: Integer (`10`, `8`)
+  * `dv_profile`: Integer (Dolby Vision profile number)
+  * `poster_url`, `image_url`, `backdrop_url`, `jellyfin_url`
 
 ### 3. `jellyha.session_control`
 Controls a Jellyfin playback session directly.
 * **Fields**:
   * `session_id` (Required, string): Session ID.
   * `command` (Required, select): `Pause`, `Unpause`, `TogglePause`, `Stop`, `NextTrack`, `PreviousTrack`, `Shuffle`, `SetRepeatMode`.
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target instance.
 
 ### 4. `jellyha.session_seek`
 Seeks to a specific timestamp in a Jellyfin session.
 * **Fields**:
   * `session_id` (Required, string): Session ID.
-  * `position_ticks` (Required, integer): Position in ticks (1 sec = 10,000,000 ticks. Use `0` to restart).
+  * `position_ticks` (Optional, integer): Position in ticks (1 sec = 10,000,000 ticks. Use `0` to restart).
+  * `position_seconds` (Optional, float): Position in seconds (automatically converted to ticks).
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target instance.
 
 ### 5. `jellyha.mark_watched` & `jellyha.update_favorite`
-* `jellyha.mark_watched`: `item_id` (Required, string), `is_played` (Required, boolean).
-* `jellyha.update_favorite`: `item_id` (Required, string), `is_favorite` (Required, boolean).
+* `jellyha.mark_watched`: `item_id` (Required, string), `is_played` (Required, boolean), `entity_id` / `server_entity_id` / `config_entry_id` (Optional, string).
+* `jellyha.update_favorite`: `item_id` (Required, string), `is_favorite` (Required, boolean), `entity_id` / `server_entity_id` / `config_entry_id` (Optional, string).
+
+### 6. `jellyha.delete_item`, `jellyha.get_item`, `jellyha.get_recommendations`
+* `jellyha.delete_item`: `item_id` (Required, string) — deletes item from library/disk.
+* `jellyha.get_item`: `item_id` (Required, string) — returns full item metadata into `response_variable`.
+* `jellyha.get_recommendations`: `item_id` (Required, string), `limit` (Optional, integer) — returns similar items into `response_variable`.
 
 ---
 
@@ -142,7 +186,7 @@ Fires when entering or exiting an Intro, Outro, Recap, Preview, or Commercial se
     - trigger: event
       event_type: jellyha_event
       event_data:
-        event_type: media_segment_change
+        type: media_segment_change
   ```
 * **Payload attributes (`trigger.event.data`)**:
   * `in_segment`: Boolean (`true` when entering, `false` when exiting)
@@ -156,6 +200,14 @@ Fires when entering or exiting an Intro, Outro, Recap, Preview, or Commercial se
 
 ### Event: `media_chapter_change`
 Fires when the media crosses into a new chapter.
+* **Trigger syntax**:
+  ```yaml
+  trigger:
+    - trigger: event
+      event_type: jellyha_event
+      event_data:
+        type: media_chapter_change
+  ```
 * **Payload attributes (`trigger.event.data`)**:
   * `chapter_name`: String (e.g. `Chapter 1`, `Prologue`)
   * `chapter_index`: Integer (1-indexed)
@@ -267,7 +319,7 @@ trigger:
   - trigger: event
     event_type: jellyha_event
     event_data:
-      event_type: media_segment_change
+      type: media_segment_change
 condition:
   - condition: template
     value_template: >
@@ -303,7 +355,7 @@ trigger:
   - trigger: event
     event_type: jellyha_event
     event_data:
-      event_type: media_segment_change
+      type: media_segment_change
     id: "segment"
 action:
   - choose:
@@ -380,11 +432,83 @@ action:
           item_id: "{{ movie_search.items[0].id }}"
 ```
 
+### Example F: TV Picture Mode & Ambient Bias Lighting by Dynamic Range
+Automatically switches your TV or AVR picture mode and sets bias lighting intensity based on playback format (`Dolby Vision`, `HDR10`, `HLG`, or `SDR`):
+```yaml
+alias: "Jellyfin Dynamic Range Mode Sync"
+description: "Sync TV picture preset and bias lights based on Dolby Vision/HDR/SDR stream format"
+mode: restart
+trigger:
+  - trigger: state
+    entity_id: media_player.jellyha_living_room_tv
+    to: "playing"
+condition:
+  - condition: template
+    value_template: "{{ state_attr('media_player.jellyha_living_room_tv', 'dynamic_range') is not none }}"
+action:
+  - variables:
+      hdr_format: "{{ state_attr('media_player.jellyha_living_room_tv', 'dynamic_range') }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ hdr_format == 'Dolby Vision' }}"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.living_room_tv_picture_mode
+            data:
+              option: "Dolby Vision Dark"
+          - action: light.turn_on
+            target:
+              entity_id: light.tv_bias_lighting
+            data:
+              brightness_pct: 15
+              color_temp_kelvin: 6500
+
+      - conditions:
+          - condition: template
+            value_template: "{{ hdr_format in ['HDR10', 'HLG'] }}"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.living_room_tv_picture_mode
+            data:
+              option: "Cinema HDR"
+          - action: light.turn_on
+            target:
+              entity_id: light.tv_bias_lighting
+            data:
+              brightness_pct: 20
+              color_temp_kelvin: 6500
+
+      - conditions:
+          - condition: template
+            value_template: "{{ hdr_format == 'SDR' }}"
+        sequence:
+          - action: select.select_option
+            target:
+              entity_id: select.living_room_tv_picture_mode
+            data:
+              option: "ISF Expert Dark"
+          - action: light.turn_on
+            target:
+              entity_id: light.tv_bias_lighting
+            data:
+              brightness_pct: 30
+              color_temp_kelvin: 6500
+```
+
 ---
 
 ## 6. Lovelace Card Actions & Custom Script Calling (`call-service`)
 
-The `jellyha-library-card` supports `click_action`, `hold_action`, and `double_tap_action`:
+The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and automation integration:
+
+### Library Card TV Content Options
+* `tv_content`: `'series'` (default) or `'episodes'`. Choose whether TV show libraries display full series poster cards or individual Next Up / latest episodes.
+* `use_series_image`: `true` or `false` (default). When viewing episodes, toggle between episode screen-capture thumbnails and parent series portrait cover art.
+
+### Custom Interactions (`click_action`, `hold_action`, `double_tap_action`)
 * **Available Actions**: `more-info` (default), `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
 * **When set to `call-service`**:
   * In the card editor, Home Assistant renders a native `<ha-selector>` entity dropdown picker strictly filtered to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), complete with friendly names, icons, and live search.
@@ -396,6 +520,7 @@ The `jellyha-library-card` supports `click_action`, `hold_action`, and `double_t
     * `item_id`: Jellyfin item GUID string (e.g. `"d8f34a8e..."`)
     * `title` / `name`: Item title or episode title (e.g. `"John Wick: Chapter 2"`, `"Episode 1"`)
     * `media_type`: `"Movie"`, `"Series"`, `"Episode"`, `"Audio"`, `"MusicAlbum"`
+    * `dynamic_range`: String (`"Dolby Vision"`, `"HDR10"`, `"HLG"`, `"SDR"`)
     * `year`: Release year integer (e.g. `2017`)
     * `runtime_minutes`: Runtime duration in minutes (e.g. `122`)
     * `genres`: List of genre strings (e.g. `["Action", "Thriller"]`)
@@ -404,6 +529,7 @@ The `jellyha-library-card` supports `click_action`, `hold_action`, and `double_t
     * `is_favorite`: Boolean (true if favorited)
     * `jellyfin_url`: Direct URL to item in Jellyfin web client
     * `action_type`: Interaction type string (`"click"`, `"hold"`, or `"double_tap"`)
+    * `config_entry_id` / `entry_id`: Home Assistant config entry ID string
   * **TV Shows & Episodes**:
     * `series_name`: Parent TV show name string (e.g. `"Cape Fear"`), null for movies
     * `series_id`: Parent TV show GUID string, null for movies
@@ -431,7 +557,7 @@ sequence:
   - action: system_log.write
     data:
       message: >
-        Tapped {{ media_type }}: {{ title }} ({{ year }})
+        Tapped {{ media_type }}: {{ title }} ({{ year }}) [{{ dynamic_range }}]
         {% if media_type == 'Episode' %}Series: {{ series_name }} S{{ season }}E{{ episode }}{% endif %}
         {% if artist %}Artist: {{ artist }} | Album: {{ album }}{% endif %}
         Date Created: {{ date_created }}

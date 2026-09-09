@@ -28,8 +28,16 @@ conditions:
     value_template: "{{ trigger.event.data.segment_end_seconds is defined and trigger.event.data.segment_end_seconds > 0 }}"
 
 actions:
+  # Approach A (Session-based): Seek directly using session_id
   - action: jellyha.session_seek
     data:
       session_id: "{{ trigger.event.data.session_id }}"
-      # Seek directly to the end of the intro segment
+      # Accepts position_seconds (or position_ticks: "{{ (trigger.event.data.segment_end_seconds * 10000000) | int }}")
       position_seconds: "{{ trigger.event.data.segment_end_seconds }}"
+
+  # Approach B (Alternative): Using standard Home Assistant media_player
+  # - action: media_player.media_seek
+  #   target:
+  #     entity_id: media_player.jellyha_admin # Replace with your user or device player
+  #   data:
+  #     seek_position: "{{ trigger.event.data.segment_end_seconds }}"

@@ -1,0 +1,146 @@
+# ==============================================================================
+# JellyHA Script Example: Card Click Action -> Play on Apple TV (Infuse / Apple TV)
+# ==============================================================================
+# Description:
+#   Handles playback routing when a user taps, holds, or double-taps a poster
+#   in the JellyHA Library Card, sending the selected media to an Apple TV
+#   or Apple TV Infuse player.
+#
+# Card Configuration (Lovelace YAML):
+# -----------------------------------
+# type: custom:jellyha-library-card
+# entity: sensor.jellyha_library
+# title: "Movies & TV"
+# click_action: call-service
+# click_service: script.card_action_play_on_apple_tv
+#
+# Variables Injected Automatically by JellyHA Card:
+# -------------------------------------------------
+# When 'click_action: call-service' is configured, the JellyHA card calls the
+# script and injects all media metadata directly into the Jinja template namespace:
+#
+#   - title / name: Media title ("Inception" or "Episode 1")
+#   - media_type: "Movie", "Series", "Episode", or "Audio"
+#   - series_name: Show name if episode ("Severance")
+#   - series_id: Show GUID
+#   - season: Season number (e.g. 1)
+#   - episode: Episode number (e.g. 4)
+#   - year: Release year (e.g. 2025)
+#   - item_id: Jellyfin GUID
+#   - poster_url: Authenticated proxy poster image URL
+#   - series_poster_url: Parent series poster cover URL (episodes)
+#   - backdrop_url: Fanart background image URL
+#   - overview / description: Plot synopsis
+#   - dynamic_range: Dynamic range string ("SDR", "HDR10", "Dolby Vision", "HLG")
+#   - runtime_minutes: Runtime duration in minutes
+#   - jellyfin_url: Direct URL to item in Jellyfin web client
+#   - config_entry_id: Target JellyHA instance ID
+#   - action_type: "click", "hold", or "double_tap"
+# ==============================================================================
+
+alias: "JellyHA: Play on Apple TV (Script)"
+description: "Handles playback routing from JellyHA Library Card click actions to Apple TV."
+mode: queued
+max: 5
+icon: mdi:apple
+
+fields:
+  item_id:
+    name: Item ID
+    description: Jellyfin media item ID
+    required: false
+    example: "49ed9530ac681f148ca09b91ca7010c8"
+    selector:
+      text:
+  title:
+    name: Title
+    description: Media title
+    required: false
+    example: "Inception"
+    selector:
+      text:
+  media_type:
+    name: Media Type
+    description: Type of media (Movie, Episode, Series)
+    required: false
+    default: "Movie"
+    selector:
+      text:
+  series_name:
+    name: Series Name
+    description: Parent TV series name (if episode)
+    required: false
+    selector:
+      text:
+  season:
+    name: Season
+    description: Season number
+    required: false
+    selector:
+      number:
+        min: 1
+        max: 100
+  episode:
+    name: Episode
+    description: Episode number
+    required: false
+    selector:
+      number:
+        min: 1
+        max: 1000
+  year:
+    name: Year
+    description: Release year
+    required: false
+    selector:
+      number:
+        min: 1900
+        max: 2050
+
+sequence:
+  - choose:
+      # ------------------------------------------------------------------------
+      # 1. If it's a TV Show episode
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ media_type == 'Episode' }}"
+        sequence:
+          # Informational log in Home Assistant Logbook
+          - action: logbook.log
+            data:
+              name: "JellyHA Player"
+              message: "Playing TV Episode: {{ series_name }} - S{{ season }}E{{ episode }} ({{ title }}) on Apple TV"
+              domain: media_player
+              entity_id: media_player.living_room_apple_tv
+
+          # Play episode on Apple TV
+          - action: media_player.play_media
+            target:
+              entity_id: media_player.living_room_apple_tv
+            data:
+              media_content_type: episode
+              media_content_id: "{{ series_name }} S{{ season }}E{{ episode }}"
+
+      # ------------------------------------------------------------------------
+      # 2. If it's a Movie
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ media_type == 'Movie' }}"
+        sequence:
+          # Informational log in Home Assistant Logbook
+          - action: logbook.log
+            data:
+              name: "JellyHA Player"
+              message: "Playing Movie: {{ title }} {% if year %}({{ year }}){% endif %} on Apple TV"
+              domain: media_player
+              entity_id: media_player.living_room_apple_tv
+
+          # Play movie on Apple TV
+          - action: media_player.play_media
+            target:
+              entity_id: media_player.living_room_apple_tv
+            data:
+              media_content_type: movie
+              media_content_id: "{{ title }}"

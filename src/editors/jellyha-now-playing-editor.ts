@@ -90,7 +90,7 @@ export class JellyHANowPlayingEditor extends LitElement {
     if (this._config.entity && !availableEntities.some((e) => e.entity === this._config.entity)) {
       availableEntities.unshift({
         entity: this._config.entity,
-        label: this.hass.states[this._config.entity]?.attributes.friendly_name || this._config.entity,
+        label: String(this.hass.states[this._config.entity]?.attributes?.friendly_name || this._config.entity),
       });
     }
 
@@ -165,7 +165,7 @@ export class JellyHANowPlayingEditor extends LitElement {
           </div>
           <div class="checkbox-row">
             <ha-switch
-              .checked=${this._config.show_genres === true}
+              .checked=${this._config.show_genres !== false}
               @change=${this._showGenresChanged}
             ></ha-switch>
             <span>${localize(lang, 'editor.show_genres')}</span>
@@ -174,7 +174,7 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_runtime === true}
+            .checked=${this._config.show_runtime !== false}
             @change=${this._showRuntimeChanged}
           ></ha-switch>
           <span>${localize(lang, 'editor.show_runtime')}</span>
@@ -182,7 +182,7 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_ratings === true}
+            .checked=${this._config.show_ratings !== false}
             @change=${this._showRatingsChanged}
           ></ha-switch>
           <span>${localize(lang, 'editor.show_rating')}</span>
@@ -215,7 +215,7 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_background === true}
+            .checked=${this._config.show_background !== false}
             @change=${this._showBackgroundChanged}
           ></ha-switch>
           <span>${localize(lang, 'editor.show_background')}</span>

@@ -221,44 +221,23 @@ class JellyHABasePlaybackMediaPlayer(
     def _is_session_remote_controllable(self, session: dict[str, Any] | None) -> bool:
         """Check if a session can receive remote control commands."""
         if not session:
-            return True
-        # Explicit remote control flag from Jellyfin API
+            return False
+        # Do not route commands to our own integration or backend server sessions
+        if session.get("Client") in ("home-assistant", "Seerr"):
+            return False
+        # If session explicitly declares remote control support, it is controllable
         if session.get("SupportsRemoteControl") is True:
             return True
-        # Check nested capabilities if top-level is omitted
         caps = session.get("Capabilities") or {}
         if caps.get("SupportsRemoteControl") is True:
             return True
-        # Check if there is another session for the same physical client device that supports remote control
-        # (e.g. Android app where playback reports under "Jellyfin for Android" with SupportsRemoteControl: false,
-        # but the companion WebView reports under "Jellyfin Android" with SupportsRemoteControl: true).
-        dev_id = getattr(self, "_device_id", None) or session.get("DeviceId") or ""
-        base_dev_id = dev_id[:16] if len(dev_id) >= 16 else dev_id
-        if base_dev_id and self.coordinator.data:
-            for s in self.coordinator.data:
-                sid = s.get("Id")
-                if sid != session.get("Id"):
-                    s_dev_id = s.get("DeviceId") or ""
-                    if (
-                        s_dev_id == base_dev_id
-                        or s_dev_id.startswith(base_dev_id)
-                        or base_dev_id.startswith(s_dev_id)
-                    ):
-                        if s.get("SupportsRemoteControl") is True:
-                            return True
-        # If session explicitly declares no remote control and no controllable companion session exists
-        if session.get("SupportsRemoteControl") is False:
-            return False
+        # For client players (Wholphin, Android TV, Smart TVs, Web, Mobile),
+        # Jellyfin accepts /Playing and session commands even when SupportsRemoteControl is False when idle.
         return True
 
     @property
     def supported_features(self) -> MediaPlayerEntityFeature:
         """Flag media player features that are supported."""
-        session = self._get_active_session()
-        # If session explicitly has no remote control capabilities, disable playback/seek controls
-        if session and not self._is_session_remote_controllable(session):
-            return MediaPlayerEntityFeature(0)
-
         return (
             MediaPlayerEntityFeature.PAUSE
             | MediaPlayerEntityFeature.PLAY
@@ -270,6 +249,7 @@ class JellyHABasePlaybackMediaPlayer(
             | MediaPlayerEntityFeature.VOLUME_MUTE
             | MediaPlayerEntityFeature.SHUFFLE_SET
             | MediaPlayerEntityFeature.REPEAT_SET
+            | MediaPlayerEntityFeature.PLAY_MEDIA
         )
 
     def __init__(
@@ -577,9 +557,12 @@ class JellyHABasePlaybackMediaPlayer(
             artists = item.get("Artists", [])
             attrs["artist_name"] = album_artist or (artists[0] if artists else None)
             attrs["album_name"] = item.get("Album")
-            attrs["year"] = item.get("ProductionYear")
-        elif item_type == "Movie":
-            attrs["year"] = item.get("ProductionYear")
+
+        # Universal year resolution (with PremiereDate fallback)
+        prod_year = item.get("ProductionYear")
+        if not prod_year and item.get("PremiereDate") and len(item.get("PremiereDate", "")) >= 4 and item["PremiereDate"][:4].isdigit():
+            prod_year = int(item["PremiereDate"][:4])
+        attrs["year"] = prod_year
 
         # Playback state
         position_ticks = play_state.get("PositionTicks", 0)
@@ -601,7 +584,13 @@ class JellyHABasePlaybackMediaPlayer(
             or play_state.get("ShuffleMode") == "Shuffle"
             else "Sorted"
         )
-        attrs["is_favorite"] = item.get("UserData", {}).get("IsFavorite", False)
+        is_fav = item.get("UserData", {}).get("IsFavorite", False)
+        if not is_fav and item_type == "Episode":
+            series_id = item.get("SeriesId")
+            lib_coord = getattr(getattr(self._entry, "runtime_data", None), "library", None)
+            if series_id and lib_coord and series_id in getattr(lib_coord, "_favorite_series_ids", set()):
+                is_fav = True
+        attrs["is_favorite"] = is_fav
 
         # Poster & Backdrop URLs
         attrs["image_url"] = session.get("jellyha_poster_url")
@@ -691,6 +680,62 @@ class JellyHABasePlaybackMediaPlayer(
         _LOGGER.debug("%s: sending general command %s to session(s): %s", self.name, command, target_ids)
         for sid in target_ids:
             await self.coordinator.api.session_general_command(sid, command, arguments)
+
+    async def async_play_media(
+        self,
+        media_type: str,
+        media_id: str,
+        **kwargs: Any,
+    ) -> None:
+        """Play media on target session(s) using Home Assistant native play_media."""
+        _LOGGER.info(
+            "async_play_media requested on %s: media_type=%s, media_id=%s",
+            self.name,
+            media_type,
+            media_id,
+        )
+        if not media_id:
+            _LOGGER.warning("Cannot play on %s: No media_id provided", self.name)
+            return
+
+        target_ids = self._get_target_session_ids()
+        if not target_ids:
+            _LOGGER.warning(
+                "Cannot play on %s: No active Jellyfin session found. Please make sure the app is open on the device.",
+                self.name,
+            )
+            return
+
+        # Resolve item_id if a URL or parameter string was passed
+        item_id = media_id
+        if "item_id=" in item_id:
+            item_id = item_id.split("item_id=")[-1].split("&")[0]
+        elif "/" in item_id:
+            item_id = item_id.rstrip("/").split("/")[-1].split("?")[0]
+
+        api = getattr(self.coordinator, "api", None) or getattr(self.coordinator, "_api", None)
+        if not api:
+            _LOGGER.error("Cannot play on %s: API client unavailable on coordinator", self.name)
+            return
+
+        # Auto-resolve series/season to Next Up episode
+        user_id = getattr(self, "_user_id", None) or self._entry.data.get("user_id")
+        if user_id:
+            try:
+                item = await api.get_item(user_id, item_id)
+                if item and item.get("Type") in ("Series", "Season"):
+                    series_id = item_id if item.get("Type") == "Series" else item.get("SeriesId")
+                    if series_id:
+                        next_ep = await api.get_next_up_episode(user_id, series_id)
+                        if next_ep:
+                            item_id = next_ep.get("Id", item_id)
+            except Exception as e:
+                _LOGGER.debug("Could not resolve series next-up for %s: %s", item_id, e)
+
+        _LOGGER.info("Sending session_play(%s) to session(s): %s", item_id, target_ids)
+        for sid in target_ids:
+            success = await api.session_play(sid, item_id)
+            _LOGGER.info("session_play to %s result: %s", sid, success)
 
     async def async_media_play(self) -> None:
         """Send play (unpause) command to session."""

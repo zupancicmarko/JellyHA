@@ -53,6 +53,10 @@ class MediaStrategy:
             "dv_profile": None,
             "color_transfer": None,
             "color_primaries": None,
+            "width": None,
+            "height": None,
+            "aspect_ratio": None,
+            "resolution": None,
         }
 
         if not item:
@@ -78,6 +82,27 @@ class MediaStrategy:
         dv_profile = video_stream.get("DvProfile")
         codec = video_stream.get("Codec")
         bit_depth = video_stream.get("BitDepth")
+        width = video_stream.get("Width")
+        height = video_stream.get("Height")
+        aspect_ratio = video_stream.get("AspectRatio")
+
+        resolution = None
+        if width or height:
+            try:
+                w = int(width or 0)
+                h = int(height or 0)
+                if w >= 3800 or h >= 2000:
+                    resolution = "4K"
+                elif w >= 1900 or h >= 1000:
+                    resolution = "1080p"
+                elif w >= 1200 or h >= 700:
+                    resolution = "720p"
+                elif h >= 480 or w >= 640:
+                    resolution = "480p"
+                else:
+                    resolution = "SD"
+            except (ValueError, TypeError):
+                pass
 
         dynamic_range = "SDR"
         range_type_str = str(raw_range_type or "").upper()
@@ -106,10 +131,16 @@ class MediaStrategy:
             "dv_profile": dv_profile,
             "color_transfer": color_transfer,
             "color_primaries": color_primaries,
+            "width": width,
+            "height": height,
+            "aspect_ratio": aspect_ratio,
+            "resolution": resolution,
         }
 
     @staticmethod
-    def discover_chromecast_model(hass: Any, entity_id: str) -> tuple[str, bool]:
+    def discover_chromecast_model(
+        hass: Any, entity_id: str, zc: Any = None
+    ) -> tuple[str, bool]:
         """Discover Chromecast model and determining legacy status via pychromecast.
         
         This method must be run in an executor (it blocks).
@@ -125,10 +156,12 @@ class MediaStrategy:
                 friendly_name = entity_state.attributes.get("friendly_name")
                 if friendly_name:
                     import pychromecast
-                    # DIRECT BLOCKING CALL (Since we are already in an executor)
+                    kwargs: dict[str, Any] = {"discovery_timeout": 5.0}
+                    if zc is not None:
+                        kwargs["zeroconf_instance"] = zc
                     chromecasts, browser = pychromecast.get_listed_chromecasts(
                         [friendly_name],
-                        discovery_timeout=5.0
+                        **kwargs,
                     )
                     
                     if chromecasts:
@@ -190,7 +223,7 @@ class MediaStrategy:
                     
                 _LOGGER.info("Strategy Selected: DIRECT PLAY (Audio - %s)", content_type)
                 return {
-                    "media_url": f"{server_url}/Audio/{item_id}/stream?static=true&api_key={api_key}",
+                    "media_url": f"{server_url}/Audio/{item_id}/stream?static=true&api_key={api_key}&ApiKey={api_key}",
                     "content_type": content_type
                 }
             else:
@@ -198,7 +231,7 @@ class MediaStrategy:
                 _LOGGER.info("Strategy Selected: TRANSCODE (Legacy Audio HLS)")
                 media_url = (
                     f"{server_url}/Audio/{item_id}/master.m3u8"
-                    f"?api_key={api_key}"
+                    f"?api_key={api_key}&ApiKey={api_key}"
                     f"&DeviceId=JellyHA_Cast"
                     f"&MediaSourceId={item_id}"
                     f"&AudioCodec=mp3"
@@ -250,7 +283,7 @@ class MediaStrategy:
             media_url = (
                 f"{server_url}/Videos/{item_id}/stream"
                 f"?Static=true"
-                f"&api_key={api_key}"
+                f"&api_key={api_key}&ApiKey={api_key}"
                 f"&VideoCodec=h264"
                 f"&AudioCodec=aac"
             )
@@ -262,7 +295,7 @@ class MediaStrategy:
             
             media_url = (
                 f"{server_url}/Videos/{item_id}/master.m3u8"
-                f"?api_key={api_key}"
+                f"?api_key={api_key}&ApiKey={api_key}"
                 f"&MediaSourceId={item_id}"
                 f"&Width=1280"
                 f"&Height=720"
@@ -291,7 +324,7 @@ class MediaStrategy:
             
             media_url = (
                 f"{server_url}/Videos/{item_id}/master.m3u8"
-                f"?api_key={api_key}"
+                f"?api_key={api_key}&ApiKey={api_key}"
                 f"&MediaSourceId={item_id}"
                 f"&Width=1920"
                 f"&Height=1080"

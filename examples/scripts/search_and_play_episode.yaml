@@ -1,0 +1,115 @@
+# ==============================================================================
+# JellyHA Script Example: Search and Play Specific Series & Episode Name
+# ==============================================================================
+# Description:
+#   A reusable Home Assistant script that searches your Jellyfin library for a
+#   TV series by title, finds a specific episode inside that series by title
+#   (or season and episode numbers), and immediately starts playback on your
+#   chosen media player.
+#
+# Usage:
+#   Call this script directly from voice assistants, dashboard buttons, or NFC tags:
+#     action: script.jellyha_search_and_play_episode
+#     data:
+#       series: "Breaking Bad"
+#       episode_title: "Ozymandias"
+#       target_player: media_player.living_room_tv
+# ==============================================================================
+
+alias: "JellyHA: Search and Play Episode by Name"
+description: "Finds a TV show series and plays a specific episode by episode name"
+mode: restart
+icon: mdi:television-play
+
+fields:
+  series:
+    description: "Title of the TV series"
+    example: "Breaking Bad"
+    required: true
+    selector:
+      text:
+  episode_title:
+    description: "Title of the episode to find and play"
+    example: "Ozymandias"
+    required: true
+    selector:
+      text:
+  target_player:
+    description: "Target media player to play the episode on"
+    example: "media_player.living_room_tv"
+    default: "media_player.living_room_tv"
+    selector:
+      entity:
+        domain: media_player
+
+sequence:
+  # ----------------------------------------------------------------------------
+  # Step 1: Search for the TV Series by title to retrieve its Jellyfin ID
+  # ----------------------------------------------------------------------------
+  - action: jellyha.search
+    data:
+      query: "{{ series }}"
+      media_type: Series
+      limit: 1
+    response_variable: series_result
+
+  # ----------------------------------------------------------------------------
+  # Step 2: Validate the series was found
+  # ----------------------------------------------------------------------------
+  - if:
+      - condition: template
+        value_template: "{{ series_result['items'] | count > 0 }}"
+    then:
+      - variables:
+          series_id: "{{ series_result['items'][0]['id'] }}"
+          found_series_name: "{{ series_result['items'][0]['name'] }}"
+
+      # ------------------------------------------------------------------------
+      # Step 3: Search for the Episode title INSIDE that specific series
+      # ------------------------------------------------------------------------
+      - action: jellyha.search
+        data:
+          query: "{{ episode_title }}"
+          media_type: Episode
+          parent_id: "{{ series_id }}"
+          limit: 1
+        response_variable: episode_result
+
+      # ------------------------------------------------------------------------
+      # Step 4: Play the episode if found
+      # ------------------------------------------------------------------------
+      - if:
+          - condition: template
+            value_template: "{{ episode_result['items'] | count > 0 }}"
+        then:
+          - variables:
+              ep: "{{ episode_result['items'][0] }}"
+              player: "{{ target_player | default('media_player.living_room_tv') }}"
+
+          # Informational log in Home Assistant Logbook
+          - action: logbook.log
+            data:
+              name: "JellyHA Episode Player"
+              message: "Playing {{ ep['series_name'] }} - S{{ ep['season'] }}E{{ ep['episode'] }}: {{ ep['name'] }} on {{ player }}"
+              domain: media_player
+              entity_id: "{{ player }}"
+
+          # Play using standard Home Assistant media_player.play_media
+          - action: media_player.play_media
+            target:
+              entity_id: "{{ player }}"
+            data:
+              media_content_type: video
+              media_content_id: "{{ ep['id'] }}"
+
+        else:
+          - action: notify.persistent_notification
+            data:
+              title: "JellyHA Episode Search"
+              message: "Episode '{{ episode_title }}' was not found in '{{ found_series_name }}'."
+
+    else:
+      - action: notify.persistent_notification
+        data:
+          title: "JellyHA Series Search"
+          message: "TV Series '{{ series }}' was not found in your Jellyfin library."

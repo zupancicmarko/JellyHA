@@ -203,11 +203,22 @@ async def websocket_get_user_next_up(
         items = []
         if raw_next_up:
             items = await asyncio.gather(*(coordinator._async_transform_item(item) for item in raw_next_up))
+            fav_series_ids = set()
+            if coordinator.data and "items" in coordinator.data:
+                fav_series_ids = {
+                    s["id"] for s in coordinator.data["items"] if s.get("type") == "Series" and s.get("is_favorite")
+                }
+            if not fav_series_ids:
+                fav_series_ids = await coordinator._api.get_favorite_series_ids(user_id)
             for i, raw in zip(items, raw_next_up):
                 i["season"] = raw.get("ParentIndexNumber")
                 i["episode"] = raw.get("IndexNumber")
                 i["season_name"] = raw.get("SeasonName")
                 i["series_name"] = raw.get("SeriesName")
+                series_id = raw.get("SeriesId")
+                i["series_id"] = series_id
+                if series_id and series_id in fav_series_ids:
+                    i["is_favorite"] = True
 
         connection.send_result(msg["id"], {"items": items})
     except Exception as err:

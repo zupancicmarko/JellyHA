@@ -40,5 +40,8 @@ export function formatRuntime(minutes: number): string {
  */
 export function addImageParams(url: string, width: number): string {
     if (!url) return url;
-    return `${url}&width=${width}`;
+    if (url.includes('width=')) return url;
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}`;
 }
+

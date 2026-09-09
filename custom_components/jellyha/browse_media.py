@@ -306,19 +306,20 @@ async def _build_show_seasons(coordinator, entry_id: str, show_id: str) -> Brows
     user_id = coordinator.entry.data.get("user_id")
 
     try:
-        show_info = await api._request("GET", f"/Users/{user_id}/Items/{show_id}")
+        show_info = await api._request("GET", f"/Items/{show_id}", params={"UserId": user_id})
         show_name = show_info.get("Name", "Unknown Show")
     except Exception:
         show_name = "Unknown Show"
 
     params = {
+        "UserId": user_id,
         "SortBy": "SortName",
         "SortOrder": "Ascending",
         "ParentId": show_id,
         "IncludeItemTypes": "Season",
         "Fields": "PrimaryImageAspectRatio",
     }
-    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    result = await api._request("GET", "/Items", params=params)
     raw_seasons = result.get("Items", [])
 
     children = []
@@ -355,7 +356,7 @@ async def _build_season_episodes(coordinator, entry_id: str, season_id: str) -> 
     user_id = coordinator.entry.data.get("user_id")
 
     try:
-        season_info = await api._request("GET", f"/Users/{user_id}/Items/{season_id}")
+        season_info = await api._request("GET", f"/Items/{season_id}", params={"UserId": user_id})
         season_name = season_info.get("Name", "Unknown Season")
         show_name = season_info.get("SeriesName", "Unknown Show")
     except Exception:
@@ -363,13 +364,14 @@ async def _build_season_episodes(coordinator, entry_id: str, season_id: str) -> 
         show_name = ""
 
     params = {
+        "UserId": user_id,
         "SortBy": "IndexNumber",
         "SortOrder": "Ascending",
         "ParentId": season_id,
         "IncludeItemTypes": "Episode",
         "Fields": "PrimaryImageAspectRatio",
     }
-    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    result = await api._request("GET", "/Items", params=params)
     raw_episodes = result.get("Items", [])
 
     children = []
@@ -529,13 +531,14 @@ async def _build_artist_albums(coordinator, entry_id: str, artist_id: str) -> Br
 
     # Get the artist name first
     try:
-        artist_info = await api._request("GET", f"/Users/{user_id}/Items/{artist_id}")
+        artist_info = await api._request("GET", f"/Items/{artist_id}", params={"UserId": user_id})
         artist_name = artist_info.get("Name", "Unknown Artist")
     except Exception:
         artist_name = "Unknown Artist"
 
     # Get albums by this artist using AlbumArtistIds filter
     params = {
+        "UserId": user_id,
         "SortBy": "ProductionYear,SortName",
         "SortOrder": "Descending",
         "Recursive": "true",
@@ -543,7 +546,7 @@ async def _build_artist_albums(coordinator, entry_id: str, artist_id: str) -> Br
         "AlbumArtistIds": artist_id,
         "Fields": "AlbumArtist,Artists",
     }
-    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    result = await api._request("GET", "/Items", params=params)
     raw_albums = result.get("Items", [])
 
     children = []
@@ -583,7 +586,7 @@ async def _build_album_tracks(coordinator, entry_id: str, album_id: str) -> Brow
 
     # Get album info
     try:
-        album_info = await api._request("GET", f"/Users/{user_id}/Items/{album_id}")
+        album_info = await api._request("GET", f"/Items/{album_id}", params={"UserId": user_id})
         album_name = album_info.get("Name", "Unknown Album")
         album_artist = album_info.get("AlbumArtist", "")
     except Exception:
@@ -592,6 +595,7 @@ async def _build_album_tracks(coordinator, entry_id: str, album_id: str) -> Brow
 
     # Get tracks in this album
     params = {
+        "UserId": user_id,
         "SortBy": "IndexNumber",
         "SortOrder": "Ascending",
         "Recursive": "true",
@@ -599,7 +603,7 @@ async def _build_album_tracks(coordinator, entry_id: str, album_id: str) -> Brow
         "ParentId": album_id,
         "Fields": "AlbumArtist,Artists,RunTimeTicks",
     }
-    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    result = await api._request("GET", "/Items", params=params)
     raw_tracks = result.get("Items", [])
 
     children = []
@@ -899,18 +903,19 @@ async def _build_playlist_items(coordinator, entry_id: str, playlist_id: str) ->
 
     # Get playlist info
     try:
-        playlist_info = await api._request("GET", f"/Users/{user_id}/Items/{playlist_id}")
+        playlist_info = await api._request("GET", f"/Items/{playlist_id}", params={"UserId": user_id})
         playlist_name = playlist_info.get("Name", "Unknown Playlist")
     except Exception:
         playlist_name = "Unknown Playlist"
 
     # Get items inside the playlist
     params = {
+        "UserId": user_id,
         "ParentId": playlist_id,
         "Recursive": "true",
         "Fields": "AlbumArtist,Artists,RunTimeTicks,Genres,ProductionYear",
     }
-    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    result = await api._request("GET", "/Items", params=params)
     raw_items = result.get("Items", [])
 
     children = []
@@ -995,20 +1000,21 @@ async def _build_collection_items(coordinator, entry_id: str, collection_id: str
 
     # Get collection info
     try:
-        collection_info = await api._request("GET", f"/Users/{user_id}/Items/{collection_id}")
+        collection_info = await api._request("GET", f"/Items/{collection_id}", params={"UserId": user_id})
         collection_name = collection_info.get("Name", "Unknown Collection")
     except Exception:
         collection_name = "Unknown Collection"
 
     # Get items inside the collection
     params = {
+        "UserId": user_id,
         "ParentId": collection_id,
         "Recursive": "true",
         "Fields": "Genres,RunTimeTicks,CommunityRating,ProductionYear",
         "SortBy": "SortName",
         "SortOrder": "Ascending",
     }
-    result = await api._request("GET", f"/Users/{user_id}/Items", params=params)
+    result = await api._request("GET", "/Items", params=params)
     raw_items = result.get("Items", [])
 
     children = []

@@ -1,0 +1,167 @@
+# ==============================================================================
+# JellyHA Script: Card Click Action -> Play on Android TV (Wholphin)
+# ==============================================================================
+# Description:
+#   Plays the clicked movie or TV episode on an Android TV running Wholphin
+#   (Jellyfin Android TV client) using Home Assistant's Android Debug Bridge (ADB).
+#
+# Prerequisites (Home Assistant Setup):
+# -------------------------------------
+# 1. Install the "Android Debug Bridge" (ADB) integration in Home Assistant:
+#      - Go to Settings -> Devices & Services -> Add Integration
+#      - Search for "Android Debug Bridge"
+#      - Enter your Android TV box's IP address (e.g. 10.10.10.135) and Port 5555
+#      - Click Submit
+#      - NOTE: On many Android TV boxes, you do NOT need to confirm anything on
+#        the TV screen — it connects immediately!
+# 2. You do NOT need the "Android TV Remote" integration installed.
+#    ADB dispatches the direct playback intent to Wholphin independently.
+#
+# Why ADB is Required for Wholphin:
+# ---------------------------------
+#   Wholphin (damontecres/wholphin) does not implement incoming Jellyfin WebSocket
+#   playback events (PlayNow / PlayMedia) while sitting idle in its menus.
+#   However, Wholphin's Android manifest supports a dedicated playback intent:
+#     Action: com.github.damontecres.wholphin.PLAYBACK
+#     Data:   wholphin://play?itemId={item_id}
+#   ADB triggers this exact intent instantly, launching Wholphin and starting
+#   playback without requiring any user interaction on the TV.
+#
+# How to Use with JellyHA Library Card (Lovelace YAML):
+# -----------------------------------------------------
+# type: custom:jellyha-library-card
+# entity: sensor.jellyha_library
+# click_action: call-service
+# click_service: script.card_action_play_on_wholpin
+#
+# Variables Injected Automatically by JellyHA Library Card:
+# ---------------------------------------------------------
+#   - item_id: Jellyfin Item GUID (e.g. "49ed9530ac681f148ca09b91ca7010c8")
+#   - title / name: Media title (e.g. "Inception")
+#   - media_type: "Movie", "Series", "Episode", etc.
+#   - year: Release year (e.g. 2010)
+#   - series_name: Show name if episode
+#   - season: Season number
+#   - episode: Episode number
+# ==============================================================================
+
+alias: "JellyHA: Play on Android TV (Wholphin)"
+description: "Plays the selected movie or episode on Android TV (Wholphin) via Android Debug Bridge (ADB)."
+mode: single
+icon: mdi:television-play
+
+fields:
+  item_id:
+    name: Item ID
+    description: Jellyfin media item ID (automatically provided when clicking a card poster)
+    required: false
+    example: "49ed9530ac681f148ca09b91ca7010c8"
+    selector:
+      text:
+  title:
+    name: Title
+    description: Media title
+    required: false
+    example: "Inception"
+    selector:
+      text:
+  media_type:
+    name: Media Type
+    description: Type of media (Movie, Episode, Series)
+    required: false
+    default: "Movie"
+    selector:
+      text:
+  year:
+    name: Year
+    description: Release year
+    required: false
+    selector:
+      number:
+        min: 1900
+        max: 2050
+
+sequence:
+  - choose:
+      # ------------------------------------------------------------------------
+      # Case A: Media item provided (from JellyHA Library Card click)
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ item_id is defined and item_id not in [none, '', 'None'] }}"
+        sequence:
+          # Log action in Home Assistant Logbook
+          - action: logbook.log
+            data:
+              name: "JellyHA"
+              message: >-
+                Playing {{ media_type | default('Media') }}: {{ title | default(item_id) }} {% if year %}({{ year }}){% endif %} on Android TV
+              domain: media_player
+              entity_id: media_player.android_tv_10_10_10_135
+
+          - choose:
+              # 1. Primary: Android Debug Bridge (ADB) playback intent (Direct Playback in Wholphin)
+              - conditions:
+                  - condition: template
+                    value_template: >-
+                      {{ states('media_player.android_tv_10_10_10_135') not in ['unavailable', 'unknown']
+                         or states('media_player.android_tv_adb') not in ['unavailable', 'unknown'] }}
+                sequence:
+                  - action: androidtv.adb_command
+                    target:
+                      entity_id: >-
+                        {{ 'media_player.android_tv_10_10_10_135' if states('media_player.android_tv_10_10_10_135') not in ['unavailable', 'unknown'] else 'media_player.android_tv_adb' }}
+                    data:
+                      command: >-
+                        am start -a com.github.damontecres.wholphin.PLAYBACK -d "wholphin://play?itemId={{ item_id }}" -n com.github.damontecres.wholphin/.MainActivity
+
+              # 2. Secondary: Android TV Remote deep link (if configured instead of ADB)
+              - conditions:
+                  - condition: template
+                    value_template: "{{ states('media_player.android_tv') not in ['unavailable', 'unknown'] }}"
+                sequence:
+                  - action: media_player.play_media
+                    target:
+                      entity_id: media_player.android_tv
+                    data:
+                      media_content_type: "url"
+                      media_content_id: "wholphin://play?itemId={{ item_id }}"
+
+              # 3. Fallback: Jellyfin remote playback session via JellyHA
+              - conditions: []
+                sequence:
+                  - action: media_player.play_media
+                    target:
+                      entity_id: media_player.jellyha_android_tv
+                    data:
+                      media_content_type: "{{ 'episode' if media_type == 'Episode' else 'movie' }}"
+                      media_content_id: "{{ item_id }}"
+
+      # ------------------------------------------------------------------------
+      # Case B: No item provided (user clicked "Run" directly in HA Scripts UI)
+      # Resume / unpause active playback
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ item_id is not defined or item_id in [none, '', 'None'] }}"
+        sequence:
+          - action: logbook.log
+            data:
+              name: "JellyHA"
+              message: "Resume / Unpause playback on Android TV"
+              domain: media_player
+              entity_id: media_player.android_tv_10_10_10_135
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ states('media_player.android_tv_10_10_10_135') not in ['unavailable', 'unknown'] }}"
+                sequence:
+                  - action: media_player.media_play_pause
+                    target:
+                      entity_id: media_player.android_tv_10_10_10_135
+              - conditions: []
+                sequence:
+                  - action: media_player.media_play
+                    target:
+                      entity_id: media_player.jellyha_android_tv

@@ -1,0 +1,89 @@
+# ==============================================================================
+# JellyHA Script Example: Play Random Unwatched Movie
+# ==============================================================================
+# Description:
+#   A reusable Home Assistant script that dynamically queries your Jellyfin library
+#   using the `jellyha.search` service, finds unwatched movies matching your criteria
+#   (year and minimum rating), picks a random match, and casts it directly to a
+#   Chromecast or media player.
+#
+# Usage:
+#   Call this script directly from dashboard buttons, voice commands (Assist/Alexa),
+#   or other automations:
+#     action: script.jellyha_play_random_movie
+#     data:
+#       min_rating: 7.5
+#       year: 2025
+#       target_player: media_player.office_tv
+# ==============================================================================
+
+alias: "JellyHA: Play Random Top Movie"
+description: "Plays a random unwatched movie matching your criteria (e.g. minimum rating or release year)"
+mode: restart
+icon: mdi:movie-roll
+
+fields:
+  min_rating:
+    description: "Minimum community rating (0.0 to 10.0)"
+    example: 7.0
+    default: 7.0
+    selector:
+      number:
+        min: 0
+        max: 10
+        step: 0.5
+  year:
+    description: "Release year to filter by (optional)"
+    example: 2025
+    selector:
+      number:
+        min: 1900
+        max: 2099
+  target_player:
+    description: "Target media player to cast the movie to"
+    example: "media_player.office_tv"
+    default: "media_player.office_tv"
+    selector:
+      entity:
+        domain: media_player
+
+sequence:
+  # 1. Search for unwatched candidates matching criteria
+  - action: jellyha.search
+    data:
+      media_type: Movie
+      is_played: false
+      year: "{{ year | default(none) }}"
+      min_rating: "{{ min_rating | default(7.0) }}"
+      limit: 50
+    response_variable: search_result
+
+  # 2. Check if any movies matched the search
+  - if:
+      - condition: template
+        value_template: "{{ search_result['items'] | count > 0 }}"
+    then:
+      # 3. Pick a random item from the candidates
+      - variables:
+          selected_movie: "{{ search_result['items'] | random }}"
+          chosen_player: "{{ target_player | default('media_player.office_tv') }}"
+
+      # 4. Informational log in Home Assistant Logbook
+      - action: logbook.log
+        data:
+          name: "JellyHA Random Movie"
+          message: "Selected random movie: {{ selected_movie['name'] }} ({{ selected_movie['year'] }}) - Rating: {{ selected_movie['rating'] }}/10"
+          domain: media_player
+          entity_id: "{{ chosen_player }}"
+
+      # 5. Play on target Chromecast / media player
+      - action: jellyha.play_on_chromecast
+        data:
+          entity_id: "{{ chosen_player }}"
+          item_id: "{{ selected_movie['id'] }}"
+    else:
+      # 6. Notify if nothing was found
+      - action: notify.persistent_notification
+        data:
+          title: "JellyHA Movie Picker"
+          message: "No unwatched movies found matching the requested criteria (Year: {{ year | default('Any') }}, Rating >= {{ min_rating | default(7.0) }})."

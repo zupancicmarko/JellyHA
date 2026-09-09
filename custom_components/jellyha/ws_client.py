@@ -88,7 +88,7 @@ class JellyfinWebSocketClient:
         while not self._stop_event.is_set():
             try:
                 _LOGGER.debug("Connecting to Jellyfin WebSocket: %s", url)
-                async with self._session.ws_connect(url, headers=headers) as ws:
+                async with self._session.ws_connect(url, headers=headers, heartbeat=15) as ws:
                     self._ws = ws
                     self._connected = True
                     _LOGGER.info("Connected to Jellyfin WebSocket")
@@ -114,7 +114,10 @@ class JellyfinWebSocketClient:
                             break
             except Exception as ex:  # pylint: disable=broad-except
                  if not self._stop_event.is_set():
-                    _LOGGER.error("WebSocket connection failed, retrying in %ds: %s", retry_delay, ex)
+                     if "503" in str(ex):
+                         _LOGGER.debug("Jellyfin server is loading (503), retrying WebSocket in %ds: %s", retry_delay, ex)
+                     else:
+                         _LOGGER.warning("WebSocket connection failed, retrying in %ds: %s", retry_delay, ex)
             finally:
                 if self._connected:
                     # Successful connection happened, reset backoff
@@ -153,7 +156,9 @@ class JellyfinWebSocketClient:
             elif msg_type == "KeepAlive":
                  _LOGGER.debug("Received KeepAlive")
             elif msg_type == "ForceKeepAlive":
-                 pass
+                 _LOGGER.debug("Received ForceKeepAlive from Jellyfin, replying with KeepAlive")
+                 if self._ws and not self._ws.closed:
+                     await self._ws.send_str('{"MessageType": "KeepAlive"}')
             else:
                  _LOGGER.debug("Received unknown message type: %s", msg_type)
         except Exception as ex:  # pylint: disable=broad-except

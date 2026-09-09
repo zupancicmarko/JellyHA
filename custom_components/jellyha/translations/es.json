@@ -181,6 +181,30 @@
             },
             "refresh_duration": {
                 "name": "Duración de la actualización"
+            },
+            "movies": {
+                "name": "Películas"
+            },
+            "series": {
+                "name": "Series"
+            },
+            "episodes": {
+                "name": "Episodios"
+            },
+            "latest_movie": {
+                "name": "Última película"
+            },
+            "latest_episode": {
+                "name": "Último episodio"
+            },
+            "transcoding_streams": {
+                "name": "Flujos de transcodificación"
+            },
+            "storage_free": {
+                "name": "Almacenamiento multimedia libre"
+            },
+            "storage_free_percent": {
+                "name": "Porcentaje de almacenamiento libre"
             }
         },
         "media_player": {

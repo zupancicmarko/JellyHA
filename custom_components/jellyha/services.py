@@ -24,6 +24,7 @@ SERVICE_PLAY_ON_CHROMECAST = "play_on_chromecast"
 SERVICE_REFRESH_LIBRARY = "refresh_library"
 SERVICE_DELETE_ITEM = "delete_item"
 SERVICE_SESSION_CONTROL = "session_control"
+SERVICE_SESSION_PLAY = "session_play"
 SERVICE_SESSION_SEEK = "session_seek"
 SERVICE_SESSION_GENERAL_COMMAND = "session_general_command"
 SERVICE_UPDATE_FAVORITE = "update_favorite"
@@ -68,6 +69,7 @@ PLAY_ON_CHROMECAST_SCHEMA = vol.Schema(
     {
         vol.Required("entity_id"): cv.entity_id,
         vol.Required("item_id"): cv.string,
+        vol.Optional("use_series_image", default=True): cv.boolean,
         vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
@@ -95,7 +97,8 @@ SESSION_CONTROL_SCHEMA = vol.Schema(
 SESSION_SEEK_SCHEMA = vol.Schema(
     {
         vol.Required("session_id"): cv.string,
-        vol.Required("position_ticks"): cv.positive_int,
+        vol.Optional("position_ticks"): cv.positive_int,
+        vol.Optional("position_seconds"): vol.Coerce(float),
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
@@ -108,6 +111,23 @@ SESSION_GENERAL_COMMAND_SCHEMA = vol.Schema(
         vol.Required("command"): cv.string,
         vol.Optional("arguments"): dict,
         vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("server_entity_id"): cv.entity_id,
+        vol.Optional("config_entry_id"): cv.string,
+    }
+)
+
+SESSION_PLAY_SCHEMA = vol.Schema(
+    {
+        vol.Required("item_id"): cv.string,
+        vol.Optional("device_name"): cv.string,
+        vol.Optional("device_id"): cv.string,
+        vol.Optional("client"): cv.string,
+        vol.Optional("session_id"): cv.string,
+        vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("play_command", default="PlayNow"): vol.In(
+            ["PlayNow", "PlayNext", "PlayLast"]
+        ),
+        vol.Optional("start_position_ticks"): cv.positive_int,
         vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
     }
@@ -211,7 +231,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
             return
 
         api = coordinator._api
-        user_id = coordinator.config_entry.data.get("user_id")
+        user_id = coordinator.entry.data.get("user_id")
 
         # Fetch item
         item = await api.get_item(user_id, item_id)
@@ -260,8 +280,15 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
         # Strategy logic
         from .media_strategy import MediaStrategy
+        zc = None
+        try:
+            from homeassistant.components import zeroconf
+            zc = await zeroconf.async_get_instance(hass)
+        except Exception:
+            pass
+
         model_name, _ = await hass.async_add_executor_job(
-            MediaStrategy.discover_chromecast_model, hass, target_entity_id
+            MediaStrategy.discover_chromecast_model, hass, target_entity_id, zc
         )
 
         media_info = MediaStrategy.analyze_media(item)
@@ -270,9 +297,28 @@ async def async_register_services(hass: HomeAssistant) -> None:
         )
 
         # Cast
-        metadata = {"title": item.get("Name", "Jellyfin Media"), "images": [{"url": api.get_image_url(item_id, "Primary")}]}
-        if item.get("Type") == "Episode":
-            metadata.update({"metadataType": 1, "seriesTitle": item.get("SeriesName"), "season": item.get("ParentIndexNumber"), "episode": item.get("IndexNumber")})
+        use_series_img = call.data.get("use_series_image", True)
+        is_episode = item.get("Type") == "Episode"
+        series_id = item.get("SeriesId")
+
+        # Choose primary image: series poster for episodes if enabled, otherwise item image
+        if is_episode and series_id and use_series_img:
+            primary_img_url = api.get_image_url(series_id, "Primary")
+        else:
+            primary_img_url = api.get_image_url(item_id, "Primary")
+
+        metadata = {"title": item.get("Name", "Jellyfin Media"), "images": [{"url": primary_img_url}]}
+        if is_episode:
+            metadata.update({
+                "metadataType": 1,
+                "seriesTitle": item.get("SeriesName"),
+                "season": item.get("ParentIndexNumber"),
+                "episode": item.get("IndexNumber"),
+            })
+            # Also include episode still as secondary image in metadata
+            episode_img_url = api.get_image_url(item_id, "Primary")
+            if episode_img_url != primary_img_url:
+                metadata["images"].append({"url": episode_img_url})
 
         await hass.services.async_call(
             MEDIA_PLAYER_DOMAIN, SERVICE_PLAY_MEDIA,
@@ -280,7 +326,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 "entity_id": target_entity_id,
                 ATTR_MEDIA_CONTENT_ID: playback_info["media_url"],
                 ATTR_MEDIA_CONTENT_TYPE: playback_info["content_type"],
-                "extra": {"title": metadata["title"], "thumb": metadata["images"][0]["url"], "autoplay": True, "metadata": metadata},
+                "extra": {"title": metadata["title"], "thumb": primary_img_url, "autoplay": True, "metadata": metadata},
             },
             blocking=True,
         )
@@ -390,7 +436,12 @@ async def async_register_services(hass: HomeAssistant) -> None:
         try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
-            await coordinator._api.session_seek(call.data["session_id"], call.data["position_ticks"])
+            position_ticks = call.data.get("position_ticks")
+            if position_ticks is None and "position_seconds" in call.data:
+                position_ticks = int(call.data["position_seconds"] * 10_000_000)
+            if position_ticks is None:
+                raise ValueError("Either 'position_ticks' or 'position_seconds' must be provided.")
+            await coordinator._api.session_seek(call.data["session_id"], position_ticks)
         except Exception as e:
             _LOGGER.error("Session seek failed: %s", e)
 
@@ -402,6 +453,88 @@ async def async_register_services(hass: HomeAssistant) -> None:
             await coordinator._api.session_general_command(call.data["session_id"], call.data["command"], call.data.get("arguments"))
         except Exception as e:
             _LOGGER.error("Session general command failed: %s", e)
+
+    async def async_session_play(call: ServiceCall) -> None:
+        """Instruct a Jellyfin session/device to play an item."""
+        try:
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
+            api = coordinator._api
+            session_coordinator = coordinator.entry.runtime_data.session
+            sessions = session_coordinator.data or []
+
+            dev_id = call.data.get("device_id")
+            dev_name = call.data.get("device_name")
+            client = call.data.get("client")
+            target_session_id = call.data.get("session_id")
+
+            # Check if entity_id provided maps to a device player entity
+            if not target_session_id and entity_id and entity_id.startswith("media_player."):
+                ent_state = hass.states.get(entity_id)
+                if ent_state:
+                    ent_attrs = ent_state.attributes
+                    dev_id = dev_id or ent_attrs.get("device_id")
+                    dev_name = dev_name or ent_attrs.get("device_name")
+                    target_session_id = target_session_id or ent_attrs.get("session_id")
+
+            if not target_session_id:
+                for s in sessions:
+                    if dev_id and (s.get("DeviceId") == dev_id or (s.get("DeviceId") or "").startswith(dev_id)):
+                        target_session_id = s.get("Id")
+                        break
+                    if dev_name and s.get("DeviceName", "").strip().lower() == dev_name.strip().lower():
+                        target_session_id = s.get("Id")
+                        break
+                    if client and s.get("Client", "").strip().lower() == client.strip().lower():
+                        target_session_id = s.get("Id")
+                        break
+
+            if not target_session_id:
+                # Live fallback directly from Jellyfin API in case WS hasn't refreshed
+                live_sessions = await api._request("GET", "/Sessions")
+                for s in live_sessions:
+                    if dev_id and (s.get("DeviceId") == dev_id or (s.get("DeviceId") or "").startswith(dev_id)):
+                        target_session_id = s.get("Id")
+                        break
+                    if dev_name and s.get("DeviceName", "").strip().lower() == dev_name.strip().lower():
+                        target_session_id = s.get("Id")
+                        break
+                    if client and s.get("Client", "").strip().lower() == client.strip().lower():
+                        target_session_id = s.get("Id")
+                        break
+
+            if not target_session_id:
+                _LOGGER.warning(
+                    "No active session found for device_name=%s, device_id=%s, client=%s",
+                    dev_name,
+                    dev_id,
+                    client,
+                )
+                return
+
+            item_id = call.data["item_id"]
+            # Auto-resolve series to Next Up episode
+            user_id = coordinator.entry.data.get("user_id")
+            if user_id:
+                try:
+                    item = await api.get_item(user_id, item_id)
+                    if item and item.get("Type") in ("Series", "Season"):
+                        series_id = item_id if item.get("Type") == "Series" else item.get("SeriesId")
+                        if series_id:
+                            next_ep = await api.get_next_up_episode(user_id, series_id)
+                            if next_ep:
+                                item_id = next_ep.get("Id", item_id)
+                except Exception as e:
+                    _LOGGER.debug("Could not resolve series next-up for %s: %s", item_id, e)
+
+            await api.session_play(
+                target_session_id,
+                item_id,
+                play_command=call.data.get("play_command", "PlayNow"),
+                start_position_ticks=call.data.get("start_position_ticks"),
+            )
+        except Exception as e:
+            _LOGGER.error("Session play failed: %s", e)
 
     async def async_get_recommendations(call: ServiceCall) -> ServiceResponse:
         """Get recommendations for an item."""
@@ -436,6 +569,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
         (SERVICE_PLAY_ON_CHROMECAST, async_play_on_device, PLAY_ON_CHROMECAST_SCHEMA),
         (SERVICE_DELETE_ITEM, async_delete_item, DELETE_ITEM_SCHEMA),
         (SERVICE_SESSION_CONTROL, async_session_control, SESSION_CONTROL_SCHEMA),
+        (SERVICE_SESSION_PLAY, async_session_play, SESSION_PLAY_SCHEMA),
         (SERVICE_SESSION_SEEK, async_session_seek, SESSION_SEEK_SCHEMA),
         (SERVICE_SESSION_GENERAL_COMMAND, async_session_general_command, SESSION_GENERAL_COMMAND_SCHEMA),
         (SERVICE_UPDATE_FAVORITE, async_update_favorite, UPDATE_FAVORITE_SCHEMA),

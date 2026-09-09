@@ -1,0 +1,97 @@
+# ==============================================================================
+# JellyHA Automation Example: TV Picture Mode & Bias Lighting by Dynamic Range
+# ==============================================================================
+# Description:
+#   Automatically detects when HDR or Dolby Vision media starts playing on a JellyHA
+#   media player (`media_player.jellyha_<user>` or `media_player.jellyha_<device>`)
+#   and adjusts your Smart TV picture mode (e.g., via Android TV ADB, LG webOS,
+#   or Samsung TV) and ambient bias lighting.
+#
+# Attributes Exposed on JellyHA Media Players:
+#   - `dynamic_range`: Clean classification ('Dolby Vision', 'HDR10', 'HDR10+', 'HLG', 'SDR')
+#   - `video_range`: 'HDR' or 'SDR'
+#   - `video_range_type`: Raw Jellyfin type (e.g. 'DOVIWithHDR10', 'HDR10Plus', 'HDR10', 'SDR')
+#   - `dv_profile`: Dolby Vision profile number (e.g. 7, 8, 5)
+#   - `video_codec`: Active codec (e.g. 'hevc', 'av1', 'h264')
+#   - `video_bit_depth`: 10 or 8
+#
+# Requirements:
+#   - JellyHA v1.3.0+
+#   - Smart TV integration (e.g. Android TV, LG webOS) or bias light (e.g. light.tv_backlight)
+# ==============================================================================
+
+alias: "JellyHA: Dynamic Range Picture Mode & Bias Lighting"
+description: "Optimizes TV picture mode and bias lighting based on HDR / Dolby Vision detection"
+mode: restart
+
+trigger:
+  # Trigger when media starts playing or dynamic_range attribute changes
+  - trigger: state
+    entity_id: media_player.jellyha_living_room_tv # Replace with your user or device player
+    attribute: dynamic_range
+
+actions:
+  - choose:
+      # ------------------------------------------------------------------------
+      # 1. Dolby Vision Detected
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ state_attr(trigger.entity_id, 'dynamic_range') == 'Dolby Vision' }}"
+        sequence:
+          - action: logbook.log
+            data:
+              name: "JellyHA Picture Mode"
+              message: "Dolby Vision detected for {{ state_attr(trigger.entity_id, 'media_title') }} (Profile {{ state_attr(trigger.entity_id, 'dv_profile') }}). Setting Cinema Home mode."
+              domain: media_player
+              entity_id: "{{ trigger.entity_id }}"
+
+          # Example A: Adjust bias lighting for Dolby Vision
+          - action: light.turn_on
+            target:
+              entity_id: light.tv_backlight
+            data:
+              brightness_pct: 15
+              color_temp_kelvin: 6500 # D65 neutral white reference
+              
+          # Example B: Adjust Android TV picture mode via ADB or TV integration
+          # - action: androidtv.adb_command
+          #   target:
+          #     entity_id: media_player.living_room_shield
+          #   data:
+          #     command: "input keyevent ..."
+
+      # ------------------------------------------------------------------------
+      # 2. HDR10 / HDR10+ / HLG Detected
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ state_attr(trigger.entity_id, 'video_range') == 'HDR' }}"
+        sequence:
+          - action: logbook.log
+            data:
+              name: "JellyHA Picture Mode"
+              message: "HDR10 detected for {{ state_attr(trigger.entity_id, 'media_title') }}. Setting Filmmaker mode."
+              domain: media_player
+              entity_id: "{{ trigger.entity_id }}"
+
+          - action: light.turn_on
+            target:
+              entity_id: light.tv_backlight
+            data:
+              brightness_pct: 20
+              color_temp_kelvin: 6500
+
+      # ------------------------------------------------------------------------
+      # 3. Standard Dynamic Range (SDR)
+      # ------------------------------------------------------------------------
+      - conditions:
+          - condition: template
+            value_template: "{{ state_attr(trigger.entity_id, 'dynamic_range') == 'SDR' }}"
+        sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.tv_backlight
+            data:
+              brightness_pct: 30
+              color_temp_kelvin: 5500

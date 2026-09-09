@@ -181,6 +181,30 @@
             },
             "refresh_duration": {
                 "name": "Длительность обновления"
+            },
+            "movies": {
+                "name": "Фильмы"
+            },
+            "series": {
+                "name": "Сериалы"
+            },
+            "episodes": {
+                "name": "Эпизоды"
+            },
+            "latest_movie": {
+                "name": "Последний фильм"
+            },
+            "latest_episode": {
+                "name": "Последний эпизод"
+            },
+            "transcoding_streams": {
+                "name": "Потоки транскодирования"
+            },
+            "storage_free": {
+                "name": "Свободно на медиа-хранилище"
+            },
+            "storage_free_percent": {
+                "name": "Процент свободного медиа-хранилища"
             }
         },
         "media_player": {
