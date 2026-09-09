@@ -1,6 +1,9 @@
 {
   "domain": "jellyha",
   "name": "JellyHA",
+  "after_dependencies": [
+    "zeroconf"
+  ],
   "codeowners": [
     "@zupancicmarko"
   ],
@@ -8,9 +11,6 @@
   "dependencies": [
     "media_source",
     "http"
-  ],
-  "after_dependencies": [
-    "zeroconf"
   ],
   "documentation": "https://github.com/zupancicmarko/jellyha",
   "integration_type": "service",
