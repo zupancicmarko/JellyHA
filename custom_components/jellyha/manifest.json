@@ -9,6 +9,9 @@
     "media_source",
     "http"
   ],
+  "after_dependencies": [
+    "zeroconf"
+  ],
   "documentation": "https://github.com/zupancicmarko/jellyha",
   "integration_type": "service",
   "iot_class": "local_push",
