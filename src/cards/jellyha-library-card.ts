@@ -1520,6 +1520,12 @@ export class JellyHALibraryCard extends LitElement {
       is_played: item.is_played ?? false,
       is_favorite: item.is_favorite ?? false,
       runtime_minutes: item.runtime_minutes || null,
+      dynamic_range: item.dynamic_range || null,
+      video_range: item.video_range || null,
+      video_range_type: item.video_range_type || null,
+      video_codec: item.video_codec || null,
+      dv_profile: item.dv_profile || null,
+      config_entry_id: item.config_entry_id || item.entry_id || null,
       action_type: type,
     };
 

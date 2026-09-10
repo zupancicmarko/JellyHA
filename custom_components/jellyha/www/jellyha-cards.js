@@ -6015,6 +6015,12 @@ let b = class extends T {
       is_played: e.is_played ?? !1,
       is_favorite: e.is_favorite ?? !1,
       runtime_minutes: e.runtime_minutes || null,
+      dynamic_range: e.dynamic_range || null,
+      video_range: e.video_range || null,
+      video_range_type: e.video_range_type || null,
+      video_codec: e.video_codec || null,
+      dv_profile: e.dv_profile || null,
+      config_entry_id: e.config_entry_id || e.entry_id || null,
       action_type: t
     };
     if (B(this, "jellyha_item_clicked", o), !a) {

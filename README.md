@@ -40,17 +40,28 @@ Jellyfin for Home Assistant
 - ⏱️ Configurable API Refresh Interval (via Integration Options)
 - 🚀 **Multi-Instance Support**: Run multiple servers concurrently
 
+## Documentation
+
+For detailed references, configuration options, entity catalogs, and services, explore our dedicated documentation:
+
+| Guide | Description |
+|---|---|
+| **[Dashboard Cards Configuration](docs/cards.md)** | Full YAML options, layout guides, and custom script execution variables for Library and Now Playing cards |
+| **[Entities & Sensors Reference](docs/entities.md)** | Complete catalog of media players, library statistics, disk storage meters, and real-time updates architecture |
+| **[Services Reference](docs/services.md)** | Playback, casting, search, library manipulation actions, and multi-instance targeting |
+| **[Examples & Cookbook](examples/README.md)** | Ready-to-use automations, external player scripts (Android TV ADB, Apple TV, Kodi), and Lovelace layouts |
+| **[AI Assistant Context (`llms.txt`)](llms.txt)** | Compact, authoritative reference file designed for prompt context in ChatGPT, Claude, and Cursor |
+| **[Troubleshooting & FAQ](docs/troubleshooting.md)** | Solutions for custom element errors, browser caching, and diagnostic logging |
+
 ## Installation
 
-JellyHA requires **two installation steps**: installing the integration and adding the dashboard card resource.
+JellyHA requires two setup steps: installing the integration and registering the dashboard card frontend resource.
 
 ### Step 1: Install the Integration
 
 #### Via HACS (Recommended)
 
-Before installing JellyHA, ensure you have **HACS (Home Assistant Community Store)** installed.
-
-Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/) to install HACS on your Home Assistant instance.
+Before installing JellyHA, ensure you have **HACS (Home Assistant Community Store)** installed. Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/) if needed.
 
 **Option A: Using the Quick Link**
 
@@ -58,78 +69,61 @@ Please follow the [official HACS installation guide](https://www.hacs.xyz/docs/u
 
 **Option B: Manual Search**
 
-1. Open HACS in Home Assistant
-2. In the search bar, type **JellyHA**
-
-**Then:**
-
-3. Click the **JellyHA** integration and click **Download**
-4. **Restart Home Assistant**
+1. Open **HACS** in Home Assistant.
+2. In the search bar, type **JellyHA**.
+3. Select the **JellyHA** integration and click **Download**.
+4. **Restart Home Assistant**.
 
 #### Manual Installation
 
-1. Copy `custom_components/jellyha` to your `config/custom_components/` directory
-2. **Restart Home Assistant**
+1. Copy `custom_components/jellyha` to your `config/custom_components/` directory.
+2. **Restart Home Assistant**.
 
 ### Step 2: Add Dashboard Card Resource
 
-> **⚠️ Important:** This step is **required** even if you installed via HACS. The dashboard card will not work without it.
+> **Important:** This step is required for the dashboard cards to display.
 
-1. Go to **Settings** → **Dashboards**
-2. Click **⋮** (three-dot menu) → **Resources**
-3. Click **+ Add Resource**
+1. Go to **Settings** -> **Dashboards**.
+2. Click the three-dot menu (**⋮**) in the top right -> **Resources**.
+3. Click **+ Add Resource**.
 4. Enter the URL:
    - URL: `/jellyha/jellyha-cards.js`
-5. Select Resource type: **JavaScript Module**
-6. Click **Create**
+5. Select Resource type: **JavaScript Module**.
+6. Click **Create**.
 
-> **Note:** If you don't see the Resources menu, enable **Advanced Mode** in your user profile settings.
+> Note: If you do not see the Resources menu, enable **Advanced Mode** in your Home Assistant user profile settings.
 
 ## Setup
 
-### Use the link to start the integration setup
+### Connect via Quick Link
 
 [![My Home Assistant][my-ha-badge]][my-ha-url]
 
-Then continue to step 3. and 4. below.
+### Manual Setup
 
-### Manually start the integration setup
+1. Go to **Settings** -> **Devices & Services** -> **Add Integration**.
+2. Search for **JellyHA**.
+3. Enter your Jellyfin server URL and select authentication method (**Username/Password** or **API Key**).
+   - Optional: Enter an **External URL** if accessing via a reverse proxy or WAN address.
+4. Enter your credentials or API key.
+5. Select the user and libraries to monitor.
+6. **Instance Label (Optional)**: Add a custom label (e.g., `4K Server`, `Kids`) when connecting multiple Jellyfin instances.
+7. Click **Submit**.
 
-1. Go to **Settings** → **Devices & Services** → **Add Integration**
-2. Search for "JellyHA"
-3. Enter your Jellyfin server URL and select authentication method (**Username/Password** or **API Key**)
-   - Optional: Enter an **External URL** if you access JellyHA via an external proxy/network that differs from the internal IP used for connection. This URL will be used for "Open in Jellyfin" buttons in the UI.
-4. Enter your Jellyfin API key or credentials
-5. Select the user and libraries to monitor
-6. **Instance Label (Optional)**: Add a custom label (e.g., `Movies`, `Music`) if running multiple instances. This will be prefixed with `JellyHA`.
-7. Click **Submit**
-8. Add Device to the Area (optional)
+### Integration Options
 
-> **Note:** You can update these credentials later by re-configuring the integration.
+To adjust settings after initial configuration:
 
+1. Go to **Settings** -> **Devices & Services** -> **JellyHA** -> **Configure**.
+2. Adjust the **Library Refresh Interval** (from pure WebSocket push to periodic polling).
+3. Select **Client/Device Media Players** to create dedicated media players for physical hardware (e.g. Smart TVs, Android TV boxes).
+4. Set an **External URL** or trigger an immediate cache refresh.
 
-### Updating Settings (Refresh Interval, External URL, etc.)
+### Getting a Jellyfin API Key
 
-You can customize how JellyHA behaves directly from the integrations page:
-
-1. Go to **Settings** → **Devices & Services**
-2. Find **JellyHA** and click **Configure**
-3. Adjust the **Library Refresh Interval** (ranges from `Off` for pure WebSocket push to `24 hours`)
-4. Select **Client/Device Media Players** to create dedicated media player entities (`media_player.jellyha_<device_name>`) for physical devices (e.g. Living Room TV, Bedroom Android Box), tracking playback per device regardless of which user is watching
-5. Set an **External URL** if necessary
-6. Toggle **Refresh fetched data immediately** if you want to force an update right away.
-7. Click **Submit**
-
-
-### Jellyfin API Key
-
-To get your Jellyfin API key:
-
-1. Open Jellyfin Dashboard
-2. Go to **Advanced** → **API Keys**
-3. Click **+ New API Key** to create a new key
-4. Copy the generated key
-
+1. Open the Jellyfin Web Dashboard.
+2. Go to **Administration** -> **Dashboard** -> **Advanced** -> **API Keys**.
+3. Click **+** to generate a new key, and paste it into Home Assistant.
 
 ### Supported Library Types
 
@@ -138,12 +132,13 @@ To get your Jellyfin API key:
 | Movies | ✅ | ✅ | ✅ |
 | TV Shows | ✅ | ✅ | ✅ |
 
+## Dashboard Cards at a Glance
 
-## Library Card Configuration
+JellyHA includes two custom Lovelace cards with full visual UI editors (Add Card -> search for "JellyHA").
 
-The **JellyHA Library** provides a beautiful way to browse and play your media collection directly in/from Home Assistant.
+### Library Card (`custom:jellyha-library-card`)
 
-> **ℹ️ Info:** Use **Add to dashboard** and search for JellyHA Card. YAML below is just informational.
+Browse movies, series, episodes, and Next Up items with Carousel, Grid, or List layouts.
 
 ```yaml
 type: custom:jellyha-library-card
@@ -155,359 +150,51 @@ items_per_page: 3
 max_pages: 5
 ```
 
-### Options
+Supports custom click, hold, and double-tap actions (Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically).
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `entity` | string | **Required** | The sensor entity ID (e.g. `sensor.jellyha_library`) |
-| `title` | string | `Jellyfin Library` | Card title |
-| `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
-| `media_type` | string | `both` | Filter: `movies`, `series`, `next_up`, or `both` |
-| `tv_content` | string | `series` | Content type when TV shows are active: `series` (Shows / Series) or `episodes` (Individual Episodes) |
-| `columns` | number | `4` | Number of columns for grid & list layout. Changes to number of rows with Grid layout and Auto-Swipe On. |
-| `items_per_page` | number | `3` | Items visible per page. **Note for Height Cut Off:** Use YAML editor to set > 8 rows. |
-| `max_pages` | number | `5` | Maximum number of pages to display (0 = infinite) |
-| `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (0 = disabled) |
-| `new_badge_days` | number | `3` | Items added within X days show "New" badge |
-| `click_action` | string | `more-info` | Action on click: `more-info`, `cast`, `jellyfin`, `trailer`, `call-service` (Run Script), or `none` |
-| `click_service` | string | `''` | Target Home Assistant script to run on single tap (e.g. `script.play_on_apple_tv`) |
-| `hold_action` | string | `jellyfin` | Action on hold: `jellyfin`, `cast`, `more-info`, `trailer`, `call-service` (Run Script), or `none` |
-| `hold_service` | string | `''` | Target Home Assistant script to run on long press |
-| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `cast`, `more-info`, `trailer`, `call-service` (Run Script), or `none` |
-| `double_tap_service` | string | `''` | Target Home Assistant script to run on double tap |
-| `default_cast_device` | string | `''` | Default media_player entity for casting |
-| `show_now_playing` | boolean | `true` | Show currently playing item banner if active |
-| `show_title` | boolean | `true` | Show media title |
-| `show_year` | boolean | `true` | Show release year |
-| `show_ratings` | boolean | `true` | Show combined rating |
-| `show_runtime` | boolean | `true` | Show runtime duration |
-| `show_date_added` | boolean | `false` | Show the date item was added in List view |
-| `show_genres` | boolean | `true` | Show genres list |
-| `show_description_on_hover` | boolean | `true` | Show overview when hovering/tapping |
-| `show_media_type_badge` | boolean | `true` | Show Movie/Series badge |
-| `show_watched_status` | boolean | `true` | Show watched checkmarks (Movies) and unplayed counts (Series) |
-| `show_search` | boolean | `false` | Show Search Bar for filtering by Title and Genre |
-| `metadata_position` | string | `below` | Position of text: `below` or `above` image |
-| `sort_option` | string | `date_added_desc` | Sort order options |
-| `enable_pagination` | boolean | `true` | Enable pagination dots |
-| `show_pagination_dots` | boolean | `true` | Enable pagination dots visibility |
-| `status_filter` | string | `all` | Filter Watch Status: `all`, `unwatched`, `watched` |
-| `filter_favorites` | boolean | `false` | Filter Favorites (Show only favorite items) |
-| `filter_newly_added` | boolean | `false` | Filter New Items (Show only new items) |
-| `use_series_image` | boolean | `false` | (Next Up or Episodes) Show parent series cover instead of episode thumbnail |
+👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 
-### Custom Script Calling (`Run Script`)
-When `click_action`, `hold_action`, or `double_tap_action` is set to `call-service` ("Run Script"):
-- The card editor displays a native Home Assistant script dropdown selector (`domain: 'script'`) with autocomplete search and friendly names.
-- When clicked, the card calls your script and automatically passes the tapped item's metadata as execution variables:
+### Now Playing Card (`custom:jellyha-now-playing-card`)
 
-| Variable | Description | Example |
-|---|---|---|
-| `{{ item_id }}` | Jellyfin GUID | `"d8f34a8e..."` |
-| `{{ title }}` / `{{ name }}` | Item title or episode name | `"John Wick: Chapter 2"` / `"Episode 1"` |
-| `{{ media_type }}` | Item type | `"Movie"`, `"Series"`, `"Episode"`, `"Audio"` |
-| `{{ series_name }}` | Parent TV show name (episodes only) | `"Cape Fear"` |
-| `{{ series_id }}` | Parent TV show GUID | `"a7b2c1..."` |
-| `{{ season }}` | Season number | `1` |
-| `{{ episode }}` | Episode number | `3` |
-| `{{ year }}` | Release year | `2017` |
-| `{{ genres }}` | Genres array | `["Action", "Thriller"]` |
-| `{{ rating }}` | Community rating | `7.5` |
-| `{{ poster_url }}` | Authenticated poster image URL | `"http://.../Primary?..."` |
-| `{{ series_poster_url }}` | Parent series poster image URL (episodes) | `"http://.../Primary?..."` |
-| `{{ backdrop_url }}` | Fanart / backdrop image URL | `"http://.../Backdrop?..."` |
-| `{{ date_created }}` / `{{ date_added }}` | ISO date added to Jellyfin | `"2026-09-08T11:20:00Z"` |
-| `{{ last_played_date }}` | Last playback timestamp (or null) | `"2026-09-08T14:30:00Z"` |
-| `{{ artist }}` / `{{ artist_name }}` | Track / album artist (music only) | `"Hans Zimmer"` |
-| `{{ album }}` | Album title (music only) | `"Interstellar OST"` |
-| `{{ album_artist }}` | Primary album artist | `"Hans Zimmer"` |
-| `{{ overview }}` / `{{ description }}` | Plot synopsis or overview | `"An ex-hitman comes out of retirement..."` |
-| `{{ official_rating }}` | Age certification | `"R"`, `"PG-13"`, `"TV-MA"` |
-| `{{ dynamic_range }}` | Dynamic range classification | `"SDR"`, `"HDR10"`, `"Dolby Vision"` |
-| `{{ is_played }}` | Watched status boolean | `true`, `false` |
-| `{{ is_favorite }}` | Favorite status boolean | `true`, `false` |
-| `{{ runtime_minutes }}` | Duration in minutes | `122` |
-| `{{ jellyfin_url }}` | Direct link to item in Jellyfin | `"https://jf.domain/..."` |
-| `{{ config_entry_id }}` | Target JellyHA instance GUID | `"01KM6..."` |
-| `{{ action_type }}` | Interaction trigger | `"click"`, `"hold"`, `"double_tap"` |
-
-See the scripts in **[examples/scripts/](examples/scripts/)** (including **[Wholphin for Android TV](examples/scripts/card_action_play_on_wholpin.yaml)**, **[Apple TV Infuse](examples/scripts/card_action_play_on_apple_tv.yaml)**, and **[Kodi](examples/scripts/card_action_play_on_kodi.yaml)**) for complete external player integration recipes.
-
-> **⚠️ Performance Note:** Using **Auto Swipe** with a large number of items may impact performance on some devices. We recommend limiting the number of items for the best experience.
-
-## Now Playing Card Configuration
-
-The **JellyHA Now Playing Card** shows a rich media control interface for the currently playing item.
-
-> **ℹ️ Info:** Use **Add to dashboard** and search for JellyHA Card. YAML below is just informational.
+Display active playback status, progress bars, and transport controls with dynamic blurred backdrops.
 
 ```yaml
 type: custom:jellyha-now-playing-card
-entity: media_player.jellyha_admin # Supports media_player.jellyha_<user>, media_player.jellyha_<device>, or sensor.jellyha_now_playing_<user>
+entity: media_player.jellyha_admin # Supports per-user or per-device media players
 title: Now Playing
 show_background: true
 ```
 
-### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `entity` | string | **Required** | The target media player (e.g. `media_player.jellyha_admin` or `media_player.jellyha_living_room_tv`) or legacy Now Playing sensor |
-| `title` | string | `Jellyfin` | Optional title header |
-| `show_background` | boolean | `true` | Show blurred backdrop fanart as background |
-| `show_title` | boolean | `true` | Show media title text |
-| `show_subtitle` | boolean | `true` | Show artist/series subtitle |
-| `show_client` | boolean | `true` | Show client device name (e.g. "Chrome") |
-| `show_user` | boolean | `true` | Show user name in client info |
-| `show_time` | boolean | `false` | Show elapsed / remaining time |
-| `show_media_type_badge` | boolean | `true` | Show badge (MOVIE, SERIES, EPISODE) |
-| `show_genres` | boolean | `true` | Show genres list |
-| `show_ratings` | boolean | `true` | Show community rating |
-| `show_runtime` | boolean | `true` | Show runtime duration |
-| `show_year` | boolean | `true` | Show release year |
-| `use_series_image` | boolean | `false` | Show series cover instead of episode thumbnail |
-
-
-## Sensors
-
-JellyHA provides several sensors to monitor your Jellyfin server, libraries, latest media additions, and storage capacity. All sensors are prefixed with `sensor.jellyha_` (unless a custom device name was used during setup).
-
-### Library Sensors
-
-| Entity ID | Description | State | Attributes |
-|-----------|-------------|-------|------------|
-| `sensor.jellyha_library` | Primary library sensor | Count of items | `server_name`, `movies`, `series`, `videos`, `episodes`, `entry_id` |
-| `sensor.jellyha_movies` | Total movies in library | Count of movies | `watched`, `unwatched`, `favorites`, `entry_id` |
-| `sensor.jellyha_series` | Total TV series in library | Count of series | `watched`, `unwatched`, `favorites`, `total_episodes`, `unwatched_episodes`, `entry_id` |
-| `sensor.jellyha_episodes` | Total episodes count across all shows | Count of episodes | `watched`, `unwatched`, `entry_id` |
-| `sensor.jellyha_favorites` | Favorite items | Count | `entry_id` |
-| `sensor.jellyha_unwatched` | Total unwatched content | Count | `movies`, `series`, `episodes`, `entry_id` |
-| `sensor.jellyha_unwatched_movies` | Unwatched movies | Count | `entry_id` |
-| `sensor.jellyha_unwatched_series` | Unwatched TV series | Count | `entry_id` |
-| `sensor.jellyha_unwatched_episodes` | Unwatched individual episodes | Count | `entry_id` |
-| `sensor.jellyha_watched` | Total watched content | Count | `movies`, `series`, `episodes`, `entry_id` |
-| `sensor.jellyha_watched_movies` | Fully watched movies | Count | `entry_id` |
-| `sensor.jellyha_watched_series` | Fully watched TV series | Count | `entry_id` |
-| `sensor.jellyha_watched_episodes` | Total watched episodes count across all shows | Count | `entry_id` |
-
-### Latest Content Sensors
-
-| Entity ID | Description | State | Key Attributes |
-|-----------|-------------|-------|----------------|
-| `sensor.jellyha_latest_movie` | Most recently added movie | Movie title (e.g. `Moana`) | `item_id`, `title`, `year`, `overview`, `genres`, `rating`, `runtime_minutes`, `date_added`, `poster_url`, `backdrop_url`, `dynamic_range` (SDR/HDR10/Dolby Vision), `resolution`, `video_codec`, `container` |
-| `sensor.jellyha_latest_episode` | Most recently added TV episode | Formatted episode name (e.g. `Severance - S02E01 - Hello`) | `item_id`, `title`, `series_name`, `series_id`, `season`, `episode`, `year`, `overview`, `genres`, `rating`, `runtime_minutes`, `date_added`, `poster_url`, `series_poster_url`, `backdrop_url`, `dynamic_range`, `resolution`, `video_codec`, `container` |
-
-### Server & Storage Sensors
-
-| Entity ID | Description | State | Attributes |
-|-----------|-------------|-------|------------|
-| `sensor.jellyha_websocket_status` | WebSocket connection status | `connected`/`disconnected` | - |
-| `sensor.jellyha_jellyfin_version` | Jellyfin server version | e.g. `12.0.0` | - |
-| `sensor.jellyha_active_sessions` | Number of active playback sessions | Count | `sessions` (list of active session info) |
-| `sensor.jellyha_transcoding_streams` | Active transcoding video/audio streams | Count | `transcode_sessions` (detailed codec, transcode reason, container, framerate) |
-| `sensor.jellyha_media_storage_free` | Free disk space on primary media drive | GB (e.g. `13853.9`) | `free_bytes`, `used_bytes`, `total_bytes`, `free_tb`, `used_tb`, `total_tb`, `used_percent`, `free_percent`, `devices` |
-| `sensor.jellyha_media_storage_free_percentage` | Free disk space percentage on media drive | Percentage (e.g. `62` %) | `free_bytes`, `used_bytes`, `total_bytes`, `free_gb`, `used_gb`, `total_gb`, `free_tb`, `used_tb`, `total_tb`, `used_percent`, `free_percent`, `devices` |
-| `sensor.jellyha_last_refresh` | Last time data was fetched | Timestamp | - |
-| `sensor.jellyha_last_library_update` | Last time library data changed | Timestamp | - |
-| `sensor.jellyha_refresh_duration` | Duration of the last library refresh | `0.9s`, `1m 30s` | `duration_seconds` (float) |
-
-### User Sensors
-
-| Entity ID Prefix | Description | State | Key Attributes |
-|-----------|-------------|-------|----------------|
-| `sensor.jellyha_now_playing_[user]` | Real-time monitoring for specific user *(⚠️ Deprecated in v1.3.0, use `media_player.jellyha_[user]`)* | `playing`, `paused`, `idle` | `title`, `series_title`, `season`, `episode`, `progress_percent`, `image_url`, `media_type`, `client`, `device_name`, `entry_id` |
-
-
-## Media Players
-
-JellyHA provides three types of `media_player` entities:
-
-### 1. Per-User Media Players
-
-| Entity ID Pattern | Description | Supported Features |
-|-----------|-------------|--------------------|
-| `media_player.jellyha_[username]` | Tracks and controls each user's active playback session | **Transport:** Play, Pause, Stop, Seek, Next Track, Previous Track<br>**Volume:** Set Volume, Mute/Unmute<br>**Controls:** Shuffle, Repeat<br>**Metadata:** Title, Series/Season/Episode, Image, Backdrop, Duration, Position, Chapters, Segments |
-
-### 2. Client/Device Media Players (Resolves #12)
-
-| Entity ID Pattern | Description | Supported Features |
-|-----------|-------------|--------------------|
-| `media_player.jellyha_[device_name]` | Tracks playback on a specific physical device (e.g. Smart TV, streaming box) regardless of which user is logged in | Same full feature parity as per-user players + exposes current `user_name`, `user_id`, and client device context |
-
-Enable physical client devices in **Settings → Devices & Services → JellyHA → Configure** under **Client/Device Media Players**.
-
-> [!TIP]
-> **Enabling Remote Control (Pause, Stop, Seek) on Mobile Clients:**
-> * **Smart TVs** (e.g., LG webOS, Samsung), **Android TV streaming boxes** (e.g., Wholphin, Moonfin, Shield TV), and **Web Browsers** (Chrome, Firefox, Edge) support remote control (`SupportsRemoteControl: true`) out of the box.
-> * The official **Jellyfin for Android** mobile app defaults to the **"Integrated player" (native ExoPlayer)**, which only reports progress back to the server and does not listen for incoming remote control commands (`SupportsRemoteControl: false`).
-> * **To enable remote control on your Android phone/tablet:**
->   1. Open the **Jellyfin** app on your phone.
->   2. Tap your user icon / gear icon in the top right to open **Settings**.
->   3. Under **App**, select **Client Settings**.
->   4. Tap **Video player type** and change it from **Integrated player** to **Web player**.
->
-> In Web player mode, playback runs inside the web engine with a full two-way WebSocket connection, allowing Home Assistant and the Now Playing card to pause, play, stop, rewind, and seek seamlessly.
-
-**State Mapping:**
-- `idle` — No active playback session
-- `playing` — Media is currently playing
-- `paused` — Media is paused
-
-**Key Attributes:**
-- `media_title` — Current media title
-- `media_series_title` — TV series name (episodes only)
-- `media_season` — Season number (episodes only)
-- `media_episode` — Episode number (episodes only)
-- `media_content_type` — `tvshow`, `movie`, `music`, or `video`
-- `media_image_url` — Poster image URL
-- `media_duration` — Total duration in seconds
-- `media_position` — Current position in seconds
-- `session_id` — Active Jellyfin session ID
-- `device_name` — Client device name
-- `client` — Client application name
-- `user_name` — Active viewer user name (for device players)
-- `media_chapter_name` / `media_chapter_index` — Current chapter info
-- `media_segment_type` / `segment_end_seconds` — Active intro/outro/recap scene detection
-- `dynamic_range` — Dynamic range (`SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, `HLG`) for TV picture mode automations
-- `video_range_type` — Raw Jellyfin classification (e.g. `DOVIWithHDR10`, `DOVIWithEL`, `HDR10Plus`, `HDR10`, `SDR`)
-- `dv_profile` — Dolby Vision profile number (e.g. `7`, `8`, `5`)
-- `video_codec` — Active video codec (e.g. `hevc`, `av1`, `h264`)
-- `video_bit_depth` — Video bit depth (`10`, `8`)
-- `supports_remote_control` — Boolean (`true` / `false`) indicating if the client accepts remote control commands
-- `entry_id` / `config_entry_id` — JellyHA integration instance GUID
-
-**Example Usage:**
-```yaml
-# Pause playback
-service: media_player.media_pause
-target:
-  entity_id: media_player.jellyha_admin
-
-# Seek to 5 minutes
-service: media_player.media_seek
-target:
-  entity_id: media_player.jellyha_admin
-data:
-  seek_position: 300
-
-# Set volume to 50%
-service: media_player.volume_set
-target:
-  entity_id: media_player.jellyha_admin
-data:
-  volume_level: 0.5
-```
-
-### 3. Library Browser Media Player
-
-| Entity ID | Description | Supported Features |
-|-----------|-------------|--------------------|
-| `media_player.jellyha_library_browser` | Browse and search your Jellyfin library | Browse Media, Play Media, Search Media |
-
-This entity integrates with Home Assistant's Media Browser and allows you to explore your Jellyfin libraries directly from the Media panel.
-
-
-## Services
-
-JellyHA provides several services to control and manage your library.
-
-All services support targeting via `config_entry_id`, `entity_id`, or `server_entity_id` for **multi-instance setups**. If omitted, the first available JellyHA instance is used automatically.
-
-| Service | Description | Parameters |
-|---------|-------------|------------|
-| `jellyha.play_on_chromecast` | Play an item on Chromecast. **TV Series Auto-Resolve:** Passing a Series ID automatically resolves and casts the next unplayed episode (or Ep 1). | `entity_id` (Req), `item_id` (Req), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.refresh_library` | Force refresh library data from Jellyfin. | `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.delete_item` | Delete an item from library/disk. ⚠️ **Use with caution.** | `item_id` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.mark_watched` | Mark an item as watched or unwatched. | `item_id` (Req), `is_played` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.update_favorite` | Add or remove an item from favorites. | `item_id` (Req), `is_favorite` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.session_control` | Control playback (`Pause`, `Unpause`, `TogglePause`, `Stop`, `NextTrack`, `PreviousTrack`, `Shuffle`, `SetRepeatMode`). | `session_id` (Req), `command` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.session_seek` | Seek to position. Accepts `position_ticks` (ticks) or `position_seconds` (seconds). Use `0` to rewind. | `session_id` (Req), `position_ticks` (Opt), `position_seconds` (Opt), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.search` | Search and filter media with rich sorting (`Random`, `DateCreated`, etc.), returning full metadata into `response_variable`. | `query` (Opt), `media_type` (Opt), `sort_by` (Opt), `sort_order` (Opt), `parent_id` (Opt), `is_played` (Opt), `is_favorite` (Opt), `genre` (Opt), `year` (Opt), `min_rating` (Opt), `official_rating` (Opt), `studio` (Opt), `person` (Opt), `season` (Opt), `episode` (Opt), `offset` (Opt), `limit` (Opt), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.get_recommendations` | Get similar items based on item ID into a response variable. | `item_id` (Req), `limit` (Opt), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-| `jellyha.get_item` | Get full details for an item into a response variable. | `item_id` (Req), `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
-
-
-## Automations & AI Reference
-
-### ⚡ Examples & Cookbook
-Looking for ready-to-use automations, scripts, and dashboard layouts? Check out our dedicated **[Examples & Recipe Library](examples/)**:
-- **[Auto-Skip Intro](examples/automations/skip_intro.yaml)**
-- **[Cinema Lighting by Segment](examples/automations/cinema_lighting_segments.yaml)**
-- **[Play TV Show / Cartridge (Next Up)](examples/automations/play_cartridge_show.yaml)**
-- **[Play Random Top Movie (Script)](examples/scripts/play_random_movie.yaml)**
-- **[Play on Android TV / Wholphin (Script)](examples/scripts/card_action_play_on_wholpin.yaml)**
-- **[Play on Apple TV / Infuse (Script)](examples/scripts/card_action_play_on_apple_tv.yaml)**
-- **[Play on Kodi (Script)](examples/scripts/card_action_play_on_kodi.yaml)**
-
-### 🤖 Writing Automations with AI (`llms.txt`)
-Building automations using ChatGPT, Claude, Gemini, or Cursor? Provide our official [`llms.txt`](llms.txt) context file to your AI assistant. It contains compact, complete entity definitions, service schemas, return structures, and common gotchas so AI generates 100% accurate, hallucination-free Home Assistant YAML on the first try.
-
-
-## Session & Now Playing Updates
-
-JellyHA uses a **WebSocket-first, API-fallback** strategy for real-time session monitoring. This powers the `active_sessions` sensor and per-user `now_playing` sensors.
-
-| Connection State | Update Method | Speed |
-|------------------|---------------|-------|
-| **WebSocket Connected** | Push updates from Jellyfin | Instant (~100ms) |
-| **WebSocket Disconnected** | API polling every 5 seconds | Near real-time |
-
-**How it works:**
-1. On startup, JellyHA connects to the Jellyfin WebSocket and subscribes to session events
-2. While connected, session updates are pushed instantly — no polling required
-3. If WebSocket disconnects (network issue, server restart), it automatically falls back to API polling
-4. When WebSocket reconnects, polling stops and push updates resume
-
-The `sensor.jellyha_websocket_status` sensor shows the current connection status (`connected`/`disconnected`).
-
+👉 **[See full Now Playing Card options in docs/cards.md](docs/cards.md)**
 
 ## Media Browser
- 
-JellyHA integrates directly with the Home Assistant Media Browser with **full multi-instance support**. You can explore your Jellyfin libraries from different servers, play media on supported players, and even stream directly to your browser, all without leaving Home Assistant.
- 
-1. Go to **Media** in the sidebar.
+
+JellyHA integrates with Home Assistant's Media Browser:
+
+1. Open **Media** in the Home Assistant sidebar.
 2. Select **JellyHA**.
 3. Choose your server (if multiple are connected).
-4. Browse your Movies, Series, and Music collections.
-
+4. Browse your collections and stream directly to your browser or Cast players.
 
 ## Examples & Cookbook
 
-Looking for ready-to-use automations, cinema lighting setups, or dashboard configurations? Check out our dedicated **[Examples & Cookbook Library](examples/)**!
+Explore ready-to-use recipes in our dedicated **[Examples & Cookbook Library](examples/)**:
 
-### ⚡ Popular Automations & Scripts
-- **[Skip Intro Automatically](examples/automations/skip_intro.yaml)** — Automatically detects TV show intros and jumps straight to the episode content.
-- **[Cinema Lighting Experience](examples/automations/cinema_lighting_segments.yaml)** — Dims lights to 10% on play, warms lights on pause, and raises lights when credits roll (Outro segment).
-- **[New Movie & Episode Notification](examples/automations/new_movie_notification.yaml)** — Sends a push notification with movie artwork, video quality, and rating when new media is added.
-- **[Play Random Top Movie (Script)](examples/scripts/play_random_movie.yaml)** — Dynamically queries your library for top-rated unwatched movies and casts one to Chromecast.
-- **[Search and Play Specific Episode (Script)](examples/scripts/search_and_play_episode.yaml)** — Searches for a TV show and episode by title, and starts playback immediately.
-- **[Pause on Doorbell](examples/automations/pause_on_doorbell.yaml)** — Automatically pauses active playback when your doorbell rings.
-
-### 🎛️ Dashboard Setups
-- **[System & Library Monitoring Stack](examples/dashboards/system_monitoring_card.yaml)** — Complete vertical stack with server version, WebSocket status, library breakdown (movies/series/episodes), latest media additions, transcoding & active sessions gauges, and modern storage percentage meter.
-- **[Library Card Variations](examples/dashboards/library_cards.yaml)** — Carousel, Grid with search bar, Next Up for binge watching, and Favorites views.
-- **[Now Playing Card Variations](examples/dashboards/now_playing_cards.yaml)** — Cinematic backdrop, compact mobile, and multi-instance configurations.
-
-👉 **[Explore all recipes and guides in the Examples Directory →](examples/)**
-
-
+- **[Skip Intro Automatically](examples/automations/skip_intro.yaml)**: Jumps past TV show intros using segment detection.
+- **[Cinema Lighting Experience](examples/automations/cinema_lighting_segments.yaml)**: Dims lights on playback and raises lights when credits roll.
+- **[New Media Push Notification](examples/automations/new_movie_notification.yaml)**: Sends mobile notifications with artwork and dynamic range badges when new media is added.
+- **[Play on Android TV / Wholphin (ADB)](examples/scripts/card_action_play_on_wholpin.yaml)**: Card click action to play directly on Wholphin via ADB without confirmation prompts.
+- **[Play on Apple TV (Infuse)](examples/scripts/card_action_play_on_apple_tv.yaml)**: Routes library card clicks to Apple TV.
+- **[Play on Kodi (JellyCon)](examples/scripts/card_action_play_on_kodi.yaml)**: Routes library card clicks to Kodi.
+- **[System & Library Monitoring Stack](examples/dashboards/system_monitoring_card.yaml)**: Lovelace dashboard with server health, storage percentage meters, and library breakdown.
 
 ## Troubleshooting
 
-### "Custom element doesn't exist: jellyha-library-card"
-This error means the dashboard cannot load the frontend code.
-1. **Verify Installation**: Ensure you have added the correct Dashboard Resource URL: `/jellyha/jellyha-cards.js`.
-2. **Clear Cache**: Restart Home Assistant and clear your browser cache (Ctrl + F5) or go into Incognito mode.
-3. **Redownload**: If installed via HACS, go to HACS → JellyHA → ⋮ → Redownload (select "main" version if specifically troubleshooting a new fix).
+- **Custom element does not exist:** Ensure `/jellyha/jellyha-cards.js` is added under **Dashboards** -> **Resources** as a JavaScript Module, and clear browser cache (`Ctrl + F5`).
+- **No media found:** Verify that `sensor.jellyha_library` has a state greater than 0 and check active card filters.
+- **Remote control not responding on Android:** Switch the Jellyfin Android app video player setting from *Integrated player* to *Web player*.
 
-### Card is empty ("No recent media found")
-If the card shows "No recent media found" but you know you have items:
-1. **Check Filters**: Ensure "Filter Favorites" or "Filter Unwatched" are not enabled in the card configuration if your items don't match those criteria.
-2. **Check Logs**: Open the browser console (F12) to see if there are any specific errors.
-3. **Verify Sensor**: Check `sensor.jellyha_library` in Developer Tools to ensure it has attributes (entry_id, etc.).
-
-### "Connection lost" on startup
-This usually indicates a duplicate command registration. Ensure you are running the latest version. We have implemented safeguards against this in v1.0.
+👉 **[Read the complete Troubleshooting Guide in docs/troubleshooting.md](docs/troubleshooting.md)**
 
 ## Support
 
@@ -524,7 +211,7 @@ MIT
 
 ## Disclaimer
 
-**Personal Use Only**
+**Personal Use Only**  
 This integration is provided as a neutral interface for your private media library. JellyHA does not provide, facilitate, or encourage the use of unauthorized or pirated content. By using this software, you agree that you are solely responsible for the legality of the media you host and stream.
 
 [hacs-badge]: https://img.shields.io/badge/HACS-Custom-orange.svg

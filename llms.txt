@@ -163,11 +163,32 @@ Seeks to a specific timestamp in a Jellyfin session.
   * `position_seconds` (Optional, float): Position in seconds (automatically converted to ticks).
   * `server_entity_id` / `config_entry_id` (Optional, string): Target instance.
 
-### 5. `jellyha.mark_watched` & `jellyha.update_favorite`
+### 5. `jellyha.session_play`
+Instructs an active Jellyfin client session or device player to play a media item (Movie, Episode, Song, etc.). Automatically resolves TV shows to the next unplayed episode.
+* **Fields**:
+  * `item_id` (Required, string): Jellyfin item GUID to play.
+  * `entity_id` (Optional, string): Target JellyHA media player entity (e.g. `media_player.jellyha_android_tv`).
+  * `device_name` (Optional, string): Client device name (e.g. `Android TV`).
+  * `device_id` (Optional, string): Client device GUID.
+  * `client` (Optional, string): Client app name (e.g. `Wholphin`, `Jellyfin Web`).
+  * `session_id` (Optional, string): Direct Jellyfin session ID.
+  * `play_command` (Optional, select): `PlayNow` (default), `PlayNext`, `PlayLast`.
+  * `start_position_ticks` (Optional, integer): Start position in ticks (1 sec = 10,000,000 ticks).
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target instance.
+
+### 6. `jellyha.session_general_command`
+Sends arbitrary general commands to a Jellyfin playback session (e.g. subtitle switching, audio track changes, messages).
+* **Fields**:
+  * `session_id` (Required, string): Active Jellyfin session ID.
+  * `command` (Required, string): General command name (e.g. `SetSubtitleStreamIndex`, `SetAudioStreamIndex`, `Mute`, `Unmute`, `SetVolume`, `DisplayMessage`).
+  * `arguments` (Optional, object/map): Key-value arguments dictionary.
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target instance.
+
+### 7. `jellyha.mark_watched` & `jellyha.update_favorite`
 * `jellyha.mark_watched`: `item_id` (Required, string), `is_played` (Required, boolean), `entity_id` / `server_entity_id` / `config_entry_id` (Optional, string).
 * `jellyha.update_favorite`: `item_id` (Required, string), `is_favorite` (Required, boolean), `entity_id` / `server_entity_id` / `config_entry_id` (Optional, string).
 
-### 6. `jellyha.delete_item`, `jellyha.get_item`, `jellyha.get_recommendations`
+### 8. `jellyha.delete_item`, `jellyha.get_item`, `jellyha.get_recommendations`
 * `jellyha.delete_item`: `item_id` (Required, string) — deletes item from library/disk.
 * `jellyha.get_item`: `item_id` (Required, string) — returns full item metadata into `response_variable`.
 * `jellyha.get_recommendations`: `item_id` (Required, string), `limit` (Optional, integer) — returns similar items into `response_variable`.
@@ -521,6 +542,9 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
     * `title` / `name`: Item title or episode title (e.g. `"John Wick: Chapter 2"`, `"Episode 1"`)
     * `media_type`: `"Movie"`, `"Series"`, `"Episode"`, `"Audio"`, `"MusicAlbum"`
     * `dynamic_range`: String (`"Dolby Vision"`, `"HDR10"`, `"HLG"`, `"SDR"`)
+    * `video_range_type`: String (`"DOVIWithHDR10"`, `"DOVIWithEL"`, `"HDR10Plus"`, `"HDR10"`, `"SDR"`)
+    * `video_codec`: String (e.g. `"hevc"`, `"av1"`, `"h264"`)
+    * `dv_profile`: Integer or null (Dolby Vision profile number, e.g. `7`, `8`, `5`)
     * `year`: Release year integer (e.g. `2017`)
     * `runtime_minutes`: Runtime duration in minutes (e.g. `122`)
     * `genres`: List of genre strings (e.g. `["Action", "Thriller"]`)
