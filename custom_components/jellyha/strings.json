@@ -204,6 +204,9 @@
             "transcoding_streams": {
                 "name": "Transcoding Streams"
             },
+            "connected_clients": {
+                "name": "Connected Clients"
+            },
             "storage_free": {
                 "name": "Media Storage Free"
             },

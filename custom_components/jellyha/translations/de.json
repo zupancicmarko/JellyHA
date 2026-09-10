@@ -200,6 +200,9 @@
             "transcoding_streams": {
                 "name": "Transkodierungs-Streams"
             },
+            "connected_clients": {
+                "name": "Verbundene Clients"
+            },
             "storage_free": {
                 "name": "Medienspeicher frei"
             },

@@ -185,6 +185,9 @@
             "transcoding_streams": {
                 "name": "Prekodirni tokovi"
             },
+            "connected_clients": {
+                "name": "Povezani odjemalci"
+            },
             "storage_free": {
                 "name": "Prost medijski prostor"
             },

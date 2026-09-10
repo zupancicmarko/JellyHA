@@ -53,6 +53,7 @@ async def async_setup_entry(
         JellyHAWebSocketStatusSensor(ws_client, coordinator, entry, device_name),
         JellyHAVersionSensor(coordinator, entry, device_name),
         JellyHAActiveSessionsSensor(session_coordinator, entry, device_name),
+        JellyHAConnectedClientsSensor(session_coordinator, entry, device_name),
         JellyHAWatchedCountSensor(coordinator, entry, device_name),
         JellyHAWatchedEpisodesSensor(coordinator, entry, device_name),
         JellyHAWatchedSeriesSensor(coordinator, entry, device_name),
@@ -723,6 +724,80 @@ class JellyHAActiveSessionsSensor(CoordinatorEntity[JellyHASessionCoordinator], 
     def device_info(self) -> DeviceInfo:
         """Return device info for this sensor."""
         return get_device_info(self._entry.entry_id, self._device_name)
+
+
+class JellyHAConnectedClientsSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEntity):
+    """Sensor for count of all connected Jellyfin clients (regardless of play state).
+
+    Unlike JellyHAActiveSessionsSensor which only counts sessions with active playback,
+    this sensor counts every client session currently registered with the Jellyfin server,
+    excluding the JellyHA integration's own internal session.
+
+    Primary data source: WebSocket push (SessionsStart / Sessions messages).
+    Fallback: API polling via JellyHASessionCoordinator (10s when WS connected, 5s when not).
+
+    Typical use case: Wake-on-LAN automation — wake the media library server as soon as
+    any Jellyfin client opens the app, before playback begins.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "connected_clients"
+    _attr_icon = "mdi:account-network"
+    _attr_state_class = "measurement"
+
+    # DeviceId used by the JellyHA integration itself — exclude from client count.
+    _OWN_DEVICE_ID = "jellyha"
+
+    def __init__(
+        self,
+        coordinator: JellyHASessionCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self._device_name = device_name
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_connected_clients"
+
+    def _external_sessions(self) -> list[dict[str, Any]]:
+        """Return sessions that belong to real clients, excluding JellyHA's own session."""
+        if not self.coordinator.data:
+            return []
+        return [
+            s for s in self.coordinator.data
+            if s.get("DeviceId") != self._OWN_DEVICE_ID
+        ]
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of connected Jellyfin clients."""
+        return len(self._external_sessions())
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return details about each connected client."""
+        clients = [
+            {
+                "user": s.get("UserName"),
+                "device": s.get("DeviceName"),
+                "client": s.get("Client"),
+                "last_activity_date": s.get("LastActivityDate"),
+                "is_playing": "NowPlayingItem" in s,
+            }
+            for s in self._external_sessions()
+        ]
+        return {
+            "clients": clients,
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
+        }
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info for this sensor."""
+        return get_device_info(self._entry.entry_id, self._device_name)
+
 
 
 class JellyHAUnwatchedEpisodesSensor(JellyHABaseSensor):

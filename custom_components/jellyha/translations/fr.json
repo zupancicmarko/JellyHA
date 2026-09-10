@@ -200,6 +200,9 @@
             "transcoding_streams": {
                 "name": "Flux de transcodage"
             },
+            "connected_clients": {
+                "name": "Clients connectés"
+            },
             "storage_free": {
                 "name": "Stockage multimédia libre"
             },

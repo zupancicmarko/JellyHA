@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Latest Media Sensors**: Added **Latest Movie** and **Latest Episode** sensors featuring rich attributes: runtime, overview, ratings, series and episode info, dynamic range (HDR/DV), resolution, and codecs.
 - **Automation & Dashboard Examples**: Added ready-to-use YAML examples in the new `examples/` directory for lighting, auto-skip, notifications, and dashboards.
 - **Jellyfin 12.0 Ready**: Full compatibility with Jellyfin 12.0+ WebSocket authentication and modern universal API endpoints (Fixes #23, PR #24 by @odtgit, and #29 with help from @dlip9663).
+- **Connected Clients Sensor (Resolves [#30](https://github.com/zupancicmarko/JellyHA/issues/30), thanks to @Grizzelbee)**: Added `sensor.jellyha_connected_clients` — counts all Jellyfin clients that are currently connected, regardless of play state. Unlike Active Sessions, this sensor updates the moment a client opens the app (via WebSocket push) making it ideal for Wake-on-LAN automations. Includes per-client attributes: `user`, `device`, `client`, `last_activity_date`, `is_playing`. See `examples/automations/wol_on_client_connect.yaml`.
 
 ### Deprecated
 - **Legacy Now Playing Sensors**: `sensor.jellyha_now_playing_<user>` is deprecated in favor of `media_player.jellyha_<user>` and will be removed in v2.0.0.

@@ -153,6 +153,7 @@ data:
 | `sensor.jellyha_websocket_status` | Connection state | `connected` / `disconnected` | - |
 | `sensor.jellyha_jellyfin_version` | Jellyfin server version | e.g. `12.0.0` or `10.10.6` | - |
 | `sensor.jellyha_active_sessions` | Active playback sessions | Count | `sessions` (list of active playback metadata) |
+| `sensor.jellyha_connected_clients` | All connected Jellyfin clients (regardless of play state) | Count | `clients` (list: `user`, `device`, `client`, `last_activity_date`, `is_playing`) |
 | `sensor.jellyha_transcoding_streams` | Active transcoding streams | Count | `transcode_sessions` (video/audio codecs, transcode reasons, framerate) |
 | `sensor.jellyha_media_storage_free` | Free disk space on media drive | GB (e.g. `13853.9`) | `free_bytes`, `used_bytes`, `total_bytes`, `free_tb`, `used_tb`, `total_tb`, `used_percent`, `free_percent`, `devices` |
 | `sensor.jellyha_media_storage_free_percentage` | Free disk space percentage | Percentage (e.g. `62` %) | `free_bytes`, `used_bytes`, `total_bytes`, `free_gb`, `used_gb`, `free_tb`, `used_tb`, `total_tb`, `used_percent`, `free_percent`, `devices` |

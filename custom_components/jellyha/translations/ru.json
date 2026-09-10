@@ -200,6 +200,9 @@
             "transcoding_streams": {
                 "name": "Потоки транскодирования"
             },
+            "connected_clients": {
+                "name": "Подключённые клиенты"
+            },
             "storage_free": {
                 "name": "Свободно на медиа-хранилище"
             },

@@ -1,0 +1,63 @@
+# ==============================================================================
+# JellyHA Automation Example: Wake-on-LAN on Client Connect
+# ==============================================================================
+# Description:
+#   Automatically sends a Wake-on-LAN magic packet to your media library server
+#   as soon as any Jellyfin client connects — before playback begins.
+#
+# How it works:
+#   JellyHA exposes a 'sensor.jellyha_connected_clients' entity that counts all
+#   connected Jellyfin sessions (excluding the JellyHA integration's own session).
+#   Data is pushed in real-time via WebSocket, so the sensor responds within
+#   milliseconds of a client opening the Jellyfin app.
+#
+# Prerequisites:
+#   1. JellyHA integration installed and configured.
+#   2. 'wake_on_lan' integration enabled in Home Assistant:
+#        https://www.home-assistant.io/integrations/wake_on_lan/
+#   3. Your media library server has Wake-on-LAN enabled in its BIOS/UEFI.
+#   4. The server's MAC address (find it via: ip link show, or your router's client list).
+#
+# Usage:
+#   Replace "AA:BB:CC:DD:EE:FF" with your media server's MAC address.
+#   Replace 'switch.media_server_power' with an entity that reflects whether
+#   your server is on (or remove the condition entirely to always send WoL).
+#
+# sensor.jellyha_connected_clients attributes:
+#   clients:
+#     - user: "Marko"
+#       device: "Living Room TV"
+#       client: "Jellyfin Android TV"
+#       last_activity_date: "2026-09-10T20:00:00.000Z"
+#       is_playing: false
+# ==============================================================================
+
+alias: "Jellyfin: Wake media server on client connect"
+description: >
+  Sends a Wake-on-LAN magic packet to the media library server as soon as
+  any Jellyfin client connects, using JellyHA's real-time Connected Clients sensor.
+mode: single
+
+trigger:
+  - platform: numeric_state
+    entity_id: sensor.jellyha_connected_clients
+    above: 0
+
+condition:
+  # Only send WoL if the server is currently off.
+  # Remove this block if you want to always send the packet.
+  - condition: state
+    entity_id: switch.media_server_power  # Replace with your server power entity
+    state: "off"
+
+action:
+  - action: wake_on_lan.send_magic_packet
+    data:
+      mac: "AA:BB:CC:DD:EE:FF"  # Replace with your media server's MAC address
+
+  - action: logbook.log
+    data:
+      name: "JellyHA WoL"
+      message: >-
+        Jellyfin client connected ({{ states('sensor.jellyha_connected_clients') }} total).
+        Sent Wake-on-LAN to media server.
