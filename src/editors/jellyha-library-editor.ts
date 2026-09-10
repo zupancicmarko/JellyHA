@@ -51,6 +51,10 @@ export class JellyHALibraryEditor extends LitElement {
     .side-by-side > .form-row {
       margin-bottom: 0;
     }
+    .side-by-side > .form-row.double-tap-aligned {
+      margin-top: 24px;
+      align-self: end;
+    }
   `;
 
   public setConfig(config: JellyHALibraryCardConfig): void {
@@ -65,14 +69,9 @@ export class JellyHALibraryEditor extends LitElement {
     const clickAction = this._config.click_action || 'more-info';
     const holdAction = this._config.hold_action || 'jellyfin';
     const doubleTapAction = this._config.double_tap_action || 'none';
+    const isCastActive = clickAction === 'cast' || holdAction === 'cast' || doubleTapAction === 'cast';
 
     const lang = this.hass.locale?.language || this.hass.language;
-
-    // Determine label for columns/rows slider
-    const isHorizontalGrid = this._config.layout === 'grid' &&
-      this._config.enable_pagination === false &&
-      (this._config.auto_swipe_interval || 0) > 0;
-    const columnsLabel = isHorizontalGrid ? localize(lang, 'editor.rows') : localize(lang, 'editor.columns');
 
     return html`
       <div class="card-config">
@@ -330,7 +329,7 @@ export class JellyHALibraryEditor extends LitElement {
         </div>
 
         <div class="side-by-side">
-          <div class="form-row">
+          <div class="form-row ${isCastActive ? 'double-tap-aligned' : ''}">
             <ha-selector
               .hass=${this.hass}
               .selector=${{
@@ -353,16 +352,55 @@ export class JellyHALibraryEditor extends LitElement {
             ></ha-selector>
           </div>
 
-          ${clickAction === 'cast' || holdAction === 'cast' || doubleTapAction === 'cast'
+          ${isCastActive
         ? html`
                 <div class="form-row">
                   <ha-entity-picker
                     .hass=${this.hass}
                     .value=${this._config.default_cast_device}
                     .includeDomains=${['media_player']}
+                    .entityFilter=${this._filterCastDevices}
+                    .label=${localize(lang, 'editor.default_cast_device') || 'Default Cast Device'}
+                    label="${localize(lang, 'editor.default_cast_device') || 'Default Cast Device'}"
                     @value-changed=${this._defaultCastDeviceChanged}
                   ></ha-entity-picker>
                 </div>
+
+                <div class="form-row">
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{
+                      select: {
+                        mode: 'dropdown',
+                        options: [
+                          { value: 'auto', label: localize(lang, 'editor.subtitles_auto') || 'Auto (Jellyfin User Profile)' },
+                          { value: 'none', label: localize(lang, 'editor.subtitles_none') || 'None (Disabled)' },
+                          { value: 'forced_only', label: localize(lang, 'editor.subtitles_forced_only') || 'Forced Only' },
+                          { value: 'custom', label: localize(lang, 'editor.subtitles_custom') || 'Custom Language List' },
+                        ],
+                      },
+                    }}
+                    .value=${this._config.subtitle_mode || 'auto'}
+                    .label=${localize(lang, 'editor.subtitles') || 'Cast Subtitles'}
+                    label="${localize(lang, 'editor.subtitles') || 'Cast Subtitles'}"
+                    @value-changed=${this._subtitleModeChanged}
+                  ></ha-selector>
+                </div>
+
+                ${(this._config.subtitle_mode === 'custom')
+                  ? html`
+                    <div class="form-row">
+                      <ha-selector
+                        .hass=${this.hass}
+                        .selector=${{ text: {} }}
+                        .value=${this._config.subtitle_language || ''}
+                        .label=${localize(lang, 'editor.subtitle_languages') || 'Cast Subtitle Priority (e.g. sl, en)'}
+                        label="${localize(lang, 'editor.subtitle_languages') || 'Cast Subtitle Priority (e.g. sl, en)'}"
+                        @value-changed=${this._subtitleLanguageChanged}
+                      ></ha-selector>
+                    </div>
+                  `
+                  : ''}
               `
         : html`<div></div>`}
         </div>
@@ -748,8 +786,38 @@ export class JellyHALibraryEditor extends LitElement {
     }
   }
 
+  private _filterCastDevices = (stateObj: any): boolean => {
+    const eid = stateObj?.entity_id;
+    if (!eid || !eid.startsWith('media_player.')) {
+      return false;
+    }
+    if (eid === this._config?.default_cast_device) {
+      return true;
+    }
+    const platform = (this.hass as any)?.entities?.[eid]?.platform;
+    if (platform) {
+      return platform === 'cast';
+    }
+    return !eid.startsWith('media_player.jellyha_');
+  };
+
   private _defaultCastDeviceChanged(e: CustomEvent): void {
-    this._updateConfig('default_cast_device', e.detail.value);
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('default_cast_device', value);
+  }
+
+  private _subtitleModeChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('subtitle_mode', value);
+    }
+  }
+
+  private _subtitleLanguageChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('subtitle_language', value);
+    }
   }
 
   private _showNowPlayingChanged(e: Event): void {

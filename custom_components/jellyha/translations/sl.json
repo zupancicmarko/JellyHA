@@ -210,6 +210,18 @@
                 "item_id": {
                     "name": "ID elementa",
                     "description": "Jellyfin ID elementa za predvajanje"
+                },
+                "use_series_image": {
+                    "name": "Uporabi plakat serije",
+                    "description": "Za TV epizode pošlji uradni navpični plakat serije na Chromecast namesto posnetka epizode"
+                },
+                "subtitle_mode": {
+                    "name": "Način podnapisov",
+                    "description": "Strategija izbire podnapisov: samodejno (profil uporabnika), brez (onemogočeno), samo vsiljeni ali po meri"
+                },
+                "subtitle_language": {
+                    "name": "Jeziki podnapisov",
+                    "description": "Prednostni seznam jezikovnih kod ali imen, ločenih z vejico (npr. 'sl, en' ali 'slv, eng')"
                 }
             }
         },

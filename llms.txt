@@ -98,11 +98,22 @@ Users can opt-in to dedicated media player entities per physical client device (
 All JellyHA services accept `config_entry_id` (or `entity_id` / `server_entity_id`) to target a specific server in multi-instance setups. If omitted, the active instance is automatically resolved.
 
 ### 1. `jellyha.play_on_chromecast`
-Casts media to a Google Cast / Chromecast / Android TV device with automatic direct-play or optimized transcoding.
+Casts media to a Google Cast / Chromecast / Android TV device with automatic direct-play or optimized transcoding, including subtitle burn-in.
 * **Fields**:
   * `entity_id` (Required, string): The target Chromecast `media_player` entity (e.g. `media_player.living_room_tv`).
   * `item_id` (Required, string): Jellyfin item GUID.
+  * `subtitle_mode` (Optional, select, default: `auto`): Strategy for subtitle selection:
+    * `auto`: Follows the Jellyfin user profile preferences; falls back to English if unconfigured.
+    * `none`: Completely disables subtitles.
+    * `forced_only`: Only displays forced subtitle tracks (for foreign-language dialogue).
+    * `custom`: Checks the languages listed under `subtitle_language` in priority order.
+  * `subtitle_language` (Optional, string): Prioritized comma-separated list of language codes or names (e.g. `"sl, en"` or `"slv, eng"`).
+  * `use_series_image` (Optional, boolean, default: `true`): For TV episodes, sends the official Series vertical poster to Chromecast instead of the episode thumbnail.
   * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance in multi-server setups.
+* **SUBTITLE ENGINE BEHAVIOR**:
+  * If a text subtitle track (SRT, VTT) is selected, it is delivered directly to Chromecast without video re-encoding.
+  * If a bitmap/graphic subtitle track (PGS, VOBSUB, DVDSUB) is selected, JellyHA automatically instructs Jellyfin to burn the subtitle track directly into the video stream via HLS server-side transcoding (`SubtitleStreamIndex` + `SubtitleMethod=Encode`).
+  * Unique `PlaySessionId` tokens ensure Chromecast never caches outdated subtitle manifests across sequential plays.
 * **CRITICAL BEHAVIOR FOR TV SHOWS**: If `item_id` is a `Series` (or `Season`), `play_on_chromecast` automatically queries Jellyfin's Next Up queue and casts the **next unplayed episode**! If the series has never been started, it automatically falls back to Season 1 Episode 1.
 
 ### 2. `jellyha.search`
@@ -528,6 +539,11 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
 ### Library Card TV Content Options
 * `tv_content`: `'series'` (default) or `'episodes'`. Choose whether TV show libraries display full series poster cards or individual Next Up / latest episodes.
 * `use_series_image`: `true` or `false` (default). When viewing episodes, toggle between episode screen-capture thumbnails and parent series portrait cover art.
+
+### Library Card Cast & Subtitle Options
+* `default_cast_device`: Target Chromecast `media_player` entity ID (e.g. `'media_player.living_room_tv'`) used when action is set to `cast`. Filtered strictly to Google Cast endpoints in the visual editor.
+* `subtitle_mode`: Subtitle strategy for casting: `'auto'` (default, follows Jellyfin profile with English fallback), `'none'` (disabled), `'forced_only'`, or `'custom'`.
+* `subtitle_language`: Prioritized comma-separated language codes/names (e.g. `'sl, en'`) used when `subtitle_mode` is `'custom'`. Automatically burns in graphical subtitles (PGS/VOBSUB) via server-side transcoding.
 
 ### Custom Interactions (`click_action`, `hold_action`, `double_tap_action`)
 * **Available Actions**: `more-info` (default), `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.

@@ -1,13 +1,13 @@
-# 📚 JellyHA Examples & Cookbook
+# JellyHA Examples & Cookbook
 
 Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-paste ready automations, scripts, Lovelace dashboard setups, and smart home recipes designed to get the most out of your Jellyfin media system in Home Assistant.
 
-> 🤖 **Prompting an AI assistant (ChatGPT, Claude, Cursor)?**  
-> Feed our official [**`llms.txt`**](../llms.txt) into your prompt to get 100% accurate, hallucination-free Home Assistant automations tailored for JellyHA.
+> **Prompting an AI assistant (ChatGPT, Claude, Cursor)?**  
+> Feed the official [**`llms.txt`**](../llms.txt) into your prompt to get 100% accurate, hallucination-free Home Assistant automations tailored for JellyHA.
 
 ---
 
-## ⚡ Automations
+## Automations
 
 | Recipe | Description | Trigger Method |
 |:---|:---|:---|
@@ -21,11 +21,12 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 
 ---
 
-## 📜 Scripts
+## Scripts
 
 | Script | Description | Invocation |
 |:---|:---|:---|
 | **[Play on Android TV (Wholphin)](scripts/card_action_play_on_wholpin.yaml)** | Plays selected movie or episode on Android TV (Wholphin client) via Android Debug Bridge (ADB) when clicking an item in the library card. | Library card click action (`call-service`) |
+| **[Cast with Custom Subtitles](scripts/card_action_cast_with_subtitles.yaml)** | Casts selected movie or episode to Chromecast with custom subtitle language priority (e.g. `sl, en`) and automatic server-side transcode burn-in. | Library card click / hold / double-tap action (`call-service`) |
 | **[Play on Apple TV](scripts/card_action_play_on_apple_tv.yaml)** | Routes JellyHA Library Card click actions to Apple TV (Infuse or native player) passing full media metadata. | Card click / hold / double-tap action |
 | **[Play on Kodi](scripts/card_action_play_on_kodi.yaml)** | Routes JellyHA Library Card click actions to Kodi (via JellyCon add-on or direct stream) passing full media metadata. | Card click / hold / double-tap action |
 | **[Play Random Top Movie](scripts/play_random_movie.yaml)** | Dynamically searches your library for high-rated unwatched movies (by year/rating) and casts one to Chromecast or media player. | Action call / voice command / button |
@@ -33,7 +34,7 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 
 ---
 
-## 🎛️ Lovelace Dashboard Cards
+## Lovelace Dashboard Cards
 
 | Layout Example | Description | Card Type |
 |:---|:---|:---|
@@ -43,7 +44,7 @@ Welcome to the **JellyHA Examples & Recipe Library**! Here you will find copy-pa
 
 ---
 
-## 🛠️ How to Use These Examples
+## How to Use These Examples
 
 ### Adding Automations
 1. Open your Home Assistant dashboard and navigate to **Settings** → **Automations & Scenes** → **Automations**.

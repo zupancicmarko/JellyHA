@@ -225,6 +225,18 @@
                 "item_id": {
                     "name": "ID elemento",
                     "description": "ID dell'elemento Jellyfin da riprodurre"
+                },
+                "use_series_image": {
+                    "name": "Usa poster della serie",
+                    "description": "Per gli episodi TV, invia il poster ufficiale della serie su Chromecast invece dello screenshot dell'episodio"
+                },
+                "subtitle_mode": {
+                    "name": "Modalità sottotitoli",
+                    "description": "Strategia di selezione sottotitoli: auto (profilo utente Jellyfin), none (disabilitato), forced_only o custom"
+                },
+                "subtitle_language": {
+                    "name": "Lingue sottotitoli",
+                    "description": "Elenco prioritario di codici o nomi di lingua separati da virgola (es. 'sl, en' o 'slv, eng')"
                 }
             }
         },

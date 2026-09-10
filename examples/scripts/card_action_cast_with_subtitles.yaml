@@ -1,0 +1,59 @@
+# ==============================================================================
+# Example Script: Cast with Custom Subtitles & Language Priority
+# ==============================================================================
+# This Home Assistant script allows you to cast media from a JellyHA Library Card
+# with customized subtitle handling (e.g. prioritizing your native language with
+# fallback to English, or forcing foreign-only dialogue subtitles).
+#
+# How to use:
+# 1. In Home Assistant, go to Settings -> Automations & Scenes -> Scripts.
+# 2. Click "Add Script", switch to Edit in YAML, and paste this script.
+# 3. Replace "media_player.living_room_tv" with your target Chromecast entity.
+# 4. In your JellyHA Library Card editor:
+#    - Set Single Tap, Hold, or Double Tap action to: "Run Script"
+#    - Select this script: "script.card_action_cast_with_subtitles"
+# ==============================================================================
+
+alias: "JellyHA: Cast with Custom Subtitles"
+description: "Casts selected Jellyfin item to Chromecast with prioritized subtitle language matching"
+mode: single
+icon: mdi:subtitles
+
+fields:
+  item_id:
+    selector:
+      text: null
+  title:
+    selector:
+      text: null
+  config_entry_id:
+    selector:
+      text: null
+
+sequence:
+  # Cast to Chromecast with custom prioritized subtitle fallback
+  - action: jellyha.play_on_chromecast
+    data:
+      # Target Chromecast or Google TV media player
+      entity_id: media_player.living_room_tv
+
+      # Item ID passed from the card tap
+      item_id: "{{ item_id }}"
+
+      # JellyHA instance ID (optional, defaults to first connected instance)
+      config_entry_id: "{{ config_entry_id | default('', true) }}"
+
+      # Subtitle mode:
+      # - "custom": Checks subtitle tracks in the order listed under subtitle_language
+      # - "auto": Follows the user's Jellyfin account profile (falls back to English)
+      # - "forced_only": Only displays subtitles for alien/foreign dialogue
+      # - "none": Disables all subtitles
+      subtitle_mode: "custom"
+
+      # Prioritized fallback list:
+      # In this example, JellyHA checks for Slovenian ("sl") first.
+      # If no Slovenian track exists, it automatically falls back to English ("en").
+      subtitle_language: "sl, en"
+
+      # Display vertical poster artwork on Chromecast instead of episode screenshots
+      use_series_image: true

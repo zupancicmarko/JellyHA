@@ -1,21 +1,59 @@
 # ==============================================================================
-# JellyHA Script Example: Card Click Action -> Play on Apple TV (Infuse / Apple TV)
+# !! NOTE: This script has NOT been fully tested in a live environment.
+# !!        AirPlay streaming via pyatv is the only HA-supported method to
+# !!        initiate playback on Apple TV. Adjust JELLYFIN_URL, JELLYFIN_API_KEY,
+# !!        and APPLE_TV_ENTITY to match your setup before use.
+# ==============================================================================
+# JellyHA Script Example: Card Click Action -> Play on Apple TV
 # ==============================================================================
 # Description:
 #   Handles playback routing when a user taps, holds, or double-taps a poster
-#   in the JellyHA Library Card, sending the selected media to an Apple TV
-#   or Apple TV Infuse player.
+#   in the JellyHA Library Card. Streams the selected media directly to Apple TV
+#   via AirPlay using pyatv (Home Assistant's Apple TV integration).
+#
+# How it works:
+# -------------
+#   This script uses the Jellyfin server's HLS stream URL and sends it to the
+#   Apple TV via media_player.play_media. The Apple TV integration (pyatv) opens
+#   the stream directly using AirPlay — bypassing Infuse, Jellyfin app, or any
+#   third-party client entirely.
+#
+#   Deep-linking into Infuse or the Jellyfin tvOS app to play a *specific* item
+#   is NOT supported by Apple TV / tvOS / pyatv as of 2026. This AirPlay approach
+#   is the only reliable method to initiate playback from HA on Apple TV.
+#
+# Prerequisites:
+# --------------
+# 1. "Apple TV" integration installed in Home Assistant (not the media_player
+#    from another integration — the dedicated Apple TV integration by pyatv).
+#      - Settings -> Devices & Services -> Add Integration -> Apple TV
+#      - Pair and connect your Apple TV.
+# 2. Your Jellyfin server must be reachable from Home Assistant.
+# 3. You need a Jellyfin API key (or user token) for authenticated stream URLs.
+#    Get one from: Jellyfin Dashboard -> Administration -> API Keys -> + New Key.
+#
+# Configuration — fill in YOUR values below:
+# ------------------------------------------
+#   JELLYFIN_URL: Base URL of your Jellyfin server (no trailing slash)
+#                 e.g. "http://192.168.1.100:8096"
+#   JELLYFIN_API_KEY: Your Jellyfin API key
+#   APPLE_TV_ENTITY: Home Assistant entity ID of your Apple TV media player
+#
+# Note on watched status:
+#   Because this method streams via AirPlay and does not go through a Jellyfin
+#   client app, Jellyfin will NOT automatically mark the item as watched when
+#   playback finishes. You can manually mark it via jellyha.mark_watched.
 #
 # Card Configuration (Lovelace YAML):
-# -----------------------------------
+# ------------------------------------
 # type: custom:jellyha-library-card
 # entity: sensor.jellyha_library
 # title: "Movies & TV"
 # click_action: call-service
 # click_service: script.card_action_play_on_apple_tv
 #
-# Variables Injected Automatically by JellyHA Card:
-# -------------------------------------------------
+# Variables Injected Automatically by JellyHA Library Card:
+# ---------------------------------------------------------
 # When 'click_action: call-service' is configured, the JellyHA card calls the
 # script and injects all media metadata directly into the Jinja template namespace:
 #
@@ -38,11 +76,22 @@
 #   - action_type: "click", "hold", or "double_tap"
 # ==============================================================================
 
-alias: "JellyHA: Play on Apple TV (Script)"
-description: "Handles playback routing from JellyHA Library Card click actions to Apple TV."
+alias: "JellyHA: Play on Apple TV (AirPlay Stream)"
+description: >
+  Streams selected Jellyfin item to Apple TV via AirPlay (pyatv).
+  Triggered by JellyHA Library Card click action.
 mode: queued
 max: 5
 icon: mdi:apple
+
+# ==============================================================================
+# !! CONFIGURE THESE VALUES FOR YOUR SETUP !!
+# ==============================================================================
+variables:
+  JELLYFIN_URL: "http://192.168.1.100:8096"       # Your Jellyfin server base URL (no trailing slash)
+  JELLYFIN_API_KEY: "YOUR_JELLYFIN_API_KEY_HERE"  # Jellyfin API key
+  APPLE_TV_ENTITY: "media_player.living_room_apple_tv"  # Your Apple TV entity ID
+# ==============================================================================
 
 fields:
   item_id:
@@ -100,47 +149,43 @@ fields:
 sequence:
   - choose:
       # ------------------------------------------------------------------------
-      # 1. If it's a TV Show episode
+      # Case A: Item ID provided (triggered by JellyHA Library Card click)
       # ------------------------------------------------------------------------
       - conditions:
           - condition: template
-            value_template: "{{ media_type == 'Episode' }}"
+            value_template: "{{ item_id is defined and item_id not in [none, '', 'None'] }}"
         sequence:
-          # Informational log in Home Assistant Logbook
+          # Log to Home Assistant Logbook
           - action: logbook.log
             data:
-              name: "JellyHA Player"
-              message: "Playing TV Episode: {{ series_name }} - S{{ season }}E{{ episode }} ({{ title }}) on Apple TV"
+              name: "JellyHA Apple TV Player"
+              message: >-
+                Streaming {{ media_type | default('Media') }}: {{ title | default(item_id) }}
+                {% if year %}({{ year }}){% endif %} to {{ APPLE_TV_ENTITY }} via AirPlay
               domain: media_player
-              entity_id: media_player.living_room_apple_tv
+              entity_id: "{{ APPLE_TV_ENTITY }}"
 
-          # Play episode on Apple TV
+          # Stream via AirPlay using Jellyfin's direct-play HLS URL.
+          # pyatv opens this URL in the Apple TV's built-in AirPlay player.
           - action: media_player.play_media
             target:
-              entity_id: media_player.living_room_apple_tv
+              entity_id: "{{ APPLE_TV_ENTITY }}"
             data:
-              media_content_type: episode
-              media_content_id: "{{ series_name }} S{{ season }}E{{ episode }}"
+              # 'url' tells pyatv to open the link directly via AirPlay
+              media_content_type: "url"
+              # Jellyfin master.m3u8 HLS stream — direct plays the original file
+              # when the format is natively supported; falls back to transcoding otherwise.
+              media_content_id: >-
+                {{ JELLYFIN_URL }}/Videos/{{ item_id }}/master.m3u8?api_key={{ JELLYFIN_API_KEY }}&MediaSourceId={{ item_id }}&VideoCodec=h264&AudioCodec=aac,mp3&MaxStreamingBitrate=40000000
 
       # ------------------------------------------------------------------------
-      # 2. If it's a Movie
+      # Case B: No item provided — toggle play/pause on Apple TV
+      # (e.g. user triggered script directly from HA Scripts UI)
       # ------------------------------------------------------------------------
       - conditions:
           - condition: template
-            value_template: "{{ media_type == 'Movie' }}"
+            value_template: "{{ item_id is not defined or item_id in [none, '', 'None'] }}"
         sequence:
-          # Informational log in Home Assistant Logbook
-          - action: logbook.log
-            data:
-              name: "JellyHA Player"
-              message: "Playing Movie: {{ title }} {% if year %}({{ year }}){% endif %} on Apple TV"
-              domain: media_player
-              entity_id: media_player.living_room_apple_tv
-
-          # Play movie on Apple TV
-          - action: media_player.play_media
+          - action: media_player.media_play_pause
             target:
-              entity_id: media_player.living_room_apple_tv
-            data:
-              media_content_type: movie
-              media_content_id: "{{ title }}"
+              entity_id: "{{ APPLE_TV_ENTITY }}"

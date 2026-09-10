@@ -1450,7 +1450,7 @@ export class JellyHALibraryCard extends LitElement {
         this._openExternalUrl(item.jellyfin_url);
         break;
       case 'cast':
-        this._castMedia(item);
+        this._castMedia(item, type);
         break;
       case 'more-info':
         this._showItemDetails(item);
@@ -1563,18 +1563,35 @@ export class JellyHALibraryCard extends LitElement {
     }
   }
 
-  private async _castMedia(item: MediaItem): Promise<void> {
+  private async _castMedia(item: MediaItem, actionType?: string): Promise<void> {
     const entityId = this._config.default_cast_device;
     if (!entityId) {
       console.warn('JellyHA: No default cast device configured');
       return;
     }
+
+    let subtitleMode = this._config.subtitle_mode || 'auto';
+    let subtitleLanguage = this._config.subtitle_language;
+
+    if (actionType === 'click') {
+      if (this._config.click_subtitle_mode) subtitleMode = this._config.click_subtitle_mode;
+      if (this._config.click_subtitle_language) subtitleLanguage = this._config.click_subtitle_language;
+    } else if (actionType === 'hold') {
+      if (this._config.hold_subtitle_mode) subtitleMode = this._config.hold_subtitle_mode;
+      if (this._config.hold_subtitle_language) subtitleLanguage = this._config.hold_subtitle_language;
+    } else if (actionType === 'double_tap') {
+      if (this._config.double_tap_subtitle_mode) subtitleMode = this._config.double_tap_subtitle_mode;
+      if (this._config.double_tap_subtitle_language) subtitleLanguage = this._config.double_tap_subtitle_language;
+    }
+
     try {
       await this.hass.callService('jellyha', 'play_on_chromecast', {
         entity_id: entityId,
         item_id: item.id,
         server_entity_id: this._config.entity,
         ...(item.config_entry_id ? { config_entry_id: item.config_entry_id } : {}),
+        subtitle_mode: subtitleMode,
+        ...(subtitleLanguage ? { subtitle_language: subtitleLanguage } : {}),
       });
     } catch (err) {
       console.error('JellyHA: Failed to cast media', err);
@@ -1656,11 +1673,18 @@ export class JellyHALibraryCard extends LitElement {
   }
   private _showItemDetails(item: MediaItem): void {
     if (this._modal) {
+      let subtitleMode = this._config.subtitle_mode || 'auto';
+      let subtitleLanguage = this._config.subtitle_language;
+      if (this._config.click_subtitle_mode) subtitleMode = this._config.click_subtitle_mode;
+      if (this._config.click_subtitle_language) subtitleLanguage = this._config.click_subtitle_language;
+
       this._modal.showDialog({
         item,
         hass: this.hass,
         defaultCastDevice: this._config.default_cast_device,
-        serverEntityId: this._config.entity
+        serverEntityId: this._config.entity,
+        subtitleMode,
+        subtitleLanguage,
       });
     }
   }

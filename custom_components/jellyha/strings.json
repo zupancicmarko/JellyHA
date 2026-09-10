@@ -229,6 +229,18 @@
                 "item_id": {
                     "name": "Item ID",
                     "description": "Jellyfin item ID to play"
+                },
+                "use_series_image": {
+                    "name": "Use Series Poster",
+                    "description": "For TV episodes, send the official Series vertical poster to Chromecast instead of the episode screenshot"
+                },
+                "subtitle_mode": {
+                    "name": "Subtitle Mode",
+                    "description": "Subtitle selection strategy: auto (Jellyfin user profile), none (disabled), forced_only, or custom"
+                },
+                "subtitle_language": {
+                    "name": "Subtitle Languages",
+                    "description": "Prioritized comma-separated list of subtitle language codes or names (e.g. 'sl, en' or 'slv, eng')"
                 }
             }
         },

@@ -225,6 +225,18 @@
                 "item_id": {
                     "name": "Element-ID",
                     "description": "Jellyfin Element-ID zum Abspielen"
+                },
+                "use_series_image": {
+                    "name": "Serienposter verwenden",
+                    "description": "Für TV-Episoden das offizielle Serienplakat auf Chromecast senden statt des Episode-Screenshots"
+                },
+                "subtitle_mode": {
+                    "name": "Untertitelmodus",
+                    "description": "Untertitel-Auswahlstrategie: auto (Jellyfin-Benutzerprofil), none (deaktiviert), forced_only oder custom"
+                },
+                "subtitle_language": {
+                    "name": "Untertitelsprachen",
+                    "description": "Priorisierte, kommagetrennte Liste von Sprachcodes oder -namen (z.B. 'sl, en' oder 'slv, eng')"
                 }
             }
         },

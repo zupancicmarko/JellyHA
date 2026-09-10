@@ -8,7 +8,7 @@ JellyHA exposes custom Home Assistant actions/services under the `jellyha` domai
 
 | Action | Description | Key Parameters |
 |---|---|---|
-| `jellyha.play_on_chromecast` | Cast media to Google Cast device. Passing a TV Series ID automatically resolves and casts the next unplayed episode (or Season 1 Episode 1). | `entity_id` (Req), `item_id` (Req), `use_series_image` (Opt), `config_entry_id` (Opt) |
+| `jellyha.play_on_chromecast` | Cast media to Google Cast device. Passing a TV Series ID automatically resolves and casts the next unplayed episode (or Season 1 Episode 1). Supports subtitle burn-in transcoding and language priority selection. | `entity_id` (Req), `item_id` (Req), `subtitle_mode` (Opt), `subtitle_language` (Opt), `use_series_image` (Opt), `config_entry_id` (Opt) |
 | `jellyha.refresh_library` | Force refresh library data directly from Jellyfin. | `entity_id` (Opt), `server_entity_id` (Opt), `config_entry_id` (Opt) |
 | `jellyha.delete_item` | Permanently delete an item from library and disk. Use with caution. | `item_id` (Req), `entity_id` (Opt), `config_entry_id` (Opt) |
 | `jellyha.mark_watched` | Mark an item as watched (`true`) or unwatched (`false`). | `item_id` (Req), `is_played` (Req), `config_entry_id` (Opt) |
@@ -39,11 +39,28 @@ If omitted, the action automatically targets the first available JellyHA instanc
 ### Play Movie or Next Up Episode on Chromecast
 
 ```yaml
-service: jellyha.play_on_chromecast
+action: jellyha.play_on_chromecast
 data:
   entity_id: media_player.living_room_chromecast
   item_id: "a7b2c1d8e4f5..."
 ```
+
+### Cast with Subtitles and Language Priority
+
+```yaml
+action: jellyha.play_on_chromecast
+data:
+  entity_id: media_player.office_tv
+  item_id: "a7b2c1d8e4f5..."
+  subtitle_mode: custom
+  subtitle_language: "sl, en"
+```
+
+#### Subtitle Modes:
+- `auto` *(default)*: Uses the Jellyfin user profile's subtitle preferences; falls back to English if unconfigured.
+- `none`: Disables subtitles completely.
+- `forced_only`: Only displays forced subtitle tracks (e.g. translation for foreign-language dialogue).
+- `custom`: Evaluates `subtitle_language` as a prioritized comma-separated list of 2-letter codes, 3-letter codes, or language names (e.g. `"sl, en"` or `"slv, eng"`), selecting the first match. Graphical formats (PGS, VOBSUB, DVDSUB) are automatically burned into the video stream via server-side transcoding.
 
 ### Search Unwatched 4K / High-Rated Movies
 

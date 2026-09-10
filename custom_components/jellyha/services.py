@@ -11,6 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.components.media_player import (
     DOMAIN as MEDIA_PLAYER_DOMAIN,
     SERVICE_PLAY_MEDIA,
+    SERVICE_MEDIA_STOP,
     ATTR_MEDIA_CONTENT_ID,
     ATTR_MEDIA_CONTENT_TYPE,
 )
@@ -72,6 +73,9 @@ PLAY_ON_CHROMECAST_SCHEMA = vol.Schema(
         vol.Optional("use_series_image", default=True): cv.boolean,
         vol.Optional("server_entity_id"): cv.entity_id,
         vol.Optional("config_entry_id"): cv.string,
+        vol.Optional("subtitle_mode", default="auto"): vol.In(["auto", "none", "forced_only", "custom"]),
+        vol.Optional("subtitle_language"): vol.Any(cv.string, None),
+        vol.Optional("subtitle_index"): vol.Any(vol.Coerce(int), None),
     }
 )
 
@@ -291,9 +295,42 @@ async def async_register_services(hass: HomeAssistant) -> None:
             MediaStrategy.discover_chromecast_model, hass, target_entity_id, zc
         )
 
+        # Subtitle selection
+        subtitle_mode = call.data.get("subtitle_mode", "auto")
+        subtitle_language = call.data.get("subtitle_language")
+        subtitle_index = call.data.get("subtitle_index")
+
+        user_config = None
+        if subtitle_mode == "auto":
+            try:
+                user_obj = await api.get_user(user_id)
+                if user_obj:
+                    user_config = user_obj.get("Configuration", {})
+            except Exception as e:
+                _LOGGER.debug("Could not fetch user configuration for subtitle resolution: %s", e)
+
+        selected_sub = MediaStrategy.resolve_subtitle_stream(
+            item=item,
+            subtitle_mode=subtitle_mode,
+            subtitle_language=subtitle_language,
+            user_config=user_config,
+            subtitle_index=subtitle_index,
+        )
+
+        media_source_id = None
+        if "MediaSources" in item and item["MediaSources"]:
+            media_source_id = item["MediaSources"][0].get("Id")
+
         media_info = MediaStrategy.analyze_media(item)
         playback_info = MediaStrategy.get_playback_info(
-            api._server_url, api._api_key, item_id, media_info, model_name, item_type=item.get("Type")
+            api._server_url,
+            api._api_key,
+            item_id,
+            media_info,
+            model_name,
+            item_type=item.get("Type"),
+            selected_sub=selected_sub,
+            media_source_id=media_source_id,
         )
 
         # Cast
@@ -320,13 +357,41 @@ async def async_register_services(hass: HomeAssistant) -> None:
             if episode_img_url != primary_img_url:
                 metadata["images"].append({"url": episode_img_url})
 
+        extra_payload = {
+            "title": metadata["title"],
+            "thumb": primary_img_url,
+            "autoplay": True,
+            "metadata": metadata,
+        }
+        if playback_info.get("vtt_url"):
+            extra_payload.update({
+                "subtitles": playback_info["vtt_url"],
+                "subtitles_lang": playback_info.get("subtitles_lang", "en"),
+                "subtitles_mime": "text/vtt",
+                "subtitle_id": 1,
+            })
+
+        # Stop any ongoing playback on the target device so Chromecast cleanly re-initializes
+        target_state = hass.states.get(target_entity_id)
+        if target_state and target_state.state in ["playing", "paused", "buffering"]:
+            try:
+                await hass.services.async_call(
+                    MEDIA_PLAYER_DOMAIN,
+                    SERVICE_MEDIA_STOP,
+                    {"entity_id": target_entity_id},
+                    blocking=True,
+                )
+                await asyncio.sleep(0.3)
+            except Exception as e:
+                _LOGGER.debug("Could not stop previous media on %s: %s", target_entity_id, e)
+
         await hass.services.async_call(
             MEDIA_PLAYER_DOMAIN, SERVICE_PLAY_MEDIA,
             {
                 "entity_id": target_entity_id,
                 ATTR_MEDIA_CONTENT_ID: playback_info["media_url"],
                 ATTR_MEDIA_CONTENT_TYPE: playback_info["content_type"],
-                "extra": {"title": metadata["title"], "thumb": primary_img_url, "autoplay": True, "metadata": metadata},
+                "extra": extra_payload,
             },
             blocking=True,
         )

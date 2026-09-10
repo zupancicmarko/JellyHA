@@ -36,6 +36,37 @@ play_on_chromecast:
       default: true
       selector:
         boolean:
+    subtitle_mode:
+      name: Subtitle Mode
+      description: Subtitle selection strategy (auto, none, forced_only, custom)
+      required: false
+      default: auto
+      selector:
+        select:
+          options:
+            - label: Auto (Jellyfin Profile)
+              value: auto
+            - label: None (Disabled)
+              value: none
+            - label: Forced Only
+              value: forced_only
+            - label: Custom Language List
+              value: custom
+    subtitle_language:
+      name: Subtitle Languages
+      description: Prioritized comma-separated list of subtitle language codes or names (e.g. "sl, en" or "slv, eng")
+      required: false
+      selector:
+        text:
+    subtitle_index:
+      name: Subtitle Stream Index
+      description: Direct subtitle stream index to force a specific subtitle track
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: box
 
 
 refresh_library:

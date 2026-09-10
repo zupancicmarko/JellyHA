@@ -120,6 +120,14 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     service?: string;
     service_data?: Record<string, any>;
     default_cast_device?: string;
+    click_subtitle_mode?: 'auto' | 'none' | 'forced_only' | 'custom';
+    click_subtitle_language?: string;
+    hold_subtitle_mode?: 'auto' | 'none' | 'forced_only' | 'custom';
+    hold_subtitle_language?: string;
+    double_tap_subtitle_mode?: 'auto' | 'none' | 'forced_only' | 'custom';
+    double_tap_subtitle_language?: string;
+    subtitle_mode?: 'auto' | 'none' | 'forced_only' | 'custom';
+    subtitle_language?: string;
     show_now_playing?: boolean;
     image_quality?: number;
     image_height?: number;

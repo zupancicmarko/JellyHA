@@ -10,6 +10,8 @@ export class JellyHAItemDetailsModal extends LitElement {
     @state() private _nextUpItem?: MediaItem;
     @state() private _defaultCastDevice?: string;
     @state() private _serverEntityId?: string;
+    @state() private _subtitleMode?: string;
+    @state() private _subtitleLanguage?: string;
     @state() private _open = false;
     @state() private _confirmDelete = false;
 
@@ -50,11 +52,20 @@ export class JellyHAItemDetailsModal extends LitElement {
         }
     }
 
-    public async showDialog(params: { item: MediaItem; hass: HomeAssistant; defaultCastDevice?: string; serverEntityId?: string }): Promise<void> {
+    public async showDialog(params: {
+        item: MediaItem;
+        hass: HomeAssistant;
+        defaultCastDevice?: string;
+        serverEntityId?: string;
+        subtitleMode?: string;
+        subtitleLanguage?: string;
+    }): Promise<void> {
         this._item = params.item;
         this.hass = params.hass;
         this._defaultCastDevice = params.defaultCastDevice;
         this._serverEntityId = params.serverEntityId;
+        this._subtitleMode = params.subtitleMode;
+        this._subtitleLanguage = params.subtitleLanguage;
         this._open = true;
         this._nextUpItem = undefined; // Reset
         this._viewMode = 'default';
@@ -1334,6 +1345,8 @@ export class JellyHAItemDetailsModal extends LitElement {
             const serviceData: any = {
                 entity_id: this._defaultCastDevice,
                 item_id: episode.id,
+                subtitle_mode: this._subtitleMode || 'auto',
+                ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
             };
             if (episode.config_entry_id || this._item?.config_entry_id) {
                 serviceData.config_entry_id = episode.config_entry_id || this._item?.config_entry_id;
@@ -1370,6 +1383,8 @@ export class JellyHAItemDetailsModal extends LitElement {
             const serviceData: any = {
                 entity_id: this._defaultCastDevice,
                 item_id: targetItem.id,
+                subtitle_mode: this._subtitleMode || 'auto',
+                ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
             };
             if (targetItem.config_entry_id || this._item?.config_entry_id) {
                 serviceData.config_entry_id = targetItem.config_entry_id || this._item?.config_entry_id;
@@ -1410,6 +1425,8 @@ export class JellyHAItemDetailsModal extends LitElement {
             const serviceData: any = {
                 entity_id: this._defaultCastDevice,
                 item_id: this._nextUpItem.id,
+                subtitle_mode: this._subtitleMode || 'auto',
+                ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
             };
             if (this._nextUpItem.config_entry_id || this._item?.config_entry_id) {
                 serviceData.config_entry_id = this._nextUpItem.config_entry_id || this._item?.config_entry_id;

@@ -47,6 +47,40 @@ If the card renders but displays no items:
 
 ---
 
+### Android TV & Wholphin Playback (ADB Requirement)
+
+When using the library card's click action to trigger direct playback on an Android TV device running **Wholphin**:
+
+1. **Install Android Debug Bridge (ADB):**
+   - Install the official **Android Debug Bridge** integration (`androidtv`) in Home Assistant.
+   - Connect it to your Android TV's local IP address (e.g. `10.10.10.135:5555`).
+2. **Why ADB is Required instead of Android TV Remote:**
+   - The standard **Android TV Remote** (`androidtv_remote`) integration only supports standard `VIEW` intents (`android.intent.action.VIEW`). When Wholphin receives a `VIEW` intent, it only opens the item details page on screen rather than starting playback.
+   - Android Debug Bridge allows dispatching the native playback intent directly via ADB shell:
+     ```text
+     am start -a com.github.damontecres.wholphin.PLAYBACK -d "wholphin://play?itemId={{ item_id }}" -f 0x10000000
+     ```
+   - This starts video playback immediately on the TV without requiring manual confirmation or clicking "Play" with the remote.
+3. **Recipe Reference:**
+   - See the ready-to-use script in **[examples/scripts/card_action_play_on_wholpin.yaml](../examples/scripts/card_action_play_on_wholpin.yaml)**.
+
+---
+
+### Media Browser Entry Not Visible in Sidebar
+
+If the **Media** entry does not appear in the Home Assistant sidebar:
+
+1. **Unhide from User Profile:**
+   - Click your profile icon at the bottom of the sidebar.
+   - Scroll down to the **Sidebar** section and click **Change the order and hide items from the sidebar** -> **Edit**.
+   - Ensure **Media** is checked and visible.
+2. **Sidebar Edit Mode Shortcut:**
+   - Click and hold the "Home Assistant" header text at the very top of the sidebar to enter sidebar edit mode directly, then unhide **Media**.
+3. **Verify `media_source:` Integration:**
+   - In `configuration.yaml`, ensure `media_source:` is not disabled or commented out. Home Assistant includes this by default via `default_config:`, but minimal configurations may need `media_source:` declared explicitly.
+
+---
+
 ### "Connection lost" on Startup
 
 - Usually caused by conflicting older integration versions or duplicate WebSocket subscriptions.

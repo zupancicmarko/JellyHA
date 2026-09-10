@@ -1,4 +1,9 @@
 # ==============================================================================
+# !! NOTE: This script has NOT been fully tested in a live environment.
+# !!        Logic and URL formats are based on official JellyCon/Jellyfin Kodi
+# !!        add-on documentation and community reports. Verify and adjust for
+# !!        your specific Kodi add-on version before use.
+# ==============================================================================
 # JellyHA Script Example: Card Click Action -> Play on Kodi
 # ==============================================================================
 # Description:
@@ -11,13 +16,18 @@
 #      - Go to Settings -> Devices & Services -> Add Integration -> Kodi
 #      - Follow prompts to connect to your Kodi instance (e.g. media_player.kodi)
 #
-# 2. Recommended Kodi Add-on (JellyCon or Jellyfin for Kodi):
-#      - If you have the "JellyCon" add-on installed on Kodi, this script triggers
-#        instant direct playback using Kodi's plugin URL scheme:
-#          plugin://plugin.video.jellycon/?mode=PLAY&id={item_id}
-#      - If using the standard "Jellyfin for Kodi" add-on:
-#          plugin://plugin.video.jellyfin/?mode=play.media&id={item_id}
-#      - Alternatively, Kodi can open the direct Jellyfin web/stream URL.
+# 2. Install a Jellyfin Kodi add-on (choose one):
+#
+#    Option A — JellyCon (Recommended, streaming add-on):
+#      - Install from the official Jellyfin Kodi repository.
+#      - Does NOT require full library sync; streams directly from Jellyfin on demand.
+#      - Plugin path: plugin://plugin.video.jellycon/?item_id={id}&mode=PLAY
+#
+#    Option B — Jellyfin for Kodi (sync add-on):
+#      - Syncs the Jellyfin library into Kodi's native database.
+#      - Plugin path: plugin://plugin.video.jellyfin/?mode=play&id={id}
+#
+# 3. Update the `kodi_player` default and the plugin URL below to match your setup.
 #
 # Card Configuration (Lovelace YAML):
 # -----------------------------------
@@ -109,49 +119,43 @@ fields:
       number:
         min: 1900
         max: 2050
-  jellyfin_url:
-    name: Jellyfin URL
-    description: Direct web client URL to media item
-    required: false
-    selector:
-      text:
-  target_entity:
-    name: Target Kodi Entity
-    description: Entity ID of target Kodi media player
-    required: false
-    default: "media_player.kodi"
-    selector:
-      entity:
-        domain: media_player
 
 sequence:
-  # Determine target Kodi player entity
+  # Determine target Kodi player entity.
+  # Change 'media_player.kodi' to match your Kodi entity ID.
   - variables:
-      kodi_player: >-
-        {{ target_entity | default('media_player.kodi') }}
+      kodi_player: "media_player.kodi"
 
   - choose:
       # ------------------------------------------------------------------------
-      # Case A: Media item provided (from JellyHA Library Card click)
+      # Case A: Item ID provided (triggered by JellyHA Library Card click)
       # ------------------------------------------------------------------------
       - conditions:
           - condition: template
             value_template: "{{ item_id is defined and item_id not in [none, '', 'None'] }}"
         sequence:
-          # Informational log in Home Assistant Logbook
+          # Log to Home Assistant Logbook for diagnostics
           - action: logbook.log
             data:
               name: "JellyHA Kodi Player"
               message: >-
-                Playing {{ media_type | default('Media') }}: {{ title | default(item_id) }} {% if year %}({{ year }}){% endif %} on {{ kodi_player }}
+                Playing {{ media_type | default('Media') }}: {{ title | default(item_id) }}
+                {% if year %}({{ year }}){% endif %} on {{ kodi_player }}
               domain: media_player
               entity_id: "{{ kodi_player }}"
 
           - choose:
-              # Option 1: Kodi JSON-RPC Player.Open via JellyCon plugin URL (Recommended)
+              # ------------------------------------------------------------------
+              # Option A: JellyCon add-on (plugin.video.jellycon)
+              #   - Recommended: streams directly on demand, no sync required.
+              #   - URL format confirmed: item_id first, then mode=PLAY.
+              # ------------------------------------------------------------------
               - conditions:
                   - condition: template
-                    value_template: "{{ is_service('kodi.call_method') }}"
+                    # Kodi is reachable and JellyCon add-on is installed.
+                    # Change to 'plugin.video.jellyfin' if using Jellyfin for Kodi.
+                    value_template: >-
+                      {{ states(kodi_player) not in ['unavailable', 'unknown', 'off'] }}
                 sequence:
                   - action: kodi.call_method
                     target:
@@ -159,22 +163,26 @@ sequence:
                     data:
                       method: Player.Open
                       item:
-                        file: "plugin://plugin.video.jellycon/?mode=PLAY&id={{ item_id }}"
+                        # JellyCon URL: item_id parameter MUST come before mode=PLAY
+                        file: "plugin://plugin.video.jellycon/?item_id={{ item_id }}&mode=PLAY"
+                        # If using "Jellyfin for Kodi" instead, replace the line above with:
+                        # file: "plugin://plugin.video.jellyfin/?mode=play&id={{ item_id }}"
 
-              # Option 2: Fallback to standard Home Assistant media_player.play_media
+              # ------------------------------------------------------------------
+              # Fallback: Kodi unavailable — log a warning
+              # ------------------------------------------------------------------
               - conditions: []
                 sequence:
-                  - action: media_player.play_media
-                    target:
-                      entity_id: "{{ kodi_player }}"
+                  - action: logbook.log
                     data:
-                      media_content_type: video
-                      media_content_id: >-
-                        {{ jellyfin_url if (jellyfin_url is defined and jellyfin_url) else ('plugin://plugin.video.jellycon/?mode=PLAY&id=' ~ item_id) }}
+                      name: "JellyHA Kodi Player"
+                      message: "Kodi ({{ kodi_player }}) is unavailable. Cannot play: {{ title | default(item_id) }}"
+                      domain: media_player
+                      entity_id: "{{ kodi_player }}"
 
       # ------------------------------------------------------------------------
-      # Case B: No item provided (user clicked "Run" directly in HA Scripts UI)
-      # Resume / unpause active Kodi playback
+      # Case B: No item provided — resume/unpause active Kodi playback
+      # (e.g. user triggered script directly from HA Scripts UI)
       # ------------------------------------------------------------------------
       - conditions:
           - condition: template

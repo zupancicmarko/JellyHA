@@ -6,13 +6,21 @@
 Jellyfin for Home Assistant
 
 <div align="center">
-  <img src="./docs/JellyHA-Library-Grid.png" width="45%" alt="Grid View" />
-  <img src="./docs/JellyHA-Library-Carousel.png" width="45%" alt="Carousel View" />
-  <img src="./docs/JellyHA-Library-List.png" width="45%" alt="List View" />
-  <img src="./docs/JellyHA-Library-Next-Up.png" width="45%" alt="Next Up View" />
-  <img src="./docs/JellyHA-Library-More-Information.png" width="45%" alt="More Information" />
-  <img src="./docs/JellyHA-Cards.png" width="45%" alt="Add to dashboard" />
+  <img src="./docs/JellyHA-Library-Grid.png" width="48%" alt="Library Card - Grid View" />
+  <img src="./docs/JellyHA-Now-Playing-Card.png" width="48%" alt="Now Playing Card" />
 </div>
+
+<details>
+  <summary><b>📸 Click to view all layout variations & screenshots (Carousel, List, Next Up, Details Modal, Card Selector)</b></summary>
+  <br>
+  <div align="center">
+    <img src="./docs/JellyHA-Library-Carousel.png" width="48%" alt="Carousel View" />
+    <img src="./docs/JellyHA-Library-Next-Up.png" width="48%" alt="Next Up View" />
+    <img src="./docs/JellyHA-Library-List.png" width="48%" alt="List View" />
+    <img src="./docs/JellyHA-Library-More-Information.png" width="48%" alt="More Information" />
+    <img src="./docs/JellyHA-Cards.png" width="48%" alt="Add to dashboard" />
+  </div>
+</details>
 
 ## Features
 
@@ -42,7 +50,7 @@ Jellyfin for Home Assistant
 
 ## Documentation
 
-For detailed references, configuration options, entity catalogs, and services, explore our dedicated documentation:
+For detailed references, configuration options, entity catalogs, and services, explore the dedicated documentation:
 
 | Guide | Description |
 |---|---|
@@ -176,30 +184,31 @@ JellyHA integrates with Home Assistant's Media Browser:
 3. Choose your server (if multiple are connected).
 4. Browse your collections and stream directly to your browser or Cast players.
 
+*(If "Media" is not visible in the sidebar, see [Media Browser Entry Not Visible in Sidebar](docs/troubleshooting.md#media-browser-entry-not-visible-in-sidebar).)*
+
 ## Examples & Cookbook
 
-Explore ready-to-use recipes in our dedicated **[Examples & Cookbook Library](examples/)**:
+Explore ready-to-use recipes in the dedicated **[Examples & Cookbook Library](examples/)**:
 
 - **[Skip Intro Automatically](examples/automations/skip_intro.yaml)**: Jumps past TV show intros using segment detection.
 - **[Cinema Lighting Experience](examples/automations/cinema_lighting_segments.yaml)**: Dims lights on playback and raises lights when credits roll.
 - **[New Media Push Notification](examples/automations/new_movie_notification.yaml)**: Sends mobile notifications with artwork and dynamic range badges when new media is added.
 - **[Play on Android TV / Wholphin (ADB)](examples/scripts/card_action_play_on_wholpin.yaml)**: Card click action to play directly on Wholphin via ADB without confirmation prompts.
+- **[Cast with Custom Subtitles](examples/scripts/card_action_cast_with_subtitles.yaml)**: Routes library card clicks to Chromecast with prioritized subtitle selection (e.g. `sl, en`) and automatic server-side transcode burn-in.
 - **[Play on Apple TV (Infuse)](examples/scripts/card_action_play_on_apple_tv.yaml)**: Routes library card clicks to Apple TV.
 - **[Play on Kodi (JellyCon)](examples/scripts/card_action_play_on_kodi.yaml)**: Routes library card clicks to Kodi.
 - **[System & Library Monitoring Stack](examples/dashboards/system_monitoring_card.yaml)**: Lovelace dashboard with server health, storage percentage meters, and library breakdown.
 
 ## Troubleshooting
 
-- **Custom element does not exist:** Ensure `/jellyha/jellyha-cards.js` is added under **Dashboards** -> **Resources** as a JavaScript Module, and clear browser cache (`Ctrl + F5`).
-- **No media found:** Verify that `sensor.jellyha_library` has a state greater than 0 and check active card filters.
-- **Remote control not responding on Android:** Switch the Jellyfin Android app video player setting from *Integrated player* to *Web player*.
+For solutions to common issues, browser cache clearing, Android TV & Wholphin playback setup, and diagnostic logging:
 
 👉 **[Read the complete Troubleshooting Guide in docs/troubleshooting.md](docs/troubleshooting.md)**
 
 ## Support
 
 - [Report an issue](https://github.com/zupancicmarko/jellyha/issues)
-- [Home Assistant Community](https://community.home-assistant.io/)
+- [Home Assistant Community](https://community.home-assistant.io/t/jellyha-jellyfin-custom-integration-for-home-assistant/981271/30)
 
 ## Acknowledgments
 
