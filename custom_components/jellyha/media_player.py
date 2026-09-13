@@ -631,20 +631,16 @@ class JellyHABasePlaybackMediaPlayer(
         if not session or not self._is_session_remote_controllable(session):
             return []
         target_ids = [session["Id"]]
-        # Broadcast to all controllable companion sessions on the same physical device
+        # Broadcast only to sessions with the exact same device ID. WebOS IDs
+        # share an encoded user-agent prefix across unrelated clients.
         dev_id = getattr(self, "_device_id", None) or session.get("DeviceId") or ""
-        base_dev_id = dev_id[:16] if len(dev_id) >= 16 else dev_id
-        if base_dev_id and self.coordinator.data:
+        if dev_id and self.coordinator.data:
             for s in self.coordinator.data:
                 sid = s.get("Id")
                 if not sid or sid in target_ids:
                     continue
                 s_dev_id = s.get("DeviceId") or ""
-                if (
-                    s_dev_id == base_dev_id
-                    or s_dev_id.startswith(base_dev_id)
-                    or base_dev_id.startswith(s_dev_id)
-                ):
+                if s_dev_id == dev_id:
                     if s.get("SupportsRemoteControl") is True:
                         target_ids.append(sid)
         return target_ids
@@ -884,24 +880,9 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
     def _is_matching_device_session(self, s: dict[str, Any]) -> bool:
         """Check if a session belongs to this device."""
         session_dev_id = s.get("DeviceId") or ""
-        if not session_dev_id or not self._device_id:
-            return False
-        # Exact match
-        if session_dev_id == self._device_id:
-            return True
-        # Prefix match: Jellyfin mobile apps (e.g. Android ExoPlayer) append user ID or sub-id to DeviceId during playback
-        if session_dev_id.startswith(self._device_id):
-            return True
-        # Reverse prefix match if registered device ID contains extra suffix
-        if self._device_id.startswith(session_dev_id) and len(session_dev_id) >= 8:
-            return True
-        # Fallback: device name matches and device IDs share a common prefix (at least 8 chars)
-        dev_name = s.get("DeviceName")
-        if dev_name and self._custom_device_name and dev_name.strip().lower() == self._custom_device_name.strip().lower():
-            if len(session_dev_id) >= 8 and len(self._device_id) >= 8:
-                if session_dev_id[:8] == self._device_id[:8]:
-                    return True
-        return False
+        # WebOS identifiers encode the user agent. Multiple unrelated clients
+        # share its prefix, so prefix/name matching merges them incorrectly.
+        return bool(session_dev_id and self._device_id and session_dev_id == self._device_id)
 
     def _get_active_session(self) -> dict[str, Any] | None:
         """Get the active session for this device with stable priority.
@@ -952,5 +933,3 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
         attrs["user_id"] = session.get("UserId") if session else None
         attrs["user_name"] = session.get("UserName") if session else None
         return attrs
-
-

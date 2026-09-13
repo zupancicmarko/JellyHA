@@ -486,12 +486,18 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                         if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
                     ]
                 devices = await api.get_devices()
-                for d in devices:
-                    dev_id = d.get("Id")
+                for device_data in devices:
+                    dev_id = device_data.get("Id")
                     if not dev_id:
                         continue
-                    dev_name = d.get("Name") or d.get("AppName") or "Unknown Device"
-                    app_name = d.get("AppName")
+                    dev_name = (
+                        device_data.get("CustomName")
+                        or device_data.get("Name")
+                        or device_data.get("DeviceName")
+                        or device_data.get("AppName")
+                        or "Unknown Device"
+                    )
+                    app_name = device_data.get("AppName")
                     label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
                     device_options.append(selector.SelectOptionDict(value=dev_id, label=label))
                     device_map[dev_id] = dev_name

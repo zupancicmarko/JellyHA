@@ -544,7 +544,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
             if not target_session_id:
                 for s in sessions:
-                    if dev_id and (s.get("DeviceId") == dev_id or (s.get("DeviceId") or "").startswith(dev_id)):
+                    if dev_id and s.get("DeviceId") == dev_id:
                         target_session_id = s.get("Id")
                         break
                     if dev_name and s.get("DeviceName", "").strip().lower() == dev_name.strip().lower():
@@ -558,7 +558,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 # Live fallback directly from Jellyfin API in case WS hasn't refreshed
                 live_sessions = await api._request("GET", "/Sessions")
                 for s in live_sessions:
-                    if dev_id and (s.get("DeviceId") == dev_id or (s.get("DeviceId") or "").startswith(dev_id)):
+                    if dev_id and s.get("DeviceId") == dev_id:
                         target_session_id = s.get("Id")
                         break
                     if dev_name and s.get("DeviceName", "").strip().lower() == dev_name.strip().lower():
