@@ -141,6 +141,9 @@
             "library": {
                 "name": "Library"
             },
+            "live_tv_channels": {
+                "name": "Live TV Channels"
+            },
             "favorites_count": {
                 "name": "Favorites"
             },
@@ -368,6 +371,24 @@
                 "item_id": {
                     "name": "Item ID",
                     "description": "The Jellyfin Item ID."
+                }
+            }
+        },
+        "get_live_tv_channels": {
+            "name": "Get Live TV Channels",
+            "description": "Retrieve available Jellyfin Live TV channels."
+        },
+        "play_live_tv_channel": {
+            "name": "Play Live TV Channel",
+            "description": "Resolve a Live TV channel by number or normalized name and play it.",
+            "fields": {
+                "channel_number": {
+                    "name": "Channel Number",
+                    "description": "Exact Jellyfin channel number."
+                },
+                "channel_name": {
+                    "name": "Channel Name",
+                    "description": "Jellyfin channel name."
                 }
             }
         }

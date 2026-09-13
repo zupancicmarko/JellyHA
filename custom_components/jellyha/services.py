@@ -33,6 +33,8 @@ SERVICE_MARK_WATCHED = "mark_watched"
 SERVICE_SEARCH = "search"
 SERVICE_GET_RECOMMENDATIONS = "get_recommendations"
 SERVICE_GET_ITEM = "get_item"
+SERVICE_GET_LIVE_TV_CHANNELS = "get_live_tv_channels"
+SERVICE_PLAY_LIVE_TV_CHANNEL = "play_live_tv_channel"
 
 def _get_coordinator(hass: HomeAssistant, config_entry_id: str | None = None, entity_id: str | None = None):
     """Get the JellyHA coordinator from config_entry_id or entity_id."""
@@ -194,6 +196,24 @@ GET_RECOMMENDATIONS_SCHEMA = vol.Schema({
 GET_ITEM_SCHEMA = vol.Schema({
     vol.Required("item_id"): cv.string,
     vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
+    vol.Optional("config_entry_id"): cv.string,
+})
+
+LIVE_TV_CHANNELS_SCHEMA = vol.Schema({
+    vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
+    vol.Optional("config_entry_id"): cv.string,
+})
+
+PLAY_LIVE_TV_CHANNEL_SCHEMA = vol.Schema({
+    vol.Optional("channel_name"): cv.string,
+    vol.Optional("channel_number"): cv.string,
+    vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("session_id"): cv.string,
+    vol.Optional("device_name"): cv.string,
+    vol.Optional("device_id"): cv.string,
+    vol.Optional("client"): cv.string,
     vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
 })
@@ -628,6 +648,93 @@ async def async_register_services(hass: HomeAssistant) -> None:
         except Exception as e:
             raise ValueError(f"Get Item failed: {e}") from e
 
+    async def async_get_live_tv_channels(call: ServiceCall) -> ServiceResponse:
+        """Retrieve Live TV channels with safe display metadata."""
+        target_entity_id = (
+            call.data.get("server_entity_id") or call.data.get("entity_id")
+        )
+        coordinator = _get_coordinator(
+            hass, call.data.get("config_entry_id"), target_entity_id
+        )
+        try:
+            channels = await coordinator._api.get_live_tv_channels()
+            return {
+                "channels": [
+                    {
+                        "id": channel.get("Id"),
+                        "number": str(channel["ChannelNumber"])
+                        if channel.get("ChannelNumber") is not None else None,
+                        "name": channel.get("Name", ""),
+                        "normalized_name": coordinator._api.normalize_live_tv_channel_name(
+                            channel.get("Name", "")
+                        ),
+                    }
+                    for channel in channels
+                ]
+            }
+        except Exception as err:
+            raise ValueError(f"Live TV channel lookup failed: {err}") from err
+
+    async def async_play_live_tv_channel(call: ServiceCall) -> None:
+        """Resolve a Live TV channel by number or normalized name and play it."""
+        requested_channel = call.data.get("channel_number")
+        if requested_channel is None:
+            requested_channel = call.data.get("channel_name")
+        if requested_channel is None or not str(requested_channel).strip():
+            raise ValueError(
+                "Provide either channel_number or channel_name"
+            )
+
+        target_entity_id = call.data.get("entity_id")
+        server_entity_id = call.data.get("server_entity_id")
+        coordinator = _get_coordinator(
+            hass,
+            call.data.get("config_entry_id"),
+            server_entity_id or target_entity_id,
+        )
+        api = coordinator._api
+        session_id = call.data.get("session_id")
+        device_id = call.data.get("device_id")
+        device_name = call.data.get("device_name")
+        client = call.data.get("client")
+
+        if not session_id and target_entity_id:
+            state = hass.states.get(target_entity_id)
+            if state:
+                session_id = state.attributes.get("session_id")
+                device_id = device_id or state.attributes.get("device_id")
+                device_name = device_name or state.attributes.get("device_name")
+
+        def find_session_id(sessions: list[dict]) -> str | None:
+            for session in sessions:
+                if device_id and session.get("DeviceId") == device_id:
+                    return session.get("Id")
+                if device_name and session.get("DeviceName", "").strip().lower() == device_name.strip().lower():
+                    return session.get("Id")
+                if client and session.get("Client", "").strip().lower() == client.strip().lower():
+                    return session.get("Id")
+            return None
+
+        if not session_id:
+            sessions = coordinator.entry.runtime_data.session.data or []
+            session_id = find_session_id(sessions)
+
+        if not session_id:
+            # The WebSocket cache can be briefly stale when a device appears.
+            live_sessions = await api.get_sessions()
+            session_id = find_session_id(live_sessions)
+
+        if not session_id:
+            raise ValueError(
+                "No active Jellyfin session matched the supplied session_id, media "
+                "player entity_id, device_name, device_id, or client"
+            )
+
+        try:
+            await api.play_live_tv_channel(session_id, requested_channel)
+        except Exception as err:
+            raise ValueError(f"Live TV playback failed: {err}") from err
+
     # Register all services properly
     service_map = [
         (SERVICE_REFRESH_LIBRARY, async_refresh_library, None),
@@ -642,6 +749,8 @@ async def async_register_services(hass: HomeAssistant) -> None:
         (SERVICE_SEARCH, async_search, SEARCH_SCHEMA, True),
         (SERVICE_GET_RECOMMENDATIONS, async_get_recommendations, GET_RECOMMENDATIONS_SCHEMA, True),
         (SERVICE_GET_ITEM, async_get_item, GET_ITEM_SCHEMA, True),
+        (SERVICE_GET_LIVE_TV_CHANNELS, async_get_live_tv_channels, LIVE_TV_CHANNELS_SCHEMA, True),
+        (SERVICE_PLAY_LIVE_TV_CHANNEL, async_play_live_tv_channel, PLAY_LIVE_TV_CHANNEL_SCHEMA),
     ]
 
     for name, func, schema, *resp in service_map:

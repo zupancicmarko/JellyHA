@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from typing import Any
 from urllib.parse import urljoin
 
@@ -382,6 +383,56 @@ class JellyfinApiClient:
         """Get all active sessions."""
         return await self._request("GET", "/Sessions")
 
+    @staticmethod
+    def normalize_live_tv_channel_name(name: Any) -> str:
+        """Normalize a Live TV channel name for lookup."""
+        return re.sub(r"[^a-z0-9]", "", str(name).lower())
+
+    async def get_live_tv_channels(self) -> list[dict[str, Any]]:
+        """Return all Live TV channels from Jellyfin."""
+        result = await self._request(
+            "GET",
+            "/LiveTv/Channels",
+            params={"StartIndex": 0, "Limit": 1000},
+        )
+        if isinstance(result, list):
+            return result
+        return result.get("Items", []) if isinstance(result, dict) else []
+
+    @classmethod
+    def resolve_live_tv_channel(
+        cls, channels: list[dict[str, Any]], requested: Any
+    ) -> dict[str, Any]:
+        """Resolve a channel by exact number first, then normalized name."""
+        requested_text = str(requested).strip()
+        normalized_requested = cls.normalize_live_tv_channel_name(requested_text)
+
+        for channel in channels:
+            number = channel.get("ChannelNumber")
+            if number is not None and str(number).strip() == requested_text:
+                return channel
+
+        for channel in channels:
+            name = channel.get("Name")
+            if name and cls.normalize_live_tv_channel_name(name) == normalized_requested:
+                return channel
+
+        raise JellyfinApiError(f"Unknown Jellyfin Live TV channel: {requested_text}")
+
+    async def play_live_tv_channel(
+        self, session_id: str, requested: Any
+    ) -> dict[str, Any]:
+        """Resolve and play a Live TV channel on a Jellyfin session."""
+        channels = await self.get_live_tv_channels()
+        channel = self.resolve_live_tv_channel(channels, requested)
+        channel_id = channel.get("Id")
+        if not channel_id:
+            raise JellyfinApiError("Resolved Live TV channel has no Jellyfin item ID")
+
+        if not await self.session_play(session_id, str(channel_id)):
+            raise JellyfinApiError("Jellyfin rejected the Live TV play request")
+        return channel
+
     async def get_next_up_episode(self, user_id: str, series_id: str) -> dict[str, Any] | None:
         """Get the next unplayed episode for a series."""
         params = {
@@ -709,4 +760,3 @@ class JellyfinApiClient:
         except JellyfinApiError as err:
             _LOGGER.debug("Failed to fetch storage info: %s", err)
             return None
-

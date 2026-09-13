@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.const import UnitOfInformation
@@ -14,6 +15,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.components.http.auth import async_sign_path
 
 from .const import (
     CONF_DEVICE_NAME,
@@ -66,6 +68,7 @@ async def async_setup_entry(
         JellyHATranscodingSessionsSensor(session_coordinator, entry, device_name),
         JellyHAMediaStorageFreeSensor(coordinator, entry, device_name),
         JellyHAMediaStorageFreePercentSensor(coordinator, entry, device_name),
+        JellyHALiveTVChannelsSensor(coordinator, entry, device_name),
     ]
 
     # Create sensors for each user
@@ -170,6 +173,54 @@ class JellyHALibrarySensor(JellyHABaseSensor):
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
+        }
+
+
+class JellyHALiveTVChannelsSensor(JellyHABaseSensor):
+    """Sensor exposing Jellyfin Live TV channels for cards and automations."""
+
+    _attr_translation_key = "live_tv_channels"
+    _attr_icon = "mdi:television-classic"
+
+    def __init__(
+        self,
+        coordinator: JellyHALibraryCoordinator,
+        entry: ConfigEntry,
+        device_name: str,
+    ) -> None:
+        """Initialize the Live TV channel sensor."""
+        super().__init__(coordinator, entry, device_name, "live_tv_channels")
+
+    @property
+    def native_value(self) -> int:
+        """Return the number of available Live TV channels."""
+        return len(self.coordinator.data.get("live_tv_channels", [])) if self.coordinator.data else 0
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return channel number, name, normalized name, and proxied artwork."""
+        channels = self.coordinator.data.get("live_tv_channels", []) if self.coordinator.data else []
+        output = []
+        for channel in channels:
+            channel_id = channel.get("Id")
+            image_url = None
+            if channel_id:
+                image_tags = channel.get("ImageTags") or {}
+                tag = image_tags.get("Primary", "")
+                path = f"/api/jellyha/image/{self._entry.entry_id}/{channel_id}/Primary?tag={tag}"
+                image_url = async_sign_path(self.hass, path, timedelta(hours=24))
+            name = str(channel.get("Name") or "")
+            output.append({
+                "id": channel_id,
+                "number": str(channel["ChannelNumber"]) if channel.get("ChannelNumber") is not None else None,
+                "name": name,
+                "normalized_name": re.sub(r"[^a-z0-9]", "", name.lower()),
+                "image_url": image_url,
+            })
+        return {
+            "entry_id": self._entry.entry_id,
+            "config_entry_id": self._entry.entry_id,
+            "channels": output,
         }
 
 
@@ -1546,5 +1597,3 @@ class JellyHAMediaStorageFreePercentSensor(JellyHABaseSensor):
             "free_percent": free_percent,
             "devices": devices_info,
         }
-
-

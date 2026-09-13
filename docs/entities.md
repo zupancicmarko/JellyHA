@@ -139,6 +139,17 @@ data:
 | `sensor.jellyha_watched_series` | Watched TV series | Count | `entry_id` |
 | `sensor.jellyha_watched_episodes` | Watched episodes | Count | `entry_id` |
 
+### Live TV Sensor
+
+| Entity ID | Description | State | Key Attributes |
+|---|---|---|---|
+| `sensor.jellyha_live_tv_channels` | Available Jellyfin Live TV channels | Channel count | `channels` |
+
+Each item in the `channels` attribute contains `id`, `number`, `name`,
+`normalized_name`, and an authenticated Home Assistant proxy `image_url` when
+Jellyfin provides channel artwork. The sensor is refreshed with the normal
+JellyHA coordinator refresh.
+
 ### Latest Content Sensors
 
 | Entity ID | Description | State | Key Attributes |

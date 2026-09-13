@@ -82,6 +82,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._previous_item_ids: set[str] = set()
         self._previous_item_hash: str = ""
         self._favorite_series_ids: set[str] = set()
+        self._live_tv_channels: list[dict[str, Any]] = []
         # Cache signed URLs by (item_id, image_type, tag) -> (url, monotonic timestamp)
         self._url_cache: dict[tuple[str, str, str], tuple[str, float]] = {}
 
@@ -229,6 +230,13 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             except Exception as err:
                 _LOGGER.debug("Failed to fetch storage info: %s", err)
 
+            try:
+                self._live_tv_channels = await self._api.get_live_tv_channels()
+            except Exception as err:
+                # Live TV is optional; a server without Live TV must not make
+                # the library integration unavailable or discard last-good data.
+                _LOGGER.debug("Failed to fetch Live TV channels: %s", err)
+
             # Update last refresh time (always updates)
             self.last_refresh_time = dt_util.utcnow()
 
@@ -283,6 +291,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "latest_movie": latest_movie,
                 "latest_episode": latest_episode,
                 "storage": storage_info,
+                "live_tv_channels": self._live_tv_channels,
             }
 
         except JellyfinAuthError as err:

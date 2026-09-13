@@ -15,6 +15,8 @@ JellyHA exposes custom Home Assistant actions/services under the `jellyha` domai
 | `jellyha.update_favorite` | Add (`true`) or remove (`false`) an item from favorites. | `item_id` (Req), `is_favorite` (Req), `config_entry_id` (Opt) |
 | `jellyha.session_control` | Send transport commands to an active session (`Pause`, `Unpause`, `TogglePause`, `Stop`, `NextTrack`, `PreviousTrack`, `Shuffle`, `SetRepeatMode`). | `session_id` (Req), `command` (Req), `config_entry_id` (Opt) |
 | `jellyha.session_play` | Instruct an active Jellyfin client session or device player to play a media item (Movie, Episode, Song). Auto-resolves TV shows to the next unplayed episode. | `item_id` (Req), `entity_id` / `device_name` / `session_id` / `device_id` / `client` (Opt), `play_command` (`PlayNow`/`PlayNext`/`PlayLast`, Opt), `start_position_ticks` (Opt), `config_entry_id` (Opt) |
+| `jellyha.get_live_tv_channels` | Retrieve available Live TV channels, including number, display name, and normalized name. Results are returned through `response_variable`. | `config_entry_id` / `entity_id` / `server_entity_id` (Opt) |
+| `jellyha.play_live_tv_channel` | Resolve a Live TV channel by exact channel number or normalized name, then play its Jellyfin channel item on an active session. | `channel_number` or `channel_name` (one Req), `entity_id` / `session_id` / `device_name` / `device_id` / `client` (Opt), `server_entity_id` / `config_entry_id` (Opt) |
 | `jellyha.session_seek` | Seek an active playback session. Accepts `position_seconds` (seconds) or `position_ticks`. Use `0` to rewind. | `session_id` (Req), `position_seconds` (Opt), `position_ticks` (Opt), `config_entry_id` (Opt) |
 | `jellyha.session_general_command` | Send arbitrary commands to a Jellyfin playback session (e.g. `SetSubtitleStreamIndex`, `SetAudioStreamIndex`, `Mute`, `Unmute`, `SetVolume`, `DisplayMessage`). | `session_id` (Req), `command` (Req), `arguments` (Opt), `config_entry_id` (Opt) |
 | `jellyha.search` | Search and filter library media with advanced sorting and filtering, returning results into `response_variable`. | `query`, `media_type`, `sort_by`, `sort_order`, `parent_id`, `is_played`, `is_favorite`, `genre`, `year`, `min_rating`, `limit`, `config_entry_id` |
@@ -35,6 +37,27 @@ If omitted, the action automatically targets the first available JellyHA instanc
 ---
 
 ## Action Examples
+
+### Play a Live TV Channel by Number
+
+```yaml
+action: jellyha.play_live_tv_channel
+data:
+  channel_number: "3"
+  entity_id: media_player.jellyha_living_room_tv
+```
+
+### Play a Live TV Channel by Name
+
+Names are normalized by lowercasing and removing non-alphanumeric characters,
+so `Comedy Central` can be passed as `comedycentral`.
+
+```yaml
+action: jellyha.play_live_tv_channel
+data:
+  channel_name: Comedy Central
+  entity_id: media_player.jellyha_living_room_tv
+```
 
 ### Play Movie or Next Up Episode on Chromecast
 

@@ -675,3 +675,82 @@ get_item:
         entity:
           integration: jellyha
 
+get_live_tv_channels:
+  name: Get Live TV Channels
+  description: Retrieve the available Jellyfin Live TV channels.
+  fields:
+    config_entry_id:
+      name: JellyHA Instance
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
+    entity_id:
+      name: JellyHA Entity
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      required: false
+      selector:
+        entity:
+          integration: jellyha
+
+play_live_tv_channel:
+  name: Play Live TV Channel
+  description: Resolve a Jellyfin Live TV channel by number or normalized name and play it.
+  fields:
+    channel_number:
+      name: Channel Number
+      description: Exact Jellyfin channel number. Takes priority if a name is also supplied.
+      required: false
+      selector:
+        text:
+    channel_name:
+      name: Channel Name
+      description: Jellyfin channel name. It is lowercased and stripped of non-alphanumeric characters before lookup.
+      required: false
+      selector:
+        text:
+    entity_id:
+      name: Media Player
+      description: JellyHA media player entity whose active session should play the channel.
+      required: false
+      selector:
+        entity:
+          domain: media_player
+    session_id:
+      name: Jellyfin Session ID
+      required: false
+      selector:
+        text:
+    device_name:
+      name: Device Name
+      required: false
+      selector:
+        text:
+    device_id:
+      name: Device ID
+      required: false
+      selector:
+        text:
+    client:
+      name: Client Name
+      required: false
+      selector:
+        text:
+    config_entry_id:
+      name: JellyHA Instance
+      required: false
+      selector:
+        config_entry:
+          integration: jellyha
+    server_entity_id:
+      name: JellyHA Server Entity
+      description: The JellyHA entity to target (optional, alternative to config_entry_id)
+      required: false
+      selector:
+        entity:
+          integration: jellyha
