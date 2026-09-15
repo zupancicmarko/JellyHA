@@ -19,6 +19,7 @@ Jellyfin for Home Assistant
     <img src="./docs/JellyHA-Library-List.png" width="48%" alt="List View" />
     <img src="./docs/JellyHA-Library-More-Information.png" width="48%" alt="More Information" />
     <img src="./docs/JellyHA-Cards.png" width="48%" alt="Add to dashboard" />
+    <img src="./docs/JellyHA-Latest-Movie-Card-Mod.png" width="48%" alt="Latest Movie Card Mod" />
   </div>
 </details>
 
@@ -187,8 +188,8 @@ Starting in **JellyHA v1.3.0**, per-user `media_player.jellyha_<user>` entities 
 
 ```diff
 type: custom:jellyha-now-playing-card
--entity: sensor.jellyha_now_playing_marko
-+entity: media_player.jellyha_marko
+-entity: sensor.jellyha_now_playing_<user>
++entity: media_player.jellyha_<user>
 title: Now Playing
 show_background: true
 ```
