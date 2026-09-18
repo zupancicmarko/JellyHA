@@ -196,13 +196,13 @@ async def _build_root_menu(coordinator, entry_id: str) -> BrowseMedia:
             )
         )
 
-    if "boxsets" in collection_types:
+    if "boxsets" in collection_types or "boxset" in collection_types:
         children.append(
             BrowseMedia(
                 title="📦 Collections",
                 media_class=MediaClass.DIRECTORY,
                 media_content_id=build_item_id("collections"),
-                media_content_type=MediaType.CHANNELS,
+                media_content_type=MediaType.PLAYLIST,
                 can_play=False,
                 can_expand=True,
                 thumbnail=None,
@@ -1248,8 +1248,8 @@ async def _build_collections_list(coordinator, entry_id: str) -> BrowseMedia:
                 title=collection.get("Name", "Unknown Collection"),
                 media_class=MediaClass.DIRECTORY,
                 media_content_id=build_item_id("collection", collection_id),
-                media_content_type=MediaType.CHANNELS,
-                can_play=False,
+                media_content_type=MediaType.PLAYLIST,
+                can_play=True,
                 can_expand=True,
                 thumbnail=_signed_image_url(coordinator.hass, entry_id, collection_id),
             )
@@ -1259,7 +1259,7 @@ async def _build_collections_list(coordinator, entry_id: str) -> BrowseMedia:
         title="Collections",
         media_class=MediaClass.DIRECTORY,
         media_content_id=build_item_id("collections"),
-        media_content_type=MediaType.CHANNELS,
+        media_content_type=MediaType.PLAYLIST,
         can_play=False,
         can_expand=True,
         children=children,

@@ -371,6 +371,56 @@
                     "description": "Album title to search for."
                 }
             }
+        },
+        "play_playlist": {
+            "name": "Play Playlist",
+            "description": "Play a playlist from Jellyfin on any Home Assistant media player or directly on a Jellyfin client session, with optional shuffle.",
+            "fields": {
+                "entity_id": {
+                    "name": "Media Player",
+                    "description": "Target media player entity to play the playlist on."
+                },
+                "playlist": {
+                    "name": "Playlist Name or ID",
+                    "description": "Name or Jellyfin Item ID of the playlist."
+                },
+                "shuffle": {
+                    "name": "Shuffle",
+                    "description": "Randomize track order before playing."
+                }
+            }
+        },
+        "get_playlists": {
+            "name": "Get Playlists",
+            "description": "Fetch all user playlists from Jellyfin with track count, duration, and thumbnail to response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Query",
+                    "description": "Optional search filter to match playlist names."
+                },
+                "limit": {
+                    "name": "Limit",
+                    "description": "Maximum number of playlists to return."
+                }
+            }
+        },
+        "get_collections": {
+            "name": "Get Collections",
+            "description": "Fetch all BoxSets / Movie Collections from Jellyfin with item count and contained movies to response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Query",
+                    "description": "Optional search filter to match collection names."
+                },
+                "limit": {
+                    "name": "Limit",
+                    "description": "Maximum number of collections to return."
+                },
+                "include_items": {
+                    "name": "Include Items",
+                    "description": "Include contained movies in the response."
+                }
+            }
         }
     }
 }

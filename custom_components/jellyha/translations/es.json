@@ -478,6 +478,56 @@
                     "description": "Título del álbum a buscar."
                 }
             }
+        },
+        "play_playlist": {
+            "name": "Reproducir lista de reproducción",
+            "description": "Reproduce una lista de reproducción de Jellyfin en cualquier reproductor multimedia de Home Assistant o directamente en una sesión de cliente de Jellyfin, con reproducción aleatoria opcional.",
+            "fields": {
+                "entity_id": {
+                    "name": "Reproductor multimedia",
+                    "description": "Entidad de reproductor multimedia de destino para reproducir la lista de reproducción."
+                },
+                "playlist": {
+                    "name": "Nombre o ID de la lista de reproducción",
+                    "description": "Nombre o ID de elemento de Jellyfin de la lista de reproducción."
+                },
+                "shuffle": {
+                    "name": "Aleatorio",
+                    "description": "Aleatorizar el orden de las pistas antes de reproducir."
+                }
+            }
+        },
+        "get_playlists": {
+            "name": "Obtener listas de reproducción",
+            "description": "Obtén todas las listas de reproducción de usuario de Jellyfin con recuento de pistas, duración y miniatura en response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Consulta",
+                    "description": "Filtro de búsqueda opcional para coincidir con nombres de listas de reproducción."
+                },
+                "limit": {
+                    "name": "Límite",
+                    "description": "Número máximo de listas de reproducción a devolver."
+                }
+            }
+        },
+        "get_collections": {
+            "name": "Obtener colecciones",
+            "description": "Obtén todas las colecciones de películas (BoxSets) de Jellyfin con recuento de elementos y películas contenidas en response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Consulta",
+                    "description": "Filtro de búsqueda opcional para coincidir con nombres de colecciones."
+                },
+                "limit": {
+                    "name": "Límite",
+                    "description": "Número máximo de colecciones a devolver."
+                },
+                "include_items": {
+                    "name": "Incluir elementos",
+                    "description": "Incluir películas contenidas en la respuesta."
+                }
+            }
         }
     }
 }

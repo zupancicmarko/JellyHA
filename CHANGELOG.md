@@ -5,6 +5,20 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Native Media Browsing on Individual Players (Follow-up to [#11](https://github.com/zupancicmarko/JellyHA/issues/11))**:
+  - Added `MediaPlayerEntityFeature.BROWSE_MEDIA` and `async_browse_media` to `JellyHABasePlaybackMediaPlayer`, enabling direct Jellyfin media library browsing on all user (`media_player.jellyha_<user>`) and device (`media_player.jellyha_<device>`) media players in Home Assistant.
+  - Enhanced `async_play_media` across all player entities to parse `jellyha://` URIs and automatically resolve complex media containers upon selection (albums & playlists to first audio track, BoxSets/collections to first video, and TV shows/seasons to Next Up episode).
+- **Playlist Playback & Management Actions**:
+  - Added `jellyha.play_playlist`: Play Jellyfin playlists on any Home Assistant media player (with live stream URL resolution, cover art, track metadata, and optional `shuffle`) or directly on active Jellyfin client sessions (via server-side queueing).
+  - Added `jellyha.get_playlists`: Fetch all user playlists with track counts, durations, and thumbnails to `response_variable`.
+- **BoxSet / Movie Collections Support**:
+  - Added `jellyha.get_collections`: Fetch all BoxSets and movie collections with item counts and contained movies to `response_variable`.
+  - Added 1-tap playback for BoxSets / Collections in the Home Assistant Media Browser: selecting Play on a BoxSet automatically resolves and plays its first movie.
+  - Added multi-instance smart routing and localized translations across all 7 supported languages (`en`, `sl`, `de`, `es`, `fr`, `it`, `ru`).
+
 ## [1.4.0] - 2026-09-15
 
 ### Added

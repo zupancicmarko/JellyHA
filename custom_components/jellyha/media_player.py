@@ -195,6 +195,28 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
             except Exception as err:
                 _LOGGER.debug("Could not resolve tracks for %s %s: %s", category, item_id, err)
 
+        # If collection or boxset, resolve first playable video
+        if category in ("collection", "boxset") and api and user_id:
+            try:
+                col_result = await api._request(
+                    "GET",
+                    "/Items",
+                    params={
+                        "UserId": user_id,
+                        "ParentId": item_id,
+                        "IncludeItemTypes": "Movie,Video,Episode",
+                        "SortBy": "SortName",
+                        "SortOrder": "Ascending",
+                        "Limit": 1,
+                        "Recursive": "true",
+                    },
+                )
+                items = col_result.get("Items", [])
+                if items:
+                    item_id = items[0]["Id"]
+            except Exception as err:
+                _LOGGER.debug("Could not resolve item for %s %s: %s", category, item_id, err)
+
         # Find the item in coordinator data
         items = self.coordinator.data.get("items", []) if self.coordinator.data else []
         item = next((i for i in items if i.get("id") == item_id), None)
@@ -312,6 +334,7 @@ class JellyHABasePlaybackMediaPlayer(
             | MediaPlayerEntityFeature.VOLUME_MUTE
             | MediaPlayerEntityFeature.SHUFFLE_SET
             | MediaPlayerEntityFeature.REPEAT_SET
+            | MediaPlayerEntityFeature.BROWSE_MEDIA
             | MediaPlayerEntityFeature.PLAY_MEDIA
         )
 
@@ -342,6 +365,19 @@ class JellyHABasePlaybackMediaPlayer(
     def _get_active_session(self) -> dict[str, Any] | None:
         """Get the active session for this media player entity."""
         raise NotImplementedError
+
+    async def async_browse_media(
+        self,
+        media_content_type: str | None = None,
+        media_content_id: str | None = None,
+    ) -> BrowseMedia:
+        """Browse this integration's Jellyfin library for this player."""
+        return await async_browse_media(
+            self.hass,
+            self._entry.entry_id,
+            media_content_type,
+            media_content_id,
+        )
 
     # ------------------------------------------------------------------
     # State
@@ -771,20 +807,73 @@ class JellyHABasePlaybackMediaPlayer(
             )
             return
 
-        # Resolve item_id if a URL or parameter string was passed
-        item_id = media_id
-        if "item_id=" in item_id:
-            item_id = item_id.split("item_id=")[-1].split("&")[0]
-        elif "/" in item_id:
-            item_id = item_id.rstrip("/").split("/")[-1].split("?")[0]
+        # Parse the item ID
+        category, parsed_id = parse_item_id(media_id)
+        if parsed_id:
+            item_id = parsed_id
+        else:
+            item_id = media_id
+            if "item_id=" in item_id:
+                item_id = item_id.split("item_id=")[-1].split("&")[0]
+            elif "/" in item_id:
+                item_id = item_id.rstrip("/").split("/")[-1].split("?")[0]
+
+        if not item_id:
+            _LOGGER.warning("Cannot play on %s: Invalid media_id format: %s", self.name, media_id)
+            return
 
         api = getattr(self.coordinator, "api", None) or getattr(self.coordinator, "_api", None)
         if not api:
             _LOGGER.error("Cannot play on %s: API client unavailable on coordinator", self.name)
             return
 
-        # Auto-resolve series/season to Next Up episode
         user_id = getattr(self, "_user_id", None) or self._entry.data.get("user_id")
+
+        # If album or playlist, resolve first playable track
+        if category in ("album", "playlist") and api and user_id:
+            try:
+                tracks_result = await api._request(
+                    "GET",
+                    "/Items",
+                    params={
+                        "UserId": user_id,
+                        "ParentId": item_id,
+                        "IncludeItemTypes": "Audio",
+                        "SortBy": "IndexNumber",
+                        "SortOrder": "Ascending",
+                        "Limit": 1,
+                        "Recursive": "true",
+                    },
+                )
+                items = tracks_result.get("Items", [])
+                if items:
+                    item_id = items[0]["Id"]
+            except Exception as err:
+                _LOGGER.debug("Could not resolve tracks for %s %s: %s", category, item_id, err)
+
+        # If collection or boxset, resolve first playable video
+        if category in ("collection", "boxset") and api and user_id:
+            try:
+                col_result = await api._request(
+                    "GET",
+                    "/Items",
+                    params={
+                        "UserId": user_id,
+                        "ParentId": item_id,
+                        "IncludeItemTypes": "Movie,Video,Episode",
+                        "SortBy": "SortName",
+                        "SortOrder": "Ascending",
+                        "Limit": 1,
+                        "Recursive": "true",
+                    },
+                )
+                items = col_result.get("Items", [])
+                if items:
+                    item_id = items[0]["Id"]
+            except Exception as err:
+                _LOGGER.debug("Could not resolve item for %s %s: %s", category, item_id, err)
+
+        # Auto-resolve series/season to Next Up episode
         if user_id:
             try:
                 item = await api.get_item(user_id, item_id)

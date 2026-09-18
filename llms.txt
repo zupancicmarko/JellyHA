@@ -97,9 +97,11 @@ Users can opt-in to dedicated media player entities per physical client device (
 
 ### Native Media Browser Support (`/media-browser`)
 JellyHA registers a native Home Assistant Media Browser provider for each server instance. When browsing `media_player` entities or the sidebar Media Browser:
-* Displays top-level library folders (Movies, TV Shows, Music, etc.) and a dedicated **📡 Live TV** category (when `enable_live_tv` is enabled in Options).
+* All per-user (`media_player.jellyha_<user>`) and per-device (`media_player.jellyha_<device>`) media players expose `BROWSE_MEDIA` and direct library navigation.
+* Displays top-level library folders (Movies, TV Shows, Music), **📦 Collections / BoxSets**, and a dedicated **📡 Live TV** category (when `enable_live_tv` is enabled in Options).
+* Inside **📦 Collections**, tapping Play on any BoxSet automatically resolves and plays its first movie.
 * Inside **📡 Live TV**, channels are rendered with authenticated signed channel logos, channel numbers, and titles, sorted numerically/alphabetically.
-* Tapping any channel starts instant playback directly on the selected media player.
+* Tapping any track, album, playlist, or movie starts instant playback directly on the selected media player.
 
 ---
 
@@ -286,6 +288,36 @@ Search and play music from Jellyfin directly on any Home Assistant media player 
   * `item_id` (Optional, string): Direct Jellyfin track or album ID (bypasses search).
   * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance (auto-selects Music instance in multi-instance setups).
 
+### 13. `jellyha.play_playlist`
+Plays a playlist from Jellyfin on any Home Assistant media player or directly on an active Jellyfin client session, with optional shuffle.
+* **Fields**:
+  * `entity_id` (Required, string): Target media player entity to play the playlist on (HA player or Jellyfin player).
+  * `playlist` (Required, string): Name or Jellyfin Item ID of the playlist.
+  * `shuffle` (Optional, boolean, default: `false`): Randomize track order before playing.
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance.
+* **Dual Playback Strategy**:
+  * When targeting a Jellyfin client session (`media_player.jellyha_*`), delegates server-side queueing via `api.session_play` (`play_command="PlayNow"`), queuing the full playlist natively on Jellyfin client apps.
+  * When targeting an external Home Assistant media player (Sonos, Google Cast, Wiim, HomePod), resolves direct stream URLs, attaches cover art and metadata, and handles shuffling.
+
+### 14. `jellyha.get_playlists`
+Fetches user playlists from Jellyfin into `response_variable`.
+* **Fields**:
+  * `query` (Optional, string): Optional search filter to match playlist names.
+  * `limit` (Optional, integer): Maximum number of playlists to return.
+  * `server_entity_id` / `config_entry_id` / `entity_id` (Optional, string): Target JellyHA instance.
+* **Return Structure**:
+  Returns a dictionary `{"playlists": [...]}` where each item contains `id`, `name`, `item_count`, `duration_seconds`, `duration_formatted`, and `image_url`.
+
+### 15. `jellyha.get_collections`
+Fetches all BoxSets / Movie Collections from Jellyfin into `response_variable`.
+* **Fields**:
+  * `query` (Optional, string): Optional search filter to match collection names.
+  * `limit` (Optional, integer): Maximum number of collections to return.
+  * `include_items` (Optional, boolean, default: `false`): Include contained movies in the response.
+  * `server_entity_id` / `config_entry_id` / `entity_id` (Optional, string): Target JellyHA instance.
+* **Return Structure**:
+  Returns a dictionary `{"collections": [...]}` where each item contains `id`, `name`, `item_count`, `image_url`, and optional `items` list (`id`, `name`, `year`, `runtime`, `image_url`).
+
 ---
 
 ## 3. Events & Device Triggers
@@ -365,6 +397,13 @@ When generating automations for JellyHA, you **MUST NEVER** make the following c
    * Always capture with `response_variable: result_name`.
    * The list of items is at `result_name.items`.
    * Always check `result_name.items | count > 0` before indexing `[0]`.
+
+7. **Library Card (`custom:jellyha-library-card`) Scope**:
+   * *The Mistake*: Attempting to display Music, Live TV, Playlists, or Collections in the Library Card.
+   * *The Reality*: The Library Card is exclusively dedicated to **Movies** and **TV Shows** (`media_type: movies`, `series`, `episodes`, or `both`). Music, Live TV, Playlists, and BoxSets/Collections are accessed via Home Assistant's native Media Browser (`/media-browser`), all media player entities, or dedicated playback actions (`jellyha.play_music`, `jellyha.play_playlist`, `jellyha.play_live_tv_channel`).
+
+8. **Media Player Browsing**:
+   * All JellyHA media players (`media_player.jellyha_<user>` and `media_player.jellyha_<device>`) support native media browsing (`MediaPlayerEntityFeature.BROWSE_MEDIA`), allowing users to browse their libraries directly from media player cards.
 
 ---
 
