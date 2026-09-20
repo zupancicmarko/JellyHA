@@ -1054,8 +1054,6 @@ play_playlist:
 get_playlists:
   name: Get Playlists
   description: Fetch all user playlists from Jellyfin with track count, duration, and thumbnail to response_variable.
-  response:
-    optional: false
   fields:
     query:
       name: Filter Query
@@ -1091,8 +1089,6 @@ get_playlists:
 get_collections:
   name: Get Collections (BoxSets)
   description: Fetch all BoxSets / Movie Collections from Jellyfin with item count and contained movies to response_variable.
-  response:
-    optional: false
   fields:
     query:
       name: Filter Query
