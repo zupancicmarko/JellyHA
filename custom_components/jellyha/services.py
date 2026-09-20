@@ -834,6 +834,30 @@ async def async_register_services(hass: HomeAssistant) -> None:
             "metadata": metadata,
         }
 
+        # Check if target_player is a Jellyfin session or Jellyfin media player entity
+        target_session_id = None
+        session_coord = getattr(coordinator.entry.runtime_data, "session", None)
+        if session_coord and session_coord.data:
+            target_state = hass.states.get(target_player)
+            if target_state:
+                target_session_id = target_state.attributes.get("session_id")
+                if not target_session_id and "device_name" in target_state.attributes:
+                    d_name = target_state.attributes["device_name"]
+                    for s in session_coord.data:
+                        if s.get("DeviceName") == d_name:
+                            target_session_id = s.get("Id")
+                            break
+
+        if target_session_id:
+            _LOGGER.info(
+                "Playing '%s' (%s) directly on Jellyfin session %s",
+                item.get("name"),
+                item_id,
+                target_session_id,
+            )
+            await api.session_play(target_session_id, item_id)
+            return
+
         # Stop previous playback if currently active to reset buffers
         target_state = hass.states.get(target_player)
         if target_state and target_state.state in ("playing", "paused", "buffering"):

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Home Assistant 2026.8+ Media Source Search & Modernization**:
+  - Implemented `async_search_media` on `JellyHAMediaSource` supporting query dataclasses and keyword filters across Jellyfin libraries.
+  - Dynamically enabled `can_search=True` on `BrowseMediaSource` for Home Assistant 2026.8+ environments.
+  - Enhanced `async_resolve_media` on `JellyHAMediaSource` to automatically resolve complex containers (BoxSets/collections to their first movie, and series/seasons to their first unplayed episode).
 - **Native Media Browsing on Individual Players (Follow-up to [#11](https://github.com/zupancicmarko/JellyHA/issues/11))**:
   - Added `MediaPlayerEntityFeature.BROWSE_MEDIA` and `async_browse_media` to `JellyHABasePlaybackMediaPlayer`, enabling direct Jellyfin media library browsing on all user (`media_player.jellyha_<user>`) and device (`media_player.jellyha_<device>`) media players in Home Assistant.
   - Enhanced `async_play_media` across all player entities to parse `jellyha://` URIs and automatically resolve complex media containers upon selection (albums & playlists to first audio track, BoxSets/collections to first video, and TV shows/seasons to Next Up episode).
@@ -18,6 +22,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `jellyha.get_collections`: Fetch all BoxSets and movie collections with item counts and contained movies to `response_variable`.
   - Added 1-tap playback for BoxSets / Collections in the Home Assistant Media Browser: selecting Play on a BoxSet automatically resolves and plays its first movie.
   - Added multi-instance smart routing and localized translations across all 7 supported languages (`en`, `sl`, `de`, `es`, `fr`, `it`, `ru`).
+
+### Fixed
+- **Stream URL Item ID Resolution (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))**:
+  - Resolved `jellyha.play_music` and `media_player.play_media` extracting the literal string `"stream"` as the `item_id` when supplied with direct stream URLs (e.g. `/Audio/<GUID>/stream?static=true`).
+  - Implemented a robust item ID extraction utility (`extract_item_id`) supporting 32-hex GUIDs, UUIDs, stream URLs (`/Audio/.../stream`, `/Videos/.../master.m3u8`), proxy stream URLs, downloads, query parameters (`?itemId=`), and Web UI fragments.
+  - Fixed resulting HTTP 400 Bad Request errors (`The value 'stream' is not valid`) and prevented WebSocket client message loop crashes (`IndexError: list index out of range` in `jellyfin-mpv-shim`, Android TV, and Web clients).
+- **Home Assistant Voice Assist Search Compatibility (`async_search_media`) (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))**:
+  - Updated `async_search_media` across media player entities to accept modern Home Assistant core's `SearchMediaQuery` dataclass and return `SearchMedia(result=...)`, resolving `TypeError: ...got an unexpected keyword argument 'query'` when Voice Assist (`HassMediaSearchAndPlay`) searches against JellyHA media players.
+  - Added `MediaPlayerEntityFeature.SEARCH_MEDIA` and `async_search_media` to all session-backed user and device media players, enabling direct voice searches on individual players.
+- **Idle User Media Player Playback (`JellyHAUserMediaPlayer`)**:
+  - Fixed an issue where targeting an idle user media player (`media_player.jellyha_<user>`) with `play_media` or `play_music` failed with `"No active Jellyfin session found"` when the user had their Jellyfin client open but was not yet playing media.
+  - Updated user session resolution to prioritize active playback while retaining idle sessions, allowing remote playback to start immediately.
+- **HTTP Byte-Range Requests & Seeking in Stream Proxy (`JellyHAStreamView`)**:
+  - Forwarded incoming `Range` headers to the Jellyfin server, added support for `206 Partial Content` upstream responses, and forwarded `Content-Range`, `Accept-Ranges`, and `Content-Length` headers back to the client.
+  - Resolved media scrubbing/seeking failures and fixed stream playback issues on Safari, iOS devices, and Google Cast endpoints.
+- **Direct Session Routing for Music Playback**:
+  - Enhanced `jellyha.play_music` to detect when `target_player` is an active Jellyfin session and route playback directly via `api.session_play`, eliminating unnecessary stream URL indirection while continuing to deliver direct HTTP stream URLs to external speakers (Sonos, Google Cast, Chromecast).
+- **Series / Season Playback Fallback**:
+  - Added automatic fallback to the first unplayed episode (or first episode) when Next-Up episode resolution returns empty for a series or season.
 
 ## [1.4.0] - 2026-09-15
 

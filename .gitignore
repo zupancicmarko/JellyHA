@@ -39,6 +39,7 @@ verify_auth.py
 
 # Miscellaneous
 temp/
+scratch/
 
 # Build logs
 build_log.txt

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import aiohttp
 from aiohttp import web
@@ -89,6 +90,7 @@ class JellyHAImageView(HomeAssistantView):
         
         url = f"{client.server_url}/Items/{item_id}/Images/{image_type}"
         
+        prepared = False
         try:
             session = client.session
             async with session.get(
@@ -116,6 +118,7 @@ class JellyHAImageView(HomeAssistantView):
                     response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
                 
                 await response.prepare(request)
+                prepared = True
                 
                 # Increase chunk size to 64KB for better throughput
                 async for chunk in resp.content.iter_chunked(65536):
@@ -123,7 +126,14 @@ class JellyHAImageView(HomeAssistantView):
                 
                 return response
 
+        except (asyncio.CancelledError, ConnectionResetError, BrokenPipeError):
+            if prepared:
+                return response
+            raise
         except Exception as err:
+            if prepared:
+                _LOGGER.debug("Image request disconnected for %s: %s", item_id, err)
+                return response
             return web.Response(status=500, text=str(err))
 
 
@@ -159,6 +169,16 @@ class JellyHAStreamView(HomeAssistantView):
             _LOGGER.warning("Unauthorized stream request for item %s", item_id)
             return web.Response(status=401, text="Unauthorized")
 
+        # Handle 3-segment route if item_id was matched as media_type
+        # e.g. /api/jellyha/stream/{entry_id}/{media_type}/{item_id}
+        if item_id in ("Audio", "Videos"):
+            media_type = item_id
+            item_id = filename or ""
+            filename = None
+
+        if not item_id:
+            return web.Response(status=400, text="Missing item_id")
+
         # media_type can be in path or query parameters (fallback)
         if not media_type:
             media_type = request.query.get("media_type", "Videos")
@@ -186,36 +206,48 @@ class JellyHAStreamView(HomeAssistantView):
 
         url = f"{client.server_url}/{media_type}/{item_id}/stream?static=true"
 
+        prepared = False
         try:
             session = client.session
+            req_headers = dict(client._headers)
+            if "Range" in request.headers:
+                req_headers["Range"] = request.headers["Range"]
+
             async with session.get(
                 url,
-                headers=client._headers,
+                headers=req_headers,
                 timeout=aiohttp.ClientTimeout(total=None),
             ) as resp:
-                if resp.status != 200:
+                if resp.status not in (200, 206):
                     return web.Response(status=resp.status, text=resp.reason)
 
-                response = web.StreamResponse(status=200, reason="OK")
+                response = web.StreamResponse(status=resp.status, reason=resp.reason)
                 content_type = resp.headers.get("Content-Type", "application/octet-stream")
                 response.headers["Content-Type"] = content_type
-                if "Content-Length" in resp.headers:
-                    response.headers["Content-Length"] = resp.headers["Content-Length"]
-                if "Accept-Ranges" in resp.headers:
-                    response.headers["Accept-Ranges"] = resp.headers["Accept-Ranges"]
+                for header_key in ("Content-Length", "Accept-Ranges", "Content-Range"):
+                    if header_key in resp.headers:
+                        response.headers[header_key] = resp.headers[header_key]
                 if filename:
                     import urllib.parse
                     display_filename = urllib.parse.unquote(filename)
                     response.headers["Content-Disposition"] = f'inline; filename="{display_filename}"'
 
                 await response.prepare(request)
+                prepared = True
 
                 async for chunk in resp.content.iter_chunked(65536):
                     await response.write(chunk)
 
                 return response
 
+        except (asyncio.CancelledError, ConnectionResetError, BrokenPipeError):
+            if prepared:
+                return response
+            raise
         except Exception as err:
+            if prepared:
+                _LOGGER.debug("Stream playback disconnected for %s: %s", item_id, err)
+                return response
             _LOGGER.error("Stream proxy error for %s: %s", item_id, err)
             return web.Response(status=500, text=str(err))
 

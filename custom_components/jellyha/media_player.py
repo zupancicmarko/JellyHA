@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
+from urllib.parse import parse_qs, urlparse
 
 from homeassistant.components.media_player import (
     BrowseMedia,
@@ -13,6 +15,11 @@ from homeassistant.components.media_player import (
     MediaType,
     RepeatMode,
 )
+try:
+    from homeassistant.components.media_player import SearchMedia, SearchMediaQuery
+except ImportError:
+    SearchMedia = None  # type: ignore[assignment, misc]
+    SearchMediaQuery = None  # type: ignore[assignment, misc]
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -37,6 +44,59 @@ if TYPE_CHECKING:
     from ..jellyha import JellyHAConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
+
+UUID_HEX_RE = re.compile(
+    r"^[0-9a-fA-F]{32}$|^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+)
+
+
+def extract_item_id(media_id: str) -> str:
+    """Extract a valid Jellyfin item ID from raw IDs, URLs, or query strings."""
+    if not media_id:
+        return ""
+    media_id = media_id.strip()
+    if UUID_HEX_RE.match(media_id):
+        return media_id.replace("-", "")
+
+    try:
+        parsed = urlparse(media_id)
+    except Exception:
+        parsed = None
+
+    # Check query parameters (?itemId=, ?item_id=, ?id=, ?itemIds=)
+    if parsed and parsed.query:
+        qs = parse_qs(parsed.query)
+        for key in ("item_id", "itemId", "id", "itemIds"):
+            if key in qs and qs[key] and UUID_HEX_RE.match(qs[key][0]):
+                return qs[key][0].replace("-", "")
+
+    # Check URL fragment (e.g. web client #!/details?id=...)
+    if parsed and parsed.fragment and "?" in parsed.fragment:
+        fqs = parse_qs(parsed.fragment.split("?")[-1])
+        for key in ("id", "itemId", "item_id"):
+            if key in fqs and fqs[key] and UUID_HEX_RE.match(fqs[key][0]):
+                return fqs[key][0].replace("-", "")
+
+    # Inspect path segments in reverse for a valid GUID/UUID
+    path = parsed.path if parsed and parsed.path else media_id.split("?")[0]
+    segments = [s for s in path.rstrip("/").split("/") if s]
+    for seg in reversed(segments):
+        if UUID_HEX_RE.match(seg):
+            return seg.replace("-", "")
+
+    # Strip known endpoint suffixes (stream, download, file, master.m3u8, main.m3u8, etc.)
+    known_suffixes = {"stream", "download", "file", "master.m3u8", "main.m3u8"}
+    while segments and (segments[-1].lower() in known_suffixes or segments[-1].lower().startswith("stream.")):
+        segments.pop()
+
+    if segments:
+        candidate = segments[-1]
+        if "." in candidate and not UUID_HEX_RE.match(candidate):
+            candidate = candidate.split(".")[0]
+        return candidate
+
+    return media_id
+
 
 
 async def async_setup_entry(
@@ -154,17 +214,8 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
         _LOGGER.debug("Play media requested: type=%s, id=%s", media_type, media_id)
 
         # Parse the item ID
-        category, item_id = parse_item_id(media_id)
-
-        if not item_id:
-            # Fallback if raw item_id or URL was passed
-            raw_id = media_id
-            if "item_id=" in raw_id:
-                item_id = raw_id.split("item_id=")[-1].split("&")[0]
-            elif "/" in raw_id:
-                item_id = raw_id.rstrip("/").split("/")[-1].split("?")[0]
-            else:
-                item_id = raw_id
+        category, parsed_id = parse_item_id(media_id)
+        item_id = parsed_id or extract_item_id(media_id)
 
         if not item_id:
             _LOGGER.warning("Cannot play: invalid media_id format: %s", media_id)
@@ -174,7 +225,7 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
         user_id = self._entry.data.get("user_id")
 
         # If album or playlist, resolve first playable track
-        if category in ("album", "playlist") and api and user_id:
+        if (category in ("album", "playlist") or media_type in ("album", "playlist")) and api and user_id:
             try:
                 tracks_result = await api._request(
                     "GET",
@@ -196,7 +247,7 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
                 _LOGGER.debug("Could not resolve tracks for %s %s: %s", category, item_id, err)
 
         # If collection or boxset, resolve first playable video
-        if category in ("collection", "boxset") and api and user_id:
+        if (category in ("collection", "boxset") or media_type in ("collection", "boxset")) and api and user_id:
             try:
                 col_result = await api._request(
                     "GET",
@@ -216,6 +267,31 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
                     item_id = items[0]["Id"]
             except Exception as err:
                 _LOGGER.debug("Could not resolve item for %s %s: %s", category, item_id, err)
+
+        # Auto-resolve series/season to Next Up episode
+        if api and user_id:
+            try:
+                item_details = await api.get_item(user_id, item_id)
+                if item_details and item_details.get("Type") in ("Series", "Season"):
+                    series_id = item_id if item_details.get("Type") == "Series" else item_details.get("SeriesId")
+                    if series_id:
+                        next_ep = await api.get_next_up_episode(user_id, series_id)
+                        if not next_ep:
+                            first_unplayed = await api.get_library_items(
+                                user_id=user_id,
+                                item_types=["Episode"],
+                                parent_id=series_id,
+                                is_played=False,
+                                sort_by="IndexNumber",
+                                sort_order="Ascending",
+                                limit=1,
+                            )
+                            if first_unplayed:
+                                next_ep = first_unplayed[0]
+                        if next_ep:
+                            item_id = next_ep.get("Id", item_id)
+            except Exception as err:
+                _LOGGER.debug("Could not resolve series next-up for %s: %s", item_id, err)
 
         # Find the item in coordinator data
         items = self.coordinator.data.get("items", []) if self.coordinator.data else []
@@ -273,15 +349,29 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
 
     async def async_search_media(
         self,
+        query: Any = None,
         media_content_type: str | None = None,
         media_content_id: str | None = None,
-    ) -> BrowseMedia:
+        **kwargs: Any,
+    ) -> Any:
         """Search media from Jellyfin."""
-        return await async_browse_media_search(
+        search_term = ""
+        if query is not None:
+            if hasattr(query, "search_query"):
+                search_term = query.search_query
+            elif isinstance(query, str):
+                search_term = query
+        if not search_term:
+            search_term = media_content_id or kwargs.get("search_query") or ""
+
+        result = await async_browse_media_search(
             self.hass,
             self._entry.entry_id,
-            media_content_id or "",
+            search_term,
         )
+        if SearchMedia is not None and (query is not None and not isinstance(query, str)):
+            return SearchMedia(result=result)
+        return result
 
 
 def _session_activity_timestamp(s: dict[str, Any]) -> float:
@@ -336,6 +426,7 @@ class JellyHABasePlaybackMediaPlayer(
             | MediaPlayerEntityFeature.REPEAT_SET
             | MediaPlayerEntityFeature.BROWSE_MEDIA
             | MediaPlayerEntityFeature.PLAY_MEDIA
+            | MediaPlayerEntityFeature.SEARCH_MEDIA
         )
 
     def __init__(
@@ -378,6 +469,32 @@ class JellyHABasePlaybackMediaPlayer(
             media_content_type,
             media_content_id,
         )
+
+    async def async_search_media(
+        self,
+        query: Any = None,
+        media_content_type: str | None = None,
+        media_content_id: str | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Search media from Jellyfin for this player."""
+        search_term = ""
+        if query is not None:
+            if hasattr(query, "search_query"):
+                search_term = query.search_query
+            elif isinstance(query, str):
+                search_term = query
+        if not search_term:
+            search_term = media_content_id or kwargs.get("search_query") or ""
+
+        result = await async_browse_media_search(
+            self.hass,
+            self._entry.entry_id,
+            search_term,
+        )
+        if SearchMedia is not None and (query is not None and not isinstance(query, str)):
+            return SearchMedia(result=result)
+        return result
 
     # ------------------------------------------------------------------
     # State
@@ -809,14 +926,7 @@ class JellyHABasePlaybackMediaPlayer(
 
         # Parse the item ID
         category, parsed_id = parse_item_id(media_id)
-        if parsed_id:
-            item_id = parsed_id
-        else:
-            item_id = media_id
-            if "item_id=" in item_id:
-                item_id = item_id.split("item_id=")[-1].split("&")[0]
-            elif "/" in item_id:
-                item_id = item_id.rstrip("/").split("/")[-1].split("?")[0]
+        item_id = parsed_id or extract_item_id(media_id)
 
         if not item_id:
             _LOGGER.warning("Cannot play on %s: Invalid media_id format: %s", self.name, media_id)
@@ -830,7 +940,7 @@ class JellyHABasePlaybackMediaPlayer(
         user_id = getattr(self, "_user_id", None) or self._entry.data.get("user_id")
 
         # If album or playlist, resolve first playable track
-        if category in ("album", "playlist") and api and user_id:
+        if (category in ("album", "playlist") or media_type in ("album", "playlist")) and api and user_id:
             try:
                 tracks_result = await api._request(
                     "GET",
@@ -852,7 +962,7 @@ class JellyHABasePlaybackMediaPlayer(
                 _LOGGER.debug("Could not resolve tracks for %s %s: %s", category, item_id, err)
 
         # If collection or boxset, resolve first playable video
-        if category in ("collection", "boxset") and api and user_id:
+        if (category in ("collection", "boxset") or media_type in ("collection", "boxset")) and api and user_id:
             try:
                 col_result = await api._request(
                     "GET",
@@ -874,13 +984,25 @@ class JellyHABasePlaybackMediaPlayer(
                 _LOGGER.debug("Could not resolve item for %s %s: %s", category, item_id, err)
 
         # Auto-resolve series/season to Next Up episode
-        if user_id:
+        if user_id and api:
             try:
                 item = await api.get_item(user_id, item_id)
                 if item and item.get("Type") in ("Series", "Season"):
                     series_id = item_id if item.get("Type") == "Series" else item.get("SeriesId")
                     if series_id:
                         next_ep = await api.get_next_up_episode(user_id, series_id)
+                        if not next_ep:
+                            first_unplayed = await api.get_library_items(
+                                user_id=user_id,
+                                item_types=["Episode"],
+                                parent_id=series_id,
+                                is_played=False,
+                                sort_by="IndexNumber",
+                                sort_order="Ascending",
+                                limit=1,
+                            )
+                            if first_unplayed:
+                                next_ep = first_unplayed[0]
                         if next_ep:
                             item_id = next_ep.get("Id", item_id)
             except Exception as e:
@@ -980,7 +1102,7 @@ class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
         user_sessions = [
             s
             for s in self.coordinator.data
-            if s.get("UserId") == self._user_id and "NowPlayingItem" in s
+            if s.get("UserId") == self._user_id
         ]
 
         if not user_sessions:
@@ -988,6 +1110,7 @@ class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
 
         user_sessions.sort(
             key=lambda s: (
+                0 if "NowPlayingItem" in s else 1,
                 s.get("PlayState", {}).get("IsPaused", False),
                 -_session_activity_timestamp(s),
                 s.get("Id", ""),
