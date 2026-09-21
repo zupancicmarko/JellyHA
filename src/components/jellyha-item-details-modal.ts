@@ -1078,7 +1078,14 @@ export class JellyHAItemDetailsModal extends LitElement {
                                     <ha-icon icon="${item.is_favorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
                                 </button>
 
-                                <a href="javascript:void(0)" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => { e.preventDefault(); this._haptic(); this._openExternalUrl(item.jellyfin_url); }}>
+                                <a href="${this._getJellyfinUrl(item) || 'javascript:void(0)'}" target="_blank" rel="noopener noreferrer" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => {
+                                    this._haptic();
+                                    const jfUrl = this._getJellyfinUrl(item);
+                                    if (!jfUrl) {
+                                        e.preventDefault();
+                                        this._openExternalUrl(item.jellyfin_url);
+                                    }
+                                }}>
                                     <ha-icon icon="mdi:open-in-new"></ha-icon>
                                 </a>
 
@@ -1551,33 +1558,51 @@ export class JellyHAItemDetailsModal extends LitElement {
         window.open(url, '_blank');
     }
 
-    private _openExternalUrl(url: string | undefined): void {
-        if (!url) return;
+    private _getJellyfinUrl(item?: MediaItem): string | undefined {
+        const currentItem = item || this._item;
+        if (!currentItem) return undefined;
 
-        // Never rewrite YouTube or external third-party video services
-        try {
-            const parsed = new URL(url);
-            if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-                window.open(url, '_blank');
-                return;
+        let url = currentItem.jellyfin_url;
+
+        // Fallback: If jellyfin_url is missing from item, construct it from server/external URL
+        if (!url && currentItem.id) {
+            let baseUrl: string | undefined;
+            if (this.hass && this.hass.states) {
+                if (this._serverEntityId && this.hass.states[this._serverEntityId]) {
+                    const attrs = this.hass.states[this._serverEntityId].attributes;
+                    baseUrl = (attrs?.config_external_url || attrs?.server_url) as string | undefined;
+                }
+                if (!baseUrl) {
+                    for (const entityId in this.hass.states) {
+                        if (entityId.startsWith('sensor.') || entityId.startsWith('media_player.')) {
+                            const attrs = this.hass.states[entityId].attributes;
+                            if (attrs?.config_external_url || attrs?.server_url) {
+                                baseUrl = (attrs.config_external_url || attrs.server_url) as string;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-        } catch (e) {
-            // ignore
+            if (baseUrl && baseUrl.trim() !== '') {
+                url = `${baseUrl.replace(/\/$/, '')}/web/index.html#!/details?id=${currentItem.id}`;
+            }
         }
 
-        // Try to get external configure URL if we have an item.
-        // We need to look up the entity state.
-        // In the modal, we don't directly have access to the entity ID that launched it, 
-        // but we can try to find ANY JellyHA sensor, or rely on the frontend to pass it down.
-        // For simplicity, find the first jellyha_library sensor or let the user click standard.
-        // Actually, we can get it from the `item` potentially, but it's not saved there.
-        // Let's check all states for `config_external_url`. They should all be the same for one server.
+        if (!url) return undefined;
+
+        // Apply external URL override if configured
         let externalUrl: string | undefined;
         if (this.hass && this.hass.states) {
-            for (const entityId in this.hass.states) {
-                if (entityId.startsWith('sensor.') && this.hass.states[entityId].attributes?.config_external_url) {
-                    externalUrl = this.hass.states[entityId].attributes.config_external_url as string;
-                    break;
+            if (this._serverEntityId && this.hass.states[this._serverEntityId]?.attributes?.config_external_url) {
+                externalUrl = this.hass.states[this._serverEntityId].attributes.config_external_url as string;
+            }
+            if (!externalUrl) {
+                for (const entityId in this.hass.states) {
+                    if (entityId.startsWith('sensor.') && this.hass.states[entityId].attributes?.config_external_url) {
+                        externalUrl = this.hass.states[entityId].attributes.config_external_url as string;
+                        break;
+                    }
                 }
             }
         }
@@ -1596,14 +1621,32 @@ export class JellyHAItemDetailsModal extends LitElement {
                     originalUrlObj.pathname = extPath + originalUrlObj.pathname;
                 }
 
-                window.open(originalUrlObj.toString(), '_blank');
-                return;
+                return originalUrlObj.toString();
             } catch (e) {
                 console.warn('JellyHA: Failed to parse URLs to inject external URL override', e);
             }
         }
 
-        window.open(url, '_blank');
+        return url;
+    }
+
+    private _openExternalUrl(url: string | undefined): void {
+        const targetUrl = url || this._getJellyfinUrl();
+        if (!targetUrl) return;
+
+        // Never rewrite YouTube or external third-party video services
+        try {
+            const parsed = new URL(targetUrl);
+            if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
+                window.open(targetUrl, '_blank');
+                return;
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        const finalUrl = this._getJellyfinUrl({ ...this._item!, jellyfin_url: targetUrl }) || targetUrl;
+        window.open(finalUrl, '_blank');
     }
 
     private _handleMarkEpisodeWatched = async (episode: MediaItem) => {

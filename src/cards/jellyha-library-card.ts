@@ -1447,7 +1447,7 @@ export class JellyHALibraryCard extends LitElement {
 
     switch (action) {
       case 'jellyfin':
-        this._openExternalUrl(item.jellyfin_url);
+        this._openExternalUrl(item.jellyfin_url, item);
         break;
       case 'cast':
         this._castMedia(item, type);
@@ -1600,14 +1600,25 @@ export class JellyHALibraryCard extends LitElement {
     }
   }
 
-  private _openExternalUrl(url: string | undefined): void {
-    if (!url) return;
+  private _openExternalUrl(url: string | undefined, item?: MediaItem): void {
+    let targetUrl = url;
+
+    // Fallback: If url is not set, build it from entity attributes
+    if (!targetUrl && item?.id) {
+      const entity = this.hass?.states[this._config?.entity];
+      const baseUrl = (entity?.attributes?.config_external_url || entity?.attributes?.server_url) as string | undefined;
+      if (baseUrl && baseUrl.trim() !== '') {
+        targetUrl = `${baseUrl.replace(/\/$/, '')}/web/index.html#!/details?id=${item.id}`;
+      }
+    }
+
+    if (!targetUrl) return;
 
     // Never rewrite YouTube or external third-party video services
     try {
-      const parsed = new URL(url);
+      const parsed = new URL(targetUrl);
       if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-        window.open(url, '_blank');
+        window.open(targetUrl, '_blank');
         return;
       }
     } catch (e) {
@@ -1621,7 +1632,7 @@ export class JellyHALibraryCard extends LitElement {
     if (externalUrl && externalUrl.trim() !== '') {
       try {
         // Parse both URLs
-        const originalUrlObj = new URL(url);
+        const originalUrlObj = new URL(targetUrl);
         const externalUrlObj = new URL(externalUrl);
 
         // Replace protocol, host, and port but keep path and search params
@@ -1645,7 +1656,7 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Fallback to the original URL and let browser handle it
-    window.open(url, '_blank');
+    window.open(targetUrl, '_blank');
   }
 
   /**

@@ -41,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced `jellyha.play_music` to detect when `target_player` is an active Jellyfin session and route playback directly via `api.session_play`, eliminating unnecessary stream URL indirection while continuing to deliver direct HTTP stream URLs to external speakers (Sonos, Google Cast, Chromecast).
 - **Series / Season Playback Fallback**:
   - Added automatic fallback to the first unplayed episode (or first episode) when Next-Up episode resolution returns empty for a series or season.
+- **"Open in Jellyfin" Action in Library Card & Details Modal**:
+  - Fixed "Open in Jellyfin" button in the "More Information" modal (`jellyha-item-details-modal`) and Library Card click/hold action doing nothing due to `item.jellyfin_url` being unpopulated.
+  - Added automatic `jellyfin_url` generation in `coordinator._async_transform_item` across all media items, and exposed `server_url` on `sensor.jellyha_library`.
+  - Added fallback URL resolution in frontend components from entity state attributes when `jellyfin_url` is missing from older cached data, and updated the modal button to use a native anchor link (`target="_blank" rel="noopener noreferrer"`) to prevent browser/app popup blocking.
 
 ## [1.4.0] - 2026-09-15
 
