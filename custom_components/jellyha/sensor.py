@@ -21,6 +21,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     CONF_DEVICE_NAME,
     CONF_ENABLE_LIVE_TV,
+    CONF_SERVER_URL,
     DEFAULT_DEVICE_NAME,
     DOMAIN,
 )
@@ -222,7 +223,11 @@ class JellyHALibrarySensor(JellyHABaseSensor):
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
             ),
-            "server_url": self._entry.data.get("url", ""),
+            "server_url": (
+                getattr(self.coordinator, "server_url", None)
+                or self._entry.data.get(CONF_SERVER_URL)
+                or self._entry.data.get("url", "")
+            ),
         }
 
 
