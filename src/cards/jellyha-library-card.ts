@@ -7,8 +7,8 @@
 import { LitElement, html, nothing, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 
-import { HomeAssistant, LovelaceCard, MediaItem, SensorData, JellyHALibraryCardConfig } from '../shared/types';
-import { isNewItem } from '../shared/utils';
+import { HomeAssistant, LovelaceCard, MediaItem, SensorData, JellyHALibraryCardConfig, PlayTarget } from '../shared/types';
+import { isNewItem, getScriptDefaultName } from '../shared/utils';
 import { JellyHAItemDetailsModal } from '../components/jellyha-item-details-modal';
 import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
@@ -1684,6 +1684,65 @@ export class JellyHALibraryCard extends LitElement {
       </ha-card>
     `;
   }
+  private _getEffectivePlayTargets(): PlayTarget[] {
+    if (this._config.enable_custom_play_actions) {
+      return this._config.modal_play_actions || [];
+    }
+
+    const targets: PlayTarget[] = [];
+    if (this._config.default_cast_device) {
+      targets.push({
+        type: 'cast',
+        name: 'Cast to Chromecast',
+        device: this._config.default_cast_device,
+        icon: 'mdi:cast',
+      });
+    }
+    if (this._config.modal_service) {
+      targets.push({
+        type: 'script',
+        name: getScriptDefaultName(this.hass, this._config.modal_service),
+        service: this._config.modal_service,
+        service_data: this._config.modal_service_data,
+        icon: 'mdi:play',
+      });
+    } else {
+      if (this._config.click_action === 'call-service' && (this._config.click_service || this._config.service)) {
+        const svc = this._config.click_service || this._config.service;
+        targets.push({
+          type: 'script',
+          name: getScriptDefaultName(this.hass, svc),
+          service: svc,
+          service_data: this._config.click_service_data || this._config.service_data,
+          icon: 'mdi:play',
+        });
+      }
+      if (this._config.hold_action === 'call-service' && this._config.hold_service) {
+        if (!targets.some(t => t.type === 'script' && t.service === this._config.hold_service)) {
+          targets.push({
+            type: 'script',
+            name: getScriptDefaultName(this.hass, this._config.hold_service),
+            service: this._config.hold_service,
+            service_data: this._config.hold_service_data,
+            icon: 'mdi:play',
+          });
+        }
+      }
+      if (this._config.double_tap_action === 'call-service' && this._config.double_tap_service) {
+        if (!targets.some(t => t.type === 'script' && t.service === this._config.double_tap_service)) {
+          targets.push({
+            type: 'script',
+            name: getScriptDefaultName(this.hass, this._config.double_tap_service),
+            service: this._config.double_tap_service,
+            service_data: this._config.double_tap_service_data,
+            icon: 'mdi:play',
+          });
+        }
+      }
+    }
+    return targets;
+  }
+
   private _showItemDetails(item: MediaItem): void {
     if (this._modal) {
       let subtitleMode = this._config.subtitle_mode || 'auto';
@@ -1698,6 +1757,8 @@ export class JellyHALibraryCard extends LitElement {
         serverEntityId: this._config.entity,
         subtitleMode,
         subtitleLanguage,
+        playTargets: this._getEffectivePlayTargets(),
+        showEntityName: this._config.show_entity_name ?? this._config.show_modal_entity_name,
       });
     }
   }

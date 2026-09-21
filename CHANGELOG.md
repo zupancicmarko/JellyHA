@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Dynamic & Configurable Play Actions in More Info Dialog (Closes [#42](https://github.com/zupancicmarko/JellyHA/issues/42))**:
+  - Dynamically adapts the More Info dialog play button, Next Up quick-play, and episode list rows based on available playback targets (hidden if 0 targets, direct 1-click execution if 1 target, and a glassmorphic Action Sheet overlay picker if 2+ targets).
+  - Added support for triggering Home Assistant scripts or external players with rich item metadata (`item_id`, `name`, `title`, `series_name`, `season`, `episode`, `path`, `filepath`, `jellyfin_url`, etc.).
+  - Added `enable_custom_play_actions` toggle and `modal_play_actions` configuration to Library Card, with pre-fill from card defaults, warning banner when unconfigured, and YAML state preservation.
+  - Added dynamic friendly script name resolution from Home Assistant states (`friendly_name`) and clean entity ID formatting.
+  - Added `show_entity_name` option per target (and card-level) to show or hide the subtitle entity ID in the playback picker.
 - **Home Assistant 2026.8+ Media Source Search & Modernization**:
   - Implemented `async_search_media` on `JellyHAMediaSource` supporting query dataclasses and keyword filters across Jellyfin libraries.
   - Dynamically enabled `can_search=True` on `BrowseMediaSource` for Home Assistant 2026.8+ environments.

@@ -4,7 +4,8 @@
 
 import { LitElement, html, TemplateResult, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { JellyHALibraryCardConfig, HomeAssistant } from '../shared/types';
+import { JellyHALibraryCardConfig, HomeAssistant, PlayTarget } from '../shared/types';
+import { getScriptDefaultName } from '../shared/utils';
 import { localize } from '../shared/localize';
 
 // Helper function to fire events
@@ -54,6 +55,31 @@ export class JellyHALibraryEditor extends LitElement {
     .side-by-side > .form-row.double-tap-aligned {
       margin-top: 24px;
       align-self: end;
+    }
+    .helper-text {
+      font-size: 0.8rem;
+      color: var(--secondary-text-color, #888);
+      margin-top: 4px;
+      margin-left: 32px;
+      line-height: 1.3;
+    }
+    .warning-banner {
+      margin-top: 8px;
+      margin-left: 32px;
+      padding: 8px 12px;
+      background: rgba(255, 152, 0, 0.12);
+      border: 1px solid rgba(255, 152, 0, 0.35);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--primary-text-color, #fff);
+    }
+    .warning-banner ha-icon {
+      --mdc-icon-size: 20px;
+      color: #ff9800;
+      flex-shrink: 0;
     }
   `;
 
@@ -480,6 +506,7 @@ export class JellyHALibraryEditor extends LitElement {
             `
         : ''}
 
+
     <div class="checkbox-row">
       <ha-switch
         .checked=${this._config.show_title !== false}
@@ -677,6 +704,25 @@ export class JellyHALibraryEditor extends LitElement {
           </div>
         `
         : ''}
+
+    <div class="checkbox-row" style="margin-top: 16px; margin-bottom: 4px;">
+      <ha-switch
+        .checked=${this._config.enable_custom_play_actions === true}
+        @change=${this._enableCustomPlayActionsChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.enable_custom_play_actions') || 'Custom Play Actions (More Information pop-up)'}</span>
+    </div>
+    <div class="helper-text">
+      ${localize(lang, 'editor.custom_play_actions_helper') || 'When enabled, play targets in the More Info dialog are controlled by modal_play_actions in YAML. You can add multiple scripts, cast devices, or custom labels. When disabled, standard card settings are used.'}
+    </div>
+    ${this._config.enable_custom_play_actions && (!this._config.modal_play_actions || this._config.modal_play_actions.length === 0)
+      ? html`
+        <div class="warning-banner">
+          <ha-icon icon="mdi:alert-outline"></ha-icon>
+          <span>${localize(lang, 'editor.custom_play_actions_none_configured') || 'None of the actions have been selected yet. Configure a Cast device or Script above, or define custom play targets in YAML under modal_play_actions.'}</span>
+        </div>
+      `
+      : ''}
 
 
   </div>
@@ -932,6 +978,53 @@ export class JellyHALibraryEditor extends LitElement {
   private _useSeriesImageChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('use_series_image', target.checked);
+  }
+
+  private _enableCustomPlayActionsChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    const checked = target.checked;
+
+    if (!this._config) return;
+
+    const newConfig = { ...this._config, enable_custom_play_actions: checked };
+
+    if (checked) {
+      // If modal_play_actions is not yet set or empty, check if we can prefill from current card settings
+      if (!newConfig.modal_play_actions || newConfig.modal_play_actions.length === 0) {
+        const prefilled: PlayTarget[] = [];
+        if (this._config.default_cast_device) {
+          prefilled.push({
+            type: 'cast',
+            name: 'Cast to Chromecast',
+            device: this._config.default_cast_device,
+            icon: 'mdi:cast',
+          });
+        }
+        const script = this._config.modal_service ||
+          (this._config.click_action === 'call-service' ? (this._config.click_service || this._config.service) : undefined) ||
+          (this._config.hold_action === 'call-service' ? this._config.hold_service : undefined) ||
+          (this._config.double_tap_action === 'call-service' ? this._config.double_tap_service : undefined) ||
+          this._config.click_service ||
+          this._config.service;
+        if (script) {
+          prefilled.push({
+            type: 'script',
+            name: getScriptDefaultName(this.hass, script),
+            service: script,
+            icon: 'mdi:play',
+          });
+        }
+        // Only assign prefilled if targets actually exist on the card!
+        // If none are configured, do NOT save a blank array modal_play_actions: []
+        if (prefilled.length > 0) {
+          newConfig.modal_play_actions = prefilled;
+        }
+      }
+    }
+    // If unchecked, modal_play_actions remains in newConfig untouched so state is preserved.
+
+    this._config = newConfig;
+    fireEvent(this as unknown as EventTarget, 'config-changed', { config: newConfig });
   }
 
   private _updateConfig(key: string, value: unknown): void {

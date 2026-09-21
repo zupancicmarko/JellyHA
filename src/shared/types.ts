@@ -85,6 +85,17 @@ export interface MediaItem {
     filepath?: string;
 }
 
+export interface PlayTarget {
+    type: 'cast' | 'script';
+    name?: string;               // Display label (e.g. "Play on Apple TV")
+    icon?: string;               // Optional icon (default: mdi:cast for cast, mdi:play for script)
+    device?: string;             // media_player entity_id (for type: 'cast')
+    service?: string;            // script/service entity_id (for type: 'script')
+    service_data?: Record<string, any>; // Optional additional payload passed to script
+    show_entity_name?: boolean;  // Whether to display entity/device ID subtitle (default: true)
+    show_entity?: boolean;       // Alias for show_entity_name
+}
+
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     entity: string;
     title?: string;
@@ -140,6 +151,12 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     use_series_image?: boolean;
     show_search?: boolean;
     sort_option?: 'date_added_asc' | 'date_added_desc' | 'title_asc' | 'title_desc' | 'year_asc' | 'year_desc' | 'last_played_asc' | 'last_played_desc';
+    enable_custom_play_actions?: boolean;
+    modal_play_actions?: PlayTarget[];
+    modal_service?: string;
+    modal_service_data?: Record<string, any>;
+    show_entity_name?: boolean;
+    show_modal_entity_name?: boolean;
 }
 
 export interface SensorData {
