@@ -11,6 +11,10 @@ import './cards/jellyha-library-card';
 // Now Playing Card - Display active playback
 import './cards/jellyha-now-playing-card';
 
+// Browser media player seek polyfill (fixes HA 2026.9 disabled slider bug)
+import './components/jellyha-seek-polyfill';
+
 // Future cards:
 // import './cards/jellyha-remote-card';
 // import './cards/jellyha-statistics-card';
+

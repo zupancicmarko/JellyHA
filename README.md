@@ -26,6 +26,8 @@ Jellyfin for Home Assistant
 ## Features
 
 - 🎬 Display movies and TV shows from your library
+- ▶️ In-Dashboard Browser Playback: Stream media directly within your Home Assistant dashboards with native Closed Captions (CC) and subtitle track support
+- 🎯 Configurable Play Actions: Instant Browser playback, Chromecast casting, or custom scripts in More Info
 - 📺 Cast media directly to Chromecast (Gen 1 supported)
 - 📡 Live TV Support: Visual channel browsing in Media Browser
 - 🎵 Music Support
@@ -37,7 +39,7 @@ Jellyfin for Home Assistant
 - 🎨 Three Library Card layouts: Carousel, Grid, List
 - 🔍 Built-in Search Bar with Title and Genre filtering
 - 🤖 Advanced automation triggers via custom sensors & services
-- 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
+- 🌍 8 languages: English, German, French, Spanish, Italian, Dutch, Slovenian, Russian
 
 - 🚀 Multi-Instance Support: Run multiple servers concurrently
 
@@ -158,7 +160,7 @@ items_per_page: 3
 max_pages: 5
 ```
 
-Supports custom click, hold, and double-tap actions (Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically).
+Supports custom click, hold, and double-tap actions (Play in Browser, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`).
 
 👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 

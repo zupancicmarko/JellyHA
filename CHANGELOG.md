@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **"Play in Browser" Direct In-Dashboard Playback**:
+  - Play videos and audio directly within Home Assistant dashboards using a sleek HTML5 dialog player (`<jellyha-browser-player>`) featuring authenticated stream resolution via Home Assistant's `media_source/resolve_media` API (parity with HA Media Browser).
+  - Added `play-browser` action option for Single Tap, Hold, and Double Tap card interactions.
+  - Added Browser playback option (`enable_browser_player`) to the More Information card play button, Next Up quick-play, episode rows, and "Play On..." target picker pop-up.
+  - Added full support for `type: browser` in `modal_play_actions` (with automatic YAML pre-fill and dynamic toggle sync).
+  - Configured `mdi:monitor` icon for browser playback across target pickers, cards, and modal dialogs.
+  - Added full subtitle support to "Play in Browser": automatically extracts text-based subtitle streams (SRT, ASS, VTT, etc.) into native HTML5 `<track>` elements with a secure WebVTT proxy endpoint (`/api/jellyha/subtitles/...`, 0% server transcode CPU overhead), native Closed Captions (CC) menu, and automatic language pre-selection matching the card's `subtitle_mode` and `subtitle_language` priority list.
+  - Added card editor controls and localized strings across all 8 supported languages (`en`, `de`, `fr`, `es`, `it`, `nl`, `sl`, `ru`).
 - **Dynamic & Configurable Play Actions in More Info Dialog (Closes [#42](https://github.com/zupancicmarko/JellyHA/issues/42))**:
   - Dynamically adapts the More Info dialog play button, Next Up quick-play, and episode list rows based on available playback targets (hidden if 0 targets, direct 1-click execution if 1 target, and a glassmorphic Action Sheet overlay picker if 2+ targets).
   - Added support for triggering Home Assistant scripts or external players with rich item metadata (`item_id`, `name`, `title`, `series_name`, `season`, `episode`, `path`, `filepath`, `jellyfin_url`, etc.).
@@ -27,9 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BoxSet / Movie Collections Support**:
   - Added `jellyha.get_collections`: Fetch all BoxSets and movie collections with item counts and contained movies to `response_variable`.
   - Added 1-tap playback for BoxSets / Collections in the Home Assistant Media Browser: selecting Play on a BoxSet automatically resolves and plays its first movie.
-  - Added multi-instance smart routing and localized translations across all 7 supported languages (`en`, `sl`, `de`, `es`, `fr`, `it`, `ru`).
+  - Added multi-instance smart routing and localized translations across all 8 supported languages (`en`, `sl`, `de`, `es`, `fr`, `it`, `nl`, `ru`).
 
 ### Fixed
+- **Library Card & Modal Visual Refinements**:
+  - Lightened More Info dialog and target picker modal backdrops from heavy dark overlay (`rgba(0,0,0,0.85)` / `16px blur`) to clean, subtle scrim (`rgba(0,0,0,0.45)` / `3px blur`).
+  - Added subtle Home Assistant card border styling (`--ha-card-border`) to the More Info surface.
+  - Removed trailing ellipses (`...`) from Play button titles and labels (`Play`, `Play Next Up`, `Play Episode`).
+  - Fixed focus ring outline on play buttons persisting after dismissing modal dialogs.
+  - Matched series/episode badge text color on Next Up cards (`#03a9f4` cyan) with the View All Episodes series header styling.
+  - Resolved mouse hover overlay cropping on the first item in the View All Episodes list (`padding-top: 6px`, `margin-top: -6px` containment).
 - **Stream URL Item ID Resolution (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))**:
   - Resolved `jellyha.play_music` and `media_player.play_media` extracting the literal string `"stream"` as the `item_id` when supplied with direct stream URLs (e.g. `/Audio/<GUID>/stream?static=true`).
   - Implemented a robust item ID extraction utility (`extract_item_id`) supporting 32-hex GUIDs, UUIDs, stream URLs (`/Audio/.../stream`, `/Videos/.../master.m3u8`), proxy stream URLs, downloads, query parameters (`?itemId=`), and Web UI fragments.
@@ -43,6 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **HTTP Byte-Range Requests & Seeking in Stream Proxy (`JellyHAStreamView`)**:
   - Forwarded incoming `Range` headers to the Jellyfin server, added support for `206 Partial Content` upstream responses, and forwarded `Content-Range`, `Accept-Ranges`, and `Content-Length` headers back to the client.
   - Resolved media scrubbing/seeking failures and fixed stream playback issues on Safari, iOS devices, and Google Cast endpoints.
+- **Home Assistant Media Browser Seek Polyfill for Browser Player**:
+  - Resolved an upstream Home Assistant 2026.9 limitation in `ha-bar-media-player` where the progress slider was permanently disabled/grayed out (`isBrowser || ...`) and seek events were dropped when playing media via the "Web browser" player.
+  - Implemented client-side polyfill (`jellyha-seek-polyfill.ts`) to dynamically enable `<ha-slider>`, sync audio duration, track live scrubbing, prevent thumb snapback during user drags, and route seek timestamps directly to the browser audio player.
+  - Registered `jellyha-cards.js` globally across all Home Assistant views and core panels (including `/media-browser`) via `add_extra_js_url` in `__init__.py`.
 - **Direct Session Routing for Music Playback**:
   - Enhanced `jellyha.play_music` to detect when `target_player` is an active Jellyfin session and route playback directly via `api.session_play`, eliminating unnecessary stream URL indirection while continuing to deliver direct HTTP stream URLs to external speakers (Sonos, Google Cast, Chromecast).
 - **Series / Season Playback Fallback**:

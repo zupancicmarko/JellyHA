@@ -683,11 +683,24 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
 
 ### Library Card Cast & Subtitle Options
 * `default_cast_device`: Target Chromecast `media_player` entity ID (e.g. `'media_player.living_room_tv'`) used when action is set to `cast`. Filtered strictly to Google Cast endpoints in the visual editor.
-* `subtitle_mode`: Subtitle strategy for casting: `'auto'` (default, follows Jellyfin profile with English fallback), `'none'` (disabled), `'forced_only'`, or `'custom'`.
-* `subtitle_language`: Prioritized comma-separated language codes/names (e.g. `'sl, en'`) used when `subtitle_mode` is `'custom'`. Automatically burns in graphical subtitles (PGS/VOBSUB) via server-side transcoding.
+* `subtitle_mode`: Subtitle strategy for casting and browser playback: `'auto'` (default, follows Jellyfin profile with English fallback), `'none'` (disabled), `'forced_only'`, or `'custom'`.
+* `subtitle_language`: Prioritized comma-separated language codes/names (e.g. `'sl, en'`) used when `subtitle_mode` is `'custom'`. Automatically burns in graphical subtitles (PGS/VOBSUB) for Chromecast casting, or streams native WebVTT tracks with Closed Captioning (CC) in the browser player.
+
+### In-Dashboard Browser Playback & Custom Play Actions (`modal_play_actions`)
+* `enable_browser_player`: Boolean (default: `true`). Enables the direct in-dashboard HTML5 dialog player (`<jellyha-browser-player>`) across card actions and the More Info pop-up, with full Closed Captions (CC) subtitle support.
+* `enable_custom_play_actions`: Boolean (default: `false`). When `true`, delegates More Information dialog play actions to the `modal_play_actions` array.
+* `modal_play_actions`: List of target dictionaries controlling the More Info play button and target picker overlay:
+  * `type`: `'browser'`, `'cast'`, or `'script'`.
+  * `name` (Optional, string): Custom label displayed on button or in target picker (e.g. `"Watch in Browser"`, `"Living Room TV"`, `"Play on Apple TV"`).
+  * `icon` (Optional, string): Custom MDI icon (defaults: `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
+  * `device` (String, required for `cast`): Target `media_player` entity ID.
+  * `service` (String, required for `script`): Target script entity ID.
+  * `service_data` (Optional, dict): Extra arguments passed to script.
+  * `show_entity_name` (Optional, boolean, default `true`): Set to `false` to hide the entity subtitle in the target picker list.
 
 ### Custom Interactions (`click_action`, `hold_action`, `double_tap_action`)
-* **Available Actions**: `more-info` (default), `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **Available Actions**: `more-info` (default), `play-browser`, `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **When set to `play-browser`**: Immediately launches the in-dashboard `<jellyha-browser-player>` dialog with authenticated media stream resolution via HA's WebSocket API (`media_source/resolve_media`).
 * **When set to `call-service`**:
   * In the card editor, Home Assistant renders a native `<ha-selector>` entity dropdown picker strictly filtered to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), complete with friendly names, icons, and live search.
   * In YAML, specify the script entity ID (e.g. `click_service: script.play_on_apple_tv`).

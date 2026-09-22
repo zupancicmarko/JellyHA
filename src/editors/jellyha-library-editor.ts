@@ -321,6 +321,7 @@ export class JellyHALibraryEditor extends LitElement {
                   mode: 'dropdown',
                   options: [
                     { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
+                    { value: 'play-browser', label: localize(lang, 'editor.action_play_browser') },
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
@@ -344,6 +345,7 @@ export class JellyHALibraryEditor extends LitElement {
                   mode: 'dropdown',
                   options: [
                     { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
+                    { value: 'play-browser', label: localize(lang, 'editor.action_play_browser') },
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
@@ -369,6 +371,7 @@ export class JellyHALibraryEditor extends LitElement {
                   mode: 'dropdown',
                   options: [
                     { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
+                    { value: 'play-browser', label: localize(lang, 'editor.action_play_browser') },
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
@@ -506,6 +509,14 @@ export class JellyHALibraryEditor extends LitElement {
             `
         : ''}
 
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.enable_browser_player !== false}
+        @change=${this._enableBrowserPlayerChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.enable_browser_player')}</span>
+    </div>
 
     <div class="checkbox-row">
       <ha-switch
@@ -710,7 +721,7 @@ export class JellyHALibraryEditor extends LitElement {
         .checked=${this._config.enable_custom_play_actions === true}
         @change=${this._enableCustomPlayActionsChanged}
       ></ha-switch>
-      <span>${localize(lang, 'editor.enable_custom_play_actions') || 'Custom Play Actions (More Information pop-up)'}</span>
+      <span>${localize(lang, 'editor.enable_custom_play_actions') || 'Custom Play Actions'}</span>
     </div>
     <div class="helper-text">
       ${localize(lang, 'editor.custom_play_actions_helper') || 'When enabled, play targets in the More Info dialog are controlled by modal_play_actions in YAML. You can add multiple scripts, cast devices, or custom labels. When disabled, standard card settings are used.'}
@@ -877,6 +888,38 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('show_now_playing', target.checked);
   }
 
+  private _enableBrowserPlayerChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    const checked = target.checked;
+    const newConfig = { ...this._config, enable_browser_player: checked };
+
+    if (newConfig.enable_custom_play_actions && newConfig.modal_play_actions) {
+      if (checked) {
+        const hasBrowser = newConfig.modal_play_actions.some(t => t.type === 'browser' || (t.type as any) === 'play-browser');
+        if (!hasBrowser) {
+          const castIdx = newConfig.modal_play_actions.findIndex(t => t.type === 'cast');
+          const insertIdx = castIdx !== -1 ? castIdx + 1 : 0;
+          newConfig.modal_play_actions = [
+            ...newConfig.modal_play_actions.slice(0, insertIdx),
+            {
+              type: 'browser',
+              name: 'Play in Browser',
+              icon: 'mdi:monitor',
+            },
+            ...newConfig.modal_play_actions.slice(insertIdx),
+          ];
+        }
+      } else {
+        newConfig.modal_play_actions = newConfig.modal_play_actions.filter(
+          t => t.type !== 'browser' && (t.type as any) !== 'play-browser'
+        );
+      }
+    }
+
+    this._config = newConfig;
+    fireEvent(this as unknown as EventTarget, 'config-changed', { config: newConfig });
+  }
+
   private _showTitleChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_title', target.checked);
@@ -1000,6 +1043,13 @@ export class JellyHALibraryEditor extends LitElement {
             icon: 'mdi:cast',
           });
         }
+        if (this._config.enable_browser_player !== false) {
+          prefilled.push({
+            type: 'browser',
+            name: 'Play in Browser',
+            icon: 'mdi:monitor',
+          });
+        }
         const script = this._config.modal_service ||
           (this._config.click_action === 'call-service' ? (this._config.click_service || this._config.service) : undefined) ||
           (this._config.hold_action === 'call-service' ? this._config.hold_service : undefined) ||
@@ -1018,6 +1068,22 @@ export class JellyHALibraryEditor extends LitElement {
         // If none are configured, do NOT save a blank array modal_play_actions: []
         if (prefilled.length > 0) {
           newConfig.modal_play_actions = prefilled;
+        }
+      } else if (this._config.enable_browser_player !== false) {
+        // If modal_play_actions already exists, ensure browser target is included if not yet present
+        const hasBrowser = newConfig.modal_play_actions.some(t => t.type === 'browser' || (t.type as any) === 'play-browser');
+        if (!hasBrowser) {
+          const castIdx = newConfig.modal_play_actions.findIndex(t => t.type === 'cast');
+          const insertIdx = castIdx !== -1 ? castIdx + 1 : 0;
+          newConfig.modal_play_actions = [
+            ...newConfig.modal_play_actions.slice(0, insertIdx),
+            {
+              type: 'browser',
+              name: 'Play in Browser',
+              icon: 'mdi:monitor',
+            },
+            ...newConfig.modal_play_actions.slice(insertIdx),
+          ];
         }
       }
     }

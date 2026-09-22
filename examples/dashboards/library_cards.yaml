@@ -94,3 +94,32 @@ click_action: call-service
 click_service: script.play_on_apple_tv
 hold_action: call-service
 hold_service: script.play_on_kodi
+
+# ------------------------------------------------------------------------------
+# 7. More Info Dialog with Multi-Target Custom Play Actions (Action Sheet Picker)
+# ------------------------------------------------------------------------------
+# When clicking "More Info", the dialog adapts its Play button to your configured targets.
+# If multiple targets are defined, clicking Play opens a glassmorphic Action Sheet picker,
+# allowing users to choose between In-Browser playback, Cast, or External Player scripts.
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+title: "Movies with Multi-Room Play Targets"
+layout: carousel
+media_type: movies
+items_per_page: 4
+click_action: more-info
+enable_custom_play_actions: true
+modal_play_actions:
+  - type: browser
+    name: Play in Browser
+    icon: mdi:monitor
+  - type: cast
+    name: Living Room Chromecast
+    device: media_player.living_room_tv
+    icon: mdi:cast
+  - type: script
+    name: Play on Apple TV
+    service: script.play_on_apple_tv
+    icon: mdi:apple
+    show_entity_name: false
+
