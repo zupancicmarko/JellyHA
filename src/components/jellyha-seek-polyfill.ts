@@ -239,22 +239,33 @@ function patchBarMediaPlayer(Cls: any): void {
     console.info('JellyHA: Successfully installed ha-bar-media-player seek polyfill.');
 }
 
-// Intercept customElements registration
+// Intercept customElements registration safely
 const existing = customElements.get('ha-bar-media-player');
 if (existing) {
     patchBarMediaPlayer(existing);
 } else {
     customElements.whenDefined('ha-bar-media-player').then(() => {
-        patchBarMediaPlayer(customElements.get('ha-bar-media-player'));
+        const el = customElements.get('ha-bar-media-player');
+        if (el) patchBarMediaPlayer(el);
     });
 
-    const origDefine = customElements.define.bind(customElements);
-    customElements.define = function (name: string, constructor: any, options?: ElementDefinitionOptions) {
-        origDefine(name, constructor, options);
-        if (name === 'ha-bar-media-player') {
-            patchBarMediaPlayer(constructor);
-        }
-    };
+    if (!(customElements.define as any).__jellyha_bar_patched) {
+        const origDefine = customElements.define.bind(customElements);
+        const patchedDefine = function (name: string, constructor: any, options?: ElementDefinitionOptions) {
+            if (customElements.get(name)) {
+                if (name === 'ha-bar-media-player') {
+                    patchBarMediaPlayer(constructor);
+                }
+                return;
+            }
+            origDefine(name, constructor, options);
+            if (name === 'ha-bar-media-player') {
+                patchBarMediaPlayer(constructor);
+            }
+        };
+        (patchedDefine as any).__jellyha_bar_patched = true;
+        customElements.define = patchedDefine;
+    }
 }
 
 // Periodic check for any existing DOM instance

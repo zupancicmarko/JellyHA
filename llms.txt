@@ -772,3 +772,30 @@ sequence:
           media_content_id: "{{ jellyfin_url }}"
 ```
 
+---
+
+## 6. Now Playing Card Specification (`custom:jellyha-now-playing-card`)
+
+Lovelace custom card rendering active playback status, progress bars, transport controls, and dynamic blurred backdrops for Jellyfin media players.
+
+### YAML Configuration Schema
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin # (Required) Per-user or per-device media player
+title: "Now Playing"               # (Optional) Header card title
+show_background: true              # (Boolean, default true) Blurred fanart backdrop
+show_title: true                   # (Boolean, default true) Media item title
+show_subtitle: true                # (Boolean, default true) Artist or TV series name
+show_controls: true                # (Boolean, default true) Play, pause, seek transport controls
+show_time: true                    # (Boolean, default false) Elapsed and remaining timestamps
+show_media_type_badge: true        # (Boolean, default true) Display media type badges
+badge_style: header                # (String, default 'poster') 'poster' (overlaid), 'header' (pill in header next to title, keeps poster 100% uncovered), 'inline' (prefixed to TV episode title, e.g. S01E02 • Title), or 'none' (hidden)
+show_genres: true                  # (Boolean, default true) Genre tags
+show_ratings: true                 # (Boolean, default true) Community star rating
+show_runtime: true                 # (Boolean, default true) Total runtime
+show_year: true                    # (Boolean, default true) Release year
+show_client: true                  # (Boolean, default true) Active client name
+show_user: true                    # (Boolean, default true) Active user name
+use_series_image: false            # (Boolean, default false) Use series cover instead of episode thumbnail
+```
+

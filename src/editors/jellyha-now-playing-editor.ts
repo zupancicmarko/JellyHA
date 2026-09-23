@@ -155,6 +155,29 @@ export class JellyHANowPlayingEditor extends LitElement {
           <span>${localize(lang, 'editor.show_media_type_badge')}</span>
         </div>
 
+        ${this._config.show_media_type_badge !== false ? html`
+          <div class="form-row" style="margin-left: 16px; margin-top: 4px; margin-bottom: 12px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'poster', label: localize(lang, 'editor.badge_style_poster') },
+                    { value: 'header', label: localize(lang, 'editor.badge_style_header') },
+                    { value: 'inline', label: localize(lang, 'editor.badge_style_inline') },
+                    { value: 'none', label: localize(lang, 'editor.badge_style_none') },
+                  ],
+                },
+              }}
+              .value=${this._config.badge_style || this._config.media_type_badge_style || 'poster'}
+              .label="${localize(lang, 'editor.badge_style')}"
+              label="${localize(lang, 'editor.badge_style')}"
+              @value-changed=${this._badgeStyleChanged}
+            ></ha-selector>
+          </div>
+        ` : ''}
+
         <div class="checkbox-pair">
           <div class="checkbox-row">
             <ha-switch
@@ -270,6 +293,13 @@ export class JellyHANowPlayingEditor extends LitElement {
   private _showMediaTypeBadgeChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_media_type_badge', target.checked);
+  }
+
+  private _badgeStyleChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('badge_style', value);
+    }
   }
 
   private _showYearChanged(e: Event): void {

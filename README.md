@@ -166,14 +166,17 @@ Supports custom click, hold, and double-tap actions (Play in Browser, Cast, More
 
 ### Now Playing Card (`custom:jellyha-now-playing-card`)
 
-Display active playback status, progress bars, and transport controls with dynamic blurred backdrops.
+Display active playback status, interactive progress bars, and transport controls with dynamic blurred backdrops. Supports customizable media type badge styles (`poster`, `header`, `inline`, or `none`).
 
 ```yaml
 type: custom:jellyha-now-playing-card
 entity: media_player.jellyha_admin # Supports per-user or per-device media players
 title: Now Playing
 show_background: true
+badge_style: header # 'poster' (default), 'header' (uncovered poster), 'inline' (TV shows), or 'none'
 ```
+
+👉 **[See full Now Playing Card configuration in docs/cards.md](docs/cards.md#now-playing-card-customjellyha-now-playing-card)**
 
 #### 🔄 Migrating from Legacy Now Playing Sensors to Media Players
 

@@ -37,6 +37,7 @@ export class JellyHANowPlayingCard extends LitElement {
     private _longPressRaf: number | null = null;
     private _longPressConsumed: boolean = false;
     private _resizeObserver?: ResizeObserver;
+    private _layoutCheckRaf: number | null = null;
     private _progressTimer?: number;
 
     private _cachedBackdropUrl: string | undefined;
@@ -45,12 +46,15 @@ export class JellyHANowPlayingCard extends LitElement {
     private _optimisticFavorites: Record<string, boolean> = {};
     private _resolvedImages: Record<string, { seriesImageUrl?: string; episodeImageUrl?: string }> = {};
     private _fetchingImageKey: string | null = null;
+    private _resolvedMetadata: Record<string, any> = {};
+    private _fetchingMetadataId: string | null = null;
 
     public setConfig(config: JellyHANowPlayingCardConfig): void {
         this._config = {
             show_title: true,
             show_subtitle: true,
             show_media_type_badge: true,
+            badge_style: 'poster',
             show_year: true,
             show_client: true,
             show_user: true,
@@ -79,6 +83,7 @@ export class JellyHANowPlayingCard extends LitElement {
             show_title: true,
             show_subtitle: true,
             show_media_type_badge: true,
+            badge_style: 'poster',
             show_year: true,
             show_client: true,
             show_user: true,
@@ -108,7 +113,7 @@ export class JellyHANowPlayingCard extends LitElement {
             columns: 12,
             rows: 3,
             min_columns: 6,
-            min_rows: 3,
+            min_rows: 2,
             max_rows: 5
         };
     }
@@ -138,6 +143,13 @@ export class JellyHANowPlayingCard extends LitElement {
             return this._renderEmpty();
         }
 
+        // Extract Jellyfin item ID and enrich missing metadata for generic media players (like Chromecast)
+        const itemId = this._extractItemId(stateObj);
+        if (itemId && !this._resolvedMetadata[itemId] && (!attributes.community_rating || !attributes.year || !attributes.genres || !attributes.media_type)) {
+            this._fetchMissingMetadata(itemId);
+        }
+        const cachedItem = itemId ? this._resolvedMetadata[itemId] : null;
+
         const durationSeconds = this._getDurationSeconds(stateObj);
         const currentPositionSeconds = this._getCurrentPositionSeconds(stateObj);
 
@@ -157,20 +169,20 @@ export class JellyHANowPlayingCard extends LitElement {
                 : currentPositionSeconds;
 
         // Resolve images (handling both Jellyfin entities and generic media players like Chromecast)
-        const { seriesImageUrl, episodeImageUrl } = this._resolveImages(stateObj);
+        const { seriesImageUrl, episodeImageUrl } = this._resolveImages(stateObj, cachedItem);
 
         // Use series image if configured and available, otherwise use episode/movie image
         const rawImageUrl = this._config.use_series_image && seriesImageUrl
             ? seriesImageUrl
-            : (episodeImageUrl || attributes.image_url || (stateObj.attributes as any).entity_picture);
+            : (episodeImageUrl || attributes.image_url || (stateObj.attributes as any).entity_picture || cachedItem?.poster_url);
         const imageUrl = rawImageUrl;
 
         // Cache backdrop URL to prevent flicker - update when item or series image toggle changes
-        const currentItemId = attributes.item_id || (stateObj.attributes as any).media_content_id;
+        const currentItemId = itemId || attributes.item_id || (stateObj.attributes as any).media_content_id;
         const backdropCacheKey = `${currentItemId}_${this._config.use_series_image ? 'series' : 'item'}`;
         if (backdropCacheKey !== this._cachedItemId) {
             this._cachedItemId = backdropCacheKey;
-            const rawBackdropUrl = attributes.backdrop_url || rawImageUrl;
+            const rawBackdropUrl = attributes.backdrop_url || cachedItem?.backdrop_url || rawImageUrl;
             this._cachedBackdropUrl = rawBackdropUrl ? addImageParams(rawBackdropUrl, 640) : undefined;
         }
 
@@ -183,29 +195,69 @@ export class JellyHANowPlayingCard extends LitElement {
         const backdropUrl = this._cachedBackdropUrl;
         const showBackground = this._config.show_background !== false && backdropUrl;
         const isPaused = isMediaPlayer ? stateObj.state === 'paused' : attributes.is_paused;
-        const mediaType = (attributes.media_type || (stateObj.attributes as any).media_content_type || '').toLowerCase();
+
+        const rawMediaType = attributes.media_type || (cachedItem?.type ? cachedItem.type : null) || (stateObj.attributes as any).media_content_type || '';
+        const mediaType = rawMediaType.toLowerCase();
         const isMusic = mediaType === 'audio' || mediaType === 'music';
 
-        const displayTitle = attributes.title || (stateObj.attributes as any).media_title || '';
+        let displayTitle = attributes.title || (stateObj.attributes as any).media_title || cachedItem?.name || '';
         const showSubtitle = this._config.show_subtitle !== false;
-        const subtitle = showSubtitle ? (attributes.artist_name || (stateObj.attributes as any).media_artist || attributes.series_title || (stateObj.attributes as any).media_series_title || '') : '';
-        const yearStr = (this._config.show_year !== false && attributes.year) ? String(attributes.year) : '';
-        const genreStr = (this._config.show_genres !== false && attributes.genres?.length) ? attributes.genres.slice(0, 2).join(', ') : '';
+        const seriesTitle = attributes.series_title || (stateObj.attributes as any).media_series_title || cachedItem?.series_name || '';
+        const subtitle = showSubtitle ? (attributes.artist_name || (stateObj.attributes as any).media_artist || seriesTitle || cachedItem?.artist_name || '') : '';
+
+        const effectiveYear = attributes.year ?? cachedItem?.year;
+        const yearStr = (this._config.show_year !== false && effectiveYear) ? String(effectiveYear) : '';
+
+        const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
+        const genreStr = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 2).join(', ') : '';
         const metaLine = [yearStr, genreStr].filter(Boolean).join(' • ');
-        const userName = (this._config.show_user !== false) ? (attributes.user_name || '') : '';
-        const clientInfo = (this._config.show_client !== false) ? (attributes.client || '') : '';
+
+        const effectiveUser = attributes.user_name || this.hass.user?.name || '';
+        const userName = (this._config.show_user !== false) ? effectiveUser : '';
+
+        const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
+        const clientInfo = (this._config.show_client !== false) ? effectiveClient : '';
 
         // Media type badge text
-        const season = attributes.season !== undefined ? attributes.season : (stateObj.attributes as any).media_season;
-        const episode = attributes.episode !== undefined ? attributes.episode : (stateObj.attributes as any).media_episode;
-        const badgeText = ((mediaType === 'episode' || mediaType === 'tvshow') && season !== undefined && episode !== undefined)
+        const season = attributes.season !== undefined ? attributes.season : ((stateObj.attributes as any).media_season !== undefined ? (stateObj.attributes as any).media_season : cachedItem?.season);
+        const episode = attributes.episode !== undefined ? attributes.episode : ((stateObj.attributes as any).media_episode !== undefined ? (stateObj.attributes as any).media_episode : cachedItem?.episode);
+        const isEpisodeItem = (mediaType === 'episode' || mediaType === 'tvshow') && season !== undefined && episode !== undefined;
+        const badgeText = isEpisodeItem
             ? `S${String(season).padStart(2, '0')}E${String(episode).padStart(2, '0')}`
-            : attributes.media_type || '';
+            : (mediaType === 'movie' ? 'MOVIE' : (mediaType === 'episode' || mediaType === 'tvshow' ? 'EPISODE' : (attributes.media_type || cachedItem?.type || '')));
+
+        // Badge placement style (applies to both Movies and TV Shows; inline applies to TV Shows)
+        const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
+        const showBadge = this._config.show_media_type_badge !== false && !!badgeText;
+
+        let showPosterBadge = false;
+        let showHeaderBadge = false;
+
+        if (showBadge && badgeStyle !== 'none') {
+            if (badgeStyle === 'poster') {
+                showPosterBadge = true;
+            } else if (badgeStyle === 'header') {
+                showHeaderBadge = true;
+            } else if (badgeStyle === 'inline') {
+                if (isEpisodeItem) {
+                    const epPrefix = `S${String(season).padStart(2, '0')}E${String(episode).padStart(2, '0')}`;
+                    if (displayTitle && !displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
+                        displayTitle = `${epPrefix} • ${displayTitle}`;
+                    } else if (!displayTitle) {
+                        displayTitle = epPrefix;
+                    }
+                }
+                // Movies and other media keep clean displayTitle without any prefix
+            }
+        }
+
+        // Rating
+        const communityRating = attributes.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
 
         // Determine effective favorite status using optimistic override if available
         const isFavorite = currentItemId && this._optimisticFavorites[currentItemId] !== undefined
             ? this._optimisticFavorites[currentItemId]
-            : (attributes.is_favorite || false);
+            : (attributes.is_favorite || cachedItem?.is_favorite || false);
 
         // SVG ring circumference for stop animation (r=20 => C=2*PI*20 ≈ 125.66)
         const ringCircumference = 125.66;
@@ -230,14 +282,13 @@ export class JellyHANowPlayingCard extends LitElement {
                             <div class="poster-container ${supportsRemote ? '' : 'no-rewind'}" @click=${supportsRemote ? this._handlePosterRewind : undefined}>
                                 <img src="${addImageParams(imageUrl, 160)}" alt="${displayTitle}" loading="eager" fetchpriority="high" />
                                 
-                                ${this._config.show_media_type_badge !== false && badgeText ? html`
+                                ${showPosterBadge ? html`
                                     <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
-                                
                                 ` : nothing}
-                                ${this._config.show_ratings !== false && attributes.community_rating ? html`
+                                ${this._config.show_ratings !== false && communityRating ? html`
                                     <span class="poster-badge rating-badge">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${attributes.community_rating.toFixed(1)}
+                                        ${Number(communityRating).toFixed(1)}
                                     </span>
                                 ` : nothing}
                                 ${this._config.show_runtime !== false && (attributes.runtime_minutes || durationSeconds > 0) ? html`
@@ -260,9 +311,14 @@ export class JellyHANowPlayingCard extends LitElement {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="header">
-                                    ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
-                                    ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
-                                    ${this._overflowState < 1 && metaLine ? html`<div class="meta-line">${metaLine}</div>` : nothing}
+                                    <div class="title-row">
+                                        ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
+                                        ${showHeaderBadge ? html`
+                                            <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
+                                        ` : nothing}
+                                    </div>
+                                    ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
+                                    ${this._overflowState < 2 && metaLine ? html`<div class="meta-line">${metaLine}</div>` : nothing}
                                     ${this._overflowState < 1 && (userName || clientInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && clientInfo ? ' ' : ''}${clientInfo || nothing}</div>` : nothing}
                                 </div>
                             </div>
@@ -432,20 +488,65 @@ export class JellyHANowPlayingCard extends LitElement {
         `;
     }
 
-    private _resolveImages(stateObj: HassEntity): { seriesImageUrl?: string; episodeImageUrl?: string } {
+    private _extractItemId(stateObj: HassEntity): string | null {
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
-        let seriesImageUrl = attributes.series_image_url;
-        let episodeImageUrl = attributes.image_url;
-
-        // Determine if this is an episode / TV series item
-        const mediaType = ((attributes.media_type || (stateObj.attributes as any).media_content_type) || '').toLowerCase();
-        const seriesTitle = attributes.series_title || (stateObj.attributes as any).media_series_title;
-        const episodeTitle = attributes.title || (stateObj.attributes as any).media_title;
-        const isEpisode = mediaType === 'episode' || mediaType === 'tvshow' || !!seriesTitle || (stateObj.attributes as any).media_season !== undefined;
+        if (attributes.item_id) return String(attributes.item_id);
 
         const contentId = (stateObj.attributes as any).media_content_id || '';
         const entityPic = (stateObj.attributes as any).entity_picture || '';
-        const cacheKey = attributes.item_id || contentId || seriesTitle || stateObj.entity_id;
+
+        // Match /Videos/<id>/... or /Items/<id>/... or /Audio/<id>/...
+        const vidMatch = contentId.match(/(?:Videos|Items|Audio)\/([a-zA-Z0-9_-]+)/i);
+        if (vidMatch && vidMatch[1]) return vidMatch[1];
+
+        const picMatch = entityPic.match(/Items\/([a-zA-Z0-9_-]+)/i);
+        if (picMatch && picMatch[1]) return picMatch[1];
+
+        return null;
+    }
+
+    private async _fetchMissingMetadata(itemId: string): Promise<void> {
+        if (!itemId || this._resolvedMetadata[itemId] || this._fetchingMetadataId === itemId) return;
+        this._fetchingMetadataId = itemId;
+        try {
+            const libraryEntity = Object.keys(this.hass?.states || {}).find(
+                e => e.startsWith('sensor.jellyha') && e.endsWith('_library')
+            );
+            const wsMsg: any = {
+                type: 'jellyha/get_item',
+                item_id: itemId,
+            };
+            if (libraryEntity) {
+                wsMsg.server_entity_id = libraryEntity;
+            }
+            const res: any = await this.hass.callWS(wsMsg);
+            if (res && res.item) {
+                this._resolvedMetadata[itemId] = res.item;
+            } else {
+                this._resolvedMetadata[itemId] = {};
+            }
+            this.requestUpdate();
+        } catch (e) {
+            // WS call failed, ignore
+        } finally {
+            this._fetchingMetadataId = null;
+        }
+    }
+
+    private _resolveImages(stateObj: HassEntity, cachedItem?: any): { seriesImageUrl?: string; episodeImageUrl?: string } {
+        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
+        let seriesImageUrl = attributes.series_image_url || cachedItem?.series_poster_url;
+        let episodeImageUrl = attributes.image_url || cachedItem?.poster_url || cachedItem?.image_url;
+
+        // Determine if this is an episode / TV series item
+        const mediaType = ((attributes.media_type || cachedItem?.type || (stateObj.attributes as any).media_content_type) || '').toLowerCase();
+        const seriesTitle = attributes.series_title || (stateObj.attributes as any).media_series_title || cachedItem?.series_name;
+        const episodeTitle = attributes.title || (stateObj.attributes as any).media_title || cachedItem?.name;
+        const isEpisode = mediaType === 'episode' || mediaType === 'tvshow' || !!seriesTitle || (stateObj.attributes as any).media_season !== undefined || cachedItem?.season !== undefined;
+
+        const contentId = (stateObj.attributes as any).media_content_id || '';
+        const entityPic = (stateObj.attributes as any).entity_picture || '';
+        const cacheKey = attributes.item_id || cachedItem?.id || contentId || seriesTitle || stateObj.entity_id;
 
         // Check if previously resolved in memory
         if (cacheKey && this._resolvedImages[cacheKey]) {
@@ -456,6 +557,12 @@ export class JellyHANowPlayingCard extends LitElement {
         // If not an episode, or both already resolved, return
         if (!isEpisode || (seriesImageUrl && episodeImageUrl)) {
             return { seriesImageUrl, episodeImageUrl };
+        }
+
+        // If cachedItem has series_poster_url or poster_url, use them directly
+        if (cachedItem) {
+            if (cachedItem.series_poster_url && !seriesImageUrl) seriesImageUrl = cachedItem.series_poster_url;
+            if ((cachedItem.poster_url || cachedItem.image_url) && !episodeImageUrl) episodeImageUrl = cachedItem.poster_url || cachedItem.image_url;
         }
 
         // Try to parse Jellyfin URL from media_content_id or entity_picture
@@ -981,6 +1088,10 @@ export class JellyHANowPlayingCard extends LitElement {
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
         }
+        if (this._layoutCheckRaf) {
+            cancelAnimationFrame(this._layoutCheckRaf);
+            this._layoutCheckRaf = null;
+        }
         this._stopProgressTimer();
         this._endLongPress();
     }
@@ -1016,7 +1127,11 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private _checkLayout(): void {
-        requestAnimationFrame(() => {
+        if (this._layoutCheckRaf) {
+            cancelAnimationFrame(this._layoutCheckRaf);
+        }
+        this._layoutCheckRaf = requestAnimationFrame(() => {
+            this._layoutCheckRaf = null;
             this._doLayoutCheck();
         });
     }
@@ -1024,12 +1139,33 @@ export class JellyHANowPlayingCard extends LitElement {
     private _doLayoutCheck(): void {
         const cardRect = this.getBoundingClientRect();
         const haCard = this.shadowRoot?.querySelector('ha-card');
-        if (haCard && cardRect.height > 0) {
-            haCard.classList.toggle('compact-height', cardRect.height <= 195);
-            haCard.classList.toggle('micro-height', cardRect.height <= 180);
-            haCard.classList.toggle('tall-narrow', cardRect.height >= 240 && cardRect.width <= 400);
-            haCard.classList.toggle('very-tall-narrow', cardRect.height >= 300 && cardRect.width <= 450);
+        if (!haCard || cardRect.height === 0) return;
+
+        // If card is in empty or error state, clear layout classes and exit immediately
+        if (haCard.classList.contains('empty-state') || haCard.classList.contains('error-state')) {
+            haCard.classList.remove('compact-height', 'micro-height', 'tall-narrow', 'very-tall-narrow');
+            return;
         }
+
+        const h = cardRect.height;
+        const w = cardRect.width;
+
+        // Hysteresis to prevent threshold oscillation
+        const isCompact = haCard.classList.contains('compact-height') ? h <= 200 : h <= 190;
+        haCard.classList.toggle('compact-height', isCompact);
+
+        const isMicro = haCard.classList.contains('micro-height') ? h <= 185 : h <= 175;
+        haCard.classList.toggle('micro-height', isMicro);
+
+        const isTallNarrow = haCard.classList.contains('tall-narrow')
+            ? (h >= 235 && w <= 405)
+            : (h >= 245 && w <= 395);
+        haCard.classList.toggle('tall-narrow', isTallNarrow);
+
+        const isVeryTallNarrow = haCard.classList.contains('very-tall-narrow')
+            ? (h >= 295 && w <= 455)
+            : (h >= 305 && w <= 445);
+        haCard.classList.toggle('very-tall-narrow', isVeryTallNarrow);
 
         const titleEl = this.shadowRoot?.querySelector('.title') as HTMLElement;
         const bottomEl = this.shadowRoot?.querySelector('.info-bottom') as HTMLElement;
@@ -1040,27 +1176,37 @@ export class JellyHANowPlayingCard extends LitElement {
         const bottomRect = bottomEl.getBoundingClientRect();
 
         const bottomSectionTop = bottomRect.top - cardRect.top;
-        const SAFE_THRESHOLD = bottomSectionTop - 8;
-
-        // Estimated heights for meta-line and client-line
-        const PROJECTED_META_HEIGHT = 20;
-        const PROJECTED_CLIENT_HEIGHT = 18;
+        const SAFE_THRESHOLD = bottomSectionTop - 6;
 
         const titleBottomRel = titleRect.bottom - cardRect.top;
 
-        // Check if subtitle + meta-line + client-line would overflow
-        const projectedSubtitleBottom = titleBottomRel + 22; // subtitle height
-        const projectedMetaBottom = projectedSubtitleBottom + PROJECTED_META_HEIGHT;
-        const projectedClientBottom = projectedMetaBottom + PROJECTED_CLIENT_HEIGHT;
+        // Check if this item has an active subtitle
+        const stateObj = this._config?.entity ? this.hass?.states[this._config.entity] : null;
+        const attrs = stateObj?.attributes as any;
+        const itemId = stateObj ? this._extractItemId(stateObj) : null;
+        const cachedItem = itemId ? this._resolvedMetadata[itemId] : null;
+        const showSubtitle = this._config?.show_subtitle !== false;
+        const seriesTitle = attrs?.series_title || attrs?.media_series_title || cachedItem?.series_name || '';
+        const subtitle = showSubtitle ? (attrs?.artist_name || attrs?.media_artist || seriesTitle || cachedItem?.artist_name || '') : '';
+        const hasSubtitle = !!subtitle;
 
-        let newState = 0;
-
-        if (projectedClientBottom > SAFE_THRESHOLD) {
-            newState = 1; // Hide meta-line and client-line
+        let curBottom = titleBottomRel;
+        if (hasSubtitle) {
+            curBottom += 20; // approximate subtitle height + margin
         }
 
-        if (projectedSubtitleBottom > SAFE_THRESHOLD) {
-            newState = 2; // Hide subtitle too
+        const projectedMetaBottom = curBottom + 18;
+        const projectedClientBottom = projectedMetaBottom + 16;
+
+        let newState = 0;
+        if (projectedClientBottom > SAFE_THRESHOLD) {
+            newState = 1; // Hide client-line
+        }
+        if (projectedMetaBottom > SAFE_THRESHOLD) {
+            newState = 2; // Hide meta-line
+        }
+        if (hasSubtitle && curBottom > SAFE_THRESHOLD) {
+            newState = 3; // Hide subtitle
         }
 
         if (this._overflowState !== newState) {
@@ -1103,7 +1249,7 @@ export class JellyHANowPlayingCard extends LitElement {
             border-radius: var(--ha-card-border-radius, 12px);
             box-shadow: var(--ha-card-box-shadow, none);
             border: var(--ha-card-border, 1px solid var(--ha-card-border-color, var(--divider-color, #e0e0e0)));
-            transition: all 0.3s ease-out;
+            transition: background 0.3s ease-out, border-color 0.3s ease-out, box-shadow 0.3s ease-out;
             container-type: inline-size;
             container-name: now-playing;
             display: flex;
@@ -1239,6 +1385,7 @@ export class JellyHANowPlayingCard extends LitElement {
         .media-type-badge.movie { background-color: #AA5CC3; }
         .media-type-badge.series { background-color: #F2A218; }
         .media-type-badge.episode { background-color: #F59E0B; }
+        .media-type-badge.tvshow { background-color: #F59E0B; }
         .media-type-badge.audio { background-color: #10B981; }
 
         .rating-badge {
@@ -1339,6 +1486,29 @@ export class JellyHANowPlayingCard extends LitElement {
         .header {
             margin-bottom: 0px;
             flex-shrink: 0;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .title-row .title {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .media-type-badge.header-badge {
+            position: static !important;
+            flex-shrink: 0;
+            margin-top: 6px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            pointer-events: none;
+            align-self: flex-start;
         }
 
         /* 4-line text structure */
@@ -1574,19 +1744,24 @@ export class JellyHANowPlayingCard extends LitElement {
 
         /* Compact empty state */
         @container now-playing (max-width: 250px) {
+            .empty-state {
+                padding: 14px 10px !important;
+                min-height: 120px !important;
+            }
             .empty-state .logo-container.full-logo {
                 display: none;
             }
             .empty-state .logo-container.mini-icon {
                 display: flex;
                 opacity: 0.9;
-                margin-bottom: 12px;
+                margin-bottom: 8px;
             }
             .empty-state img {
-                max-width: 80px;
+                max-width: 64px;
             }
             .empty-state p {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
+                line-height: 1.25;
             }
         }
 
@@ -1614,49 +1789,33 @@ export class JellyHANowPlayingCard extends LitElement {
                 overflow: hidden;
                 white-space: normal;
             }
+            .header-badge {
+                font-size: 0.7rem;
+                padding: 1px 5px;
+            }
         }
 
-        /* Very short cards: hide extra text */
-        @container now-playing (max-height: 195px) {
-            .meta-line, .client-line {
-                display: none !important;
-            }
-            .card-header {
-                display: none !important;
-            }
-            .title {
-                font-size: 1.2rem;
-                line-height: 1.1;
-                margin-bottom: 2px;
-            }
-            .main-container {
-                gap: 12px;
-            }
-            .card-content {
-                gap: 8px;
-            }
-            .poster-container {
-                min-height: 0;
-                --short-badge-padding: 1px !important;
-            }
-        }
-        ha-card.compact-height .meta-line,
-        ha-card.compact-height .client-line,
-        ha-card.compact-height .card-header {
+        ha-card:not(.empty-state):not(.error-state).compact-height .card-header {
             display: none !important;
         }
-        ha-card.compact-height .title {
+        ha-card:not(.empty-state):not(.error-state).compact-height .title {
             font-size: 1.2rem;
             line-height: 1.1;
             margin-bottom: 2px;
         }
-        ha-card.compact-height .main-container {
+        ha-card:not(.empty-state):not(.error-state).compact-height .header-badge {
+            margin-top: 2px;
+            font-size: 0.75rem;
+            padding: 1px 6px;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .main-container {
             gap: 12px;
         }
-        ha-card.compact-height .card-content {
+        ha-card:not(.empty-state):not(.error-state).compact-height .card-content {
             gap: 8px;
+            padding: 12px 16px !important;
         }
-        ha-card.compact-height .poster-container {
+        ha-card:not(.empty-state):not(.error-state).compact-height .poster-container {
             min-height: 0;
             --short-badge-padding: 1px !important;
         }
@@ -1796,11 +1955,8 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Height-Based Compact Mode */
-        @container now-playing (max-height: 180px) {
+        ha-card:not(.empty-state):not(.error-state).micro-height {
             .card-header {
-                display: none !important;
-            }
-            .poster-badge {
                 display: none !important;
             }
             .info-top {
@@ -1930,7 +2086,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Tall but Narrow Mode */
-        @container now-playing (min-height: 240px) and (max-width: 400px) {
+        ha-card:not(.empty-state):not(.error-state).tall-narrow {
             .card-header {
                 display: none !important;
             }
@@ -2064,7 +2220,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Very Tall but Narrow Mode */
-        @container now-playing (min-height: 300px) and (max-width: 450px) {
+        ha-card:not(.empty-state):not(.error-state).very-tall-narrow {
             .card-header {
                 display: none !important;
             }

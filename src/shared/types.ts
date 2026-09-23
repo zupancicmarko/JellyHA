@@ -219,6 +219,8 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     title?: string;
     show_title?: boolean;
     show_media_type_badge?: boolean;
+    badge_style?: 'poster' | 'header' | 'inline' | 'none';
+    media_type_badge_style?: 'poster' | 'header' | 'inline' | 'none';
     show_ratings?: boolean;
     show_runtime?: boolean;
     show_genres?: boolean;

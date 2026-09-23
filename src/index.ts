@@ -5,6 +5,9 @@
  * Add new card imports here as they are created.
  */
 
+// Safe Custom Elements registration guard (prevents duplicate define() errors on SPA reload)
+import './shared/safe-custom-elements';
+
 // Library Card - Display media from Jellyfin
 import './cards/jellyha-library-card';
 

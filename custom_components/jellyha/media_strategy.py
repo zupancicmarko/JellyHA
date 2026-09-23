@@ -482,6 +482,11 @@ class MediaStrategy:
                             is_legacy = True
                     if browser:
                         browser.stop_discovery()
+                    for cc in chromecasts:
+                        try:
+                            cc.disconnect(blocking=False)
+                        except Exception:
+                            pass
         except Exception as e:
             _LOGGER.warning("Could not detect Chromecast model: %s", e)
             

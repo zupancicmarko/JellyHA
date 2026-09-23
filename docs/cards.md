@@ -191,11 +191,42 @@ show_background: true
 | `show_user` | boolean | `true` | Display viewer user name |
 | `show_time` | boolean | `false` | Display elapsed and remaining playback time |
 | `show_media_type_badge` | boolean | `true` | Display media type badge (`MOVIE`, `SERIES`, `EPISODE`) |
+| `badge_style` | string | `'poster'` | Media type badge presentation: `'poster'` (default, overlay on artwork), `'header'` (pill in header next to title, keeps poster artwork 100% uncovered), `'inline'` (prefixed to episode title for TV shows, e.g. `S01E02 • Title`), `'none'` (hidden) |
 | `show_genres` | boolean | `true` | Display genre tags |
 | `show_ratings` | boolean | `true` | Display community rating score |
 | `show_runtime` | boolean | `true` | Display total runtime |
 | `show_year` | boolean | `true` | Display release year |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
+
+### Media Type Badge Presentation (`badge_style`)
+
+By default, media type badges (`S01E02` for episodes, `MOVIE` for films, `AUDIO` for music) appear as colored pill badges on the top-left corner of the poster image (`badge_style: poster`).
+
+If you prefer your poster artwork or episode screenshot thumbnails to remain completely unobstructed, you can customize the badge presentation using `badge_style` (or in the card visual editor under **Badge Style**):
+
+| `badge_style` | TV Episodes | Movies & Music | Poster Artwork |
+|---|---|---|---|
+| **`poster`** *(default)* | `S01E02` pill on top-left of artwork | `MOVIE` / `AUDIO` pill on top-left of artwork | Overlaid badge |
+| **`header`** | `S01E02` pill in header right-aligned next to episode title | `MOVIE` / `AUDIO` pill in header right-aligned next to title | **100% Uncovered** |
+| **`inline`** | Prepend `S01E02 • ` directly to episode title text (e.g. `S01E02 • Pilot`) | Clean title without prefix (no badge) | **100% Uncovered** |
+| **`none`** | Hidden (no badge or prefix) | Hidden (no badge) | **100% Uncovered** |
+
+#### Example: Uncovered Artwork with Header Badge
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+title: Now Watching
+badge_style: header
+show_background: true
+```
+
+#### Example: Streamlined Minimal Title Prefix
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+badge_style: inline
+show_background: false
+```
 
 ### Migrating from Legacy Now Playing Sensors (`sensor.jellyha_now_playing_*`)
 

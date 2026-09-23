@@ -688,7 +688,15 @@ class JellyHABasePlaybackMediaPlayer(
         session = self._get_active_session()
         if not session:
             return None
-        return None
+        play_state = session.get("PlayState") or {}
+        volume = play_state.get("VolumeLevel")
+        if volume is None:
+            return None
+        try:
+            val = float(volume) / 100.0
+            return max(0.0, min(1.0, round(val, 2)))
+        except (ValueError, TypeError):
+            return None
 
     @property
     def is_volume_muted(self) -> bool | None:
@@ -696,7 +704,7 @@ class JellyHABasePlaybackMediaPlayer(
         session = self._get_active_session()
         if not session:
             return None
-        return session.get("PlayState", {}).get("IsMuted", False)
+        return (session.get("PlayState") or {}).get("IsMuted", False)
 
     # ------------------------------------------------------------------
     # Extra state attributes base helper
@@ -1040,7 +1048,7 @@ class JellyHABasePlaybackMediaPlayer(
 
     async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level (0.0 to 1.0)."""
-        volume_int = str(int(volume * 100))
+        volume_int = str(max(0, min(100, int(round(volume * 100)))))
         await self._send_session_general_command("SetVolume", {"Volume": volume_int})
 
     async def async_mute_volume(self, mute: bool) -> None:
