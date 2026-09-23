@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integration
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.components.http import StaticPathConfig
+from homeassistant.components.frontend import add_extra_js_url
 import os
 
 from .const import (
@@ -25,7 +26,7 @@ from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .services import async_register_services
 from .storage import JellyfinLibraryData
 from .websocket import async_register_websocket
-from .views import JellyHAImageView, JellyHAStreamView
+from .views import JellyHAImageView, JellyHAStreamView, JellyHASubtitleView
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,7 +110,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
         # Register image and stream proxy views
         hass.http.register_view(JellyHAImageView(hass))
         hass.http.register_view(JellyHAStreamView(hass))
+        hass.http.register_view(JellyHASubtitleView(hass))
         
+        # Register frontend cards and seek polyfill globally across all panels (e.g. Media Browser)
+        add_extra_js_url(hass, f"/jellyha/jellyha-cards.js?v={integration.version}")
+
         hass.data[f"{DOMAIN}_views_registered"] = True
     
 

@@ -29,12 +29,62 @@ def build_item_id(media_type: str, item_id: str = "") -> str:
 
 def parse_item_id(content_id: str) -> tuple[str, str]:
     """Parse media content ID into type and item_id."""
-    if not content_id or not content_id.startswith("jellyha://"):
+    if not content_id:
         return "", ""
-    path = content_id.replace("jellyha://", "")
-    parts = path.split("/", 1)
-    media_type = parts[0] if parts else ""
-    item_id = parts[1] if len(parts) > 1 else ""
+
+    if content_id.startswith("media-source://jellyha/"):
+        # Format: media-source://jellyha/{entry_id}/{category}/{item_id}
+        raw = content_id[len("media-source://jellyha/"):]
+        parts = raw.split("/", 2)
+        if len(parts) == 3:
+            category, item_id = parts[1], parts[2]
+        elif len(parts) == 2:
+            category, item_id = parts[1], ""
+        else:
+            return "", ""
+        if item_id:
+            if category == "boxsets":
+                category = "boxset"
+            elif category == "collections":
+                category = "collection"
+            elif category == "playlists":
+                category = "playlist"
+            elif category == "albums":
+                category = "album"
+            elif category == "artists":
+                category = "artist"
+            elif category in ("shows", "tvshows"):
+                category = "show"
+        return category, item_id
+
+    if not content_id.startswith("jellyha://"):
+        return "", ""
+
+    path = content_id[len("jellyha://"):]
+    parts = path.split("/")
+    if len(parts) == 1:
+        return parts[0], ""
+    if len(parts) == 2:
+        media_type, item_id = parts[0], parts[1]
+    else:
+        # Support hierarchical URIs such as music/track/{id}
+        media_type = "/".join(parts[:-1])
+        item_id = parts[-1]
+
+    if item_id:
+        if media_type == "boxsets":
+            media_type = "boxset"
+        elif media_type == "collections":
+            media_type = "collection"
+        elif media_type == "playlists":
+            media_type = "playlist"
+        elif media_type == "albums":
+            media_type = "album"
+        elif media_type == "artists":
+            media_type = "artist"
+        elif media_type in ("shows", "tvshows"):
+            media_type = "show"
+
     return media_type, item_id
 
 
@@ -90,9 +140,9 @@ async def async_browse_media(
         return await _build_playlists_list(coordinator, entry_id)
     elif category == "playlist" and item_id:
         return await _build_playlist_items(coordinator, entry_id, item_id)
-    elif category == "collections":
+    elif category in ("collections", "boxsets"):
         return await _build_collections_list(coordinator, entry_id)
-    elif category == "collection" and item_id:
+    elif category in ("collection", "boxset") and item_id:
         return await _build_collection_items(coordinator, entry_id, item_id)
     elif category == "recent":
         return await _build_recent_list(coordinator, entry_id)
@@ -196,13 +246,13 @@ async def _build_root_menu(coordinator, entry_id: str) -> BrowseMedia:
             )
         )
 
-    if "boxsets" in collection_types:
+    if "boxsets" in collection_types or "boxset" in collection_types:
         children.append(
             BrowseMedia(
                 title="📦 Collections",
                 media_class=MediaClass.DIRECTORY,
                 media_content_id=build_item_id("collections"),
-                media_content_type=MediaType.CHANNELS,
+                media_content_type=MediaType.PLAYLIST,
                 can_play=False,
                 can_expand=True,
                 thumbnail=None,
@@ -1248,8 +1298,8 @@ async def _build_collections_list(coordinator, entry_id: str) -> BrowseMedia:
                 title=collection.get("Name", "Unknown Collection"),
                 media_class=MediaClass.DIRECTORY,
                 media_content_id=build_item_id("collection", collection_id),
-                media_content_type=MediaType.CHANNELS,
-                can_play=False,
+                media_content_type=MediaType.PLAYLIST,
+                can_play=True,
                 can_expand=True,
                 thumbnail=_signed_image_url(coordinator.hass, entry_id, collection_id),
             )
@@ -1259,7 +1309,7 @@ async def _build_collections_list(coordinator, entry_id: str) -> BrowseMedia:
         title="Collections",
         media_class=MediaClass.DIRECTORY,
         media_content_id=build_item_id("collections"),
-        media_content_type=MediaType.CHANNELS,
+        media_content_type=MediaType.PLAYLIST,
         can_play=False,
         can_expand=True,
         children=children,

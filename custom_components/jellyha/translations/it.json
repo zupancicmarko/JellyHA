@@ -478,6 +478,56 @@
                     "description": "Titolo dell'album da cercare."
                 }
             }
+        },
+        "play_playlist": {
+            "name": "Riproduci playlist",
+            "description": "Riproduci una playlist da Jellyfin su qualsiasi lettore multimediale Home Assistant o direttamente su una sessione client Jellyfin, con riproduzione casuale opzionale.",
+            "fields": {
+                "entity_id": {
+                    "name": "Lettore multimediale",
+                    "description": "Entità lettore multimediale di destinazione per riprodurre la playlist."
+                },
+                "playlist": {
+                    "name": "Nome o ID della playlist",
+                    "description": "Nome o ID elemento Jellyfin della playlist."
+                },
+                "shuffle": {
+                    "name": "Casuale",
+                    "description": "Mescola l'ordine dei brani prima della riproduzione."
+                }
+            }
+        },
+        "get_playlists": {
+            "name": "Ottieni playlist",
+            "description": "Recupera tutte le playlist utente da Jellyfin con conteggio tracce, durata e miniatura in response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Query",
+                    "description": "Filtro di ricerca opzionale per i nomi delle playlist."
+                },
+                "limit": {
+                    "name": "Limite",
+                    "description": "Numero massimo di playlist da restituire."
+                }
+            }
+        },
+        "get_collections": {
+            "name": "Ottieni collezioni",
+            "description": "Recupera tutte le collezioni di film (BoxSet) da Jellyfin con conteggio elementi e film contenuti in response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Query",
+                    "description": "Filtro di ricerca opzionale per i nomi delle collezioni."
+                },
+                "limit": {
+                    "name": "Limite",
+                    "description": "Numero massimo di collezioni da restituire."
+                },
+                "include_items": {
+                    "name": "Includi elementi",
+                    "description": "Includi i film contenuti nella risposta."
+                }
+            }
         }
     }
 }

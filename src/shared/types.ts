@@ -38,6 +38,19 @@ export interface LovelaceCardConfig {
     [key: string]: unknown;
 }
 
+export interface MediaStreamInfo {
+    Type: 'Video' | 'Audio' | 'Subtitle' | string;
+    Index: number;
+    Codec?: string;
+    Language?: string;
+    DisplayTitle?: string;
+    Title?: string;
+    IsForced?: boolean;
+    IsDefault?: boolean;
+    IsExternal?: boolean;
+    DeliveryUrl?: string;
+}
+
 export interface MediaItem {
     id: string;
     name: string;
@@ -60,7 +73,7 @@ export interface MediaItem {
     dynamic_range?: string;
     video_range?: string;
     video_range_type?: string;
-    media_streams?: Record<string, any>[];
+    media_streams?: MediaStreamInfo[];
     official_rating?: string;
     season?: number;
     episode?: number;
@@ -83,6 +96,17 @@ export interface MediaItem {
     album?: string;
     path?: string;
     filepath?: string;
+}
+
+export interface PlayTarget {
+    type: 'cast' | 'script' | 'browser' | 'play-browser';
+    name?: string;               // Display label (e.g. "Play on Apple TV")
+    icon?: string;               // Optional icon (default: mdi:cast for cast, mdi:play for script, mdi:monitor for browser)
+    device?: string;             // media_player entity_id (for type: 'cast')
+    service?: string;            // script/service entity_id (for type: 'script')
+    service_data?: Record<string, any>; // Optional additional payload passed to script
+    show_entity_name?: boolean;  // Whether to display entity/device ID subtitle (default: true)
+    show_entity?: boolean;       // Alias for show_entity_name
 }
 
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
@@ -110,9 +134,9 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
     horizontal_alignment?: 'left' | 'center';
-    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'none';
-    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'none';
-    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'none';
+    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'none';
+    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'none';
+    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'none';
     click_service?: string;
     click_service_data?: Record<string, any>;
     hold_service?: string;
@@ -140,6 +164,13 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     use_series_image?: boolean;
     show_search?: boolean;
     sort_option?: 'date_added_asc' | 'date_added_desc' | 'title_asc' | 'title_desc' | 'year_asc' | 'year_desc' | 'last_played_asc' | 'last_played_desc';
+    enable_custom_play_actions?: boolean;
+    modal_play_actions?: PlayTarget[];
+    enable_browser_player?: boolean;
+    modal_service?: string;
+    modal_service_data?: Record<string, any>;
+    show_entity_name?: boolean;
+    show_modal_entity_name?: boolean;
 }
 
 export interface SensorData {
@@ -188,6 +219,8 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     title?: string;
     show_title?: boolean;
     show_media_type_badge?: boolean;
+    badge_style?: 'poster' | 'header' | 'inline' | 'none';
+    media_type_badge_style?: 'poster' | 'header' | 'inline' | 'none';
     show_ratings?: boolean;
     show_runtime?: boolean;
     show_genres?: boolean;

@@ -452,6 +452,15 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if self._api and item_id and item_type in ("Audio", "MusicAlbum", "MusicArtist"):
             stream_url = f"{self._api._server_url}/Audio/{item_id}/stream?static=true&api_key={self._api._api_key}&ApiKey={self._api._api_key}"
 
+        # Build direct Jellyfin web UI link
+        jellyfin_url = None
+        if item_id:
+            ext_url = self.entry.options.get("external_url") or self.entry.data.get("external_url")
+            server_url = getattr(self._api, "_server_url", None) or self.entry.data.get("url", "")
+            base = (ext_url or server_url or "").rstrip("/")
+            if base:
+                jellyfin_url = f"{base}/web/index.html#!/details?id={item_id}"
+
         duration_seconds = int(runtime_ticks / TICKS_PER_SECOND) if runtime_ticks else None
 
         return {
@@ -469,6 +478,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "image_url": poster_url,
             "backdrop_url": backdrop_url,
             "series_poster_url": series_poster_url,
+            "jellyfin_url": jellyfin_url,
             "is_played": item.get("UserData", {}).get("Played", False),
             "unplayed_count": (0 if item.get("UserData", {}).get("Played", False) else (item.get("UserData", {}).get("UnplayedItemCount") or 0)) if item_type == "Series" else item.get("UserData", {}).get("UnplayedItemCount"),
             "total_episodes": (item.get("RecursiveItemCount") if item.get("RecursiveItemCount") is not None else item.get("ChildCount", 0)) if item_type == "Series" else None,

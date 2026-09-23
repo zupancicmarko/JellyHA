@@ -478,6 +478,56 @@
                     "description": "Titre de l'album."
                 }
             }
+        },
+        "play_playlist": {
+            "name": "Lire la liste de lecture",
+            "description": "Lire une liste de lecture depuis Jellyfin sur n'importe quel lecteur multimédia Home Assistant ou directement sur une session client Jellyfin, avec lecture aléatoire en option.",
+            "fields": {
+                "entity_id": {
+                    "name": "Lecteur multimédia",
+                    "description": "Entité de lecteur multimédia cible pour lire la liste de lecture."
+                },
+                "playlist": {
+                    "name": "Nom ou ID de la liste de lecture",
+                    "description": "Nom ou ID d'élément Jellyfin de la liste de lecture."
+                },
+                "shuffle": {
+                    "name": "Aléatoire",
+                    "description": "Mélanger l'ordre des pistes avant la lecture."
+                }
+            }
+        },
+        "get_playlists": {
+            "name": "Obtenir les listes de lecture",
+            "description": "Récupérer toutes les listes de lecture utilisateur de Jellyfin avec le nombre de pistes, la durée et la vignette dans response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Requête",
+                    "description": "Filtre de recherche facultatif pour faire correspondre les noms de liste de lecture."
+                },
+                "limit": {
+                    "name": "Limite",
+                    "description": "Nombre maximal de listes de lecture à retourner."
+                }
+            }
+        },
+        "get_collections": {
+            "name": "Obtenir les collections",
+            "description": "Récupérer toutes les collections de films (BoxSets) de Jellyfin avec le nombre d'éléments et les films inclus dans response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Requête",
+                    "description": "Filtre de recherche facultatif pour faire correspondre les noms de collection."
+                },
+                "limit": {
+                    "name": "Limite",
+                    "description": "Nombre maximal de collections à retourner."
+                },
+                "include_items": {
+                    "name": "Inclure les éléments",
+                    "description": "Inclure les films contenus dans la réponse."
+                }
+            }
         }
     }
 }

@@ -80,6 +80,7 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         websocket_api.async_register_command(hass, websocket_get_episodes)
         websocket_api.async_register_command(hass, websocket_search_media)
         websocket_api.async_register_command(hass, websocket_get_latest_items)
+        websocket_api.async_register_command(hass, websocket_get_item)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -410,4 +411,50 @@ async def websocket_get_latest_items(
         connection.send_result(msg["id"], {"items": list(items)})
     except Exception as err:
         _LOGGER.exception("Error fetching latest items: %s", err)
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")
+
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/get_item",
+    vol.Required("item_id"): str,
+    vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("server_entity_id"): cv.entity_id,
+    vol.Optional("config_entry_id"): cv.string,
+})
+@websocket_api.async_response
+async def websocket_get_item(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Handle get single item command."""
+    item_id = msg["item_id"]
+    coordinator, err = _get_coordinator_from_msg(hass, msg)
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, err or "Integration not loaded")
+        return
+
+    try:
+        if not coordinator._api:
+            await coordinator._async_setup()
+
+        user_id = coordinator.entry.data.get("user_id")
+        if not user_id:
+            connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "User ID missing from config")
+            return
+
+        raw_item = await coordinator._api.get_item(user_id, item_id)
+        if not raw_item:
+            connection.send_result(msg["id"], {"item": None})
+            return
+
+        item = await coordinator._async_transform_item(raw_item)
+        if "MediaSources" in raw_item and raw_item["MediaSources"]:
+            item["media_streams"] = raw_item["MediaSources"][0].get("MediaStreams", [])
+        elif "MediaStreams" in raw_item:
+            item["media_streams"] = raw_item["MediaStreams"]
+
+        connection.send_result(msg["id"], {"item": item})
+    except Exception as err:
+        _LOGGER.exception("Error fetching item details for %s: %s", item_id, err)
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")

@@ -7,14 +7,16 @@
 import { LitElement, html, nothing, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 
-import { HomeAssistant, LovelaceCard, MediaItem, SensorData, JellyHALibraryCardConfig } from '../shared/types';
-import { isNewItem } from '../shared/utils';
+import { HomeAssistant, LovelaceCard, MediaItem, SensorData, JellyHALibraryCardConfig, PlayTarget } from '../shared/types';
+import { isNewItem, getScriptDefaultName } from '../shared/utils';
 import { JellyHAItemDetailsModal } from '../components/jellyha-item-details-modal';
+import { showJellyHABrowserPlayer } from '../components/jellyha-browser-player';
 import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
 
 // Import modal for side effects (registration)
 import '../components/jellyha-item-details-modal';
+import '../components/jellyha-browser-player';
 
 // Import editor for side effects
 import '../editors/jellyha-library-editor';
@@ -23,7 +25,7 @@ import '../editors/jellyha-library-editor';
 import '../components/jellyha-media-item';
 
 // Register card in the custom cards array
-const CARD_VERSION = '1.4.0';
+const CARD_VERSION = '1.5.0';
 
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${CARD_VERSION} `,
@@ -1447,7 +1449,7 @@ export class JellyHALibraryCard extends LitElement {
 
     switch (action) {
       case 'jellyfin':
-        this._openExternalUrl(item.jellyfin_url);
+        this._openExternalUrl(item.jellyfin_url, item);
         break;
       case 'cast':
         this._castMedia(item, type);
@@ -1467,10 +1469,37 @@ export class JellyHALibraryCard extends LitElement {
       case 'call-service':
         this._callCustomService(item, type);
         break;
+      case 'play-browser':
+        this._playInBrowser(item, type);
+        break;
       case 'none':
       default:
         break;
     }
+  }
+
+  private _playInBrowser(item: MediaItem, type: 'click' | 'hold' | 'double_tap' = 'click'): void {
+    let subtitleMode = this._config.subtitle_mode;
+    let subtitleLanguage = this._config.subtitle_language;
+    if (type === 'click') {
+      if (this._config.click_subtitle_mode) subtitleMode = this._config.click_subtitle_mode;
+      if (this._config.click_subtitle_language) subtitleLanguage = this._config.click_subtitle_language;
+    } else if (type === 'hold') {
+      if (this._config.hold_subtitle_mode) subtitleMode = this._config.hold_subtitle_mode;
+      if (this._config.hold_subtitle_language) subtitleLanguage = this._config.hold_subtitle_language;
+    } else if (type === 'double_tap') {
+      if (this._config.double_tap_subtitle_mode) subtitleMode = this._config.double_tap_subtitle_mode;
+      if (this._config.double_tap_subtitle_language) subtitleLanguage = this._config.double_tap_subtitle_language;
+    }
+
+    showJellyHABrowserPlayer({
+      hass: this.hass,
+      item,
+      configEntryId: item.config_entry_id || (item as any).entry_id,
+      serverEntityId: this._config.entity,
+      subtitleMode,
+      subtitleLanguage,
+    });
   }
 
   private async _callCustomService(item: MediaItem, type: 'click' | 'hold' | 'double_tap'): Promise<void> {
@@ -1600,14 +1629,25 @@ export class JellyHALibraryCard extends LitElement {
     }
   }
 
-  private _openExternalUrl(url: string | undefined): void {
-    if (!url) return;
+  private _openExternalUrl(url: string | undefined, item?: MediaItem): void {
+    let targetUrl = url;
+
+    // Fallback: If url is not set, build it from entity attributes
+    if (!targetUrl && item?.id) {
+      const entity = this.hass?.states[this._config?.entity];
+      const baseUrl = (entity?.attributes?.config_external_url || entity?.attributes?.server_url) as string | undefined;
+      if (baseUrl && baseUrl.trim() !== '') {
+        targetUrl = `${baseUrl.replace(/\/$/, '')}/web/index.html#!/details?id=${item.id}`;
+      }
+    }
+
+    if (!targetUrl) return;
 
     // Never rewrite YouTube or external third-party video services
     try {
-      const parsed = new URL(url);
+      const parsed = new URL(targetUrl);
       if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-        window.open(url, '_blank');
+        window.open(targetUrl, '_blank');
         return;
       }
     } catch (e) {
@@ -1621,7 +1661,7 @@ export class JellyHALibraryCard extends LitElement {
     if (externalUrl && externalUrl.trim() !== '') {
       try {
         // Parse both URLs
-        const originalUrlObj = new URL(url);
+        const originalUrlObj = new URL(targetUrl);
         const externalUrlObj = new URL(externalUrl);
 
         // Replace protocol, host, and port but keep path and search params
@@ -1645,7 +1685,7 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Fallback to the original URL and let browser handle it
-    window.open(url, '_blank');
+    window.open(targetUrl, '_blank');
   }
 
   /**
@@ -1673,6 +1713,75 @@ export class JellyHALibraryCard extends LitElement {
       </ha-card>
     `;
   }
+  private _getEffectivePlayTargets(): PlayTarget[] {
+    if (this._config.enable_custom_play_actions) {
+      return this._config.modal_play_actions || [];
+    }
+
+    const targets: PlayTarget[] = [];
+    if (this._config.default_cast_device) {
+      targets.push({
+        type: 'cast',
+        name: 'Cast to Chromecast',
+        device: this._config.default_cast_device,
+        icon: 'mdi:cast',
+      });
+    }
+
+    if (this._config.enable_browser_player !== false) {
+      const lang = this.hass?.locale?.language || this.hass?.language || 'en';
+      targets.push({
+        type: 'browser',
+        name: localize(lang, 'modal.play_in_browser') || 'Play in Browser',
+        icon: 'mdi:monitor',
+      });
+    }
+
+    if (this._config.modal_service) {
+      targets.push({
+        type: 'script',
+        name: getScriptDefaultName(this.hass, this._config.modal_service),
+        service: this._config.modal_service,
+        service_data: this._config.modal_service_data,
+        icon: 'mdi:play',
+      });
+    } else {
+      if (this._config.click_action === 'call-service' && (this._config.click_service || this._config.service)) {
+        const svc = this._config.click_service || this._config.service;
+        targets.push({
+          type: 'script',
+          name: getScriptDefaultName(this.hass, svc),
+          service: svc,
+          service_data: this._config.click_service_data || this._config.service_data,
+          icon: 'mdi:play',
+        });
+      }
+      if (this._config.hold_action === 'call-service' && this._config.hold_service) {
+        if (!targets.some(t => t.type === 'script' && t.service === this._config.hold_service)) {
+          targets.push({
+            type: 'script',
+            name: getScriptDefaultName(this.hass, this._config.hold_service),
+            service: this._config.hold_service,
+            service_data: this._config.hold_service_data,
+            icon: 'mdi:play',
+          });
+        }
+      }
+      if (this._config.double_tap_action === 'call-service' && this._config.double_tap_service) {
+        if (!targets.some(t => t.type === 'script' && t.service === this._config.double_tap_service)) {
+          targets.push({
+            type: 'script',
+            name: getScriptDefaultName(this.hass, this._config.double_tap_service),
+            service: this._config.double_tap_service,
+            service_data: this._config.double_tap_service_data,
+            icon: 'mdi:play',
+          });
+        }
+      }
+    }
+    return targets;
+  }
+
   private _showItemDetails(item: MediaItem): void {
     if (this._modal) {
       let subtitleMode = this._config.subtitle_mode || 'auto';
@@ -1687,6 +1796,8 @@ export class JellyHALibraryCard extends LitElement {
         serverEntityId: this._config.entity,
         subtitleMode,
         subtitleLanguage,
+        playTargets: this._getEffectivePlayTargets(),
+        showEntityName: this._config.show_entity_name ?? this._config.show_modal_entity_name,
       });
     }
   }

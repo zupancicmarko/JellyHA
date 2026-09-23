@@ -463,6 +463,56 @@
                     "description": "Naslov albuma."
                 }
             }
+        },
+        "play_playlist": {
+            "name": "Predvajaj predvajalni seznam",
+            "description": "Predvajaj predvajalni seznam iz Jellyfina na katerem koli predvajalniku Home Assistant ali neposredno v seji odjemalca Jellyfin, z možnostjo naključnega vrstnega reda.",
+            "fields": {
+                "entity_id": {
+                    "name": "Predvajalnik",
+                    "description": "Ciljni predvajalnik za predvajanje predvajalnega seznama."
+                },
+                "playlist": {
+                    "name": "Ime ali ID predvajalnega seznama",
+                    "description": "Ime ali Jellyfin ID elementa predvajalnega seznama."
+                },
+                "shuffle": {
+                    "name": "Naključno",
+                    "description": "Naključno premešaj vrstni red skladb pred predvajanjem."
+                }
+            }
+        },
+        "get_playlists": {
+            "name": "Pridobi predvajalne sezname",
+            "description": "Pridobi vse uporabniške predvajalne sezname iz Jellyfina s številom skladb, trajanjem in sličico v response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Iskalni niz",
+                    "description": "Izbirni filter iskanja za ujemanje imen predvajalnih seznamov."
+                },
+                "limit": {
+                    "name": "Omejitev",
+                    "description": "Največje število vrnjenih predvajalnih seznamov."
+                }
+            }
+        },
+        "get_collections": {
+            "name": "Pridobi zbirke",
+            "description": "Pridobi vse filmske zbirke (BoxSet) iz Jellyfina s številom elementov in vključenimi filmi v response_variable.",
+            "fields": {
+                "query": {
+                    "name": "Iskalni niz",
+                    "description": "Izbirni filter iskanja za ujemanje imen zbirk."
+                },
+                "limit": {
+                    "name": "Omejitev",
+                    "description": "Največje število vrnjenih zbirk."
+                },
+                "include_items": {
+                    "name": "Vključi elemente",
+                    "description": "Vključi filme v zbirki v odgovor."
+                }
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.4.0** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.0** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,14 +8,14 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.4.0
+### 🆕 What's new in v1.5.0
 
-- 📡 **Live TV Channels & Direct Tuning** — Browse Live TV channels visually in Media Browser and tune by channel number or name via `jellyha.play_live_tv_channel` (compatible with Voice Assist) (#11, #38)
-- 🎵 **Dedicated Music Search & Hi-Res Audio** — 1-step playback on any room speaker via `jellyha.play_music`, fast indexed search via `jellyha.music_search`, and bit-perfect FLAC / ALAC / Hi-Res audio inspection (#26)
-- 📁 **Direct Media File Paths** — Expose `path` and `filepath` in actions and card click scripts for external media players like Kodi, VLC, or MPV (#37)
-- 📊 **Watched Percentage & Per-Library Storage Sensors** — Standardized percentage sensors for Long-Term Statistics and per-library GB storage size meters (#35, #36)
-- 🏷️ **Client Nicknames & Exact Device Tracking** — Custom dashboard names in Options Flow and exact device session matching to prevent webOS/browser session collisions (#39)
-- 🎛️ **Card Editor Fix for Grid & List Layouts** — Resolved editor fields rendering smoothly across Carousel, Grid, and List layouts
+- 🖥️ **Play in Browser (In-Dashboard Player)** — Stream movies, episodes, and audio directly inside Home Assistant dashboards using an HTML5 dialog player, native subtitle proxy (SRT, ASS, VTT), Closed Captions (CC) menu, and language pre-selection.
+- 🎯 **Dynamic Play Actions & Target Picker** — Sleek Action Sheet picker and HA script trigger support in the More Info dialog for multi-device routing (#42).
+- 📑 **Playlists & BoxSet Collections** — Dedicated services to play and query playlists (`jellyha.play_playlist`, `jellyha.get_playlists`) and movie BoxSets (`jellyha.get_collections`) with 1-tap playback in Media Browser.
+- 🗂️ **Native Media Browsing on Players** — Direct library browsing and container auto-resolution on all user and device `media_player` entities (#11).
+- 🏷️ **Now Playing Badge Placement Styles** — Configurable badge placement (`poster`, `header`, `inline`, `none`) for movies and TV episodes (#20).
+- 🔊 **Volume Level & Voice Search Fixes** — Fixed `volume_level` state reporting on media players (#44) and restored modern Voice Assist query compatibility (#43).
 
 ---
 

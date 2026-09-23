@@ -478,6 +478,56 @@
                     "description": "Zu suchendes Album."
                 }
             }
+        },
+        "play_playlist": {
+            "name": "Wiedergabeliste abspielen",
+            "description": "Spielen Sie eine Wiedergabeliste von Jellyfin auf einem beliebigen Home Assistant-Mediaplayer oder direkt in einer Jellyfin-Clientsitzung ab, mit optionaler Zufallswiedergabe.",
+            "fields": {
+                "entity_id": {
+                    "name": "Mediaplayer",
+                    "description": "Ziel-Mediaplayer-Entität zum Abspielen der Wiedergabeliste."
+                },
+                "playlist": {
+                    "name": "Name oder ID der Wiedergabeliste",
+                    "description": "Name oder Jellyfin-Element-ID der Wiedergabeliste."
+                },
+                "shuffle": {
+                    "name": "Zufallswiedergabe",
+                    "description": "Titelreihenfolge vor dem Abspielen zufällig mischen."
+                }
+            }
+        },
+        "get_playlists": {
+            "name": "Wiedergabelisten abrufen",
+            "description": "Rufen Sie alle Benutzer-Wiedergabelisten von Jellyfin mit Titelanzahl, Dauer und Miniaturbild in response_variable ab.",
+            "fields": {
+                "query": {
+                    "name": "Suchanfrage",
+                    "description": "Optionaler Suchfilter für Wiedergabelistennamen."
+                },
+                "limit": {
+                    "name": "Limit",
+                    "description": "Maximale Anzahl zurückzugebender Wiedergabelisten."
+                }
+            }
+        },
+        "get_collections": {
+            "name": "Sammlungen abrufen",
+            "description": "Rufen Sie alle Filmsammlungen (BoxSets) von Jellyfin mit Elementanzahl und enthaltenen Filmen in response_variable ab.",
+            "fields": {
+                "query": {
+                    "name": "Suchanfrage",
+                    "description": "Optionaler Suchfilter für Sammlungsnamen."
+                },
+                "limit": {
+                    "name": "Limit",
+                    "description": "Maximale Anzahl zurückzugebender Sammlungen."
+                },
+                "include_items": {
+                    "name": "Elemente einschließen",
+                    "description": "Enthaltene Filme in die Antwort aufnehmen."
+                }
+            }
         }
     }
 }

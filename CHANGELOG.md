@@ -5,6 +5,64 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-09-23
+
+### Added
+- **"Play in Browser" Direct In-Dashboard Playback**:
+  - Play videos and audio directly within Home Assistant dashboards using a sleek HTML5 dialog player (`<jellyha-browser-player>`) featuring authenticated stream resolution via Home Assistant's `media_source/resolve_media` API (parity with HA Media Browser).
+  - Added `play-browser` action option for Single Tap, Hold, and Double Tap card interactions.
+  - Added Browser playback option (`enable_browser_player`) to the More Information card play button, Next Up quick-play, episode rows, and "Play On..." target picker pop-up.
+  - Added full support for `type: browser` in `modal_play_actions` (with automatic YAML pre-fill and dynamic toggle sync).
+  - Added full subtitle support to "Play in Browser": automatically extracts text-based subtitle streams (SRT, ASS, VTT, etc.) into native HTML5 `<track>` elements with a secure WebVTT proxy endpoint (`/api/jellyha/subtitles/...`, 0% server transcode CPU overhead), native Closed Captions (CC) menu, and automatic language pre-selection matching the card's `subtitle_mode` and `subtitle_language` priority list.
+- **Dynamic & Configurable Play Actions in More Info Dialog (Closes [#42](https://github.com/zupancicmarko/JellyHA/issues/42))**:
+  - Dynamically adapts the More Info dialog play button, Next Up quick-play, and episode list rows based on available playback targets (hidden if 0 targets, direct 1-click execution if 1 target, and a glassmorphic Action Sheet overlay picker if 2+ targets).
+  - Added `enable_custom_play_actions` toggle and `modal_play_actions` configuration to Library Card, with pre-fill from card defaults, warning banner when unconfigured, and YAML state preservation.
+  - Added dynamic friendly script name resolution from Home Assistant states (`friendly_name`) and clean entity ID formatting.
+  - Added `show_entity_name` option per target (and card-level) to show or hide the subtitle entity ID in the playback picker.
+- **Home Assistant 2026.8+ Media Source Search & Modernization**:
+  - Implemented `async_search_media` on `JellyHAMediaSource` supporting query dataclasses and keyword filters across Jellyfin libraries.
+  - Dynamically enabled `can_search=True` on `BrowseMediaSource` for Home Assistant 2026.8+ environments.
+  - Enhanced `async_resolve_media` on `JellyHAMediaSource` to automatically resolve complex containers (BoxSets/collections to their first movie, and series/seasons to their first unplayed episode).
+- **Native Media Browsing on Individual Players (Follow-up to [#11](https://github.com/zupancicmarko/JellyHA/issues/11))**:
+  - Added `MediaPlayerEntityFeature.BROWSE_MEDIA` and `async_browse_media` to `JellyHABasePlaybackMediaPlayer`, enabling direct Jellyfin media library browsing on all user (`media_player.jellyha_<user>`) and device (`media_player.jellyha_<device>`) media players in Home Assistant.
+  - Enhanced `async_play_media` across all player entities to parse `jellyha://` URIs and automatically resolve complex media containers upon selection (albums & playlists to first audio track, BoxSets/collections to first video, and TV shows/seasons to Next Up episode).
+- **Playlist Playback & Management Actions**:
+  - Added `jellyha.play_playlist`: Play Jellyfin playlists on any Home Assistant media player (with live stream URL resolution, cover art, track metadata, and optional `shuffle`) or directly on active Jellyfin client sessions (via server-side queueing).
+  - Added `jellyha.get_playlists`: Fetch all user playlists with track counts, durations, and thumbnails to `response_variable`.
+- **BoxSet / Movie Collections Support**:
+  - Added `jellyha.get_collections`: Fetch all BoxSets and movie collections with item counts and contained movies to `response_variable`.
+  - Added 1-tap playback for BoxSets / Collections in the Home Assistant Media Browser: selecting Play on a BoxSet automatically resolves and plays its first movie.
+- **Now Playing Card Media Type Badge Placement Styles (Fixes [#20](https://github.com/zupancicmarko/JellyHA/issues/20))**:
+  - Added `badge_style` (and alias `media_type_badge_style`) supporting `'poster'` (default), `'header'`, `'inline'` (TV Shows), and `'none'` modes.
+  - In `'header'` mode, moves the media type badge (`S01E02` for episodes, `MOVIE` for films, `AUDIO` for music) into the header right-aligned next to the title, keeping poster artwork 100% uncovered.
+  - In `'inline'` mode, prepends `S01E02 • ` directly to the episode title for TV shows while keeping movie titles clean with uncovered poster artwork.
+  - Added visual card editor dropdown selector and translations across all 8 supported languages (`en`, `sl`, `de`, `es`, `fr`, `it`, `nl`, `ru`).
+
+### Fixed
+- **Media Player `volume_level` State Implementation (Fixes [#44](https://github.com/zupancicmarko/JellyHA/issues/44))**:
+  - Implemented `volume_level` property on `JellyHABasePlaybackMediaPlayer` (`custom_components/jellyha/media_player.py`) to read `VolumeLevel` (0–100) from the active session's `PlayState` and return normalized, clamped floats (`0.0`–`1.0`).
+  - Resolved issue where `volume_level` unconditionally returned `None`, which prevented Home Assistant volume sliders and cards from displaying or syncing player volume.
+  - Added safe null-checking for `PlayState` and guarded `is_volume_muted` against sessions with empty playstates.
+  - Hardened `async_set_volume_level` to use `round()` before integer casting to prevent precision loss.
+- **Stream URL Item ID Resolution (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))**:
+  - Resolved `jellyha.play_music` and `media_player.play_media` extracting the literal string `"stream"` as the `item_id` when supplied with direct stream URLs (e.g. `/Audio/<GUID>/stream?static=true`).
+  - Implemented a robust item ID extraction utility (`extract_item_id`) supporting 32-hex GUIDs, UUIDs, stream URLs (`/Audio/.../stream`, `/Videos/.../master.m3u8`), proxy stream URLs, downloads, query parameters (`?itemId=`), and Web UI fragments.
+  - Fixed resulting HTTP 400 Bad Request errors (`The value 'stream' is not valid`) and prevented WebSocket client message loop crashes (`IndexError: list index out of range` in `jellyfin-mpv-shim`, Android TV, and Web clients).
+- **Home Assistant Voice Assist Search Compatibility (`async_search_media`) (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))**:
+  - Updated `async_search_media` across media player entities to accept modern Home Assistant core's `SearchMediaQuery` dataclass and return `SearchMedia(result=...)`, resolving `TypeError: ...got an unexpected keyword argument 'query'` when Voice Assist (`HassMediaSearchAndPlay`) searches against JellyHA media players.
+  - Added `MediaPlayerEntityFeature.SEARCH_MEDIA` and `async_search_media` to all session-backed user and device media players, enabling direct voice searches on individual players.
+- **Idle User Media Player Playback (`JellyHAUserMediaPlayer`)**:
+  - Fixed an issue where targeting an idle user media player (`media_player.jellyha_<user>`) with `play_media` or `play_music` failed with `"No active Jellyfin session found"` when the user had their Jellyfin client open but was not yet playing media.
+  - Updated user session resolution to prioritize active playback while retaining idle sessions, allowing remote playback to start immediately.
+- **Direct Session Routing for Music Playback**:
+  - Enhanced `jellyha.play_music` to detect when `target_player` is an active Jellyfin session and route playback directly via `api.session_play`, eliminating unnecessary stream URL indirection while continuing to deliver direct HTTP stream URLs to external speakers (Sonos, Google Cast, Chromecast).
+- **Series / Season Playback Fallback**:
+  - Added automatic fallback to the first unplayed episode (or first episode) when Next-Up episode resolution returns empty for a series or season.
+- **"Open in Jellyfin" Action in Library Card & Details Modal**:
+  - Fixed "Open in Jellyfin" button in the "More Information" modal (`jellyha-item-details-modal`) and Library Card click/hold action doing nothing due to `item.jellyfin_url` being unpopulated.
+  - Added automatic `jellyfin_url` generation in `coordinator._async_transform_item` across all media items, and exposed `server_url` on `sensor.jellyha_library`.
+  - Added fallback URL resolution in frontend components from entity state attributes when `jellyfin_url` is missing from older cached data, and updated the modal button to use a native anchor link (`target="_blank" rel="noopener noreferrer"`) to prevent browser/app popup blocking.
+
 ## [1.4.0] - 2026-09-15
 
 ### Added

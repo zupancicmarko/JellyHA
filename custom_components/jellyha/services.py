@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import asyncio
 from typing import Any
+import random
 import voluptuous as vol
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, ServiceResponse
@@ -38,6 +39,9 @@ SERVICE_GET_LIVE_TV_CHANNELS = "get_live_tv_channels"
 SERVICE_PLAY_LIVE_TV_CHANNEL = "play_live_tv_channel"
 SERVICE_MUSIC_SEARCH = "music_search"
 SERVICE_PLAY_MUSIC = "play_music"
+SERVICE_PLAY_PLAYLIST = "play_playlist"
+SERVICE_GET_PLAYLISTS = "get_playlists"
+SERVICE_GET_COLLECTIONS = "get_collections"
 
 def _get_coordinator(
     hass: HomeAssistant,
@@ -345,6 +349,39 @@ PLAY_MUSIC_SCHEMA = vol.Schema(
         vol.Optional("item_id"): cv.string,
         vol.Optional("config_entry_id"): cv.string,
         vol.Optional("server_entity_id"): cv.entity_id,
+    }
+)
+
+PLAY_PLAYLIST_SCHEMA = vol.Schema(
+    {
+        vol.Required("entity_id"): cv.entity_id,
+        vol.Optional("playlist"): cv.string,
+        vol.Optional("playlist_name"): cv.string,
+        vol.Optional("playlist_id"): cv.string,
+        vol.Optional("shuffle", default=False): cv.boolean,
+        vol.Optional("config_entry_id"): cv.string,
+        vol.Optional("server_entity_id"): cv.entity_id,
+    }
+)
+
+GET_PLAYLISTS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("query"): cv.string,
+        vol.Optional("limit", default=50): cv.positive_int,
+        vol.Optional("config_entry_id"): cv.string,
+        vol.Optional("server_entity_id"): cv.entity_id,
+        vol.Optional("entity_id"): cv.entity_id,
+    }
+)
+
+GET_COLLECTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("query"): cv.string,
+        vol.Optional("limit", default=50): cv.positive_int,
+        vol.Optional("include_items", default=True): cv.boolean,
+        vol.Optional("config_entry_id"): cv.string,
+        vol.Optional("server_entity_id"): cv.entity_id,
+        vol.Optional("entity_id"): cv.entity_id,
     }
 )
 
@@ -797,6 +834,30 @@ async def async_register_services(hass: HomeAssistant) -> None:
             "metadata": metadata,
         }
 
+        # Check if target_player is a Jellyfin session or Jellyfin media player entity
+        target_session_id = None
+        session_coord = getattr(coordinator.entry.runtime_data, "session", None)
+        if session_coord and session_coord.data:
+            target_state = hass.states.get(target_player)
+            if target_state:
+                target_session_id = target_state.attributes.get("session_id")
+                if not target_session_id and "device_name" in target_state.attributes:
+                    d_name = target_state.attributes["device_name"]
+                    for s in session_coord.data:
+                        if s.get("DeviceName") == d_name:
+                            target_session_id = s.get("Id")
+                            break
+
+        if target_session_id:
+            _LOGGER.info(
+                "Playing '%s' (%s) directly on Jellyfin session %s",
+                item.get("name"),
+                item_id,
+                target_session_id,
+            )
+            await api.session_play(target_session_id, item_id)
+            return
+
         # Stop previous playback if currently active to reset buffers
         target_state = hass.states.get(target_player)
         if target_state and target_state.state in ("playing", "paused", "buffering"):
@@ -830,6 +891,327 @@ async def async_register_services(hass: HomeAssistant) -> None:
             },
             blocking=True,
         )
+
+    async def async_play_playlist(call: ServiceCall) -> None:
+        """Play a playlist on a target player with optional shuffle."""
+        target_player = call.data["entity_id"]
+        playlist_query = (
+            call.data.get("playlist")
+            or call.data.get("playlist_name")
+            or call.data.get("playlist_id")
+        )
+        if not playlist_query:
+            raise ValueError("Either 'playlist', 'playlist_name', or 'playlist_id' must be provided")
+
+        shuffle = call.data.get("shuffle", False)
+        server_entity_id = call.data.get("server_entity_id")
+        config_entry_id = call.data.get("config_entry_id")
+
+        try:
+            coordinator = _get_coordinator(
+                hass,
+                config_entry_id,
+                server_entity_id,
+                prefer_music=True,
+            )
+        except ValueError as e:
+            raise ValueError(str(e)) from e
+
+        api = getattr(coordinator, "api", None) or getattr(coordinator, "_api", None)
+        user_id = coordinator.entry.data.get("user_id")
+
+        if not api or not user_id:
+            raise ValueError("Jellyfin API or user_id not available")
+
+        # 1. Resolve playlist item
+        playlist_item = None
+        # Check if query is a direct 32-char hex ID
+        if len(playlist_query) == 32 and all(c in "0123456789abcdefABCDEF" for c in playlist_query):
+            try:
+                raw_item = await api.get_item(user_id, playlist_query)
+                if raw_item and raw_item.get("Type") == "Playlist":
+                    playlist_item = raw_item
+            except Exception:
+                playlist_item = None
+
+        if not playlist_item:
+            # Query all user playlists
+            raw_playlists = await api.get_library_items(
+                user_id=user_id,
+                limit=100,
+                item_types=["Playlist"],
+            )
+            # Find match: exact case-insensitive first, then substring
+            q_lower = playlist_query.lower().strip()
+            for p in raw_playlists:
+                if p.get("Name", "").lower().strip() == q_lower:
+                    playlist_item = p
+                    break
+            if not playlist_item:
+                for p in raw_playlists:
+                    if q_lower in p.get("Name", "").lower():
+                        playlist_item = p
+                        break
+
+        if not playlist_item:
+            raise ValueError(f"Playlist '{playlist_query}' not found on Jellyfin server")
+
+        playlist_id = playlist_item["Id"]
+        playlist_name = playlist_item.get("Name", "Playlist")
+
+        # 2. Check if target_player is a Jellyfin session or Jellyfin media player entity
+        target_session_id = None
+        session_coord = getattr(coordinator.entry.runtime_data, "session", None)
+        if session_coord and session_coord.data:
+            target_state = hass.states.get(target_player)
+            if target_state:
+                target_session_id = target_state.attributes.get("session_id")
+                if not target_session_id and "device_name" in target_state.attributes:
+                    d_name = target_state.attributes["device_name"]
+                    for s in session_coord.data:
+                        if s.get("DeviceName") == d_name:
+                            target_session_id = s.get("Id")
+                            break
+
+        if target_session_id:
+            # Native Jellyfin session queue
+            _LOGGER.info(
+                "Playing playlist '%s' (%s) directly on Jellyfin session %s",
+                playlist_name,
+                playlist_id,
+                target_session_id,
+            )
+            await api.session_play(target_session_id, playlist_id)
+            if shuffle:
+                await asyncio.sleep(0.3)
+                await api.session_general_command(
+                    target_session_id, "SetShuffleQueue", {"ShuffleMode": "Shuffle"}
+                )
+            return
+
+        # 3. For standard Home Assistant media players (Chromecast, Sonos, etc.)
+        params = {
+            "UserId": user_id,
+            "ParentId": playlist_id,
+            "Recursive": "true",
+            "Fields": "Genres,RunTimeTicks,AlbumArtist,Artists,Album,MediaStreams,MediaSources,Path",
+            "SortBy": "IndexNumber",
+            "SortOrder": "Ascending",
+        }
+        res = await api._request("GET", "/Items", params=params)
+        tracks = res.get("Items", []) if isinstance(res, dict) else []
+        if not tracks:
+            raise ValueError(f"Playlist '{playlist_name}' has no playable tracks")
+
+        if shuffle:
+            random.shuffle(tracks)
+
+        # Get first track
+        first_track = tracks[0]
+        first_id = first_track["Id"]
+        first_transformed = await coordinator._async_transform_item(first_track)
+
+        container = (
+            first_transformed.get("audio_container")
+            or first_transformed.get("container")
+            or "mp3"
+        ).lower()
+        if container == "flac":
+            mime_type = "audio/flac"
+        elif container in ("m4a", "aac"):
+            mime_type = "audio/mp4"
+        elif container in ("ogg", "oga", "opus"):
+            mime_type = "audio/ogg"
+        elif container == "wav":
+            mime_type = "audio/wav"
+        else:
+            mime_type = "audio/mpeg"
+
+        media_url = first_transformed.get("stream_url")
+        if not media_url:
+            media_url = f"{api._server_url}/Audio/{first_id}/stream?static=true&api_key={api._api_key}&ApiKey={api._api_key}"
+
+        thumb_url = api.get_image_url(first_id, "Primary") or api.get_image_url(playlist_id, "Primary")
+        title = first_transformed.get("name")
+        artist = (
+            first_transformed.get("artist_name")
+            or first_transformed.get("album_artist")
+            or playlist_name
+        )
+        album = first_transformed.get("album") or playlist_name
+
+        metadata = {
+            "metadataType": 3,
+            "title": title,
+            "artist": artist,
+            "albumTitle": album,
+        }
+        if thumb_url:
+            metadata["images"] = [{"url": thumb_url}]
+
+        extra_payload = {
+            "title": title,
+            "artist": artist,
+            "album_name": album,
+            "thumb": thumb_url,
+            "autoplay": True,
+            "metadata": metadata,
+            "playlist_id": playlist_id,
+            "playlist_name": playlist_name,
+            "total_tracks": len(tracks),
+        }
+
+        # Stop prior playback if active
+        target_state = hass.states.get(target_player)
+        if target_state and target_state.state in ("playing", "paused", "buffering"):
+            try:
+                await hass.services.async_call(
+                    MEDIA_PLAYER_DOMAIN,
+                    SERVICE_MEDIA_STOP,
+                    {"entity_id": target_player},
+                    blocking=True,
+                )
+                await asyncio.sleep(0.2)
+            except Exception as err:
+                _LOGGER.debug("Could not stop prior playback on %s: %s", target_player, err)
+
+        _LOGGER.info(
+            "Playing playlist '%s' track '%s' on %s (MIME: %s)",
+            playlist_name,
+            title,
+            target_player,
+            mime_type,
+        )
+        await hass.services.async_call(
+            MEDIA_PLAYER_DOMAIN,
+            SERVICE_PLAY_MEDIA,
+            {
+                "entity_id": target_player,
+                ATTR_MEDIA_CONTENT_ID: media_url,
+                ATTR_MEDIA_CONTENT_TYPE: mime_type,
+                "extra": extra_payload,
+            },
+            blocking=True,
+        )
+
+    async def async_get_playlists(call: ServiceCall) -> ServiceResponse:
+        """Get all user playlists from Jellyfin."""
+        try:
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(
+                hass, call.data.get("config_entry_id"), entity_id, prefer_music=True
+            )
+        except ValueError as e:
+            raise ValueError(str(e)) from e
+
+        api = getattr(coordinator, "api", None) or getattr(coordinator, "_api", None)
+        user_id = coordinator.entry.data.get("user_id")
+
+        if not api or not user_id:
+            raise ValueError("Jellyfin API or user_id not available")
+
+        limit = call.data.get("limit", 50)
+        query = call.data.get("query")
+
+        raw_playlists = await api.get_library_items(
+            user_id=user_id,
+            limit=limit,
+            search_term=query,
+            item_types=["Playlist"],
+        )
+
+        playlists = []
+        for p in raw_playlists:
+            pid = p.get("Id", "")
+            run_time_ticks = p.get("RunTimeTicks", 0)
+            runtime_mins = round(run_time_ticks / (10_000_000 * 60)) if run_time_ticks else None
+            playlists.append(
+                {
+                    "id": pid,
+                    "name": p.get("Name", "Unknown Playlist"),
+                    "item_count": p.get("ChildCount") or p.get("RecursiveItemCount") or 0,
+                    "runtime_minutes": runtime_mins,
+                    "image_url": api.get_image_url(pid, "Primary") if pid else None,
+                    "is_favorite": p.get("UserData", {}).get("IsFavorite", False),
+                }
+            )
+
+        return {"playlists": playlists, "count": len(playlists)}
+
+    async def async_get_collections(call: ServiceCall) -> ServiceResponse:
+        """Get BoxSets / Collections from Jellyfin."""
+        try:
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(
+                hass, call.data.get("config_entry_id"), entity_id
+            )
+        except ValueError as e:
+            raise ValueError(str(e)) from e
+
+        api = getattr(coordinator, "api", None) or getattr(coordinator, "_api", None)
+        user_id = coordinator.entry.data.get("user_id")
+
+        if not api or not user_id:
+            raise ValueError("Jellyfin API or user_id not available")
+
+        limit = call.data.get("limit", 50)
+        query = call.data.get("query")
+        include_items = call.data.get("include_items", True)
+
+        raw_collections = await api.get_library_items(
+            user_id=user_id,
+            limit=limit,
+            search_term=query,
+            item_types=["BoxSet"],
+        )
+
+        collections = []
+        for c in raw_collections:
+            cid = c.get("Id", "")
+            col_data = {
+                "id": cid,
+                "name": c.get("Name", "Unknown Collection"),
+                "item_count": c.get("ChildCount") or c.get("RecursiveItemCount") or 0,
+                "overview": c.get("Overview"),
+                "image_url": api.get_image_url(cid, "Primary") if cid else None,
+                "backdrop_url": api.get_image_url(cid, "Backdrop") if cid else None,
+            }
+
+            if include_items and cid:
+                try:
+                    params = {
+                        "UserId": user_id,
+                        "ParentId": cid,
+                        "Recursive": "true",
+                        "Fields": "Genres,RunTimeTicks,CommunityRating,ProductionYear,Overview,Path",
+                        "SortBy": "SortName",
+                        "SortOrder": "Ascending",
+                    }
+                    res = await api._request("GET", "/Items", params=params)
+                    items_raw = res.get("Items", []) if isinstance(res, dict) else []
+                    col_data["items"] = [
+                        {
+                            "id": i.get("Id"),
+                            "name": i.get("Name"),
+                            "type": i.get("Type"),
+                            "year": i.get("ProductionYear"),
+                            "rating": i.get("CommunityRating"),
+                            "runtime_minutes": (
+                                round(i.get("RunTimeTicks", 0) / (10_000_000 * 60))
+                                if i.get("RunTimeTicks")
+                                else None
+                            ),
+                            "path": i.get("Path"),
+                        }
+                        for i in items_raw
+                    ]
+                except Exception as err:
+                    _LOGGER.debug("Could not fetch items for collection %s: %s", cid, err)
+                    col_data["items"] = []
+
+            collections.append(col_data)
+
+        return {"collections": collections, "count": len(collections)}
 
     async def async_delete_item(call: ServiceCall) -> None:
         """Delete an item from Jellyfin library."""
@@ -1154,6 +1536,9 @@ async def async_register_services(hass: HomeAssistant) -> None:
         (SERVICE_PLAY_LIVE_TV_CHANNEL, async_play_live_tv_channel, PLAY_LIVE_TV_CHANNEL_SCHEMA),
         (SERVICE_MUSIC_SEARCH, async_music_search, MUSIC_SEARCH_SCHEMA, True),
         (SERVICE_PLAY_MUSIC, async_play_music, PLAY_MUSIC_SCHEMA),
+        (SERVICE_PLAY_PLAYLIST, async_play_playlist, PLAY_PLAYLIST_SCHEMA),
+        (SERVICE_GET_PLAYLISTS, async_get_playlists, GET_PLAYLISTS_SCHEMA, True),
+        (SERVICE_GET_COLLECTIONS, async_get_collections, GET_COLLECTIONS_SCHEMA, True),
     ]
 
     for name, func, schema, *resp in service_map:

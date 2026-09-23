@@ -15,13 +15,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     CONF_DEVICE_NAME,
     CONF_ENABLE_LIVE_TV,
+    CONF_SERVER_URL,
     DEFAULT_DEVICE_NAME,
     DOMAIN,
 )
@@ -222,6 +222,11 @@ class JellyHALibrarySensor(JellyHABaseSensor):
             "artists": counts.get("artists", 0),
             "config_external_url": self._entry.options.get(
                 "external_url", self._entry.data.get("external_url", "")
+            ),
+            "server_url": (
+                getattr(self.coordinator, "server_url", None)
+                or self._entry.data.get(CONF_SERVER_URL)
+                or self._entry.data.get("url", "")
             ),
         }
 

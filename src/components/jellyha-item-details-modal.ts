@@ -1,7 +1,10 @@
 
 import { LitElement, html, css, nothing, TemplateResult, render } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { HomeAssistant, MediaItem } from '../shared/types';
+import { HomeAssistant, MediaItem, PlayTarget } from '../shared/types';
+import { getScriptDefaultName } from '../shared/utils';
+import { localize } from '../shared/localize';
+import { showJellyHABrowserPlayer } from './jellyha-browser-player';
 
 @customElement('jellyha-item-details-modal')
 export class JellyHAItemDetailsModal extends LitElement {
@@ -12,6 +15,10 @@ export class JellyHAItemDetailsModal extends LitElement {
     @state() private _serverEntityId?: string;
     @state() private _subtitleMode?: string;
     @state() private _subtitleLanguage?: string;
+    @state() private _playTargets: PlayTarget[] = [];
+    @state() private _showTargetPicker = false;
+    @state() private _pendingPlayItem?: MediaItem;
+    @state() private _showEntityName?: boolean;
     @state() private _open = false;
     @state() private _confirmDelete = false;
 
@@ -25,6 +32,8 @@ export class JellyHAItemDetailsModal extends LitElement {
     @state() private _currentTranslateY = 0;
     @state() private _isDragging = false;
     private _swipeClosingThreshold = 100;
+    private _rowTouchStartX = 0;
+    private _rowTouchStartY = 0;
 
     private _portalContainer: HTMLElement | null = null;
 
@@ -47,8 +56,15 @@ export class JellyHAItemDetailsModal extends LitElement {
     }
 
     private _handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && this._open) {
-            this.closeDialog();
+        if (e.key === 'Escape') {
+            if (this._showTargetPicker) {
+                this._closeTargetPicker();
+                e.stopPropagation();
+                return;
+            }
+            if (this._open) {
+                this.closeDialog();
+            }
         }
     }
 
@@ -59,6 +75,8 @@ export class JellyHAItemDetailsModal extends LitElement {
         serverEntityId?: string;
         subtitleMode?: string;
         subtitleLanguage?: string;
+        playTargets?: PlayTarget[];
+        showEntityName?: boolean;
     }): Promise<void> {
         this._item = params.item;
         this.hass = params.hass;
@@ -66,6 +84,10 @@ export class JellyHAItemDetailsModal extends LitElement {
         this._serverEntityId = params.serverEntityId;
         this._subtitleMode = params.subtitleMode;
         this._subtitleLanguage = params.subtitleLanguage;
+        this._playTargets = params.playTargets || [];
+        this._showEntityName = params.showEntityName;
+        this._showTargetPicker = false;
+        this._pendingPlayItem = undefined;
         this._open = true;
         this._nextUpItem = undefined; // Reset
         this._viewMode = 'default';
@@ -86,6 +108,8 @@ export class JellyHAItemDetailsModal extends LitElement {
     public closeDialog = () => {
         this._open = false;
         this._confirmDelete = false;
+        this._showTargetPicker = false;
+        this._pendingPlayItem = undefined;
         document.body.style.overflow = '';
         this.dispatchEvent(new CustomEvent('closed', { bubbles: true, composed: true }));
         this.requestUpdate();
@@ -252,9 +276,9 @@ export class JellyHAItemDetailsModal extends LitElement {
                 right: 0;
                 bottom: 0;
                 z-index: 99999;
-                background: rgba(0, 0, 0, 0.72);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
+                background: rgba(0, 0, 0, 0.45);
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -281,8 +305,10 @@ export class JellyHAItemDetailsModal extends LitElement {
                 will-change: transform;
                 background: #14161f;
                 color: #ffffff;
+                box-sizing: border-box;
                 border-radius: 24px;
-                box-shadow: 0 24px 72px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+                border: var(--ha-card-border, var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(255, 255, 255, 0.14))));
+                box-shadow: 0 24px 72px rgba(0, 0, 0, 0.8);
                 width: min(840px, 94vw);
                 max-height: min(90vh, 880px);
                 overscroll-behavior-y: contain;
@@ -437,26 +463,43 @@ export class JellyHAItemDetailsModal extends LitElement {
                 width: 100%;
                 padding: 11px 16px;
                 box-sizing: border-box;
-                background: linear-gradient(135deg, #0288d1 0%, #00acc1 100%);
+                background: rgba(3, 169, 244, 0.15);
                 color: #ffffff;
-                border: none;
+                border: 1px solid rgba(3, 169, 244, 0.35);
                 border-radius: 24px;
                 font-size: 0.95rem;
                 font-weight: 600;
                 cursor: pointer;
-                box-shadow: 0 4px 16px rgba(2, 136, 209, 0.45);
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 transition: all 0.2s ease;
+                outline: none;
+                -webkit-tap-highlight-color: transparent;
             }
-            .primary-play-btn:hover {
-                filter: brightness(1.12);
-                box-shadow: 0 6px 20px rgba(2, 136, 209, 0.6);
-                transform: translateY(-1px);
-            }
-            .primary-play-btn:active {
-                transform: scale(0.98);
+            .primary-play-btn:focus,
+            .primary-play-btn:focus-visible,
+            button:focus,
+            button:focus-visible {
+                outline: none;
             }
             .primary-play-btn ha-icon {
                 --mdc-icon-size: 20px;
+                color: #03a9f4;
+                transition: color 0.2s ease;
+            }
+            .primary-play-btn:hover {
+                background: rgba(3, 169, 244, 0.28);
+                color: #ffffff;
+                border-color: rgba(3, 169, 244, 0.6);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(3, 169, 244, 0.3);
+                transform: translateY(-1px);
+            }
+            .primary-play-btn:hover ha-icon {
+                color: #ffffff;
+            }
+            .primary-play-btn:active {
+                transform: scale(0.98);
             }
 
             .actions-icon-row {
@@ -718,23 +761,33 @@ export class JellyHAItemDetailsModal extends LitElement {
                 height: 100%;
                 object-fit: cover;
                 display: block;
+                transition: transform 0.25s ease;
+            }
+            .next-up-card:hover .next-up-thumb {
+                transform: scale(1.015);
             }
             .next-up-play-overlay {
                 position: absolute;
                 inset: 0;
-                background: rgba(0, 0, 0, 0.4);
+                background: rgba(0, 0, 0, 0.2);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 opacity: 0;
                 transition: opacity 0.2s ease;
+                pointer-events: none;
             }
             .next-up-card:hover .next-up-play-overlay {
                 opacity: 1;
             }
             .next-up-play-overlay ha-icon {
-                --mdc-icon-size: 32px;
+                --mdc-icon-size: 28px;
                 color: #ffffff;
+                filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+                transition: transform 0.2s ease;
+            }
+            .next-up-card:hover .next-up-play-overlay ha-icon {
+                transform: scale(1.03);
             }
             .next-up-info {
                 flex: 1;
@@ -759,9 +812,11 @@ export class JellyHAItemDetailsModal extends LitElement {
                 border: 1px solid rgba(3, 169, 244, 0.25);
             }
             .next-up-ep-code {
-                font-size: 0.8rem;
+                font-size: 0.92rem;
                 font-weight: 600;
-                color: #9ea4b5;
+                color: rgba(255, 255, 255, 0.65);
+                letter-spacing: 0.3px;
+                line-height: 1;
             }
             .next-up-title {
                 margin: 0;
@@ -800,14 +855,20 @@ export class JellyHAItemDetailsModal extends LitElement {
                 justify-content: center;
                 cursor: pointer;
                 flex-shrink: 0;
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
                 transition: all 0.2s ease;
                 padding: 0;
             }
             .next-up-cast-btn:hover {
-                background: #03a9f4;
+                background: rgba(3, 169, 244, 0.28);
+                border-color: rgba(3, 169, 244, 0.6);
                 color: #ffffff;
-                box-shadow: 0 0 12px rgba(3, 169, 244, 0.5);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 12px rgba(3, 169, 244, 0.3);
                 transform: scale(1.05);
+            }
+            .next-up-cast-btn:active {
+                transform: scale(0.96);
             }
             .next-up-cast-btn ha-icon {
                 --mdc-icon-size: 20px;
@@ -816,9 +877,23 @@ export class JellyHAItemDetailsModal extends LitElement {
             /* Episodes View specific */
             .jellyha-modal-surface.episodes {
                 overflow: hidden !important; 
-                padding: 28px;
+                padding: 16px 20px 24px 20px;
                 max-height: min(90vh, 880px);
                 box-sizing: border-box;
+            }
+            .jellyha-modal-surface.episodes .modal-close-btn {
+                top: 16px;
+                right: 20px;
+            }
+
+            .episodes-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                min-height: 0;
+                overflow: visible;
+                position: relative;
+                z-index: 1;
             }
 
             /* Episode List Styles */
@@ -827,11 +902,16 @@ export class JellyHAItemDetailsModal extends LitElement {
                  align-items: center;
                  gap: 14px;
                  margin-bottom: 18px;
-                 padding-right: 52px;
+                 padding-right: 56px;
+                 padding-top: 4px;
+                 padding-bottom: 4px;
+                 margin-top: -4px;
             }
             .back-btn {
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.15);
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 color: #ffffff;
                 cursor: pointer;
                 width: 38px;
@@ -842,11 +922,15 @@ export class JellyHAItemDetailsModal extends LitElement {
                 justify-content: center;
                 padding: 0;
                 transition: all 0.2s ease;
+                flex-shrink: 0;
             }
             .back-btn:hover {
-                background: rgba(255, 255, 255, 0.2);
-                border-color: rgba(255, 255, 255, 0.35);
-                transform: scale(1.06);
+                background: rgba(255, 255, 255, 0.25);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: scale(1.08);
+            }
+            .back-btn ha-icon {
+                --mdc-icon-size: 20px;
             }
             .episodes-title {
                 margin: 0;
@@ -887,6 +971,9 @@ export class JellyHAItemDetailsModal extends LitElement {
                 color: #ffffff;
                 font-weight: 600;
             }
+            .season-tab:active {
+                transform: scale(0.95);
+            }
             .episodes-list {
                 display: flex;
                 flex-direction: column;
@@ -894,7 +981,8 @@ export class JellyHAItemDetailsModal extends LitElement {
                 overflow-y: auto;
                 flex: 1;
                 min-height: 0;
-                padding-right: 4px;
+                padding: 6px 4px 12px 0;
+                margin-top: -6px;
                 scrollbar-width: thin; 
                 scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
             }
@@ -920,23 +1008,74 @@ export class JellyHAItemDetailsModal extends LitElement {
                 align-items: center;
                 transition: all 0.2s ease;
                 cursor: pointer;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-tap-highlight-color: transparent;
             }
             .episode-row:hover {
                 background: rgba(255, 255, 255, 0.09);
                 border-color: rgba(255, 255, 255, 0.2);
+                transform: translateY(-1px);
+            }
+            .episode-row:active,
+            .episode-row.active-press {
+                transform: scale(0.99);
             }
             .episode-row.next-up-highlight {
                 background: rgba(3, 169, 244, 0.12);
-                border-left: 4px solid #03a9f4;
+                border-color: rgba(3, 169, 244, 0.25);
             }
-            .episode-thumb {
+            .episode-row.next-up-highlight:hover {
+                background: rgba(3, 169, 244, 0.18);
+                border-color: rgba(3, 169, 244, 0.35);
+                transform: translateY(-1px);
+            }
+            .episode-row.next-up-highlight:active,
+            .episode-row.next-up-highlight.active-press {
+                transform: scale(0.99);
+            }
+            .episode-thumb-wrap {
+                position: relative;
                 width: 120px;
                 aspect-ratio: 16/9;
-                object-fit: cover;
                 border-radius: 8px;
+                overflow: hidden;
                 flex-shrink: 0; 
-                background: rgba(0, 0, 0, 0.4);
+                background: rgba(0, 0, 0, 0.5);
                 border: 1px solid rgba(255, 255, 255, 0.12);
+            }
+            .episode-thumb {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+                transition: transform 0.25s ease;
+            }
+            .episode-play-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                pointer-events: none;
+            }
+            .episode-row:hover .episode-play-overlay {
+                opacity: 1;
+            }
+            .episode-row:hover .episode-thumb {
+                transform: scale(1.015);
+            }
+            .episode-play-overlay ha-icon {
+                --mdc-icon-size: 28px;
+                color: #ffffff;
+                filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+                transition: transform 0.2s ease;
+            }
+            .episode-row:hover .episode-play-overlay ha-icon {
+                transform: scale(1.03);
             }
             .episode-content {
                 flex: 1;
@@ -946,27 +1085,68 @@ export class JellyHAItemDetailsModal extends LitElement {
                 justify-content: center;
                 gap: 4px;
             }
+            .episode-header-line {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                line-height: 1;
+            }
+            .episode-number {
+                font-size: 0.82rem;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.65);
+                letter-spacing: 0.3px;
+                text-transform: uppercase;
+            }
+            .next-up-badge {
+                font-size: 0.65rem;
+                font-weight: 700;
+                background: var(--primary-color, #03a9f4);
+                color: #ffffff;
+                padding: 2px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+                line-height: 1.2;
+            }
             .episode-title {
                 margin: 0;
                 font-size: 1rem;
                 font-weight: 600;
                 line-height: 1.3;
                 color: #ffffff;
-            }
-            .episode-footer {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .episode-meta {
-                font-size: 0.85rem;
+                font-size: 0.82rem;
                 color: #9ea4b5;
                 display: flex;
                 align-items: center;
+                gap: 6px;
+                line-height: 1.2;
+            }
+            .episode-meta .meta-dot {
+                color: rgba(255, 255, 255, 0.35);
+                font-size: 0.8rem;
+            }
+            .episode-rating {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .episode-rating ha-icon {
+                --mdc-icon-size: 13px;
+                color: #FBC02D;
+                transform: translateY(-1px);
             }
             .episode-actions {
                 display: flex;
                 gap: 8px;
+                align-items: center;
+                flex-shrink: 0;
+                margin-left: auto;
             }
             .play-episode-btn {
                 background: rgba(255, 255, 255, 0.08);
@@ -983,8 +1163,13 @@ export class JellyHAItemDetailsModal extends LitElement {
                 padding: 0;
             }
             .play-episode-btn:hover {
-                background: rgba(255, 255, 255, 0.2);
+                background: rgba(3, 169, 244, 0.25);
+                border-color: rgba(3, 169, 244, 0.5);
+                color: #ffffff;
                 transform: scale(1.08);
+            }
+            .play-episode-btn:active {
+                transform: scale(0.92);
             }
             .play-episode-btn ha-icon {
                 --mdc-icon-size: 18px;
@@ -996,6 +1181,188 @@ export class JellyHAItemDetailsModal extends LitElement {
                 color: #03a9f4;
                 background: rgba(3, 169, 244, 0.2);
                 border-color: #03a9f4;
+            }
+
+            /* Target Picker Action Sheet Overlay */
+            .target-picker-overlay {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.45);
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 60;
+                padding: 20px;
+                box-sizing: border-box;
+                border-radius: 28px;
+                animation: targetPickerFadeIn 0.2s ease-out;
+            }
+            @keyframes targetPickerFadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .target-picker-card {
+                background: #181b28;
+                border: var(--ha-card-border, var(--ha-card-border-width, 1px) solid var(--ha-card-border-color, var(--divider-color, rgba(255, 255, 255, 0.14))));
+                border-radius: 20px;
+                width: 100%;
+                max-width: 360px;
+                box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
+                padding: 20px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                animation: targetPickerScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            @keyframes targetPickerScaleUp {
+                from { transform: scale(0.92); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+            }
+            .target-picker-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .target-picker-title-wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                overflow: hidden;
+            }
+            .target-picker-title {
+                font-size: 1.05rem;
+                font-weight: 700;
+                color: #ffffff;
+                letter-spacing: 0.3px;
+            }
+            .target-picker-item-name {
+                font-size: 0.8rem;
+                color: rgba(255, 255, 255, 0.6);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .target-picker-close-btn {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                width: 34px;
+                height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                color: #ffffff;
+                transition: all 0.2s ease;
+                padding: 0;
+                flex-shrink: 0;
+            }
+            .target-picker-close-btn:hover {
+                background: rgba(255, 255, 255, 0.25);
+                border-color: rgba(255, 255, 255, 0.4);
+                transform: scale(1.08);
+            }
+            .target-picker-close-btn ha-icon {
+                --mdc-icon-size: 18px;
+            }
+            .target-picker-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                max-height: 280px;
+                overflow-y: auto;
+                padding: 4px;
+                margin: -4px;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            }
+            .target-option-btn {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 14px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.09);
+                color: #ffffff;
+                cursor: pointer;
+                text-align: left;
+                transition: all 0.2s ease;
+                box-sizing: border-box;
+                width: 100%;
+            }
+            .target-option-btn:hover {
+                background: rgba(2, 136, 209, 0.22);
+                border-color: rgba(2, 136, 209, 0.55);
+                transform: translateY(-1px);
+            }
+            .target-option-btn:active {
+                transform: scale(0.98);
+            }
+            .target-icon-badge {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                background: rgba(2, 136, 209, 0.25);
+                color: #29b6f6;
+                flex-shrink: 0;
+            }
+            .target-icon-badge ha-icon {
+                --mdc-icon-size: 22px;
+            }
+            .target-info {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 2px;
+                flex: 1;
+                overflow: hidden;
+            }
+            .target-name {
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: #ffffff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .target-detail {
+                font-size: 0.75rem;
+                color: rgba(255, 255, 255, 0.5);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .target-chevron {
+                --mdc-icon-size: 18px;
+                color: rgba(255, 255, 255, 0.35);
+                flex-shrink: 0;
+            }
+            .target-picker-cancel-btn {
+                width: 100%;
+                padding: 10px;
+                border-radius: 10px;
+                background: transparent;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 0.9rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+                box-sizing: border-box;
+            }
+            .target-picker-cancel-btn:hover {
+                background: rgba(255, 255, 255, 0.08);
+                color: #ffffff;
             }
         </style>
         `;
@@ -1024,6 +1391,7 @@ export class JellyHAItemDetailsModal extends LitElement {
                         ` : nothing;
                     })()}
                     ${this._viewMode === 'episodes' ? this._renderEpisodesContent() : this._renderDefaultContent()}
+                    ${this._renderTargetPickerOverlay()}
                 </div>
             </div>
         `;
@@ -1034,6 +1402,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         const item = this._item;
         const isSeries = item.type === 'Series';
         const year = item.year || (item.date_added ? new Date(item.date_added).getFullYear() : '');
+        const targetItem = (isSeries && this._nextUpItem) ? this._nextUpItem : item;
 
         return html`
         <div class="default-layout">
@@ -1050,11 +1419,8 @@ export class JellyHAItemDetailsModal extends LitElement {
                             </div>
                         `
                         : html`
-                            <!-- Primary Play / Cast Button -->
-                            <button class="primary-play-btn" @click=${this._handlePlay} title="Play on Chromecast">
-                                <ha-icon icon="mdi:cast"></ha-icon>
-                                <span>Play on Cast</span>
-                            </button>
+                            <!-- Primary Play Button -->
+                            ${this._renderPrimaryPlayButton(targetItem)}
 
                             <!-- Secondary Action Icons Toolbar -->
                             <div class="actions-icon-row">
@@ -1078,7 +1444,14 @@ export class JellyHAItemDetailsModal extends LitElement {
                                     <ha-icon icon="${item.is_favorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
                                 </button>
 
-                                <a href="javascript:void(0)" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => { e.preventDefault(); this._haptic(); this._openExternalUrl(item.jellyfin_url); }}>
+                                <a href="${this._getJellyfinUrl(item) || 'javascript:void(0)'}" target="_blank" rel="noopener noreferrer" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => {
+                                    this._haptic();
+                                    const jfUrl = this._getJellyfinUrl(item);
+                                    if (!jfUrl) {
+                                        e.preventDefault();
+                                        this._openExternalUrl(item.jellyfin_url);
+                                    }
+                                }}>
                                     <ha-icon icon="mdi:open-in-new"></ha-icon>
                                 </a>
 
@@ -1103,19 +1476,23 @@ export class JellyHAItemDetailsModal extends LitElement {
                 </div>
                 
                 ${this._nextUpItem ? html`
-                    <div class="next-up-card" @click=${this._playNextUp}>
+                    <div class="next-up-card" @click=${this._playTargets.length > 0 ? this._playNextUp : undefined} style="${this._playTargets.length === 0 ? 'cursor: default;' : ''}">
                         <div class="next-up-thumb-wrap">
                             <img class="next-up-thumb" src="${this._nextUpItem.poster_url || this._nextUpItem.backdrop_url || this._item.poster_url}" alt="${this._nextUpItem.name}" />
-                            <div class="next-up-play-overlay">
-                                <ha-icon icon="mdi:play"></ha-icon>
-                            </div>
+                            ${this._playTargets.length > 0 ? html`
+                                <div class="next-up-play-overlay">
+                                    <ha-icon icon="mdi:play"></ha-icon>
+                                </div>
+                            ` : nothing}
                         </div>
                         <div class="next-up-info">
                             <div class="next-up-header-row">
+                                ${(this._nextUpItem.season != null && (this._nextUpItem.episode != null || this._nextUpItem.index_number != null)) ? html`
+                                    <span class="next-up-ep-code">S${this._nextUpItem.season}:E${this._nextUpItem.episode ?? this._nextUpItem.index_number}</span>
+                                ` : (this._nextUpItem.episode != null || this._nextUpItem.index_number != null ? html`
+                                    <span class="next-up-ep-code">E${this._nextUpItem.episode ?? this._nextUpItem.index_number}</span>
+                                ` : nothing)}
                                 <span class="next-up-badge">NEXT UP</span>
-                                ${this._nextUpItem.season != null && this._nextUpItem.episode != null ? html`
-                                    <span class="next-up-ep-code">S${this._nextUpItem.season}:E${this._nextUpItem.episode}</span>
-                                ` : nothing}
                             </div>
                             <h3 class="next-up-title">${this._nextUpItem.name}</h3>
                             <div class="next-up-sub">
@@ -1126,9 +1503,11 @@ export class JellyHAItemDetailsModal extends LitElement {
                                 ` : nothing}
                             </div>
                         </div>
-                        <button class="next-up-cast-btn" title="Cast Next Up" @click=${(e: Event) => { e.stopPropagation(); this._playNextUp(); }}>
-                            <ha-icon icon="mdi:cast"></ha-icon>
-                        </button>
+                        ${this._playTargets.length > 0 ? html`
+                            <button class="next-up-cast-btn" title="${this._getNextUpPlayTitle()}" @click=${(e: Event) => { e.stopPropagation(); this._playNextUp(); }}>
+                                <ha-icon icon="${this._getNextUpPlayIcon()}"></ha-icon>
+                            </button>
+                        ` : nothing}
                     </div>
                 ` : nothing}
 
@@ -1191,7 +1570,7 @@ export class JellyHAItemDetailsModal extends LitElement {
 
         // Use full height wrapper for sticky header + scrollable list
         return html`
-            <div style="display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; z-index: 1;">
+            <div class="episodes-container">
                 <div class="episodes-header">
                     <button class="back-btn" @click=${(e: Event) => this._toggleEpisodesView(e)} type="button" title="Back to Details">
                         <ha-icon icon="mdi:arrow-left"></ha-icon>
@@ -1201,9 +1580,9 @@ export class JellyHAItemDetailsModal extends LitElement {
 
                 ${seasons.length > 1 ? html`
                     <div class="season-selector">
-                        <button class="season-tab ${this._selectedSeason === 'all' || !this._selectedSeason ? 'active' : ''}" @click=${() => { this._selectedSeason = 'all'; this.requestUpdate(); }}>All</button>
+                        <button class="season-tab ${this._selectedSeason === 'all' || !this._selectedSeason ? 'active' : ''}" @click=${() => { this._haptic('selection'); this._selectedSeason = 'all'; this.requestUpdate(); }}>All</button>
                         ${seasons.map(s => html`
-                            <button class="season-tab ${this._selectedSeason === s ? 'active' : ''}" @click=${() => { this._selectedSeason = s; this.requestUpdate(); }}>Season ${s}</button>
+                            <button class="season-tab ${this._selectedSeason === s ? 'active' : ''}" @click=${() => { this._haptic('selection'); this._selectedSeason = s; this.requestUpdate(); }}>Season ${s}</button>
                         `)}
                     </div>
                 ` : nothing}
@@ -1213,35 +1592,79 @@ export class JellyHAItemDetailsModal extends LitElement {
                         <div style="text-align: center; color: rgba(255,255,255,0.6); padding: 40px 20px;">
                             No episodes found.
                         </div>
-                    ` : displayedEpisodes.map(ep => html`
-                        <div class="episode-row ${this._nextUpItem && ep.id === this._nextUpItem.id ? 'next-up-highlight' : ''}" @click=${(e: Event) => { e.stopPropagation(); this._handlePlayEpisode(ep); }}>
-                            <img class="episode-thumb" src="${ep.poster_url || ep.backdrop_url || this._item!.poster_url}" alt="${ep.name || ''}" />
-                            
-                            <div class="episode-content">
-                                <h4 class="episode-title">
-                                    ${ep.season ? `S${ep.season}:E${ep.episode || ep.index_number || ''}` : `${ep.episode || ep.index_number || ''}`}. ${ep.name || 'Episode'}
-                                    ${this._nextUpItem && ep.id === this._nextUpItem.id ? html`<span style="font-size: 0.7em; background: var(--primary-color, #03a9f4); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; white-space: nowrap;">NEXT UP</span>` : nothing}
-                                </h4>
+                    ` : displayedEpisodes.map(ep => {
+                        const isNextUp = !!(this._nextUpItem && ep.id === this._nextUpItem.id);
+                        const epNumber = ep.season
+                            ? `S${ep.season}:E${ep.episode ?? ep.index_number ?? ''}`
+                            : (ep.episode ?? ep.index_number ? `E${ep.episode ?? ep.index_number}` : '');
+                        const runtime = this._formatRuntime(ep.runtime_minutes);
+
+                        return html`
+                            <div class="episode-row ${isNextUp ? 'next-up-highlight' : ''}"
+                                @click=${(e: Event) => {
+                                    e.stopPropagation();
+                                    if (this._playTargets.length > 0) {
+                                        this._handlePlayEpisode(ep);
+                                    }
+                                }}
+                                @touchstart=${(e: TouchEvent) => this._handleRowTouchStart(e)}
+                                @touchmove=${(e: TouchEvent) => this._handleRowTouchMove(e)}
+                                @touchend=${(e: TouchEvent) => this._handleRowTouchEnd(e)}
+                                @touchcancel=${(e: TouchEvent) => this._handleRowTouchEnd(e)}
+                                style="${this._playTargets.length === 0 ? 'cursor: default;' : ''}">
                                 
-                                <div class="episode-footer">
-                                    <div class="episode-meta">
-                                        <span>${this._formatRuntime(ep.runtime_minutes)}</span>
-                                        ${ep.rating ? html` <ha-icon icon="mdi:star" style="--mdc-icon-size: 14px; color: #FBC02D; margin-left: 6px; transform: translateY(-1px);"></ha-icon> ${ep.rating.toFixed(1)}` : nothing}
-                                    </div>
+                                <div class="episode-thumb-wrap">
+                                    <img class="episode-thumb" src="${ep.poster_url || ep.backdrop_url || this._item!.poster_url}" alt="${ep.name || ''}" />
+                                    ${this._playTargets.length > 0 ? html`
+                                        <div class="episode-play-overlay">
+                                            <ha-icon icon="mdi:play"></ha-icon>
+                                        </div>
+                                    ` : nothing}
+                                </div>
+                                
+                                <div class="episode-content">
+                                    ${(epNumber || isNextUp) ? html`
+                                        <div class="episode-header-line">
+                                            ${epNumber ? html`<span class="episode-number">${epNumber}</span>` : nothing}
+                                            ${isNextUp ? html`<span class="next-up-badge">NEXT UP</span>` : nothing}
+                                        </div>
+                                    ` : nothing}
 
-                                    <div class="episode-actions">
-                                        <button class="play-episode-btn watched-btn ${ep.is_played ? 'active' : ''}" @click=${(e: Event) => { e.stopPropagation(); this._handleMarkEpisodeWatched(ep); }} type="button" title="${ep.is_played ? 'Mark Unwatched' : 'Mark Watched'}">
-                                            <ha-icon icon="mdi:check"></ha-icon>
-                                        </button>
+                                    <h4 class="episode-title" title="${ep.name || 'Episode'}">${ep.name || 'Episode'}</h4>
+                                    
+                                    ${(runtime || ep.rating) ? html`
+                                        <div class="episode-meta">
+                                            ${runtime ? html`<span>${runtime}</span>` : nothing}
+                                            ${runtime && ep.rating ? html`<span class="meta-dot">•</span>` : nothing}
+                                            ${ep.rating ? html`<span class="episode-rating"><ha-icon icon="mdi:star"></ha-icon>${ep.rating.toFixed(1)}</span>` : nothing}
+                                        </div>
+                                    ` : nothing}
+                                </div>
 
-                                        <button class="play-episode-btn" @click=${(e: Event) => { e.stopPropagation(); this._handlePlayEpisode(ep); }} type="button" title="Play Episode">
-                                            <ha-icon icon="mdi:cast"></ha-icon>
+                                <div class="episode-actions">
+                                    <button class="play-episode-btn watched-btn ${ep.is_played ? 'active' : ''}"
+                                        @click=${(e: Event) => { e.stopPropagation(); this._handleMarkEpisodeWatched(ep); }}
+                                        @touchstart=${(e: Event) => e.stopPropagation()}
+                                        @touchend=${(e: Event) => e.stopPropagation()}
+                                        type="button"
+                                        title="${ep.is_played ? 'Mark Unwatched' : 'Mark Watched'}">
+                                        <ha-icon icon="mdi:check"></ha-icon>
+                                    </button>
+
+                                    ${this._playTargets.length > 0 ? html`
+                                        <button class="play-episode-btn"
+                                            @click=${(e: Event) => { e.stopPropagation(); this._handlePlayEpisode(ep); }}
+                                            @touchstart=${(e: Event) => e.stopPropagation()}
+                                            @touchend=${(e: Event) => e.stopPropagation()}
+                                            type="button"
+                                            title="${this._getEpisodePlayTitle()}">
+                                            <ha-icon icon="${this._getEpisodePlayIcon()}"></ha-icon>
                                         </button>
-                                    </div>
+                                    ` : nothing}
                                 </div>
                             </div>
-                        </div>
-                    `)}
+                        `;
+                    })}
                 </div>
             </div>
         `;
@@ -1331,74 +1754,6 @@ export class JellyHAItemDetailsModal extends LitElement {
         `;
     }
 
-    private _handlePlayEpisode = async (episode: MediaItem) => {
-        this._haptic();
-        if (!this._defaultCastDevice) {
-            this.dispatchEvent(new CustomEvent('hass-notification', {
-                detail: { message: 'No Chromecast device selected. Please configure a cast device in the card editor.' },
-                bubbles: true,
-                composed: true
-            }));
-            return;
-        }
-        try {
-            const serviceData: any = {
-                entity_id: this._defaultCastDevice,
-                item_id: episode.id,
-                subtitle_mode: this._subtitleMode || 'auto',
-                ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
-            };
-            if (episode.config_entry_id || this._item?.config_entry_id) {
-                serviceData.config_entry_id = episode.config_entry_id || this._item?.config_entry_id;
-            }
-            if (this._serverEntityId) {
-                serviceData.server_entity_id = this._serverEntityId;
-            }
-            await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
-            this.closeDialog();
-        } catch (err) {
-            console.error('Failed to cast episode', err);
-            this.dispatchEvent(new CustomEvent('hass-notification', {
-                detail: { message: 'Failed to cast episode. Check logs.' },
-                bubbles: true,
-                composed: true
-            }));
-        }
-    }
-
-    private _handlePlay = async () => {
-        this._haptic();
-        const targetItem = (this._item?.type === 'Series' && this._nextUpItem) ? this._nextUpItem : this._item;
-        if (!targetItem || !this._defaultCastDevice) {
-            if (!this._defaultCastDevice) {
-                this.dispatchEvent(new CustomEvent('hass-notification', {
-                    detail: { message: 'No Chromecast device selected. Please configure a cast device in the card editor.' },
-                    bubbles: true,
-                    composed: true
-                }));
-            }
-            return;
-        }
-        try {
-            const serviceData: any = {
-                entity_id: this._defaultCastDevice,
-                item_id: targetItem.id,
-                subtitle_mode: this._subtitleMode || 'auto',
-                ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
-            };
-            if (targetItem.config_entry_id || this._item?.config_entry_id) {
-                serviceData.config_entry_id = targetItem.config_entry_id || this._item?.config_entry_id;
-            }
-            if (this._serverEntityId) {
-                serviceData.server_entity_id = this._serverEntityId;
-            }
-            await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
-            this.closeDialog();
-        } catch (err) {
-            console.error('Failed to cast', err);
-        }
-    }
-
     private _haptic(type: 'selection' | 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'failure' = 'selection') {
         const event = new CustomEvent('haptic', {
             detail: type,
@@ -1406,39 +1761,316 @@ export class JellyHAItemDetailsModal extends LitElement {
             composed: true
         });
         this.dispatchEvent(event);
+        window.dispatchEvent(new CustomEvent('haptic', {
+            detail: type,
+            bubbles: true,
+            composed: true
+        }));
+
+        // Mobile vibration fallback for web browsers
+        try {
+            if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+                const duration = (type === 'medium' || type === 'heavy') ? 20 : (type === 'success' ? [15, 50, 15] : 10);
+                navigator.vibrate(duration);
+            }
+        } catch {
+            // Ignore vibration errors on unsupported environments
+        }
     }
 
-    private _playNextUp = async () => {
-        this._haptic();
+    private _handleRowTouchStart(e: TouchEvent): void {
+        if (e.touches.length > 0) {
+            this._rowTouchStartX = e.touches[0].clientX;
+            this._rowTouchStartY = e.touches[0].clientY;
+            const target = (e.currentTarget as HTMLElement);
+            target.classList.add('active-press');
+        }
+    }
 
-        if (!this._nextUpItem || !this._defaultCastDevice) {
-            if (!this._defaultCastDevice) {
+    private _handleRowTouchMove(e: TouchEvent): void {
+        if (e.touches.length > 0) {
+            const diffX = Math.abs(e.touches[0].clientX - this._rowTouchStartX);
+            const diffY = Math.abs(e.touches[0].clientY - this._rowTouchStartY);
+            if (diffX > 10 || diffY > 10) {
+                const target = (e.currentTarget as HTMLElement);
+                target.classList.remove('active-press');
+            }
+        }
+    }
+
+    private _handleRowTouchEnd(e: TouchEvent): void {
+        const target = (e.currentTarget as HTMLElement);
+        target.classList.remove('active-press');
+    }
+
+    private _openTargetPicker = (item: MediaItem) => {
+        this._haptic();
+        if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+        this._pendingPlayItem = item;
+        this._showTargetPicker = true;
+        this.requestUpdate();
+    }
+
+    private _closeTargetPicker = () => {
+        this._showTargetPicker = false;
+        this._pendingPlayItem = undefined;
+        if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+        this.requestUpdate();
+    }
+
+    private _initiatePlay = (item: MediaItem) => {
+        if (this._playTargets.length === 0) return;
+        if (this._playTargets.length === 1) {
+            this._executePlayTarget(this._playTargets[0], item);
+            return;
+        }
+        this._openTargetPicker(item);
+    }
+
+    private _executePlayTarget = async (target: PlayTarget, item: MediaItem) => {
+        this._haptic('medium');
+        this._closeTargetPicker();
+
+        if (target.type === 'cast') {
+            const castDevice = target.device || this._defaultCastDevice;
+            if (!castDevice) {
                 this.dispatchEvent(new CustomEvent('hass-notification', {
                     detail: { message: 'No Chromecast device selected. Please configure a cast device in the card editor.' },
                     bubbles: true,
                     composed: true
                 }));
+                return;
             }
-            return;
-        }
-        try {
-            const serviceData: any = {
-                entity_id: this._defaultCastDevice,
-                item_id: this._nextUpItem.id,
-                subtitle_mode: this._subtitleMode || 'auto',
-                ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
-            };
-            if (this._nextUpItem.config_entry_id || this._item?.config_entry_id) {
-                serviceData.config_entry_id = this._nextUpItem.config_entry_id || this._item?.config_entry_id;
+            try {
+                const serviceData: any = {
+                    entity_id: castDevice,
+                    item_id: item.id,
+                    subtitle_mode: this._subtitleMode || 'auto',
+                    ...(this._subtitleLanguage ? { subtitle_language: this._subtitleLanguage } : {}),
+                };
+                if (item.config_entry_id || this._item?.config_entry_id) {
+                    serviceData.config_entry_id = item.config_entry_id || this._item?.config_entry_id;
+                }
+                if (this._serverEntityId) {
+                    serviceData.server_entity_id = this._serverEntityId;
+                }
+                await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
+                this.closeDialog();
+            } catch (err) {
+                console.error('Failed to cast', err);
+                this.dispatchEvent(new CustomEvent('hass-notification', {
+                    detail: { message: 'Failed to cast item. Check logs.' },
+                    bubbles: true,
+                    composed: true
+                }));
             }
-            if (this._serverEntityId) {
-                serviceData.server_entity_id = this._serverEntityId;
+        } else if (target.type === 'script') {
+            if (!target.service) {
+                console.error('No service specified for script play target', target);
+                return;
             }
-            await this.hass.callService('jellyha', 'play_on_chromecast', serviceData);
+            try {
+                const [domain, serviceName] = target.service.includes('.')
+                    ? target.service.split('.', 2)
+                    : ['script', target.service];
+
+                const payload: Record<string, any> = {
+                    item_id: item.id,
+                    name: item.name,
+                    title: item.name,
+                    type: item.type,
+                    series_name: item.series_name,
+                    series_id: item.series_id,
+                    season: item.season,
+                    episode: item.episode,
+                    year: item.year,
+                    genres: item.genres,
+                    rating: item.rating,
+                    poster_url: item.poster_url,
+                    backdrop_url: item.backdrop_url,
+                    path: item.path,
+                    filepath: item.filepath,
+                    jellyfin_url: this._getJellyfinUrl(item),
+                    action_type: 'modal',
+                    ...(target.service_data || {}),
+                };
+
+                this.dispatchEvent(new CustomEvent('jellyha_item_clicked', {
+                    detail: {
+                        item,
+                        action: 'call-service',
+                        service: target.service,
+                        service_data: payload,
+                    },
+                    bubbles: true,
+                    composed: true,
+                }));
+
+                await this.hass.callService(domain, serviceName, payload);
+                this.closeDialog();
+            } catch (err) {
+                console.error('Failed to execute script', err);
+                this.dispatchEvent(new CustomEvent('hass-notification', {
+                    detail: { message: `Failed to execute script ${target.service}. Check logs.` },
+                    bubbles: true,
+                    composed: true
+                }));
+            }
+        } else if (target.type === 'browser' || (target.type as any) === 'play-browser') {
             this.closeDialog();
-        } catch (err) {
-            console.error('Failed to cast next up', err);
+            await showJellyHABrowserPlayer({
+                hass: this.hass,
+                item,
+                configEntryId: item.config_entry_id || this._item?.config_entry_id,
+                serverEntityId: this._serverEntityId,
+                subtitleMode: this._subtitleMode,
+                subtitleLanguage: this._subtitleLanguage,
+            });
         }
+    }
+
+    private _handlePlayEpisode = async (episode: MediaItem) => {
+        this._haptic();
+        this._initiatePlay(episode);
+    }
+
+    private _handlePlay = async () => {
+        this._haptic();
+        const targetItem = (this._item?.type === 'Series' && this._nextUpItem) ? this._nextUpItem : this._item;
+        if (!targetItem) return;
+        this._initiatePlay(targetItem);
+    }
+
+    private _playNextUp = async () => {
+        this._haptic();
+        if (!this._nextUpItem) return;
+        this._initiatePlay(this._nextUpItem);
+    }
+
+    private _getTargetDisplayName(target: PlayTarget): string {
+        if (target.name) return target.name;
+        if (target.type === 'cast') return 'Cast to Chromecast';
+        if (target.type === 'browser' || (target.type as any) === 'play-browser') {
+            const lang = this.hass?.locale?.language || this.hass?.language || 'en';
+            return localize(lang, 'modal.play_in_browser') || 'Play in Browser';
+        }
+        return getScriptDefaultName(this.hass, target.service);
+    }
+
+    private _renderPrimaryPlayButton(targetItem?: MediaItem): TemplateResult | typeof nothing {
+        if (this._playTargets.length === 0) return nothing;
+
+        if (this._playTargets.length === 1) {
+            const target = this._playTargets[0];
+            const isBrowser = target.type === 'browser' || (target.type as any) === 'play-browser';
+            const icon = target.icon || (target.type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+            const label = this._getTargetDisplayName(target);
+            return html`
+                <button class="primary-play-btn" @click=${this._handlePlay} title="${label}">
+                    <ha-icon icon="${icon}"></ha-icon>
+                    <span>${label}</span>
+                </button>
+            `;
+        }
+
+        return html`
+            <button class="primary-play-btn" @click=${this._handlePlay} title="Play">
+                <ha-icon icon="mdi:play"></ha-icon>
+                <span>Play</span>
+            </button>
+        `;
+    }
+
+    private _getNextUpPlayIcon(): string {
+        if (this._playTargets.length === 1) {
+            const isBrowser = this._playTargets[0].type === 'browser' || (this._playTargets[0].type as any) === 'play-browser';
+            return this._playTargets[0].icon || (this._playTargets[0].type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+        }
+        return 'mdi:play';
+    }
+
+    private _getNextUpPlayTitle(): string {
+        if (this._playTargets.length === 1) {
+            return this._getTargetDisplayName(this._playTargets[0]);
+        }
+        return 'Play Next Up';
+    }
+
+    private _getEpisodePlayIcon(): string {
+        if (this._playTargets.length === 1) {
+            const isBrowser = this._playTargets[0].type === 'browser' || (this._playTargets[0].type as any) === 'play-browser';
+            return this._playTargets[0].icon || (this._playTargets[0].type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+        }
+        return 'mdi:play';
+    }
+
+    private _getEpisodePlayTitle(): string {
+        if (this._playTargets.length === 1) {
+            return this._getTargetDisplayName(this._playTargets[0]);
+        }
+        return 'Play Episode';
+    }
+
+    private _renderTargetPickerOverlay(): TemplateResult | typeof nothing {
+        if (!this._showTargetPicker || !this._pendingPlayItem) return nothing;
+
+        const itemName = this._pendingPlayItem.series_name 
+            ? `${this._pendingPlayItem.series_name} - ${this._pendingPlayItem.name}` 
+            : this._pendingPlayItem.name;
+
+        const lang = this.hass?.locale?.language || this.hass?.language || 'en';
+        const playOnText = localize(lang, 'modal.play_on') || 'Play On';
+        const cancelText = localize(lang, 'modal.cancel') || 'Cancel';
+
+        return html`
+            <div class="target-picker-overlay" @click=${this._closeTargetPicker}>
+                <div class="target-picker-card" @click=${(e: Event) => e.stopPropagation()}>
+                    <div class="target-picker-header">
+                        <div class="target-picker-title-wrap">
+                            <span class="target-picker-title">${playOnText}</span>
+                            <span class="target-picker-item-name">${itemName}</span>
+                        </div>
+                        <button class="target-picker-close-btn" @click=${this._closeTargetPicker} aria-label="Close" title="Close">
+                            <ha-icon icon="mdi:close"></ha-icon>
+                        </button>
+                    </div>
+
+                    <div class="target-picker-list">
+                        ${this._playTargets.map(target => {
+                            const isBrowser = target.type === 'browser' || (target.type as any) === 'play-browser';
+                            const icon = target.icon || (target.type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+                            const name = this._getTargetDisplayName(target);
+                            const detail = target.type === 'cast'
+                                ? (target.device || this._defaultCastDevice || 'Chromecast')
+                                : (isBrowser ? 'Web Browser' : (target.service || 'Script'));
+
+                            const showEntity = target.show_entity_name !== false && target.show_entity !== false && (this._showEntityName !== false);
+
+                            return html`
+                                <button class="target-option-btn" @click=${() => this._executePlayTarget(target, this._pendingPlayItem!)}>
+                                    <div class="target-icon-badge">
+                                        <ha-icon icon="${icon}"></ha-icon>
+                                    </div>
+                                    <div class="target-info">
+                                        <span class="target-name">${name}</span>
+                                        ${showEntity && detail ? html`<span class="target-detail">${detail}</span>` : nothing}
+                                    </div>
+                                    <ha-icon icon="mdi:chevron-right" class="target-chevron"></ha-icon>
+                                </button>
+                            `;
+                        })}
+                    </div>
+
+                    <button class="target-picker-cancel-btn" @click=${this._closeTargetPicker}>
+                        ${cancelText}
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     private _handleFavorite = async () => {
@@ -1551,33 +2183,51 @@ export class JellyHAItemDetailsModal extends LitElement {
         window.open(url, '_blank');
     }
 
-    private _openExternalUrl(url: string | undefined): void {
-        if (!url) return;
+    private _getJellyfinUrl(item?: MediaItem): string | undefined {
+        const currentItem = item || this._item;
+        if (!currentItem) return undefined;
 
-        // Never rewrite YouTube or external third-party video services
-        try {
-            const parsed = new URL(url);
-            if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-                window.open(url, '_blank');
-                return;
+        let url = currentItem.jellyfin_url;
+
+        // Fallback: If jellyfin_url is missing from item, construct it from server/external URL
+        if (!url && currentItem.id) {
+            let baseUrl: string | undefined;
+            if (this.hass && this.hass.states) {
+                if (this._serverEntityId && this.hass.states[this._serverEntityId]) {
+                    const attrs = this.hass.states[this._serverEntityId].attributes;
+                    baseUrl = (attrs?.config_external_url || attrs?.server_url) as string | undefined;
+                }
+                if (!baseUrl) {
+                    for (const entityId in this.hass.states) {
+                        if (entityId.startsWith('sensor.') || entityId.startsWith('media_player.')) {
+                            const attrs = this.hass.states[entityId].attributes;
+                            if (attrs?.config_external_url || attrs?.server_url) {
+                                baseUrl = (attrs.config_external_url || attrs.server_url) as string;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-        } catch (e) {
-            // ignore
+            if (baseUrl && baseUrl.trim() !== '') {
+                url = `${baseUrl.replace(/\/$/, '')}/web/index.html#!/details?id=${currentItem.id}`;
+            }
         }
 
-        // Try to get external configure URL if we have an item.
-        // We need to look up the entity state.
-        // In the modal, we don't directly have access to the entity ID that launched it, 
-        // but we can try to find ANY JellyHA sensor, or rely on the frontend to pass it down.
-        // For simplicity, find the first jellyha_library sensor or let the user click standard.
-        // Actually, we can get it from the `item` potentially, but it's not saved there.
-        // Let's check all states for `config_external_url`. They should all be the same for one server.
+        if (!url) return undefined;
+
+        // Apply external URL override if configured
         let externalUrl: string | undefined;
         if (this.hass && this.hass.states) {
-            for (const entityId in this.hass.states) {
-                if (entityId.startsWith('sensor.') && this.hass.states[entityId].attributes?.config_external_url) {
-                    externalUrl = this.hass.states[entityId].attributes.config_external_url as string;
-                    break;
+            if (this._serverEntityId && this.hass.states[this._serverEntityId]?.attributes?.config_external_url) {
+                externalUrl = this.hass.states[this._serverEntityId].attributes.config_external_url as string;
+            }
+            if (!externalUrl) {
+                for (const entityId in this.hass.states) {
+                    if (entityId.startsWith('sensor.') && this.hass.states[entityId].attributes?.config_external_url) {
+                        externalUrl = this.hass.states[entityId].attributes.config_external_url as string;
+                        break;
+                    }
                 }
             }
         }
@@ -1596,14 +2246,32 @@ export class JellyHAItemDetailsModal extends LitElement {
                     originalUrlObj.pathname = extPath + originalUrlObj.pathname;
                 }
 
-                window.open(originalUrlObj.toString(), '_blank');
-                return;
+                return originalUrlObj.toString();
             } catch (e) {
                 console.warn('JellyHA: Failed to parse URLs to inject external URL override', e);
             }
         }
 
-        window.open(url, '_blank');
+        return url;
+    }
+
+    private _openExternalUrl(url: string | undefined): void {
+        const targetUrl = url || this._getJellyfinUrl();
+        if (!targetUrl) return;
+
+        // Never rewrite YouTube or external third-party video services
+        try {
+            const parsed = new URL(targetUrl);
+            if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
+                window.open(targetUrl, '_blank');
+                return;
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        const finalUrl = this._getJellyfinUrl({ ...this._item!, jellyfin_url: targetUrl }) || targetUrl;
+        window.open(finalUrl, '_blank');
     }
 
     private _handleMarkEpisodeWatched = async (episode: MediaItem) => {

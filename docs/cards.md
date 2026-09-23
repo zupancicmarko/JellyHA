@@ -38,15 +38,18 @@ max_pages: 5
 | `max_pages` | number | `5` | Maximum number of pages to display (set to `0` for infinite pagination) |
 | `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (`0` = disabled) |
 | `new_badge_days` | number | `3` | Items added within X days display a "New" badge |
-| `click_action` | string | `more-info` | Action on single tap: `more-info`, `cast`, `jellyfin`, `trailer`, `call-service` (Run Script), or `none` |
+| `click_action` | string | `more-info` | Action on single tap: `more-info`, `play-browser`, `cast`, `jellyfin`, `trailer`, `call-service` (Run Script), or `none` |
 | `click_service` | string | `''` | Target Home Assistant script entity to execute on tap (e.g. `script.card_action_play_on_wholpin`) |
-| `hold_action` | string | `jellyfin` | Action on press and hold: `jellyfin`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
+| `hold_action` | string | `jellyfin` | Action on press and hold: `jellyfin`, `play-browser`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
 | `hold_service` | string | `''` | Target Home Assistant script entity to execute on press and hold |
-| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
+| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `play-browser`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
 | `double_tap_service` | string | `''` | Target Home Assistant script entity to execute on double tap |
+| `enable_browser_player` | boolean | `true` | Enable "Play in Browser" option in card actions and More Information dialog |
+| `enable_custom_play_actions` | boolean | `false` | Enable custom playback targets in the More Information dialog via `modal_play_actions` |
+| `modal_play_actions` | list | `[]` | List of custom play targets (`browser`, `cast`, `script`) displayed in the More Info dialog |
 | `default_cast_device` | string | `''` | Default `media_player` entity used when action is set to `cast` (filtered to Google Cast devices in visual editor) |
-| `subtitle_mode` | string | `auto` | Subtitle strategy when casting: `auto` (Jellyfin user profile with English fallback), `none` (disabled), `forced_only`, or `custom` |
-| `subtitle_language` | string | `''` | Prioritized comma-separated subtitle language codes/names when `subtitle_mode` is `custom` (e.g. `sl, en` or `slv, eng`) |
+| `subtitle_mode` | string | `auto` | Subtitle strategy for casting and browser playback: `auto` (Jellyfin user profile with English fallback), `none` (disabled), `forced_only`, or `custom` |
+| `subtitle_language` | string | `''` | Prioritized comma-separated subtitle language codes/names when `subtitle_mode` is `custom` (e.g. `sl, en` or `slv, eng`) for casting and browser playback |
 | `show_now_playing` | boolean | `true` | Display active playback banner at the top of the card |
 | `show_title` | boolean | `true` | Display media title text |
 | `show_year` | boolean | `true` | Display release year |
@@ -68,6 +71,48 @@ max_pages: 5
 | `use_series_image` | boolean | `false` | For episodes and Next Up, display parent series cover art instead of episode thumbnail |
 
 > **Performance Note:** When using **Auto Swipe** with a large number of items, keep `items_per_page` and `max_pages` reasonable to ensure smooth animation on low-power tablets and mobile devices.
+
+---
+
+### Play in Browser & Custom Play Actions (`modal_play_actions`)
+
+JellyHA supports streaming media directly inside Home Assistant dashboards using a dedicated HTML5 browser player (`<jellyha-browser-player>`) with authenticated streaming:
+
+- **Single Tap / Hold / Double Tap**: Set `click_action: play-browser` to immediately play any tapped movie or episode in your browser.
+- **More Information Dialog & Target Picker**:
+  By default, the More Information modal provides 1-tap playback or an Action Sheet target picker for configured Cast devices, Browser playback, and scripts.
+- **Subtitles & Closed Captions**:
+  The browser player automatically extracts text-based subtitle streams (SRT, ASS, VTT) and serves them via an authenticated WebVTT proxy endpoint (`/api/jellyha/subtitles/...`). You can switch tracks anytime via the player's native Closed Captions (**CC**) menu. Initial track auto-selection respects the card's `subtitle_mode` and `subtitle_language` preferences (prioritizing clean dialogue tracks over SDH/hearing impaired).
+- **Custom Play Actions (`modal_play_actions`)**:
+  When `enable_custom_play_actions: true` is enabled, you can define exactly which play options appear in the More Info dialog:
+
+```yaml
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+enable_custom_play_actions: true
+modal_play_actions:
+  - type: browser
+    name: Play in Browser
+    icon: mdi:monitor
+  - type: cast
+    name: Living Room TV
+    device: media_player.living_room_chromecast
+    icon: mdi:cast
+  - type: script
+    name: Play on Apple TV
+    service: script.play_on_apple_tv
+    icon: mdi:apple
+    show_entity_name: false
+```
+
+Target Options:
+- `type`: Target type (`browser`, `cast`, or `script`).
+- `name` (optional): Custom display label in button and Action Sheet picker.
+- `icon` (optional): Custom MDI icon (defaults: `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
+- `device`: Required for `type: cast`, target `media_player` entity ID.
+- `service`: Required for `type: script`, target script entity ID.
+- `service_data` (optional): Extra payload dictionary passed to script.
+- `show_entity_name` (optional, boolean, default: `true`): Set to `false` to hide the entity subtitle in the Action Sheet picker.
 
 ---
 
@@ -146,11 +191,42 @@ show_background: true
 | `show_user` | boolean | `true` | Display viewer user name |
 | `show_time` | boolean | `false` | Display elapsed and remaining playback time |
 | `show_media_type_badge` | boolean | `true` | Display media type badge (`MOVIE`, `SERIES`, `EPISODE`) |
+| `badge_style` | string | `'poster'` | Media type badge presentation: `'poster'` (default, overlay on artwork), `'header'` (pill in header next to title, keeps poster artwork 100% uncovered), `'inline'` (prefixed to episode title for TV shows, e.g. `S01E02 • Title`), `'none'` (hidden) |
 | `show_genres` | boolean | `true` | Display genre tags |
 | `show_ratings` | boolean | `true` | Display community rating score |
 | `show_runtime` | boolean | `true` | Display total runtime |
 | `show_year` | boolean | `true` | Display release year |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
+
+### Media Type Badge Presentation (`badge_style`)
+
+By default, media type badges (`S01E02` for episodes, `MOVIE` for films, `AUDIO` for music) appear as colored pill badges on the top-left corner of the poster image (`badge_style: poster`).
+
+If you prefer your poster artwork or episode screenshot thumbnails to remain completely unobstructed, you can customize the badge presentation using `badge_style` (or in the card visual editor under **Badge Style**):
+
+| `badge_style` | TV Episodes | Movies & Music | Poster Artwork |
+|---|---|---|---|
+| **`poster`** *(default)* | `S01E02` pill on top-left of artwork | `MOVIE` / `AUDIO` pill on top-left of artwork | Overlaid badge |
+| **`header`** | `S01E02` pill in header right-aligned next to episode title | `MOVIE` / `AUDIO` pill in header right-aligned next to title | **100% Uncovered** |
+| **`inline`** | Prepend `S01E02 • ` directly to episode title text (e.g. `S01E02 • Pilot`) | Clean title without prefix (no badge) | **100% Uncovered** |
+| **`none`** | Hidden (no badge or prefix) | Hidden (no badge) | **100% Uncovered** |
+
+#### Example: Uncovered Artwork with Header Badge
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+title: Now Watching
+badge_style: header
+show_background: true
+```
+
+#### Example: Streamlined Minimal Title Prefix
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+badge_style: inline
+show_background: false
+```
 
 ### Migrating from Legacy Now Playing Sensors (`sensor.jellyha_now_playing_*`)
 

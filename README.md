@@ -19,38 +19,29 @@ Jellyfin for Home Assistant
     <img src="./docs/JellyHA-Library-List.png" width="48%" alt="List View" />
     <img src="./docs/JellyHA-Library-More-Information.png" width="48%" alt="More Information" />
     <img src="./docs/JellyHA-Cards.png" width="48%" alt="Add to dashboard" />
+    <img src="./docs/JellyHA-Latest-Movie-Card-Mod.png" width="48%" alt="Latest Movie Card Mod" />
   </div>
 </details>
 
 ## Features
 
 - 🎬 Display movies and TV shows from your library
-- 📡 **Live TV Support**: Visual channel browsing in Media Browser, 1-tap tuning, and voice tuning by channel number or name (`jellyha.play_live_tv_channel`)
-- 🎵 **Dedicated Music & Hi-Res Audio**: 1-step music playback on any speaker (`jellyha.play_music`), indexed search (`jellyha.music_search`), and FLAC, ALAC & Hi-Res audio stream inspection
-- 📁 **Direct Media File Paths**: Expose server disk paths (`path`, `filepath`) for external player handoff (Kodi, VLC, MPV)
-- 📊 **Watched Percentage & Storage Sensors**: Long-Term Statistics (LTS) watched percentages and per-library storage breakdown meters
+- ▶️ In-Dashboard Browser Playback: Stream media directly within your Home Assistant dashboards with native Closed Captions (CC) and subtitle track support
+- 🎯 Configurable Play Actions: Instant Browser playback, Chromecast casting, or custom scripts in More Info
 - 📺 Cast media directly to Chromecast (Gen 1 supported)
-- ⏯️ Full playback control: Play, Pause, Stop, Seek, Next/Previous Track, Shuffle, Repeat
-- ⏳ Accurate playback tracking: Elapsed/remaining time, +30s/-10s skip controls
-- 🎮 Per-user media players with transport and volume controls
-- 📺 Dedicated per-device media players with custom Jellyfin nicknames and exact session tracking
-- 🌈 Real-time Dynamic Range detection: Reporting of `SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, and `HLG` on media players for picture mode automations (e.g. ADB TV control)
-- ⏭️ "Next Up" support to resume TV shows
-- 🎨 Three layouts: Carousel, Grid, List
-- 🌙 Automatic dark/light theme adaptation
-- 🔗 Click to open in Jellyfin (new tab)
-- ⭐ IMDB ratings for movies, TMDB for TV shows
-- 🆕 "New" badge for recently added items
-- 🔍 Built-in Search Bar with Title and Genre filtering
-- 🔐 Secure login via Username/Password or API Key
-- 🤖 Advanced automation triggers via custom sensors & services
+- 📡 Live TV Support: Visual channel browsing in Media Browser
+- 🎵 Music Support
 - 📂 Full integration with Home Assistant Media Browser
-- 💾 Local storage caching
-- ⚡ Instant loading via WebSocket
-- 🌍 7 languages: English, German, French, Spanish, Italian, Dutch, Slovenian
-- 🎛️ Graphical card editor (no YAML required)
-- ⏱️ Configurable API Refresh Interval (via Integration Options)
-- 🚀 **Multi-Instance Support**: Run multiple servers concurrently
+- ⏯️ Full playback control: Play, Pause, Stop, Seek, Next/Previous Track, Shuffle, Repeat
+- 🎮 Per-user media players with transport and volume controls
+- 📺 Dedicated per-device media players with custom Jellyfin nicknames
+- 🌈 Real-time Dynamic Range detection: Reporting of `SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, and `HLG`
+- 🎨 Three Library Card layouts: Carousel, Grid, List
+- 🔍 Built-in Search Bar with Title and Genre filtering
+- 🤖 Advanced automation triggers via custom sensors & services
+- 🌍 8 languages: English, German, French, Spanish, Italian, Dutch, Slovenian, Russian
+
+- 🚀 Multi-Instance Support: Run multiple servers concurrently
 
 ## Documentation
 
@@ -139,12 +130,17 @@ To adjust settings after initial configuration:
 
 ### Supported Library Types
 
-| Library Type | Background Sync | Search Service | Now Playing & Playback |
-|---|---|---|---|
-| Movies | ✅ | ✅ (`jellyha.search`) | ✅ |
-| TV Shows | ✅ | ✅ (`jellyha.search`) | ✅ |
-| Music | ✅ (Count & Cache) | ✅ (`jellyha.music_search`) | ✅ (`jellyha.play_music`) |
-| Live TV | ✅ (Channels) | ✅ (`jellyha.get_live_tv_channels`) | ✅ (`jellyha.play_live_tv_channel`) |
+| Library Type | Library Card Support | Background Sync | Search Service | Now Playing & Playback |
+|---|---|---|---|---|
+| Movies | ✅ | ✅ | ✅ (`jellyha.search`) | ✅ |
+| TV Shows | ✅ | ✅ | ✅ (`jellyha.search`) | ✅ |
+| Music | ❌ *(Media Browser & Services)* | ✅ *(Count & Cache)* | ✅ (`jellyha.music_search`) | ✅ (`jellyha.play_music`) |
+| Live TV | ❌ *(Media Browser & Services)* | ✅ *(Channels)* | ✅ (`jellyha.get_live_tv_channels`) | ✅ (`jellyha.play_live_tv_channel`) |
+| Playlists | ❌ *(Media Browser & Services)* | ✅ *(On-Demand)* | ✅ (`jellyha.get_playlists`) | ✅ (`jellyha.play_playlist`) |
+| BoxSets / Collections | ❌ *(Media Browser & Services)* | ✅ *(On-Demand)* | ✅ (`jellyha.get_collections`) | ✅ *(1-Tap Playback)* |
+
+> [!NOTE]
+> The **JellyHA Library Card** (`custom:jellyha-library-card`) is intentionally optimized for rich visual browsing of **Movies** and **TV Shows** (posters, episodes, Next Up badges). Music, Live TV, Playlists, and BoxSets/Collections are supported natively via the **Home Assistant Media Browser** (`/media-browser`), all media player entities, and dedicated automation actions.
 
 ## Dashboard Cards at a Glance
 
@@ -164,20 +160,23 @@ items_per_page: 3
 max_pages: 5
 ```
 
-Supports custom click, hold, and double-tap actions (Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically).
+Supports custom click, hold, and double-tap actions (Play in Browser, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`).
 
 👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 
 ### Now Playing Card (`custom:jellyha-now-playing-card`)
 
-Display active playback status, progress bars, and transport controls with dynamic blurred backdrops.
+Display active playback status, interactive progress bars, and transport controls with dynamic blurred backdrops. Supports customizable media type badge styles (`poster`, `header`, `inline`, or `none`).
 
 ```yaml
 type: custom:jellyha-now-playing-card
 entity: media_player.jellyha_admin # Supports per-user or per-device media players
 title: Now Playing
 show_background: true
+badge_style: header # 'poster' (default), 'header' (uncovered poster), 'inline' (TV shows), or 'none'
 ```
+
+👉 **[See full Now Playing Card configuration in docs/cards.md](docs/cards.md#now-playing-card-customjellyha-now-playing-card)**
 
 #### 🔄 Migrating from Legacy Now Playing Sensors to Media Players
 
@@ -187,8 +186,8 @@ Starting in **JellyHA v1.3.0**, per-user `media_player.jellyha_<user>` entities 
 
 ```diff
 type: custom:jellyha-now-playing-card
--entity: sensor.jellyha_now_playing_marko
-+entity: media_player.jellyha_marko
+-entity: sensor.jellyha_now_playing_<user>
++entity: media_player.jellyha_<user>
 title: Now Playing
 show_background: true
 ```
@@ -208,9 +207,10 @@ JellyHA integrates natively with Home Assistant's Media Browser:
 2. Select **JellyHA**.
 3. Choose your server (if multiple are connected).
 4. Browse your media with instant 1-tap playback to your browser or Cast players:
-   - 🎬 **Movies & TV Series**: Collections, unwatched items, and Next Up episodes.
+   - 🎬 **Movies & TV Series**: Unwatched items and Next Up episodes.
+   - 📦 **Collections / BoxSets**: 1-tap playback automatically resolves and plays the first movie.
    - 📡 **Live TV Channels**: Authenticated channel logos, channel numbers, and live stream tuning.
-   - 🎵 **Music**: Artists, albums, and tracks with bit-perfect audio streaming.
+   - 🎵 **Music & Playlists**: Artists, albums, tracks, and playlists with bit-perfect audio streaming.
 
 *(If "Media" is not visible in the sidebar, see [Media Browser Entry Not Visible in Sidebar](docs/troubleshooting.md#media-browser-entry-not-visible-in-sidebar).)*
 

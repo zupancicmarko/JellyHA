@@ -248,3 +248,51 @@ action:
   - set_conversation_response: "Playing {{ trigger.slots.track }} on {{ trigger.slots.speaker }}."
 ```
 
+### Play Playlist on Any Speaker or Device
+
+Play a music or video playlist from Jellyfin on any Home Assistant speaker (Google Cast, Sonos, Wiim, HomePod) or directly on a Jellyfin client session, with optional track shuffling:
+
+```yaml
+action: jellyha.play_playlist
+data:
+  entity_id: media_player.kitchen_speaker
+  playlist: "Morning Coffee"
+  shuffle: true
+```
+
+*When targeting a Jellyfin client (e.g. `media_player.jellyha_living_room_tv`), the entire playlist is queued and managed natively by Jellyfin.*
+
+### Retrieve User Playlists
+
+Query all playlists in the user's library with track count, duration, and thumbnail into `response_variable` (ideal for dynamic dashboard buttons or voice dropdowns):
+
+```yaml
+action: jellyha.get_playlists
+data:
+  limit: 20
+response_variable: user_playlists
+
+# Downstream script access:
+# {{ user_playlists.playlists[0].name }} -> "Morning Coffee"
+# {{ user_playlists.playlists[0].item_count }} -> 42
+# {{ user_playlists.playlists[0].image_url }} -> Jellyfin cover art URL
+```
+
+### Retrieve BoxSets & Movie Collections
+
+Query all Movie Collections / BoxSets from Jellyfin, including their contained films and technical metadata:
+
+```yaml
+action: jellyha.get_collections
+data:
+  include_items: true
+response_variable: movie_collections
+
+# Downstream script access:
+# {{ movie_collections.collections[0].name }} -> "The Lord of the Rings Collection"
+# {{ movie_collections.collections[0].item_count }} -> 3
+# {{ movie_collections.collections[0].items[0].name }} -> "The Fellowship of the Ring"
+# {{ movie_collections.collections[0].items[0].path }} -> Server disk path
+```
+
+

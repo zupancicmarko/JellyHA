@@ -71,3 +71,31 @@ show_subtitle: true
 show_client: true
 show_user: true
 show_time: true
+
+# ------------------------------------------------------------------------------
+# 5. Uncovered Poster Artwork with Header Badge (badge_style: header)
+# ------------------------------------------------------------------------------
+# Moves the media type badge (S01E02 for TV, MOVIE for films, AUDIO for music)
+# into the header right-aligned next to the title, keeping poster art 100% uncovered.
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+title: "Now Watching"
+show_background: true
+badge_style: header
+show_media_type_badge: true
+show_genres: true
+show_ratings: true
+show_runtime: true
+show_year: true
+
+# ------------------------------------------------------------------------------
+# 6. Streamlined Minimal Title Prefix for TV Episodes (badge_style: inline)
+# ------------------------------------------------------------------------------
+# Prepend "S01E02 • " directly before the episode name in plain text, omitting
+# pill badges entirely for a minimalist, uncluttered native player look.
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+badge_style: inline
+show_background: false
+show_time: true
+show_controls: true

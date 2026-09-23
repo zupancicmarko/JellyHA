@@ -97,9 +97,11 @@ Users can opt-in to dedicated media player entities per physical client device (
 
 ### Native Media Browser Support (`/media-browser`)
 JellyHA registers a native Home Assistant Media Browser provider for each server instance. When browsing `media_player` entities or the sidebar Media Browser:
-* Displays top-level library folders (Movies, TV Shows, Music, etc.) and a dedicated **📡 Live TV** category (when `enable_live_tv` is enabled in Options).
+* All per-user (`media_player.jellyha_<user>`) and per-device (`media_player.jellyha_<device>`) media players expose `BROWSE_MEDIA` and direct library navigation.
+* Displays top-level library folders (Movies, TV Shows, Music), **📦 Collections / BoxSets**, and a dedicated **📡 Live TV** category (when `enable_live_tv` is enabled in Options).
+* Inside **📦 Collections**, tapping Play on any BoxSet automatically resolves and plays its first movie.
 * Inside **📡 Live TV**, channels are rendered with authenticated signed channel logos, channel numbers, and titles, sorted numerically/alphabetically.
-* Tapping any channel starts instant playback directly on the selected media player.
+* Tapping any track, album, playlist, or movie starts instant playback directly on the selected media player.
 
 ---
 
@@ -286,6 +288,36 @@ Search and play music from Jellyfin directly on any Home Assistant media player 
   * `item_id` (Optional, string): Direct Jellyfin track or album ID (bypasses search).
   * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance (auto-selects Music instance in multi-instance setups).
 
+### 13. `jellyha.play_playlist`
+Plays a playlist from Jellyfin on any Home Assistant media player or directly on an active Jellyfin client session, with optional shuffle.
+* **Fields**:
+  * `entity_id` (Required, string): Target media player entity to play the playlist on (HA player or Jellyfin player).
+  * `playlist` (Required, string): Name or Jellyfin Item ID of the playlist.
+  * `shuffle` (Optional, boolean, default: `false`): Randomize track order before playing.
+  * `server_entity_id` / `config_entry_id` (Optional, string): Target JellyHA instance.
+* **Dual Playback Strategy**:
+  * When targeting a Jellyfin client session (`media_player.jellyha_*`), delegates server-side queueing via `api.session_play` (`play_command="PlayNow"`), queuing the full playlist natively on Jellyfin client apps.
+  * When targeting an external Home Assistant media player (Sonos, Google Cast, Wiim, HomePod), resolves direct stream URLs, attaches cover art and metadata, and handles shuffling.
+
+### 14. `jellyha.get_playlists`
+Fetches user playlists from Jellyfin into `response_variable`.
+* **Fields**:
+  * `query` (Optional, string): Optional search filter to match playlist names.
+  * `limit` (Optional, integer): Maximum number of playlists to return.
+  * `server_entity_id` / `config_entry_id` / `entity_id` (Optional, string): Target JellyHA instance.
+* **Return Structure**:
+  Returns a dictionary `{"playlists": [...]}` where each item contains `id`, `name`, `item_count`, `duration_seconds`, `duration_formatted`, and `image_url`.
+
+### 15. `jellyha.get_collections`
+Fetches all BoxSets / Movie Collections from Jellyfin into `response_variable`.
+* **Fields**:
+  * `query` (Optional, string): Optional search filter to match collection names.
+  * `limit` (Optional, integer): Maximum number of collections to return.
+  * `include_items` (Optional, boolean, default: `false`): Include contained movies in the response.
+  * `server_entity_id` / `config_entry_id` / `entity_id` (Optional, string): Target JellyHA instance.
+* **Return Structure**:
+  Returns a dictionary `{"collections": [...]}` where each item contains `id`, `name`, `item_count`, `image_url`, and optional `items` list (`id`, `name`, `year`, `runtime`, `image_url`).
+
 ---
 
 ## 3. Events & Device Triggers
@@ -365,6 +397,13 @@ When generating automations for JellyHA, you **MUST NEVER** make the following c
    * Always capture with `response_variable: result_name`.
    * The list of items is at `result_name.items`.
    * Always check `result_name.items | count > 0` before indexing `[0]`.
+
+7. **Library Card (`custom:jellyha-library-card`) Scope**:
+   * *The Mistake*: Attempting to display Music, Live TV, Playlists, or Collections in the Library Card.
+   * *The Reality*: The Library Card is exclusively dedicated to **Movies** and **TV Shows** (`media_type: movies`, `series`, `episodes`, or `both`). Music, Live TV, Playlists, and BoxSets/Collections are accessed via Home Assistant's native Media Browser (`/media-browser`), all media player entities, or dedicated playback actions (`jellyha.play_music`, `jellyha.play_playlist`, `jellyha.play_live_tv_channel`).
+
+8. **Media Player Browsing**:
+   * All JellyHA media players (`media_player.jellyha_<user>` and `media_player.jellyha_<device>`) support native media browsing (`MediaPlayerEntityFeature.BROWSE_MEDIA`), allowing users to browse their libraries directly from media player cards.
 
 ---
 
@@ -644,11 +683,24 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
 
 ### Library Card Cast & Subtitle Options
 * `default_cast_device`: Target Chromecast `media_player` entity ID (e.g. `'media_player.living_room_tv'`) used when action is set to `cast`. Filtered strictly to Google Cast endpoints in the visual editor.
-* `subtitle_mode`: Subtitle strategy for casting: `'auto'` (default, follows Jellyfin profile with English fallback), `'none'` (disabled), `'forced_only'`, or `'custom'`.
-* `subtitle_language`: Prioritized comma-separated language codes/names (e.g. `'sl, en'`) used when `subtitle_mode` is `'custom'`. Automatically burns in graphical subtitles (PGS/VOBSUB) via server-side transcoding.
+* `subtitle_mode`: Subtitle strategy for casting and browser playback: `'auto'` (default, follows Jellyfin profile with English fallback), `'none'` (disabled), `'forced_only'`, or `'custom'`.
+* `subtitle_language`: Prioritized comma-separated language codes/names (e.g. `'sl, en'`) used when `subtitle_mode` is `'custom'`. Automatically burns in graphical subtitles (PGS/VOBSUB) for Chromecast casting, or streams native WebVTT tracks with Closed Captioning (CC) in the browser player.
+
+### In-Dashboard Browser Playback & Custom Play Actions (`modal_play_actions`)
+* `enable_browser_player`: Boolean (default: `true`). Enables the direct in-dashboard HTML5 dialog player (`<jellyha-browser-player>`) across card actions and the More Info pop-up, with full Closed Captions (CC) subtitle support.
+* `enable_custom_play_actions`: Boolean (default: `false`). When `true`, delegates More Information dialog play actions to the `modal_play_actions` array.
+* `modal_play_actions`: List of target dictionaries controlling the More Info play button and target picker overlay:
+  * `type`: `'browser'`, `'cast'`, or `'script'`.
+  * `name` (Optional, string): Custom label displayed on button or in target picker (e.g. `"Watch in Browser"`, `"Living Room TV"`, `"Play on Apple TV"`).
+  * `icon` (Optional, string): Custom MDI icon (defaults: `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
+  * `device` (String, required for `cast`): Target `media_player` entity ID.
+  * `service` (String, required for `script`): Target script entity ID.
+  * `service_data` (Optional, dict): Extra arguments passed to script.
+  * `show_entity_name` (Optional, boolean, default `true`): Set to `false` to hide the entity subtitle in the target picker list.
 
 ### Custom Interactions (`click_action`, `hold_action`, `double_tap_action`)
-* **Available Actions**: `more-info` (default), `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **Available Actions**: `more-info` (default), `play-browser`, `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **When set to `play-browser`**: Immediately launches the in-dashboard `<jellyha-browser-player>` dialog with authenticated media stream resolution via HA's WebSocket API (`media_source/resolve_media`).
 * **When set to `call-service`**:
   * In the card editor, Home Assistant renders a native `<ha-selector>` entity dropdown picker strictly filtered to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), complete with friendly names, icons, and live search.
   * In YAML, specify the script entity ID (e.g. `click_service: script.play_on_apple_tv`).
@@ -718,5 +770,32 @@ sequence:
         data:
           media_content_type: tvshow
           media_content_id: "{{ jellyfin_url }}"
+```
+
+---
+
+## 6. Now Playing Card Specification (`custom:jellyha-now-playing-card`)
+
+Lovelace custom card rendering active playback status, progress bars, transport controls, and dynamic blurred backdrops for Jellyfin media players.
+
+### YAML Configuration Schema
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin # (Required) Per-user or per-device media player
+title: "Now Playing"               # (Optional) Header card title
+show_background: true              # (Boolean, default true) Blurred fanart backdrop
+show_title: true                   # (Boolean, default true) Media item title
+show_subtitle: true                # (Boolean, default true) Artist or TV series name
+show_controls: true                # (Boolean, default true) Play, pause, seek transport controls
+show_time: true                    # (Boolean, default false) Elapsed and remaining timestamps
+show_media_type_badge: true        # (Boolean, default true) Display media type badges
+badge_style: header                # (String, default 'poster') 'poster' (overlaid), 'header' (pill in header next to title, keeps poster 100% uncovered), 'inline' (prefixed to TV episode title, e.g. S01E02 • Title), or 'none' (hidden)
+show_genres: true                  # (Boolean, default true) Genre tags
+show_ratings: true                 # (Boolean, default true) Community star rating
+show_runtime: true                 # (Boolean, default true) Total runtime
+show_year: true                    # (Boolean, default true) Release year
+show_client: true                  # (Boolean, default true) Active client name
+show_user: true                    # (Boolean, default true) Active user name
+use_series_image: false            # (Boolean, default false) Use series cover instead of episode thumbnail
 ```
 
