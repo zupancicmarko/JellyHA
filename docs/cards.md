@@ -197,6 +197,26 @@ show_background: true
 | `show_runtime` | boolean | `true` | Display total runtime |
 | `show_year` | boolean | `true` | Display release year |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
+| `idle_backdrop_cycle` | boolean | `false` | Enable ambient screensaver slideshow when the card is idle |
+| `idle_cycle_interval` | number | `20` | Interval in seconds between slide transitions (min: 5, max: 120) |
+| `idle_display_mode` | string | `'backdrop'` | Idle display presentation: `'backdrop'` (full-bleed fanart screensaver) or `'card'` (poster + backdrop spotlight) |
+| `idle_media_type` | string | `'both'` | Media types to cycle during idle: `'both'`, `'movies'`, or `'series'` |
+
+### Ambient Idle Showcase (Screensaver Mode)
+
+When nothing is actively playing, the Now Playing Card can automatically cycle through your Jellyfin library media covers and fanart backdrops instead of displaying the static idle logo.
+
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+idle_backdrop_cycle: true         # Enable ambient slideshow when idle (default: false)
+idle_cycle_interval: 20           # Time in seconds per slide (default: 20s)
+idle_display_mode: backdrop       # 'backdrop' (full fanart) or 'card' (poster + backdrop spotlight)
+idle_media_type: both             # 'both', 'movies', or 'series'
+```
+
+- **Smooth Crossfades**: Overlapping image layers ensure seamless opacity transitions without flicker.
+- **Resource Efficient**: Playback automatically halts the rotation timer, and document visibility listeners pause transitions when dashboard tabs are hidden or inactive.
 
 ### Playback Controls & Hold-to-Stop
 

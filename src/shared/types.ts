@@ -233,6 +233,10 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     use_series_image?: boolean;
     show_description?: boolean;
     show_controls?: boolean;
+    idle_backdrop_cycle?: boolean;
+    idle_cycle_interval?: number;
+    idle_display_mode?: 'backdrop' | 'card';
+    idle_media_type?: 'both' | 'movies' | 'series';
     theme?: 'auto' | 'light' | 'dark';
 }
 

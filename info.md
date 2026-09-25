@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.5.1** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.2** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,16 +8,13 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.5.1
+### 🆕 What's new in v1.5.2
 
-- 🛡️ **Frontend Compatibility Hardening** — Resolved startup freeze and `Illegal constructor` errors on wall tablets, older browsers, and cached reload sessions (`frontend_es5` / Android 7 WebView) by insulating custom element registration wrappers (#47, #49).
-- ⏱️ **Large Library Timeout Protection** — Raised default API timeout to 30s and added configurable request timeout in Integration Options (10–120s) to prevent setup loops on large media libraries (#48).
-- 🖥️ **Play in Browser (In-Dashboard Player)** — Stream movies, episodes, and audio directly inside Home Assistant dashboards using an HTML5 dialog player, native subtitle proxy (SRT, ASS, VTT), Closed Captions (CC) menu, and language pre-selection.
-- 🎯 **Dynamic Play Actions & Target Picker** — Sleek Action Sheet picker and HA script trigger support in the More Info dialog for multi-device routing (#42).
-- 📑 **Playlists & BoxSet Collections** — Dedicated services to play and query playlists (`jellyha.play_playlist`, `jellyha.get_playlists`) and movie BoxSets (`jellyha.get_collections`) with 1-tap playback in Media Browser.
-- 🗂️ **Native Media Browsing on Players** — Direct library browsing and container auto-resolution on all user and device `media_player` entities (#11).
-- 🏷️ **Now Playing Badge Placement Styles** — Configurable badge placement (`poster`, `header`, `inline`, `none`) for movies and TV episodes (#20).
-- 🔊 **Volume Level & Voice Search Fixes** — Fixed `volume_level` state reporting on media players (#44) and restored modern Voice Assist query compatibility (#43).
+- 🌌 **Now Playing Ambient Idle Showcase** — Turn idle cards into an ambient digital photo frame / screensaver that cycles through your movie and TV library covers and fanart backdrops with full fanart (`backdrop`) or poster spotlight (`card`) layout styles.
+- 🏷️ **Modernized Active Playback Metadata** — Replaced plain comma-separated text strings with modern frosted-glass genre pills (`.genre-pill`), clean release year, and refined typography.
+- 🎨 **Unified Vertical Spacing & Rhythm** — Harmonized spacing across active playback and idle layouts (5px title-to-meta, 10px meta-to-description).
+- ✨ **Hardware-Accelerated Dual-Layer Crossfades** — Zero-flicker, zero-dimming backdrop and poster transitions with automatic upcoming slide preloading.
+- ⏱️ **Resource Efficient Slideshow** — Rotation timer pauses automatically during active playback, when cards disconnect, or when dashboard tabs are hidden (`visibilitychange`).
 
 ---
 

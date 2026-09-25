@@ -797,5 +797,18 @@ show_year: true                    # (Boolean, default true) Release year
 show_client: true                  # (Boolean, default true) Active client name
 show_user: true                    # (Boolean, default true) Active user name
 use_series_image: false            # (Boolean, default false) Use series cover instead of episode thumbnail
+idle_backdrop_cycle: true         # (Boolean, default false) Cycle library media artwork when idle (instead of static placeholder)
+idle_display_mode: backdrop       # (String, default 'backdrop') 'backdrop' (full fanart screensaver) or 'card' (poster + backdrop spotlight)
+idle_cycle_interval: 20           # (Integer, default 20) Time in seconds per slide (min: 5, max: 120)
+idle_media_type: both             # (String, default 'both') 'both', 'movies', or 'tvshows'
 ```
+
+### Ambient Idle Showcase (Screensaver Mode)
+When nothing is actively playing, the Now Playing Card can automatically cycle through your Jellyfin library media covers and fanart backdrops:
+* **Presentation Modes**:
+  * `'backdrop'`: Edge-to-edge full-bleed fanart screensaver with scrim gradient, title, metadata (year, runtime, rating pill, genre pills), and plot synopsis.
+  * `'card'`: Card layout with portrait poster art, blurred fanart backdrop, title, release year, rating pill, genre pills, and description.
+* **Seamless Crossfade**: Two-layer hardware-accelerated `<img>` transitions with zero blackout, dimming, or layout shift.
+* **Resource Optimization**: Rotation automatically pauses during active playback, when card disconnects, or when the dashboard tab is in the background (`visibilitychange`).
+
 

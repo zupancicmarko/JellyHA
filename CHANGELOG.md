@@ -5,6 +5,30 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-09-25
+
+### Added
+- **Now Playing Card Ambient Idle Library Showcase (Screensaver & Card Layout)**:
+  - Added `idle_backdrop_cycle` option to automatically rotate through your Jellyfin library media covers and fanart backdrops when nothing is actively playing, replacing the static idle placeholder.
+  - Supports two presentation styles via `idle_display_mode`:
+    - `'backdrop'` (Full Fanart Backdrop / Screensaver): Edge-to-edge backdrop hero art with bottom scrim gradient, title, metadata row (release year, runtime, star rating pill, genre pills), and plot overview.
+    - `'card'` (Card Layout): Portrait poster art with dynamic blurred fanart backdrop, title, release year, star rating pill, genre pills, and description.
+  - Configurable cycle interval (`idle_cycle_interval`, 5s–120s, default 20s) and media type filtering (`idle_media_type`: `'both'`, `'movies'`, or `'tvshows'`).
+  - Seamless hardware-accelerated two-layer `<img>` crossfading for both backdrops and posters with 0% opacity blackout, dimming, or layout shift.
+  - Automatic preloading of upcoming slide poster and 960px backdrop images to guarantee instantaneous transitions.
+  - Resource efficient: rotation timer automatically halts during active playback, when disconnected, or when dashboard tabs are hidden (`visibilitychange` listener).
+  - Integrated into visual card editor with dropdown selectors and toggles translated across all 8 supported languages (`en`, `sl`, `de`, `es`, `fr`, `it`, `nl`, `ru`).
+- **Now Playing Card Active Metadata Row Modernization**:
+  - Upgraded the active playback metadata row: replaced plain comma-separated text strings with modern frosted-glass genre pills (`.genre-pill`), subtle bullet separator (`.meta-dot`), and clean release year typography (`.meta-year`).
+  - Improved client device line (`.client-line`) with refined contrast, letter spacing, and vertical rhythm.
+  - Unified vertical spacing across both active and idle card layouts (5px between title and metadata row, 10px between metadata row and description).
+
+### Fixed
+- **Now Playing Idle Poster Crossfade & Transition Stability**:
+  - Resolved backdrop dimming glitch during slide transitions by replacing CSS `background-image` divs with dedicated hardware-accelerated `<img>` layers.
+  - Eliminated text jump jitter by removing redundant `translateY` animation during slide changes.
+  - Fixed duplicate genre display on TV series in Card layout by ensuring subtitle only renders genuine taglines.
+
 ## [1.5.1] - 2026-09-25
 
 ### Fixed

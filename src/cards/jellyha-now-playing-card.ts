@@ -4,7 +4,8 @@ import {
     HomeAssistant,
     HassEntity,
     JellyHANowPlayingCardConfig,
-    NowPlayingSensorData
+    NowPlayingSensorData,
+    MediaItem
 } from '../shared/types';
 import { localize } from '../shared/localize';
 import { formatRuntime, addImageParams } from '../shared/utils';
@@ -33,6 +34,13 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _isDragging: boolean = false;
     @state() private _dragPercentage: number = 0;
     @state() private _optimisticSeekPercent: number | null = null;
+    @state() private _idleItems: MediaItem[] = [];
+    @state() private _currentIdleIndex: number = 0;
+    @state() private _prevIdleIndex: number | null = null;
+    @state() private _idleFadeOut: boolean = false;
+    private _idleTimer?: number;
+    private _fetchingIdleItems: boolean = false;
+    private _visibilityHandler?: () => void;
     private _optimisticSeekTimer?: number;
     private _longPressRaf: number | null = null;
     private _longPressConsumed: boolean = false;
@@ -65,6 +73,10 @@ export class JellyHANowPlayingCard extends LitElement {
             show_runtime: true,
             use_series_image: false,
             show_controls: true,
+            idle_backdrop_cycle: false,
+            idle_cycle_interval: 20,
+            idle_display_mode: 'backdrop',
+            idle_media_type: 'both',
             ...config,
         };
     }
@@ -94,6 +106,10 @@ export class JellyHANowPlayingCard extends LitElement {
             show_runtime: true,
             use_series_image: false,
             show_controls: true,
+            idle_backdrop_cycle: false,
+            idle_cycle_interval: 20,
+            idle_display_mode: 'backdrop',
+            idle_media_type: 'both',
         };
     }
 
@@ -140,8 +156,15 @@ export class JellyHANowPlayingCard extends LitElement {
             : !!attributes.item_id;
 
         if (!isPlaying) {
+            if (this._config.idle_backdrop_cycle) {
+                return this._renderIdleShowcase();
+            }
+            this._stopIdleTimer();
             return this._renderEmpty();
         }
+
+        // Active playback: stop idle timer if it was running
+        this._stopIdleTimer();
 
         // Extract Jellyfin item ID and enrich missing metadata for generic media players (like Chromecast)
         const itemId = this._extractItemId(stateObj);
@@ -209,8 +232,8 @@ export class JellyHANowPlayingCard extends LitElement {
         const yearStr = (this._config.show_year !== false && effectiveYear) ? String(effectiveYear) : '';
 
         const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
-        const genreStr = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 2).join(', ') : '';
-        const metaLine = [yearStr, genreStr].filter(Boolean).join(' • ');
+        const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
+        const hasMetaLine = !!(yearStr || genres.length > 0);
 
         const effectiveUser = attributes.user_name || this.hass.user?.name || '';
         const userName = (this._config.show_user !== false) ? effectiveUser : '';
@@ -318,7 +341,13 @@ export class JellyHANowPlayingCard extends LitElement {
                                         ` : nothing}
                                     </div>
                                     ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
-                                    ${this._overflowState < 2 && metaLine ? html`<div class="meta-line">${metaLine}</div>` : nothing}
+                                    ${this._overflowState < 2 && hasMetaLine ? html`
+                                        <div class="meta-line">
+                                            ${yearStr ? html`<span class="meta-year">${yearStr}</span>` : nothing}
+                                            ${yearStr && genres.length > 0 ? html`<span class="meta-dot">•</span>` : nothing}
+                                            ${genres.map(g => html`<span class="genre-pill">${g}</span>`)}
+                                        </div>
+                                    ` : nothing}
                                     ${this._overflowState < 1 && (userName || clientInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && clientInfo ? ' ' : ''}${clientInfo || nothing}</div>` : nothing}
                                 </div>
                             </div>
@@ -476,6 +505,255 @@ export class JellyHANowPlayingCard extends LitElement {
                 </div>
             </ha-card>
         `;
+    }
+
+    private _renderIdleShowcase(): TemplateResult {
+        if (this._idleItems.length === 0) {
+            if (!this._fetchingIdleItems) {
+                this._fetchIdleLibraryItems();
+            }
+            return this._renderEmpty();
+        }
+
+        const currentItem = this._idleItems[this._currentIdleIndex];
+        if (!currentItem) {
+            return this._renderEmpty();
+        }
+
+        if (!this._idleTimer) {
+            this._startIdleTimer();
+        }
+
+        const prevItem = this._prevIdleIndex !== null ? this._idleItems[this._prevIdleIndex] : null;
+        const lang = this.hass.locale?.language || this.hass.language;
+
+        if (this._config.idle_display_mode === 'card') {
+            return this._renderIdleCardMode(currentItem, prevItem, lang);
+        }
+
+        return this._renderIdleBackdropMode(currentItem, prevItem, lang);
+    }
+
+    private _renderIdleBackdropMode(currentItem: MediaItem, prevItem: MediaItem | null, lang: string): TemplateResult {
+        const currentBackdrop = addImageParams(currentItem.backdrop_url || currentItem.poster_url, 960);
+        const prevBackdrop = prevItem ? addImageParams(prevItem.backdrop_url || prevItem.poster_url, 960) : '';
+
+        const rawRating = currentItem.community_rating ?? currentItem.rating;
+        const communityRating = (typeof rawRating === 'number' && !isNaN(rawRating) && rawRating > 0) ? rawRating.toFixed(1) : (rawRating ? String(rawRating) : '');
+        const runtime = currentItem.runtime_minutes ? formatRuntime(currentItem.runtime_minutes) : '';
+        const genres = currentItem.genres && currentItem.genres.length > 0 ? currentItem.genres.slice(0, 3) : [];
+
+        return html`
+            <ha-card class="jellyha-now-playing idle-showcase-card">
+                <div class="idle-backdrop-container">
+                    <img class="idle-backdrop-img" src="${currentBackdrop}" alt="${currentItem.name}" />
+                    ${prevBackdrop ? html`
+                        <img class="idle-backdrop-img prev-backdrop ${this._idleFadeOut ? 'fade-out' : ''}" src="${prevBackdrop}" alt="" />
+                    ` : nothing}
+                    <div class="idle-backdrop-scrim"></div>
+                </div>
+
+                <div class="idle-bottom-content">
+                    <h2 class="idle-title">${currentItem.name}</h2>
+                    <div class="idle-meta-row">
+                        ${currentItem.year ? html`<span>${currentItem.year}</span>` : nothing}
+                        ${currentItem.year && (runtime || communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                        ${runtime ? html`<span>${runtime}</span>` : nothing}
+                        ${runtime && (communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                        ${communityRating ? html`
+                            <span class="idle-rating-pill">
+                                <ha-icon icon="mdi:star"></ha-icon>
+                                <span>${communityRating}</span>
+                            </span>
+                        ` : nothing}
+                        ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
+                    </div>
+                    ${currentItem.description ? html`
+                        <p class="idle-overview">${currentItem.description}</p>
+                    ` : nothing}
+                </div>
+            </ha-card>
+        `;
+    }
+
+    private _renderIdleCardMode(item: MediaItem, prevItem: MediaItem | null, lang: string): TemplateResult {
+        const backdropUrl = addImageParams(item.backdrop_url || item.poster_url, 960);
+        const prevBackdrop = prevItem ? addImageParams(prevItem.backdrop_url || prevItem.poster_url, 960) : '';
+
+        const posterUrl = addImageParams(item.poster_url || item.backdrop_url, 320);
+        const prevPoster = prevItem ? addImageParams(prevItem.poster_url || prevItem.backdrop_url, 320) : '';
+
+        const rawRating = item.community_rating ?? item.rating;
+        const communityRating = (typeof rawRating === 'number' && !isNaN(rawRating) && rawRating > 0) ? rawRating.toFixed(1) : (rawRating ? String(rawRating) : '');
+        const runtime = item.runtime_minutes ? formatRuntime(item.runtime_minutes) : '';
+        const genres = item.genres && item.genres.length > 0 ? item.genres.slice(0, 3) : [];
+        const subtitle = item.tagline || '';
+
+        return html`
+            <ha-card class="jellyha-now-playing has-background idle-card-mode">
+                <div class="idle-card-bg-container">
+                    ${backdropUrl ? html`
+                        <img class="idle-card-bg-img" src="${backdropUrl}" alt="" />
+                    ` : nothing}
+                    ${prevBackdrop ? html`
+                        <img class="idle-card-bg-img prev-bg ${this._idleFadeOut ? 'fade-out' : ''}" src="${prevBackdrop}" alt="" />
+                    ` : nothing}
+                    <div class="card-overlay"></div>
+                </div>
+
+                <div class="card-content">
+                    <div class="main-container">
+                        <div class="poster-container no-rewind">
+                            <img class="idle-poster-img" src="${posterUrl}" alt="${item.name}" loading="eager" />
+                            ${prevPoster ? html`
+                                <img class="idle-poster-img prev-poster ${this._idleFadeOut ? 'fade-out' : ''}" src="${prevPoster}" alt="" />
+                            ` : nothing}
+                        </div>
+
+                        <div class="info-container">
+                            <div class="info-top">
+                                <div class="title-row">
+                                    <span class="title" title="${item.name}">${item.name}</span>
+                                </div>
+                                ${subtitle ? html`
+                                    <div class="subtitle-row">
+                                        <span class="subtitle">${subtitle}</span>
+                                    </div>
+                                ` : nothing}
+                                <div class="meta-line idle-meta-row">
+                                    ${item.year ? html`<span>${item.year}</span>` : nothing}
+                                    ${item.year && (runtime || communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                                    ${runtime ? html`<span>${runtime}</span>` : nothing}
+                                    ${runtime && (communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                                    ${communityRating ? html`
+                                        <span class="idle-rating-pill">
+                                            <ha-icon icon="mdi:star"></ha-icon>
+                                            <span>${communityRating}</span>
+                                        </span>
+                                    ` : nothing}
+                                    ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
+                                </div>
+                                ${item.description ? html`
+                                    <div class="idle-card-desc">${item.description}</div>
+                                ` : nothing}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ha-card>
+        `;
+    }
+
+    private _startIdleTimer(): void {
+        this._stopIdleTimer();
+        if (!this._config?.idle_backdrop_cycle || this._idleItems.length <= 1) return;
+        const rawInterval = Number(this._config.idle_cycle_interval);
+        const intervalSec = Math.max(5, !isNaN(rawInterval) && rawInterval > 0 ? rawInterval : 20);
+        this._idleTimer = window.setInterval(() => {
+            this._advanceIdleSlide();
+        }, intervalSec * 1000);
+    }
+
+    private _stopIdleTimer(): void {
+        if (this._idleTimer) {
+            clearInterval(this._idleTimer);
+            this._idleTimer = undefined;
+        }
+    }
+
+    private _advanceIdleSlide(): void {
+        if (!this.isConnected || !this._config?.idle_backdrop_cycle || this._idleItems.length <= 1) return;
+        this._prevIdleIndex = this._currentIdleIndex;
+        this._currentIdleIndex = (this._currentIdleIndex + 1) % this._idleItems.length;
+        this._idleFadeOut = true;
+        this.requestUpdate();
+
+        // Preload upcoming slide
+        const nextNextIdx = (this._currentIdleIndex + 1) % this._idleItems.length;
+        const nextItem = this._idleItems[nextNextIdx];
+        if (nextItem) {
+            const isCard = this._config?.idle_display_mode === 'card';
+            if (isCard && nextItem.poster_url) {
+                const posterImg = new Image();
+                posterImg.src = addImageParams(nextItem.poster_url, 320);
+            }
+            const backdropSrc = nextItem.backdrop_url || nextItem.poster_url;
+            if (backdropSrc) {
+                const bgImg = new Image();
+                bgImg.src = addImageParams(backdropSrc, 960);
+            }
+        }
+
+        setTimeout(() => {
+            this._prevIdleIndex = null;
+            this._idleFadeOut = false;
+            this.requestUpdate();
+        }, 850);
+    }
+
+    private async _fetchIdleLibraryItems(): Promise<void> {
+        if (!this.hass || this._fetchingIdleItems) return;
+        this._fetchingIdleItems = true;
+
+        try {
+            const configEntity = this._config?.entity || '';
+            let libraryEntity = Object.keys(this.hass?.states || {}).find(
+                e => e.startsWith('sensor.jellyha') && e.endsWith('_library')
+            );
+            if (configEntity.startsWith('media_player.')) {
+                const nameWithoutDomain = configEntity.replace(/^media_player\./, '');
+                const prefix = nameWithoutDomain.includes('_') ? nameWithoutDomain.substring(0, nameWithoutDomain.lastIndexOf('_')) : nameWithoutDomain;
+                const scoped = `sensor.${prefix}_library`;
+                if (this.hass?.states[scoped]) libraryEntity = scoped;
+            }
+
+            const wsMsg: any = {
+                type: 'jellyha/get_items',
+            };
+            if (libraryEntity) wsMsg.server_entity_id = libraryEntity;
+            if (configEntity) wsMsg.entity_id = configEntity;
+
+            const res = await this.hass.callWS<{ items: MediaItem[] }>(wsMsg);
+            if (res && Array.isArray(res.items) && res.items.length > 0) {
+                const mediaTypeFilter = this._config.idle_media_type || 'both';
+                const isCardMode = this._config.idle_display_mode === 'card';
+
+                let filtered = res.items.filter(it => {
+                    if (isCardMode) {
+                        return !!it.poster_url || !!it.backdrop_url;
+                    }
+                    return !!it.backdrop_url;
+                });
+
+                if (mediaTypeFilter === 'movies') {
+                    filtered = filtered.filter(it => it.type === 'Movie');
+                } else if (mediaTypeFilter === 'series') {
+                    filtered = filtered.filter(it => it.type === 'Series');
+                }
+
+                if (filtered.length > 0) {
+                    this._idleItems = this._shuffleArray(filtered);
+                    this._currentIdleIndex = 0;
+                    this._prevIdleIndex = null;
+                    this._idleFadeOut = false;
+                    this._startIdleTimer();
+                    this.requestUpdate();
+                }
+            }
+        } catch (err) {
+            console.warn('[JellyHA] Failed to fetch library items for idle showcase:', err);
+        } finally {
+            this._fetchingIdleItems = false;
+        }
+    }
+
+    private _shuffleArray<T>(array: T[]): T[] {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
     }
 
     private _renderError(error: string): TemplateResult {
@@ -1081,6 +1359,25 @@ export class JellyHANowPlayingCard extends LitElement {
         });
         this._resizeObserver.observe(this);
         this._startProgressTimer();
+
+        this._visibilityHandler = () => {
+            if (document.hidden) {
+                this._stopIdleTimer();
+            } else {
+                if (this._config?.idle_backdrop_cycle && this._idleItems.length > 1) {
+                    this._startIdleTimer();
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', this._visibilityHandler);
+
+        if (this._config?.idle_backdrop_cycle) {
+            if (this._idleItems.length > 1 && !this._idleTimer) {
+                this._startIdleTimer();
+            } else if (this._idleItems.length === 0 && !this._fetchingIdleItems && this.hass) {
+                this._fetchIdleLibraryItems();
+            }
+        }
     }
 
     public disconnectedCallback(): void {
@@ -1094,6 +1391,11 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         this._stopProgressTimer();
         this._endLongPress();
+        this._stopIdleTimer();
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+            this._visibilityHandler = undefined;
+        }
     }
 
     private _startProgressTimer(): void {
@@ -1123,6 +1425,25 @@ export class JellyHANowPlayingCard extends LitElement {
         super.updated(changedProps);
         if (changedProps.has('hass')) {
             this._checkLayout();
+            if (this._config?.idle_backdrop_cycle && this._idleItems.length === 0 && !this._fetchingIdleItems) {
+                this._fetchIdleLibraryItems();
+            }
+        }
+        if (changedProps.has('_config')) {
+            const oldConfig = changedProps.get('_config') as JellyHANowPlayingCardConfig | undefined;
+            if (!this._config?.idle_backdrop_cycle) {
+                this._stopIdleTimer();
+            } else {
+                const modeChanged = !oldConfig || oldConfig.idle_display_mode !== this._config.idle_display_mode;
+                const filterChanged = !oldConfig || oldConfig.idle_media_type !== this._config.idle_media_type;
+                if (modeChanged || filterChanged || this._idleItems.length === 0) {
+                    this._idleItems = [];
+                    this._stopIdleTimer();
+                    this._fetchIdleLibraryItems();
+                } else if (oldConfig?.idle_cycle_interval !== this._config.idle_cycle_interval || !this._idleTimer) {
+                    this._startIdleTimer();
+                }
+            }
         }
     }
 
@@ -1531,22 +1852,53 @@ export class JellyHANowPlayingCard extends LitElement {
             margin-bottom: 6px;
         }
         .meta-line {
-            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px 8px;
+            font-size: 0.82rem;
             color: var(--secondary-text-color);
-            opacity: 0.8;
+            opacity: 0.85;
+            margin-top: 4px;
+            margin-bottom: 3px;
+            line-height: 1.2;
+        }
+        .meta-year {
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+        .meta-dot {
+            opacity: 0.45;
+            font-size: 0.7rem;
+            line-height: 1;
+        }
+        .genre-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
+            border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--secondary-text-color);
+            line-height: 1.2;
+            font-weight: 500;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 1px;
-            margin-top: 5px;
+        }
+        .has-background .genre-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.92);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
         }
         .client-line {
             font-size: 0.75rem;
             color: var(--secondary-text-color);
-            opacity: 0.4;
+            opacity: 0.55;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-top: 2px;
         }
 
         /* --- Info Bottom: Controls + Progress --- */
@@ -2350,6 +2702,260 @@ export class JellyHANowPlayingCard extends LitElement {
                 line-height: 1 !important;
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
+            }
+        }
+
+        /* =========================================================================
+           Ambient Idle Showcase Styles
+           ========================================================================= */
+        .idle-showcase-card {
+            position: relative;
+            min-height: 180px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end !important;
+            box-sizing: border-box;
+            cursor: default;
+            user-select: none;
+            border-radius: var(--ha-card-border-radius, 12px);
+            background: #111;
+        }
+
+        .idle-backdrop-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .idle-backdrop-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            opacity: 1;
+            transition: opacity 0.8s ease-in-out;
+            will-change: opacity;
+        }
+
+        .idle-backdrop-img.prev-backdrop {
+            z-index: 2;
+        }
+
+        .idle-backdrop-img.prev-backdrop.fade-out {
+            opacity: 0;
+        }
+
+        .idle-backdrop-scrim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                180deg,
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 0.05) 30%,
+                rgba(0, 0, 0, 0.6) 65%,
+                rgba(0, 0, 0, 0.92) 100%
+            );
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .idle-bottom-content {
+            position: relative;
+            z-index: 4;
+            padding: 16px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 0 !important;
+            margin-top: auto;
+        }
+
+        ha-card .idle-title,
+        .idle-title {
+            margin: 0 0 2px 0 !important;
+            padding: 0 !important;
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #ffffff;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .idle-meta-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px 8px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.82);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            margin: 3px 0 6px 0 !important;
+        }
+
+        .idle-dot {
+            opacity: 0.5;
+            font-size: 0.7rem;
+        }
+
+        .idle-rating-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(245, 158, 11, 0.25);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            color: #fbbf24;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .idle-rating-pill ha-icon {
+            --mdc-icon-size: 12px;
+        }
+
+        .idle-genre-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.2;
+        }
+
+        .idle-overview {
+            margin: 4px 0 0 0 !important;
+            font-size: 0.8rem;
+            line-height: 1.35;
+            color: rgba(255, 255, 255, 0.72);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .idle-card-mode {
+            cursor: default;
+        }
+
+        .idle-card-mode .info-container {
+            justify-content: flex-start;
+        }
+
+        .idle-card-mode .poster-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .idle-card-mode .poster-container .idle-poster-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .idle-card-mode .poster-container .idle-poster-img.prev-poster {
+            z-index: 2;
+            opacity: 1;
+            transition: opacity 0.8s ease-in-out;
+            will-change: opacity;
+        }
+
+        .idle-card-mode .poster-container .idle-poster-img.prev-poster.fade-out {
+            opacity: 0;
+        }
+
+        .idle-card-mode .idle-card-bg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+            border-radius: var(--ha-card-border-radius, 12px);
+            background: #111;
+        }
+
+        .idle-card-mode .idle-card-bg-img {
+            position: absolute;
+            top: -5%;
+            left: -5%;
+            width: 110%;
+            height: 110%;
+            object-fit: cover;
+            object-position: center;
+            filter: blur(5px) brightness(0.6);
+            opacity: 1;
+        }
+
+        .idle-card-mode .idle-card-bg-img.prev-bg {
+            z-index: 1;
+            opacity: 1;
+            transition: opacity 0.8s ease-in-out;
+            will-change: opacity;
+        }
+
+        .idle-card-mode .idle-card-bg-img.prev-bg.fade-out {
+            opacity: 0;
+        }
+
+        .idle-card-mode .idle-meta-row {
+            margin-top: 3px !important;
+            margin-bottom: 6px !important;
+        }
+
+        .idle-card-desc {
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.72);
+            line-height: 1.35;
+            margin-top: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        @container now-playing (max-width: 320px) {
+            .idle-overview {
+                display: none !important;
+            }
+            .idle-title {
+                font-size: 1.15rem !important;
+            }
+        }
+
+        @container now-playing (max-width: 250px) {
+            .idle-meta-row .idle-genre-pill {
+                display: none !important;
+            }
+            .idle-bottom-content {
+                padding: 10px !important;
+            }
+            .idle-title {
+                font-size: 1rem !important;
             }
         }
 

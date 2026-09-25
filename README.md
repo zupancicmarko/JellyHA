@@ -174,6 +174,7 @@ entity: media_player.jellyha_admin # Supports per-user or per-device media playe
 title: Now Playing
 show_background: true
 badge_style: header # 'poster' (default), 'header' (uncovered poster), 'inline' (TV shows), or 'none'
+idle_backdrop_cycle: true # Enable ambient media slideshow when nothing is playing
 ```
 
 👉 **[See full Now Playing Card configuration in docs/cards.md](docs/cards.md#now-playing-card-customjellyha-now-playing-card)**

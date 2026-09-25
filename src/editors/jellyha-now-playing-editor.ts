@@ -259,8 +259,106 @@ export class JellyHANowPlayingEditor extends LitElement {
           ></ha-switch>
           <span>${localize(lang, 'editor.show_controls') || 'Show Playback Controls'}</span>
         </div>
+
+        <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
+        <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
+          ${localize(lang, 'editor.idle_section_title') || 'Ambient Showcase (When Idle)'}
+        </div>
+
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.idle_backdrop_cycle === true}
+            @change=${this._idleBackdropCycleChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.idle_backdrop_cycle') || 'Cycle Library Media when Idle'}</span>
+        </div>
+
+        ${this._config.idle_backdrop_cycle === true ? html`
+          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'backdrop', label: localize(lang, 'editor.idle_display_mode_backdrop') || 'Full Fanart Backdrop (Screensaver)' },
+                    { value: 'card', label: localize(lang, 'editor.idle_display_mode_card') || 'Card Layout (Poster + Backdrop)' },
+                  ],
+                },
+              }}
+              .value=${this._config.idle_display_mode || 'backdrop'}
+              .label="${localize(lang, 'editor.idle_display_mode') || 'Display Style'}"
+              label="${localize(lang, 'editor.idle_display_mode') || 'Display Style'}"
+              @value-changed=${this._idleDisplayModeChanged}
+            ></ha-selector>
+          </div>
+
+          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'both', label: localize(lang, 'editor.media_type_both') || 'Movies & TV Shows' },
+                    { value: 'movies', label: localize(lang, 'editor.media_type_movies') || 'Movies Only' },
+                    { value: 'series', label: localize(lang, 'editor.media_type_series') || 'TV Shows Only' },
+                  ],
+                },
+              }}
+              .value=${this._config.idle_media_type || 'both'}
+              .label="${localize(lang, 'editor.idle_media_type') || 'Media Types to Showcase'}"
+              label="${localize(lang, 'editor.idle_media_type') || 'Media Types to Showcase'}"
+              @value-changed=${this._idleMediaTypeChanged}
+            ></ha-selector>
+          </div>
+
+          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                number: {
+                  min: 5,
+                  max: 120,
+                  step: 5,
+                  mode: 'box',
+                },
+              }}
+              .value=${this._config.idle_cycle_interval || 20}
+              .label="${localize(lang, 'editor.idle_cycle_interval') || 'Cycle Interval (seconds)'}"
+              label="${localize(lang, 'editor.idle_cycle_interval') || 'Cycle Interval (seconds)'}"
+              @value-changed=${this._idleCycleIntervalChanged}
+            ></ha-selector>
+          </div>
+        ` : ''}
       </div>
     `;
+  }
+
+  private _idleBackdropCycleChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('idle_backdrop_cycle', target.checked);
+  }
+
+  private _idleDisplayModeChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('idle_display_mode', value);
+    }
+  }
+
+  private _idleMediaTypeChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('idle_media_type', value);
+    }
+  }
+
+  private _idleCycleIntervalChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? Number(e.detail.value) : Number((e.target as any)?.value);
+    if (!isNaN(value)) {
+      this._updateConfig('idle_cycle_interval', value);
+    }
   }
 
   private _showControlsChanged(e: Event): void {
