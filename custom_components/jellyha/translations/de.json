@@ -84,10 +84,12 @@
                     "refresh_interval": "Aktualisierungsintervall der Bibliothek",
                     "update_credentials": "Anmeldedaten aktualisieren / Benutzer wechseln",
                     "libraries": "Bibliotheken",
-                    "enable_live_tv": "Live-TV aktivieren"
+                    "enable_live_tv": "Live-TV aktivieren",
+                    "api_timeout": "API-Zeitüberschreitung (Sekunden)"
                 },
                 "data_description": {
-                    "enable_live_tv": "Live-TV-Kanäle, dedizierte Dienste und Medien-Browser aktivieren."
+                    "enable_live_tv": "Live-TV-Kanäle, dedizierte Dienste und Medien-Browser aktivieren.",
+                    "api_timeout": "Maximale Zeitüberschreitung in Sekunden für Anfragen an Jellyfin. Erhöhen Sie diesen Wert (z. B. 45-60 s) bei sehr großen Bibliotheken oder langsamer Server-Hardware."
                 }
             },
             "auth_method": {

@@ -2,7 +2,7 @@ if (typeof window < "u" && typeof window.customElements < "u") {
   const e = window.customElements;
   if (!e.define.__jellyha_safe) {
     const t = e.define.bind(e), i = function(s, a, o) {
-      if (!e.get(s))
+      if (!(s.startsWith("jellyha-") && e.get(s)))
         return t(s, a, o);
     };
     i.__jellyha_safe = !0, e.define = i;
@@ -6732,7 +6732,7 @@ var si = Object.defineProperty, oi = Object.getOwnPropertyDescriptor, k = (e, t,
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
   return s && a && si(t, i, a), a;
 };
-const ri = "1.5.0";
+const ri = "1.5.1";
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${ri} `,
   "color: white; background: #00a4dc; font-weight: bold;",
@@ -10070,14 +10070,16 @@ else if (customElements.whenDefined("ha-bar-media-player").then(() => {
   const e = customElements.get("ha-bar-media-player");
   e && ge(e);
 }), !customElements.define.__jellyha_bar_patched) {
-  const e = customElements.define.bind(customElements), t = function(i, s, a) {
-    if (customElements.get(i)) {
-      i === "ha-bar-media-player" && ge(s);
+  const e = customElements, t = e.define.bind(e), i = e.get.bind(e), s = function(a, o, r) {
+    if (a !== "ha-bar-media-player")
+      return t(a, o, r);
+    if (i(a)) {
+      ge(o);
       return;
     }
-    e(i, s, a), i === "ha-bar-media-player" && ge(s);
+    t(a, o, r), ge(o);
   };
-  t.__jellyha_bar_patched = !0, customElements.define = t;
+  s.__jellyha_bar_patched = !0, customElements.define = s;
 }
 function lt() {
   document.querySelectorAll("ha-bar-media-player").forEach((t) => {

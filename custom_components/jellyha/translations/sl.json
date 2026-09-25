@@ -83,10 +83,12 @@
                     "external_url": "Zunanji URL (Neobvezno, za UI povezave)",
                     "refresh_interval": "Interval osveževanja knjižnice",
                     "update_credentials": "Posodobi poverilnice / Zamenjaj uporabnika",
-                    "enable_live_tv": "Omogoči TV v živo"
+                    "enable_live_tv": "Omogoči TV v živo",
+                    "api_timeout": "Časovna omejitev API zahtev (sekunde)"
                 },
                 "data_description": {
-                    "enable_live_tv": "Omogoči kanale TV v živo, namenske storitve in brskalnik predstavnosti."
+                    "enable_live_tv": "Omogoči kanale TV v živo, namenske storitve in brskalnik predstavnosti.",
+                    "api_timeout": "Najdaljši čas v sekundah za zahteve do Jellyfina. Povečajte to vrednost (npr. 45-60s) za zelo obsežne knjižnice ali počasnejšo strojno opremo."
                 }
             },
             "auth_method": {

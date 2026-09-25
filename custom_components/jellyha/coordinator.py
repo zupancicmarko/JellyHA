@@ -32,6 +32,7 @@ from .ws_client import JellyfinWebSocketClient
 from .media_strategy import MediaStrategy
 from .const import (
     CONF_API_KEY,
+    CONF_API_TIMEOUT,
     CONF_ENABLE_LIVE_TV,
     CONF_LIBRARIES,
     CONF_REFRESH_INTERVAL,
@@ -40,6 +41,7 @@ from .const import (
     DEFAULT_IMAGE_HEIGHT,
     DEFAULT_IMAGE_QUALITY,
     DEFAULT_REFRESH_INTERVAL,
+    DEFAULT_API_TIMEOUT,
     DOMAIN,
     EVENT_CHAPTER_CHANGE,
     EVENT_SEGMENT_CHANGE,
@@ -113,10 +115,15 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_setup(self) -> None:
         """Set up the coordinator (called once during first refresh)."""
         session = async_get_clientsession(self.hass)
+        timeout = int(self.entry.options.get(
+            CONF_API_TIMEOUT,
+            self.entry.data.get(CONF_API_TIMEOUT, DEFAULT_API_TIMEOUT),
+        ))
         self._api = JellyfinApiClient(
             server_url=self.entry.data[CONF_SERVER_URL],
             api_key=self.entry.data[CONF_API_KEY],
             session=session,
+            timeout=timeout,
         )
 
         try:

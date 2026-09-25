@@ -17,8 +17,10 @@ if (typeof window !== 'undefined' && typeof window.customElements !== 'undefined
   if (!(ce.define as any).__jellyha_safe) {
     const origDefine = ce.define.bind(ce);
     const safeDefine = function (name: string, constructor: CustomElementConstructor, options?: ElementDefinitionOptions): void {
-      if (ce.get(name)) {
-        return;
+      if (name.startsWith('jellyha-')) {
+        if (ce.get(name)) {
+          return;
+        }
       }
       return origDefine(name, constructor, options);
     };

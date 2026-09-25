@@ -85,11 +85,13 @@
                     "device_players": "Client/Device Media Players (Optional)",
                     "trigger_library_refresh": "Refresh fetched data immediately",
                     "update_credentials": "Update Credentials / Switch User",
-                    "enable_live_tv": "Enable Live TV"
+                    "enable_live_tv": "Enable Live TV",
+                    "api_timeout": "API Request Timeout (seconds)"
                 },
                 "data_description": {
                     "device_players": "Select client devices (e.g. Smart TVs, Android TV boxes) to create dedicated media player entities for. These maintain state and attributes per device regardless of which user is watching.",
-                    "enable_live_tv": "Enable Live TV channels, dedicated services, and Media Browser tuning."
+                    "enable_live_tv": "Enable Live TV channels, dedicated services, and Media Browser tuning.",
+                    "api_timeout": "Maximum timeout in seconds for requests to Jellyfin. Increase this (e.g. 45-60s) for very large libraries or slower server hardware."
                 }
             },
             "auth_method": {

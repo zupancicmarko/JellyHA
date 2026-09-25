@@ -20,6 +20,7 @@ from .api import (
 )
 from .const import (
     CONF_API_KEY,
+    CONF_API_TIMEOUT,
     CONF_AUTH_METHOD,
     CONF_DEVICE_NAME,
     CONF_DEVICE_NAMES,
@@ -36,6 +37,7 @@ from .const import (
     DEFAULT_DEVICE_NAME,
     DEFAULT_ENABLE_LIVE_TV,
     DEFAULT_REFRESH_INTERVAL,
+    DEFAULT_API_TIMEOUT,
     DOMAIN,
     REFRESH_INTERVAL_OPTIONS,
     migrate_refresh_interval,
@@ -540,6 +542,9 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                 if CONF_EXTERNAL_URL in user_input:
                     new_options[CONF_EXTERNAL_URL] = user_input[CONF_EXTERNAL_URL]
 
+                if CONF_API_TIMEOUT in user_input:
+                    new_options[CONF_API_TIMEOUT] = int(user_input[CONF_API_TIMEOUT])
+
                 if CONF_LIBRARIES in user_input:
                     new_data[CONF_LIBRARIES] = user_input[CONF_LIBRARIES]
 
@@ -625,6 +630,20 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_ENABLE_LIVE_TV,
                         default=self._config_entry.options.get(CONF_ENABLE_LIVE_TV, DEFAULT_ENABLE_LIVE_TV),
                     ): selector.BooleanSelector(),
+                    vol.Optional(
+                        CONF_API_TIMEOUT,
+                        default=int(self._config_entry.options.get(
+                            CONF_API_TIMEOUT,
+                            self._config_entry.data.get(CONF_API_TIMEOUT, DEFAULT_API_TIMEOUT),
+                        )),
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            min=10,
+                            max=120,
+                            step=5,
+                            mode=selector.NumberSelectorMode.BOX,
+                        )
+                    ),
                     vol.Optional(
                         CONF_DEVICE_PLAYERS,
                         default=self._config_entry.options.get(CONF_DEVICE_PLAYERS, []),

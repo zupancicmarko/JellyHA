@@ -1,6 +1,6 @@
 {
     "name": "jellyha",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "description": "Jellyfin Custom Integration for Home Assistant",
     "main": "custom_components/jellyha/www/jellyha-cards.js",
     "type": "module",
