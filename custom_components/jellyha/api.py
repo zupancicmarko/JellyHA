@@ -11,6 +11,7 @@ import aiohttp
 
 from .const import (
     API_TIMEOUT,
+    DEFAULT_API_TIMEOUT,
     MAX_RETRIES,
     RETRY_BACKOFF_FACTOR,
     ITEM_TYPE_MOVIE,
@@ -42,12 +43,23 @@ class JellyfinApiClient:
         server_url: str,
         session: aiohttp.ClientSession,
         api_key: str | None = None,
+        timeout: int | float = DEFAULT_API_TIMEOUT,
     ) -> None:
         """Initialize the API client."""
         self._server_url = server_url.rstrip("/")
         self._api_key = api_key
         self._session = session
         self._user_id: str | None = None
+        self._timeout = timeout
+
+    @property
+    def timeout(self) -> int | float:
+        """Get the API request timeout in seconds."""
+        return self._timeout
+
+    def set_timeout(self, timeout: int | float) -> None:
+        """Set the API request timeout in seconds."""
+        self._timeout = timeout
 
     @property
     def server_url(self) -> str:
@@ -81,6 +93,7 @@ class JellyfinApiClient:
         self,
         method: str,
         endpoint: str,
+        timeout: int | float | None = None,
         **kwargs: Any,
     ) -> Any:
         """Make an API request with retry logic."""
@@ -91,13 +104,15 @@ class JellyfinApiClient:
         if "headers" in kwargs:
             request_headers.update(kwargs.pop("headers"))
 
+        req_timeout = timeout if timeout is not None else kwargs.pop("timeout", self._timeout)
+
         for attempt in range(MAX_RETRIES):
             try:
                 async with self._session.request(
                     method,
                     url,
                     headers=request_headers,
-                    timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
+                    timeout=aiohttp.ClientTimeout(total=req_timeout),
                     **kwargs,
                 ) as response:
                     if response.status == 401:
@@ -189,7 +204,7 @@ class JellyfinApiClient:
                 url,
                 json={"Username": username, "Pw": password},
                 headers=headers,
-                timeout=aiohttp.ClientTimeout(total=API_TIMEOUT),
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
             ) as response:
                 if response.status == 401:
                     raise JellyfinAuthError("Invalid username or password")

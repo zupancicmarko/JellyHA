@@ -5,6 +5,19 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2026-09-25
+
+### Fixed
+- **Frontend Polyfill & Custom Element Registry Intercept Hardening (Fixes [#47](https://github.com/zupancicmarko/JellyHA/issues/47), PR [#49](https://github.com/zupancicmarko/JellyHA/pull/49))**:
+  - Bound `origGet = registry.get.bind(registry)` from the same registry reference as `origDefine` in `jellyha-seek-polyfill.ts`, preventing Home Assistant's scoped custom element registry polyfill from overriding `get()` with an un-upgraded internal registry.
+  - Resolved `Uncaught TypeError: Illegal constructor` and endless splash screen freeze on older tablets, browsers, and cached reload sessions (`frontend_es5` / LineageOS / Android 7 WebView).
+  - Added strict name guarding (`name !== 'ha-bar-media-player'`) to immediately pass through non-bar elements, insulating `<home-assistant>` and all third-party custom cards from polyfill interception.
+  - Scoped the duplicate element registration guard in `safe-custom-elements.ts` strictly to `name.startsWith('jellyha-')` elements.
+- **Large Library API Request Timeout & Configurable Budget (Fixes [#48](https://github.com/zupancicmarko/JellyHA/issues/48))**:
+  - Raised default `API_TIMEOUT` from 10 seconds to 30 seconds across all Jellyfin HTTP calls (`custom_components/jellyha/const.py`, `api.py`), resolving setup failures and infinite retry loops (`Config entry not ready yet; Retrying in ...`) on large media servers (e.g. 100k+ items).
+  - Added configurable `api_timeout` option in Integration Options Flow (range: 10s–120s, default: 30s) so users on very slow hardware, NAS systems with spinning disks, or remote VPN links can customize the timeout budget.
+  - Enabled per-request custom timeout override in `JellyfinApiClient._request()`.
+
 ## [1.5.0] - 2026-09-23
 
 ### Added

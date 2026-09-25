@@ -198,6 +198,14 @@ show_background: true
 | `show_year` | boolean | `true` | Display release year |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
 
+### Playback Controls & Hold-to-Stop
+
+The Now Playing Card includes built-in playback gestures:
+- **Tap Play / Pause**: Toggles playback state (`play` / `pause`).
+- **Hold Play / Pause (800ms)**: Acts as a **Stop** button (`media_player.media_stop`). While holding the button, an animated red progress ring fills around it with haptic vibration feedback when the stop command is triggered.
+- **Progress Bar Seek**: Tap or drag across the timeline bar to seek through media.
+- **Rewind Button**: Quickly jumps back 20 seconds.
+
 ### Media Type Badge Presentation (`badge_style`)
 
 By default, media type badges (`S01E02` for episodes, `MOVIE` for films, `AUDIO` for music) appear as colored pill badges on the top-left corner of the poster image (`badge_style: poster`).

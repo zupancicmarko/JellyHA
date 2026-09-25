@@ -260,16 +260,16 @@ if (existing) {
         const origDefine = registry.define.bind(registry);
         const origGet = registry.get.bind(registry);
         const patchedDefine = function (name: string, constructor: any, options?: ElementDefinitionOptions) {
+            // Strictly guard: pass through immediately for any tag that is not ha-bar-media-player
+            if (name !== 'ha-bar-media-player') {
+                return origDefine(name, constructor, options);
+            }
             if (origGet(name)) {
-                if (name === 'ha-bar-media-player') {
-                    patchBarMediaPlayer(constructor);
-                }
+                patchBarMediaPlayer(constructor);
                 return;
             }
             origDefine(name, constructor, options);
-            if (name === 'ha-bar-media-player') {
-                patchBarMediaPlayer(constructor);
-            }
+            patchBarMediaPlayer(constructor);
         };
         (patchedDefine as any).__jellyha_bar_patched = true;
         customElements.define = patchedDefine;

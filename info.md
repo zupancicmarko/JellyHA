@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.5.0** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.1** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,8 +8,10 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.5.0
+### 🆕 What's new in v1.5.1
 
+- 🛡️ **Frontend Compatibility Hardening** — Resolved startup freeze and `Illegal constructor` errors on wall tablets, older browsers, and cached reload sessions (`frontend_es5` / Android 7 WebView) by insulating custom element registration wrappers (#47, #49).
+- ⏱️ **Large Library Timeout Protection** — Raised default API timeout to 30s and added configurable request timeout in Integration Options (10–120s) to prevent setup loops on large media libraries (#48).
 - 🖥️ **Play in Browser (In-Dashboard Player)** — Stream movies, episodes, and audio directly inside Home Assistant dashboards using an HTML5 dialog player, native subtitle proxy (SRT, ASS, VTT), Closed Captions (CC) menu, and language pre-selection.
 - 🎯 **Dynamic Play Actions & Target Picker** — Sleek Action Sheet picker and HA script trigger support in the More Info dialog for multi-device routing (#42).
 - 📑 **Playlists & BoxSet Collections** — Dedicated services to play and query playlists (`jellyha.play_playlist`, `jellyha.get_playlists`) and movie BoxSets (`jellyha.get_collections`) with 1-tap playback in Media Browser.
