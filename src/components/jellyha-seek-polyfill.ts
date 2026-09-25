@@ -250,9 +250,17 @@ if (existing) {
     });
 
     if (!(customElements.define as any).__jellyha_bar_patched) {
-        const origDefine = customElements.define.bind(customElements);
+        // Take define and get from the same registry. If this runs before HA's scoped
+        // custom element registry polyfill (es5 build, or a cached reload on the modern
+        // build), the polyfill picks up this wrapper as its "native" define and replaces
+        // window.customElements with its own registry. A lazy customElements.get() would
+        // then see the polyfill's registry, which already has the name, and the native
+        // define would never run.
+        const registry = customElements;
+        const origDefine = registry.define.bind(registry);
+        const origGet = registry.get.bind(registry);
         const patchedDefine = function (name: string, constructor: any, options?: ElementDefinitionOptions) {
-            if (customElements.get(name)) {
+            if (origGet(name)) {
                 if (name === 'ha-bar-media-player') {
                     patchBarMediaPlayer(constructor);
                 }
