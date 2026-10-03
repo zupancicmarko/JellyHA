@@ -5,6 +5,21 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.4] - 2026-10-03
+
+### Added
+- **Now Playing Card Device Name Display (PR [#54](https://github.com/zupancicmarko/JellyHA/pull/54) by @idomoshe)**:
+  - Added `show_device_name` boolean configuration option (default `false`) to display the active device name (e.g., "LG Smart TV", "Bedroom Shield") alongside the username and client.
+  - Added visual editor switch with complete translations across all 8 supported languages (`en`, `de`, `fr`, `es`, `it`, `nl`, `sl`, `ru`).
+
+### Changed
+- **Now Playing Card Metadata Typography & Spacing**:
+  - Unified the client/device/user metadata string format with consistent middle dot separators (`[User] · [Device] · [Client]`).
+  - Increased font sizes and padding across active and idle metadata pills (`0.80rem`–`0.85rem`) for improved legibility across desktop and mobile dashboards.
+  - Added vertical breathing room (`margin-top: 7px`) between the genres/year row and the client/device line.
+- **Documentation & AI Context**:
+  - Updated `docs/cards.md` and `llms.txt` with `show_device_name` specification and configuration schemas.
+
 ## [1.5.3] - 2026-10-02
 
 ### Fixed

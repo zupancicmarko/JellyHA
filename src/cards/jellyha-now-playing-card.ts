@@ -65,6 +65,7 @@ export class JellyHANowPlayingCard extends LitElement {
             badge_style: 'poster',
             show_year: true,
             show_client: true,
+            show_device_name: false,
             show_user: true,
             show_time: false,
             show_background: true,
@@ -98,6 +99,7 @@ export class JellyHANowPlayingCard extends LitElement {
             badge_style: 'poster',
             show_year: true,
             show_client: true,
+            show_device_name: false,
             show_user: true,
             show_time: false,
             show_background: true,
@@ -240,6 +242,8 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
         const clientInfo = (this._config.show_client !== false) ? effectiveClient : '';
+        const deviceInfo = (this._config.show_device_name === true) ? (attributes.device_name || '') : '';
+        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
 
         // Media type badge text
         const season = attributes.season !== undefined ? attributes.season : ((stateObj.attributes as any).media_season !== undefined ? (stateObj.attributes as any).media_season : cachedItem?.season);
@@ -348,7 +352,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                             ${genres.map(g => html`<span class="genre-pill">${g}</span>`)}
                                         </div>
                                     ` : nothing}
-                                    ${this._overflowState < 1 && (userName || clientInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && clientInfo ? ' ' : ''}${clientInfo || nothing}</div>` : nothing}
+                                    ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
                                 </div>
                             </div>
 
@@ -1856,7 +1860,7 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             flex-wrap: wrap;
             gap: 5px 8px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             color: var(--secondary-text-color);
             opacity: 0.85;
             margin-top: 4px;
@@ -1864,12 +1868,12 @@ export class JellyHANowPlayingCard extends LitElement {
             line-height: 1.2;
         }
         .meta-year {
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
         .meta-dot {
             opacity: 0.45;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             line-height: 1;
         }
         .genre-pill {
@@ -1877,9 +1881,9 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
             border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
-            padding: 1px 6px;
+            padding: 2px 7px;
             border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.80rem;
             color: var(--secondary-text-color);
             line-height: 1.2;
             font-weight: 500;
@@ -1892,13 +1896,13 @@ export class JellyHANowPlayingCard extends LitElement {
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
         }
         .client-line {
-            font-size: 0.75rem;
+            font-size: 0.80rem;
             color: var(--secondary-text-color);
-            opacity: 0.55;
+            opacity: 0.70;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 2px;
+            margin-top: 7px;
         }
 
         /* --- Info Bottom: Controls + Progress --- */
@@ -2800,15 +2804,15 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             flex-wrap: wrap;
             gap: 6px 8px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.85);
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
-            margin: 3px 0 6px 0 !important;
+            margin: 4px 0 7px 0 !important;
         }
 
         .idle-dot {
             opacity: 0.5;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
         }
 
         .idle-rating-pill {
@@ -2818,23 +2822,23 @@ export class JellyHANowPlayingCard extends LitElement {
             background: rgba(245, 158, 11, 0.25);
             border: 1px solid rgba(245, 158, 11, 0.45);
             color: #fbbf24;
-            padding: 1px 5px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.78rem;
             font-weight: 700;
             line-height: 1;
         }
 
         .idle-rating-pill ha-icon {
-            --mdc-icon-size: 12px;
+            --mdc-icon-size: 13px;
         }
 
         .idle-genre-pill {
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.16);
-            padding: 1px 6px;
+            padding: 2px 7px;
             border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.80rem;
             color: rgba(255, 255, 255, 0.9);
             line-height: 1.2;
         }

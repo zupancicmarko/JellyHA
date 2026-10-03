@@ -226,6 +226,7 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     show_genres?: boolean;
     show_year?: boolean;
     show_client?: boolean;
+    show_device_name?: boolean;
     show_user?: boolean;
     show_subtitle?: boolean;
     show_time?: boolean;

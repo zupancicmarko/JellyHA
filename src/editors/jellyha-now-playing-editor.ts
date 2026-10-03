@@ -226,6 +226,13 @@ export class JellyHANowPlayingEditor extends LitElement {
             ></ha-switch>
             <span>${localize(lang, 'editor.show_client')}</span>
           </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_device_name === true}
+              @change=${this._showDeviceNameChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_device_name')}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
@@ -428,6 +435,11 @@ export class JellyHANowPlayingEditor extends LitElement {
   private _showClientChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_client', target.checked);
+  }
+
+  private _showDeviceNameChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_device_name', target.checked);
   }
 
   private _showTimeChanged(e: Event): void {

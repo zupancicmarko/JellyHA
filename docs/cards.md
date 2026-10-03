@@ -188,6 +188,7 @@ show_background: true
 | `show_title` | boolean | `true` | Display media title text |
 | `show_subtitle` | boolean | `true` | Display subtitle (artist or series and season/episode info) |
 | `show_client` | boolean | `true` | Display client device name (e.g. "Wholphin", "Chrome") |
+| `show_device_name` | boolean | `false` | Display the device name (e.g. "LG Smart TV"). With `show_client` also on, both show as "LG Smart TV · Jellyfin Web" |
 | `show_user` | boolean | `true` | Display viewer user name |
 | `show_time` | boolean | `false` | Display elapsed and remaining playback time |
 | `show_media_type_badge` | boolean | `true` | Display media type badge (`MOVIE`, `SERIES`, `EPISODE`) |
