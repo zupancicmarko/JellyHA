@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.5.3** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.4** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,12 +8,11 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.5.3
+### 🆕 What's new in v1.5.4
 
-- 📺 **Android TV & Fire TV Device Session Matching** — Resolved an issue where Android TV, Google TV, and Fire TV clients remained permanently `idle` due to Jellyfin assigning database row IDs instead of hardware client IDs; added name-based fallback matching (fixes #27, PR #52).
-- 🎮 **Reliable Remote Control Routing** — Remote playback commands now target the active session's client device ID directly.
-- 🎞️ **Enriched Playback Stream Metadata** — Automatically populates video dimensions, aspect ratio, HDR dynamic range, and local `file_path` attributes across both media players and sensors.
-- 🛡️ **Hassfest Compliance** — Cleaned up integration manifest requirements to align with Home Assistant core standards.
+- 📱 **Device Name Display on Now Playing Card** — Added `show_device_name` option to display the active playback device (e.g. "LG Smart TV") alongside user and client names (PR #54 by @idomoshe).
+- 🎨 **Refined Metadata Typography & Spacing** — Enhanced legibility with scaled metadata badges/pills (`0.80rem`–`0.85rem`) and added vertical breathing room (`margin-top: 7px`) between the genres and client/device rows.
+- 🌐 **Full 8-Language Localization** — Complete visual editor translations for the new device name setting across English, German, French, Spanish, Italian, Dutch, Slovenian, and Russian.
 
 ---
 

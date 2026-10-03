@@ -795,6 +795,7 @@ show_ratings: true                 # (Boolean, default true) Community star rati
 show_runtime: true                 # (Boolean, default true) Total runtime
 show_year: true                    # (Boolean, default true) Release year
 show_client: true                  # (Boolean, default true) Active client name
+show_device_name: false            # (Boolean, default false) Active device name
 show_user: true                    # (Boolean, default true) Active user name
 use_series_image: false            # (Boolean, default false) Use series cover instead of episode thumbnail
 idle_backdrop_cycle: true         # (Boolean, default false) Cycle library media artwork when idle (instead of static placeholder)

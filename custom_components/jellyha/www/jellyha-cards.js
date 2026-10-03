@@ -6812,7 +6812,7 @@ var ri = Object.defineProperty, ni = Object.getOwnPropertyDescriptor, k = (e, t,
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
   return s && a && ri(t, i, a), a;
 };
-const li = "1.5.3";
+const li = "1.5.4";
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${li} `,
   "color: white; background: #00a4dc; font-weight: bold;",
