@@ -32,14 +32,14 @@ let ct = class {
     return this.cssText;
   }
 };
-const xt = (e) => new ct(typeof e == "string" ? e : e + "", void 0, De), de = (e, ...t) => {
+const kt = (e) => new ct(typeof e == "string" ? e : e + "", void 0, De), de = (e, ...t) => {
   const i = e.length === 1 ? e[0] : t.reduce((s, a, o) => s + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(a) + e[o + 1], e[0]);
   return new ct(i, e, De);
-}, $t = (e, t) => {
+}, St = (e, t) => {
   if (Me) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of t) {
     const s = document.createElement("style"), a = be.litNonce;
@@ -48,17 +48,17 @@ const xt = (e) => new ct(typeof e == "string" ? e : e + "", void 0, De), de = (e
 }, Ze = Me ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
   let i = "";
   for (const s of t.cssRules) i += s.cssText;
-  return xt(i);
+  return kt(i);
 })(e) : e;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: kt, defineProperty: St, getOwnPropertyDescriptor: Ct, getOwnPropertyNames: Pt, getOwnPropertySymbols: jt, getPrototypeOf: Tt } = Object, xe = globalThis, Ke = xe.trustedTypes, It = Ke ? Ke.emptyScript : "", At = xe.reactiveElementPolyfillSupport, ie = (e, t) => e, ye = { toAttribute(e, t) {
+const { is: Ct, defineProperty: Pt, getOwnPropertyDescriptor: jt, getOwnPropertyNames: Tt, getOwnPropertySymbols: It, getPrototypeOf: At } = Object, xe = globalThis, Ke = xe.trustedTypes, Et = Ke ? Ke.emptyScript : "", zt = xe.reactiveElementPolyfillSupport, ie = (e, t) => e, ye = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
-      e = e ? It : null;
+      e = e ? Et : null;
       break;
     case Object:
     case Array:
@@ -83,7 +83,7 @@ const { is: kt, defineProperty: St, getOwnPropertyDescriptor: Ct, getOwnProperty
       }
   }
   return i;
-} }, Le = (e, t) => !kt(e, t), Qe = { attribute: !0, type: String, converter: ye, reflect: !1, useDefault: !1, hasChanged: Le };
+} }, Le = (e, t) => !Ct(e, t), Qe = { attribute: !0, type: String, converter: ye, reflect: !1, useDefault: !1, hasChanged: Le };
 Symbol.metadata ??= Symbol("metadata"), xe.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let q = class extends HTMLElement {
   static addInitializer(t) {
@@ -95,11 +95,11 @@ let q = class extends HTMLElement {
   static createProperty(t, i = Qe) {
     if (i.state && (i.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((i = Object.create(i)).wrapped = !0), this.elementProperties.set(t, i), !i.noAccessor) {
       const s = Symbol(), a = this.getPropertyDescriptor(t, s, i);
-      a !== void 0 && St(this.prototype, t, a);
+      a !== void 0 && Pt(this.prototype, t, a);
     }
   }
   static getPropertyDescriptor(t, i, s) {
-    const { get: a, set: o } = Ct(this.prototype, t) ?? { get() {
+    const { get: a, set: o } = jt(this.prototype, t) ?? { get() {
       return this[i];
     }, set(r) {
       this[i] = r;
@@ -114,13 +114,13 @@ let q = class extends HTMLElement {
   }
   static _$Ei() {
     if (this.hasOwnProperty(ie("elementProperties"))) return;
-    const t = Tt(this);
+    const t = At(this);
     t.finalize(), t.l !== void 0 && (this.l = [...t.l]), this.elementProperties = new Map(t.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(ie("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(ie("properties"))) {
-      const i = this.properties, s = [...Pt(i), ...jt(i)];
+      const i = this.properties, s = [...Tt(i), ...It(i)];
       for (const a of s) this.createProperty(a, i[a]);
     }
     const t = this[Symbol.metadata];
@@ -166,7 +166,7 @@ let q = class extends HTMLElement {
   }
   createRenderRoot() {
     const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return $t(t, this.constructor.elementStyles), t;
+    return St(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((t) => t.hostConnected?.());
@@ -266,20 +266,20 @@ let q = class extends HTMLElement {
   firstUpdated(t) {
   }
 };
-q.elementStyles = [], q.shadowRootOptions = { mode: "open" }, q[ie("elementProperties")] = /* @__PURE__ */ new Map(), q[ie("finalized")] = /* @__PURE__ */ new Map(), At?.({ ReactiveElement: q }), (xe.reactiveElementVersions ??= []).push("2.1.2");
+q.elementStyles = [], q.shadowRootOptions = { mode: "open" }, q[ie("elementProperties")] = /* @__PURE__ */ new Map(), q[ie("finalized")] = /* @__PURE__ */ new Map(), zt?.({ ReactiveElement: q }), (xe.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ue = globalThis, et = (e) => e, ve = Ue.trustedTypes, tt = ve ? ve.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, ht = "$lit$", B = `lit$${Math.random().toFixed(9).slice(2)}$`, pt = "?" + B, Et = `<${pt}>`, J = document, se = () => J.createComment(""), oe = (e) => e === null || typeof e != "object" && typeof e != "function", Ne = Array.isArray, zt = (e) => Ne(e) || typeof e?.[Symbol.iterator] == "function", Ae = `[ 	
+const Ue = globalThis, et = (e) => e, ve = Ue.trustedTypes, tt = ve ? ve.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, ht = "$lit$", B = `lit$${Math.random().toFixed(9).slice(2)}$`, pt = "?" + B, Mt = `<${pt}>`, J = document, se = () => J.createComment(""), oe = (e) => e === null || typeof e != "object" && typeof e != "function", Ne = Array.isArray, Dt = (e) => Ne(e) || typeof e?.[Symbol.iterator] == "function", Ae = `[ 	
 \f\r]`, Q = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, it = /-->/g, at = />/g, F = RegExp(`>|${Ae}(?:([^\\s"'>=/]+)(${Ae}*=${Ae}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), st = /'/g, ot = /"/g, _t = /^(?:script|style|textarea|title)$/i, Mt = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), n = Mt(1), Z = Symbol.for("lit-noChange"), p = Symbol.for("lit-nothing"), rt = /* @__PURE__ */ new WeakMap(), W = J.createTreeWalker(J, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), st = /'/g, ot = /"/g, _t = /^(?:script|style|textarea|title)$/i, Lt = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), n = Lt(1), Z = Symbol.for("lit-noChange"), p = Symbol.for("lit-nothing"), rt = /* @__PURE__ */ new WeakMap(), W = J.createTreeWalker(J, 129);
 function ut(e, t) {
   if (!Ne(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return tt !== void 0 ? tt.createHTML(t) : t;
 }
-const Dt = (e, t) => {
+const Ut = (e, t) => {
   const i = e.length - 1, s = [];
   let a, o = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = Q;
   for (let l = 0; l < i; l++) {
@@ -287,7 +287,7 @@ const Dt = (e, t) => {
     let h, _, u = -1, m = 0;
     for (; m < c.length && (r.lastIndex = m, _ = r.exec(c), _ !== null); ) m = r.lastIndex, r === Q ? _[1] === "!--" ? r = it : _[1] !== void 0 ? r = at : _[2] !== void 0 ? (_t.test(_[2]) && (a = RegExp("</" + _[2], "g")), r = F) : _[3] !== void 0 && (r = F) : r === F ? _[0] === ">" ? (r = a ?? Q, u = -1) : _[1] === void 0 ? u = -2 : (u = r.lastIndex - _[2].length, h = _[1], r = _[3] === void 0 ? F : _[3] === '"' ? ot : st) : r === ot || r === st ? r = F : r === it || r === at ? r = Q : (r = F, a = void 0);
     const f = r === F && e[l + 1].startsWith("/>") ? " " : "";
-    o += r === Q ? c + Et : u >= 0 ? (s.push(h), c.slice(0, u) + ht + c.slice(u) + B + f) : c + B + (u === -2 ? l : f);
+    o += r === Q ? c + Mt : u >= 0 ? (s.push(h), c.slice(0, u) + ht + c.slice(u) + B + f) : c + B + (u === -2 ? l : f);
   }
   return [ut(e, o + (e[i] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), s];
 };
@@ -296,7 +296,7 @@ class re {
     let a;
     this.parts = [];
     let o = 0, r = 0;
-    const l = t.length - 1, c = this.parts, [h, _] = Dt(t, i);
+    const l = t.length - 1, c = this.parts, [h, _] = Ut(t, i);
     if (this.el = re.createElement(h, s), W.currentNode = this.el.content, i === 2 || i === 3) {
       const u = this.el.content.firstChild;
       u.replaceWith(...u.childNodes);
@@ -305,7 +305,7 @@ class re {
       if (a.nodeType === 1) {
         if (a.hasAttributes()) for (const u of a.getAttributeNames()) if (u.endsWith(ht)) {
           const m = _[r++], f = a.getAttribute(u).split(B), b = /([.?@])?(.*)/.exec(m);
-          c.push({ type: 1, index: o, name: b[2], strings: f, ctor: b[1] === "." ? Ut : b[1] === "?" ? Nt : b[1] === "@" ? Rt : $e }), a.removeAttribute(u);
+          c.push({ type: 1, index: o, name: b[2], strings: f, ctor: b[1] === "." ? Rt : b[1] === "?" ? Ot : b[1] === "@" ? Bt : $e }), a.removeAttribute(u);
         } else u.startsWith(B) && (c.push({ type: 6, index: o }), a.removeAttribute(u));
         if (_t.test(a.tagName)) {
           const u = a.textContent.split(B), m = u.length - 1;
@@ -334,7 +334,7 @@ function K(e, t, i = e, s) {
   const o = oe(t) ? void 0 : t._$litDirective$;
   return a?.constructor !== o && (a?._$AO?.(!1), o === void 0 ? a = void 0 : (a = new o(e), a._$AT(e, i, s)), s !== void 0 ? (i._$Co ??= [])[s] = a : i._$Cl = a), a !== void 0 && (t = K(e, a._$AS(e, t.values), a, s)), t;
 }
-class Lt {
+class Nt {
   constructor(t, i) {
     this._$AV = [], this._$AN = void 0, this._$AD = t, this._$AM = i;
   }
@@ -351,7 +351,7 @@ class Lt {
     for (; c !== void 0; ) {
       if (r === c.index) {
         let h;
-        c.type === 2 ? h = new ce(o, o.nextSibling, this, t) : c.type === 1 ? h = new c.ctor(o, c.name, c.strings, this, t) : c.type === 6 && (h = new Ot(o, this, t)), this._$AV.push(h), c = s[++l];
+        c.type === 2 ? h = new ce(o, o.nextSibling, this, t) : c.type === 1 ? h = new c.ctor(o, c.name, c.strings, this, t) : c.type === 6 && (h = new Ht(o, this, t)), this._$AV.push(h), c = s[++l];
       }
       r !== c?.index && (o = W.nextNode(), r++);
     }
@@ -381,7 +381,7 @@ class ce {
     return this._$AB;
   }
   _$AI(t, i = this) {
-    t = K(this, t, i), oe(t) ? t === p || t == null || t === "" ? (this._$AH !== p && this._$AR(), this._$AH = p) : t !== this._$AH && t !== Z && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : zt(t) ? this.k(t) : this._(t);
+    t = K(this, t, i), oe(t) ? t === p || t == null || t === "" ? (this._$AH !== p && this._$AR(), this._$AH = p) : t !== this._$AH && t !== Z && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Dt(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -396,7 +396,7 @@ class ce {
     const { values: i, _$litType$: s } = t, a = typeof s == "number" ? this._$AC(t) : (s.el === void 0 && (s.el = re.createElement(ut(s.h, s.h[0]), this.options)), s);
     if (this._$AH?._$AD === a) this._$AH.p(i);
     else {
-      const o = new Lt(a, this), r = o.u(this.options);
+      const o = new Nt(a, this), r = o.u(this.options);
       o.p(i), this.T(r), this._$AH = o;
     }
   }
@@ -446,7 +446,7 @@ class $e {
     t === p ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t ?? "");
   }
 }
-class Ut extends $e {
+class Rt extends $e {
   constructor() {
     super(...arguments), this.type = 3;
   }
@@ -454,7 +454,7 @@ class Ut extends $e {
     this.element[this.name] = t === p ? void 0 : t;
   }
 }
-class Nt extends $e {
+class Ot extends $e {
   constructor() {
     super(...arguments), this.type = 4;
   }
@@ -462,7 +462,7 @@ class Nt extends $e {
     this.element.toggleAttribute(this.name, !!t && t !== p);
   }
 }
-class Rt extends $e {
+class Bt extends $e {
   constructor(t, i, s, a, o) {
     super(t, i, s, a, o), this.type = 5;
   }
@@ -475,7 +475,7 @@ class Rt extends $e {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, t) : this._$AH.handleEvent(t);
   }
 }
-class Ot {
+class Ht {
   constructor(t, i, s) {
     this.element = t, this.type = 6, this._$AN = void 0, this._$AM = i, this.options = s;
   }
@@ -486,8 +486,8 @@ class Ot {
     K(this, t);
   }
 }
-const Bt = Ue.litHtmlPolyfillSupport;
-Bt?.(re, ce), (Ue.litHtmlVersions ??= []).push("3.3.2");
+const Ft = Ue.litHtmlPolyfillSupport;
+Ft?.(re, ce), (Ue.litHtmlVersions ??= []).push("3.3.2");
 const we = (e, t, i) => {
   const s = i?.renderBefore ?? t;
   let a = s._$litPart$;
@@ -526,8 +526,8 @@ class z extends q {
   }
 }
 z._$litElement$ = !0, z.finalized = !0, Re.litElementHydrateSupport?.({ LitElement: z });
-const Ht = Re.litElementPolyfillSupport;
-Ht?.({ LitElement: z });
+const Wt = Re.litElementPolyfillSupport;
+Wt?.({ LitElement: z });
 (Re.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -544,7 +544,7 @@ const Y = (e) => (t, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ft = { attribute: !0, type: String, converter: ye, reflect: !1, hasChanged: Le }, Wt = (e = Ft, t, i) => {
+const Jt = { attribute: !0, type: String, converter: ye, reflect: !1, hasChanged: Le }, Yt = (e = Jt, t, i) => {
   const { kind: s, metadata: a } = i;
   let o = globalThis.litPropertyMetadata.get(a);
   if (o === void 0 && globalThis.litPropertyMetadata.set(a, o = /* @__PURE__ */ new Map()), s === "setter" && ((e = Object.create(e)).wrapped = !0), o.set(i.name, e), s === "accessor") {
@@ -566,7 +566,7 @@ const Ft = { attribute: !0, type: String, converter: ye, reflect: !1, hasChanged
   throw Error("Unsupported decorator location: " + s);
 };
 function A(e) {
-  return (t, i) => typeof i == "object" ? Wt(e, t, i) : ((s, a, o) => {
+  return (t, i) => typeof i == "object" ? Yt(e, t, i) : ((s, a, o) => {
     const r = a.hasOwnProperty(o);
     return a.constructor.createProperty(o, s), r ? Object.getOwnPropertyDescriptor(a, o) : void 0;
   })(e, t, i);
@@ -584,16 +584,16 @@ function g(e) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Jt = (e, t, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof t != "object" && Object.defineProperty(e, t, i), i);
+const Vt = (e, t, i) => (i.configurable = !0, i.enumerable = !0, Reflect.decorate && typeof t != "object" && Object.defineProperty(e, t, i), i);
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function Yt(e, t) {
+function qt(e, t) {
   return (i, s, a) => {
     const o = (r) => r.renderRoot?.querySelector(e) ?? null;
-    return Jt(i, s, { get() {
+    return Vt(i, s, { get() {
       return o(this);
     } });
   };
@@ -639,12 +639,12 @@ function X(e, t) {
   }
   return (t.includes(".") ? t.split(".").slice(1).join(".") : t).split("_").map((o) => ["on", "in", "at", "to", "for", "a", "an", "the", "and", "or", "of"].includes(o.toLowerCase()) ? o.toLowerCase() : o.toLowerCase() === "tv" ? "TV" : o.charAt(0).toUpperCase() + o.slice(1)).join(" ").replace(/^\w/, (o) => o.toUpperCase());
 }
-var Vt = Object.defineProperty, qt = Object.getOwnPropertyDescriptor, N = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? qt(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var Gt = Object.defineProperty, Xt = Object.getOwnPropertyDescriptor, N = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? Xt(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && Vt(t, i, a), a;
+  return s && a && Gt(t, i, a), a;
 };
-const Gt = /* @__PURE__ */ new Set([
+const Zt = /* @__PURE__ */ new Set([
   "subrip",
   "srt",
   "vtt",
@@ -654,7 +654,7 @@ const Gt = /* @__PURE__ */ new Set([
   "ssa",
   "text",
   "ttml"
-]), Xt = {
+]), Kt = {
   slv: "sl",
   eng: "en",
   deu: "de",
@@ -677,7 +677,7 @@ const Gt = /* @__PURE__ */ new Set([
   zho: "zh",
   chi: "zh"
 };
-function Zt(e, t, i) {
+function Qt(e, t, i) {
   if (!i) return !1;
   const s = i.trim().toLowerCase();
   if (!s) return !1;
@@ -795,13 +795,13 @@ let L = class extends z {
   _resolveSubtitles(e, t, i) {
     if (e.type === "Audio") return [];
     const s = (e.media_streams || []).filter(
-      (h) => h.Type === "Subtitle" && (h.IsExternal || !h.Codec || Gt.has(h.Codec.toLowerCase()))
+      (h) => h.Type === "Subtitle" && (h.IsExternal || !h.Codec || Zt.has(h.Codec.toLowerCase()))
     );
     if (!s || s.length === 0) return [];
     const a = (i.subtitleMode || "auto").toLowerCase(), o = (i.subtitleLanguage || "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
     let r = -1;
     const l = (h, _ = !1) => {
-      const u = s.filter((f) => _ && !f.IsForced ? !1 : Zt(f.Language, f.DisplayTitle || f.Title, h));
+      const u = s.filter((f) => _ && !f.IsForced ? !1 : Qt(f.Language, f.DisplayTitle || f.Title, h));
       return u.length === 0 ? void 0 : u.find((f) => {
         const b = (f.DisplayTitle || f.Title || "").toLowerCase();
         return !f.IsHearingImpaired && !b.includes("sdh") && !b.includes("hearing impaired");
@@ -843,7 +843,7 @@ let L = class extends z {
     }
     const c = e.media_source_id || e.MediaSources?.[0]?.Id || e.id;
     return s.map((h) => {
-      const _ = (h.Language || "en").trim().toLowerCase(), u = _.length === 3 && Xt[_] || _, m = h.DisplayTitle || h.Title || (u ? u.toUpperCase() : `Subtitle ${h.Index}`), f = `/api/jellyha/subtitles/${t}/${e.id}/${h.Index}/stream.vtt?media_source_id=${encodeURIComponent(c)}`;
+      const _ = (h.Language || "en").trim().toLowerCase(), u = _.length === 3 && Kt[_] || _, m = h.DisplayTitle || h.Title || (u ? u.toUpperCase() : `Subtitle ${h.Index}`), f = `/api/jellyha/subtitles/${t}/${e.id}/${h.Index}/stream.vtt?media_source_id=${encodeURIComponent(c)}`;
       return {
         index: h.Index,
         label: m,
@@ -2549,6 +2549,7 @@ const ft = de`
     "editor.show_rating": "Show Rating",
     "editor.show_genres": "Show Genre",
     "editor.show_client": "Show Jellyfin Client",
+    "editor.show_device_name": "Show Device Name",
     "editor.show_user": "Show User",
     "editor.show_time": "Show Elapsed / Remaining Time",
     "editor.show_background": "Show Background",
@@ -2673,6 +2674,7 @@ const ft = de`
     "editor.show_rating": "Bewertung anzeigen",
     "editor.show_genres": "Genre anzeigen",
     "editor.show_client": "Jellyfin-Client anzeigen",
+    "editor.show_device_name": "Gerätename anzeigen",
     "editor.show_user": "Benutzer anzeigen",
     "editor.show_time": "Verstrichene / Restzeit anzeigen",
     "editor.show_background": "Hintergrund anzeigen",
@@ -2797,6 +2799,7 @@ const ft = de`
     "editor.show_rating": "Afficher la note",
     "editor.show_genres": "Afficher le genre",
     "editor.show_client": "Afficher le client Jellyfin",
+    "editor.show_device_name": "Afficher le nom de l'appareil",
     "editor.show_user": "Afficher l'utilisateur",
     "editor.show_time": "Afficher le temps écoulé / restant",
     "editor.show_background": "Afficher l'arrière-plan",
@@ -2921,6 +2924,7 @@ const ft = de`
     "editor.show_rating": "Mostrar clasificación",
     "editor.show_genres": "Mostrar género",
     "editor.show_client": "Mostrar cliente Jellyfin",
+    "editor.show_device_name": "Mostrar nombre del dispositivo",
     "editor.show_user": "Mostrar usuario",
     "editor.show_time": "Mostrar tiempo transcurrido / restante",
     "editor.show_background": "Mostrar fondo",
@@ -3045,6 +3049,7 @@ const ft = de`
     "editor.show_rating": "Mostra valutazione",
     "editor.show_genres": "Mostra genere",
     "editor.show_client": "Mostra client Jellyfin",
+    "editor.show_device_name": "Mostra nome del dispositivo",
     "editor.show_user": "Mostra utente",
     "editor.show_time": "Mostra tempo trascorso / rimanente",
     "editor.show_background": "Mostra sfondo",
@@ -3169,6 +3174,7 @@ const ft = de`
     "editor.show_rating": "Beoordeling tonen",
     "editor.show_genres": "Genre tonen",
     "editor.show_client": "Jellyfin-client tonen",
+    "editor.show_device_name": "Apparaatnaam tonen",
     "editor.show_user": "Gebruiker tonen",
     "editor.show_time": "Verstreken / resterende tijd tonen",
     "editor.show_background": "Achtergrond tonen",
@@ -3293,6 +3299,7 @@ const ft = de`
     "editor.show_rating": "Prikaži oceno",
     "editor.show_genres": "Prikaži žanr",
     "editor.show_client": "Prikaži Jellyfin odjemalec",
+    "editor.show_device_name": "Prikaži ime naprave",
     "editor.show_user": "Prikaži uporabnika",
     "editor.show_time": "Prikaži pretečen / preostali čas",
     "editor.show_background": "Prikaži ozadje",
@@ -3417,6 +3424,7 @@ const ft = de`
     "editor.show_rating": "Показывать рейтинг",
     "editor.show_genres": "Показывать жанр",
     "editor.show_client": "Показывать клиент Jellyfin",
+    "editor.show_device_name": "Показывать имя устройства",
     "editor.show_user": "Показывать пользователя",
     "editor.show_time": "Показывать прошедшее / оставшееся время",
     "editor.show_background": "Показывать фон",
@@ -3522,10 +3530,10 @@ function d(e, t, i) {
   const s = (e || "en").split("-")[0].toLowerCase();
   return fe[s]?.[t] ? fe[s][t] : fe.en?.[t] ? fe.en[t] : i !== void 0 ? i : "";
 }
-var Kt = Object.defineProperty, Qt = Object.getOwnPropertyDescriptor, x = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? Qt(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var ei = Object.defineProperty, ti = Object.getOwnPropertyDescriptor, x = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? ti(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && Kt(t, i, a), a;
+  return s && a && ei(t, i, a), a;
 };
 let v = class extends z {
   constructor() {
@@ -5470,10 +5478,10 @@ x([
 v = x([
   Y("jellyha-item-details-modal")
 ], v);
-var ei = Object.defineProperty, ti = Object.getOwnPropertyDescriptor, Oe = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? ti(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var ii = Object.defineProperty, ai = Object.getOwnPropertyDescriptor, Oe = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? ai(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && ei(t, i, a), a;
+  return s && a && ii(t, i, a), a;
 };
 function Ee(e, t, i) {
   const s = new CustomEvent(t, {
@@ -6399,10 +6407,10 @@ Oe([
 ne = Oe([
   Y("jellyha-library-editor")
 ], ne);
-var ii = Object.defineProperty, ai = Object.getOwnPropertyDescriptor, T = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? ai(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var si = Object.defineProperty, oi = Object.getOwnPropertyDescriptor, T = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? oi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && ii(t, i, a), a;
+  return s && a && si(t, i, a), a;
 };
 let C = class extends z {
   constructor() {
@@ -6799,14 +6807,14 @@ T([
 C = T([
   Y("jellyha-media-item")
 ], C);
-var si = Object.defineProperty, oi = Object.getOwnPropertyDescriptor, k = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? oi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var ri = Object.defineProperty, ni = Object.getOwnPropertyDescriptor, k = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? ni(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && si(t, i, a), a;
+  return s && a && ri(t, i, a), a;
 };
-const ri = "1.5.3";
+const li = "1.5.3";
 console.info(
-  `%c JELLYHA-LIBRARY-CARD %c v${ri} `,
+  `%c JELLYHA-LIBRARY-CARD %c v${li} `,
   "color: white; background: #00a4dc; font-weight: bold;",
   "color: #00a4dc; background: white; font-weight: bold;"
 );
@@ -7854,7 +7862,7 @@ k([
   g()
 ], w.prototype, "_searchGenre", 2);
 k([
-  Yt("jellyha-item-details-modal")
+  qt("jellyha-item-details-modal")
 ], w.prototype, "_modal", 2);
 k([
   g()
@@ -7865,12 +7873,12 @@ k([
 w = k([
   Y("jellyha-library-card")
 ], w);
-var ni = Object.defineProperty, li = Object.getOwnPropertyDescriptor, Be = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? li(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var di = Object.defineProperty, ci = Object.getOwnPropertyDescriptor, Be = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? ci(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && ni(t, i, a), a;
+  return s && a && di(t, i, a), a;
 };
-function di(e, t, i) {
+function hi(e, t, i) {
   const s = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
@@ -8032,6 +8040,13 @@ let le = class extends z {
               @change=${this._showClientChanged}
             ></ha-switch>
             <span>${d(s, "editor.show_client")}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_device_name === !0}
+              @change=${this._showDeviceNameChanged}
+            ></ha-switch>
+            <span>${d(s, "editor.show_device_name")}</span>
           </div>
         </div>
 
@@ -8209,6 +8224,10 @@ let le = class extends z {
     const t = e.target;
     this._updateConfig("show_client", t.checked);
   }
+  _showDeviceNameChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_device_name", t.checked);
+  }
   _showTimeChanged(e) {
     const t = e.target;
     this._updateConfig("show_time", t.checked);
@@ -8225,7 +8244,7 @@ let le = class extends z {
     if (!this._config)
       return;
     const i = { ...this._config, [e]: t };
-    this._config = i, di(this, "config-changed", { config: i });
+    this._config = i, hi(this, "config-changed", { config: i });
   }
 };
 le.styles = de`
@@ -8263,10 +8282,10 @@ Be([
 le = Be([
   Y("jellyha-now-playing-editor")
 ], le);
-var ci = Object.defineProperty, hi = Object.getOwnPropertyDescriptor, P = (e, t, i, s) => {
-  for (var a = s > 1 ? void 0 : s ? hi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+var pi = Object.defineProperty, _i = Object.getOwnPropertyDescriptor, P = (e, t, i, s) => {
+  for (var a = s > 1 ? void 0 : s ? _i(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (a = (s ? r(t, i, a) : r(a)) || a);
-  return s && a && ci(t, i, a), a;
+  return s && a && pi(t, i, a), a;
 };
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -8287,6 +8306,7 @@ let S = class extends z {
       badge_style: "poster",
       show_year: !0,
       show_client: !0,
+      show_device_name: !1,
       show_user: !0,
       show_time: !1,
       show_background: !0,
@@ -8315,6 +8335,7 @@ let S = class extends z {
       badge_style: "poster",
       show_year: !0,
       show_client: !0,
+      show_device_name: !1,
       show_user: !0,
       show_time: !1,
       show_background: !0,
@@ -8374,9 +8395,9 @@ let S = class extends z {
     y !== this._cachedColorItemId && b && (this._cachedColorItemId = y, this._extractDominantColor(j(b, 80)));
     const M = this._cachedBackdropUrl, U = this._config.show_background !== !1 && M, H = s ? t.state === "paused" : i.is_paused, E = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), V = E === "audio" || E === "music";
     let I = i.title || t.attributes.media_title || r?.name || "";
-    const he = this._config.show_subtitle !== !1, ke = i.series_title || t.attributes.media_series_title || r?.series_name || "", R = he && (i.artist_name || t.attributes.media_artist || ke || r?.artist_name) || "", Fe = i.year ?? r?.year, pe = this._config.show_year !== !1 && Fe ? String(Fe) : "", We = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], Se = this._config.show_genres !== !1 && We?.length ? We.slice(0, 3) : [], mt = !!(pe || Se.length > 0), bt = i.user_name || this.hass.user?.name || "", _e = this._config.show_user !== !1 ? bt : "", yt = i.client || t.attributes.app_name || t.attributes.friendly_name || "", Ce = this._config.show_client !== !1 ? yt : "", Pe = i.season !== void 0 ? i.season : t.attributes.media_season !== void 0 ? t.attributes.media_season : r?.season, je = i.episode !== void 0 ? i.episode : t.attributes.media_episode !== void 0 ? t.attributes.media_episode : r?.episode, Je = (E === "episode" || E === "tvshow") && Pe !== void 0 && je !== void 0, Te = Je ? `S${String(Pe).padStart(2, "0")}E${String(je).padStart(2, "0")}` : E === "movie" ? "MOVIE" : E === "episode" || E === "tvshow" ? "EPISODE" : i.media_type || r?.type || "", ue = this._config.badge_style || this._config.media_type_badge_style || "poster", vt = this._config.show_media_type_badge !== !1 && !!Te;
+    const he = this._config.show_subtitle !== !1, ke = i.series_title || t.attributes.media_series_title || r?.series_name || "", R = he && (i.artist_name || t.attributes.media_artist || ke || r?.artist_name) || "", Fe = i.year ?? r?.year, pe = this._config.show_year !== !1 && Fe ? String(Fe) : "", We = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], Se = this._config.show_genres !== !1 && We?.length ? We.slice(0, 3) : [], mt = !!(pe || Se.length > 0), bt = i.user_name || this.hass.user?.name || "", _e = this._config.show_user !== !1 ? bt : "", yt = i.client || t.attributes.app_name || t.attributes.friendly_name || "", vt = this._config.show_client !== !1 ? yt : "", wt = this._config.show_device_name === !0 && i.device_name || "", Ce = [...new Set([wt, vt].filter(Boolean))].join(" · "), Pe = i.season !== void 0 ? i.season : t.attributes.media_season !== void 0 ? t.attributes.media_season : r?.season, je = i.episode !== void 0 ? i.episode : t.attributes.media_episode !== void 0 ? t.attributes.media_episode : r?.episode, Je = (E === "episode" || E === "tvshow") && Pe !== void 0 && je !== void 0, Te = Je ? `S${String(Pe).padStart(2, "0")}E${String(je).padStart(2, "0")}` : E === "movie" ? "MOVIE" : E === "episode" || E === "tvshow" ? "EPISODE" : i.media_type || r?.type || "", ue = this._config.badge_style || this._config.media_type_badge_style || "poster", xt = this._config.show_media_type_badge !== !1 && !!Te;
     let Ye = !1, Ve = !1;
-    if (vt && ue !== "none") {
+    if (xt && ue !== "none") {
       if (ue === "poster")
         Ye = !0;
       else if (ue === "header")
@@ -8386,7 +8407,7 @@ let S = class extends z {
         I && !I.toLowerCase().startsWith(D.toLowerCase()) ? I = `${D} • ${I}` : I || (I = D);
       }
     }
-    const qe = i.community_rating ?? r?.community_rating ?? r?.rating, Ie = $ && this._optimisticFavorites[$] !== void 0 ? this._optimisticFavorites[$] : i.is_favorite || r?.is_favorite || !1, Ge = 125.66, wt = Ge * (1 - this._longPressProgress), O = this._supportsRemote(t);
+    const qe = i.community_rating ?? r?.community_rating ?? r?.rating, Ie = $ && this._optimisticFavorites[$] !== void 0 ? this._optimisticFavorites[$] : i.is_favorite || r?.is_favorite || !1, Ge = 125.66, $t = Ge * (1 - this._longPressProgress), O = this._supportsRemote(t);
     return n`
             <ha-card class="jellyha-now-playing ${U ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
                 ${U ? n`
@@ -8445,7 +8466,7 @@ let S = class extends z {
                                             ${Se.map((D) => n`<span class="genre-pill">${D}</span>`)}
                                         </div>
                                     ` : p}
-                                    ${this._overflowState < 1 && (_e || Ce) ? n`<div class="client-line">${_e ? n`<strong>${_e}</strong>` : p}${_e && Ce ? " " : ""}${Ce || p}</div>` : p}
+                                    ${this._overflowState < 1 && (_e || Ce) ? n`<div class="client-line">${_e ? n`<strong>${_e}</strong>` : p}${_e && Ce ? " · " : ""}${Ce || p}</div>` : p}
                                 </div>
                             </div>
 
@@ -8501,7 +8522,7 @@ let S = class extends z {
                                                     <circle cx="22" cy="22" r="20"
                                                         stroke="#ef4444" stroke-width="3" fill="none"
                                                         stroke-dasharray="${Ge}"
-                                                        stroke-dashoffset="${wt}"
+                                                        stroke-dashoffset="${$t}"
                                                         stroke-linecap="round"
                                                         transform="rotate(-90 22 22)" />
                                                 </svg>
@@ -9446,7 +9467,7 @@ S.styles = de`
             align-items: center;
             flex-wrap: wrap;
             gap: 5px 8px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             color: var(--secondary-text-color);
             opacity: 0.85;
             margin-top: 4px;
@@ -9454,12 +9475,12 @@ S.styles = de`
             line-height: 1.2;
         }
         .meta-year {
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
         .meta-dot {
             opacity: 0.45;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             line-height: 1;
         }
         .genre-pill {
@@ -9467,9 +9488,9 @@ S.styles = de`
             align-items: center;
             background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
             border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
-            padding: 1px 6px;
+            padding: 2px 7px;
             border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.80rem;
             color: var(--secondary-text-color);
             line-height: 1.2;
             font-weight: 500;
@@ -9482,13 +9503,13 @@ S.styles = de`
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
         }
         .client-line {
-            font-size: 0.75rem;
+            font-size: 0.80rem;
             color: var(--secondary-text-color);
-            opacity: 0.55;
+            opacity: 0.70;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 2px;
+            margin-top: 7px;
         }
 
         /* --- Info Bottom: Controls + Progress --- */
@@ -10390,15 +10411,15 @@ S.styles = de`
             align-items: center;
             flex-wrap: wrap;
             gap: 6px 8px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.85);
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
-            margin: 3px 0 6px 0 !important;
+            margin: 4px 0 7px 0 !important;
         }
 
         .idle-dot {
             opacity: 0.5;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
         }
 
         .idle-rating-pill {
@@ -10408,23 +10429,23 @@ S.styles = de`
             background: rgba(245, 158, 11, 0.25);
             border: 1px solid rgba(245, 158, 11, 0.45);
             color: #fbbf24;
-            padding: 1px 5px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.78rem;
             font-weight: 700;
             line-height: 1;
         }
 
         .idle-rating-pill ha-icon {
-            --mdc-icon-size: 12px;
+            --mdc-icon-size: 13px;
         }
 
         .idle-genre-pill {
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.16);
-            padding: 1px 6px;
+            padding: 2px 7px;
             border-radius: 4px;
-            font-size: 0.72rem;
+            font-size: 0.80rem;
             color: rgba(255, 255, 255, 0.9);
             line-height: 1.2;
         }
