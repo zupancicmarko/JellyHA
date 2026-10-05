@@ -82,19 +82,8 @@ Before installing JellyHA, ensure you have **HACS (Home Assistant Community Stor
 1. Copy `custom_components/jellyha` to your `config/custom_components/` directory.
 2. **Restart Home Assistant**.
 
-### Step 2: Add Dashboard Card Resource
-
-> **Important:** This step is required for the dashboard cards to display.
-
-1. Go to **Settings** -> **Dashboards**.
-2. Click the three-dot menu (**⋮**) in the top right -> **Resources**.
-3. Click **+ Add Resource**.
-4. Enter the URL:
-   - URL: `/jellyha/jellyha-cards.js`
-5. Select Resource type: **JavaScript Module**.
-6. Click **Create**.
-
-> Note: If you do not see the Resources menu, enable **Advanced Mode** in your Home Assistant user profile settings.
+> [!NOTE]
+> **Automatic Dashboard Cards Registration:** The dashboard cards (`jellyha-library-card` and `jellyha-now-playing-card`) are automatically registered into Home Assistant when the integration loads. You do **not** need to manually add `/jellyha/jellyha-cards.js` to Lovelace Resources anymore.
 
 ## Setup
 

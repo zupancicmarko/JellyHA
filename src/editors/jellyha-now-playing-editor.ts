@@ -288,6 +288,56 @@ export class JellyHANowPlayingEditor extends LitElement {
                 select: {
                   mode: 'dropdown',
                   options: [
+                    { value: 'random', label: localize(lang, 'editor.idle_source_random') || 'Random Library Media' },
+                    { value: 'movies', label: localize(lang, 'editor.media_type_movies') || 'Movies Only' },
+                    { value: 'series', label: localize(lang, 'editor.media_type_series') || 'TV Shows Only' },
+                    { value: 'recent', label: localize(lang, 'editor.idle_source_recent') || 'Recently Added' },
+                    { value: 'latest_movie', label: localize(lang, 'editor.idle_source_latest_movie') || 'Latest Movie Added' },
+                    { value: 'latest_episode', label: localize(lang, 'editor.idle_source_latest_episode') || 'Latest Episode Added' },
+                    { value: 'latest_both', label: localize(lang, 'editor.idle_source_latest_both') || 'Alternating Latest Movie & Episode' },
+                  ],
+                },
+              }}
+              .value=${
+                this._config.idle_content_source === 'movies' || (!this._config.idle_content_source && this._config.idle_media_type === 'movies')
+                  ? 'movies'
+                  : (this._config.idle_content_source === 'series' || (!this._config.idle_content_source && this._config.idle_media_type === 'series')
+                    ? 'series'
+                    : (this._config.idle_content_source || 'random'))
+              }
+              .label="${localize(lang, 'editor.idle_content_source') || 'Content to Showcase'}"
+              label="${localize(lang, 'editor.idle_content_source') || 'Content to Showcase'}"
+              @value-changed=${this._idleContentSourceChanged}
+            ></ha-selector>
+          </div>
+
+          ${(this._config.idle_content_source === 'recent') ? html`
+            <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  number: {
+                    min: 1,
+                    max: 50,
+                    step: 1,
+                    mode: 'box',
+                  },
+                }}
+                .value=${this._config.idle_recent_limit || 15}
+                .label="${localize(lang, 'editor.idle_recent_limit') || 'Number of Recent Items'}"
+                label="${localize(lang, 'editor.idle_recent_limit') || 'Number of Recent Items'}"
+                @value-changed=${this._idleRecentLimitChanged}
+              ></ha-selector>
+            </div>
+          ` : ''}
+
+          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
                     { value: 'backdrop', label: localize(lang, 'editor.idle_display_mode_backdrop') || 'Full Fanart Backdrop (Screensaver)' },
                     { value: 'card', label: localize(lang, 'editor.idle_display_mode_card') || 'Card Layout (Poster + Backdrop)' },
                   ],
@@ -300,43 +350,49 @@ export class JellyHANowPlayingEditor extends LitElement {
             ></ha-selector>
           </div>
 
-          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                select: {
-                  mode: 'dropdown',
-                  options: [
-                    { value: 'both', label: localize(lang, 'editor.media_type_both') || 'Movies & TV Shows' },
-                    { value: 'movies', label: localize(lang, 'editor.media_type_movies') || 'Movies Only' },
-                    { value: 'series', label: localize(lang, 'editor.media_type_series') || 'TV Shows Only' },
-                  ],
-                },
-              }}
-              .value=${this._config.idle_media_type || 'both'}
-              .label="${localize(lang, 'editor.idle_media_type') || 'Media Types to Showcase'}"
-              label="${localize(lang, 'editor.idle_media_type') || 'Media Types to Showcase'}"
-              @value-changed=${this._idleMediaTypeChanged}
-            ></ha-selector>
-          </div>
+          ${(this._config.idle_content_source === 'recent') ? html`
+            <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      { value: 'both', label: localize(lang, 'editor.media_type_both') || 'Movies & TV Shows' },
+                      { value: 'movies_episodes', label: localize(lang, 'editor.media_type_movies_episodes') || 'Movies & Episodes' },
+                      { value: 'movies', label: localize(lang, 'editor.media_type_movies') || 'Movies Only' },
+                      { value: 'series', label: localize(lang, 'editor.media_type_series') || 'TV Shows Only' },
+                      { value: 'episodes', label: localize(lang, 'editor.media_type_episodes') || 'Episodes Only' },
+                    ],
+                  },
+                }}
+                .value=${this._config.idle_media_type || 'both'}
+                .label="${localize(lang, 'editor.idle_media_type') || 'Media Types to Showcase'}"
+                label="${localize(lang, 'editor.idle_media_type') || 'Media Types to Showcase'}"
+                @value-changed=${this._idleMediaTypeChanged}
+              ></ha-selector>
+            </div>
+          ` : ''}
 
-          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                number: {
-                  min: 5,
-                  max: 120,
-                  step: 5,
-                  mode: 'box',
-                },
-              }}
-              .value=${this._config.idle_cycle_interval || 20}
-              .label="${localize(lang, 'editor.idle_cycle_interval') || 'Cycle Interval (seconds)'}"
-              label="${localize(lang, 'editor.idle_cycle_interval') || 'Cycle Interval (seconds)'}"
-              @value-changed=${this._idleCycleIntervalChanged}
-            ></ha-selector>
-          </div>
+          ${(this._config.idle_content_source !== 'latest_movie' && this._config.idle_content_source !== 'latest_episode') ? html`
+            <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  number: {
+                    min: 5,
+                    max: 120,
+                    step: 5,
+                    mode: 'box',
+                  },
+                }}
+                .value=${this._config.idle_cycle_interval || 20}
+                .label="${localize(lang, 'editor.idle_cycle_interval') || 'Cycle Interval (seconds)'}"
+                label="${localize(lang, 'editor.idle_cycle_interval') || 'Cycle Interval (seconds)'}"
+                @value-changed=${this._idleCycleIntervalChanged}
+              ></ha-selector>
+            </div>
+          ` : ''}
         ` : ''}
       </div>
     `;
@@ -345,6 +401,31 @@ export class JellyHANowPlayingEditor extends LitElement {
   private _idleBackdropCycleChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('idle_backdrop_cycle', target.checked);
+  }
+
+  private _idleContentSourceChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      if (value === 'movies') {
+        this._updateConfig('idle_content_source', 'movies');
+        this._updateConfig('idle_media_type', 'movies');
+      } else if (value === 'series') {
+        this._updateConfig('idle_content_source', 'series');
+        this._updateConfig('idle_media_type', 'series');
+      } else if (value === 'random') {
+        this._updateConfig('idle_content_source', 'random');
+        this._updateConfig('idle_media_type', 'both');
+      } else {
+        this._updateConfig('idle_content_source', value);
+      }
+    }
+  }
+
+  private _idleRecentLimitChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? Number(e.detail.value) : Number((e.target as any)?.value);
+    if (!isNaN(value)) {
+      this._updateConfig('idle_recent_limit', value);
+    }
   }
 
   private _idleDisplayModeChanged(e: CustomEvent): void {

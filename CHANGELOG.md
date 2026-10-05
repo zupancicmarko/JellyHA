@@ -5,6 +5,29 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.6] - 2026-10-05
+
+### Added
+- **Now Playing Card Idle Showcase Modes & Latest Media Spotlights**:
+  - Added `idle_content_source` configuration option with support for:
+    - `'latest_movie'`: Static spotlight of the newest movie added, sourced in real-time from `sensor.jellyha_latest_movie`.
+    - `'latest_episode'`: Static spotlight of the newest episode added, sourced in real-time from `sensor.jellyha_latest_episode`.
+    - `'latest_both'`: Alternating showcase between the newest movie and newest episode.
+    - `'recent'`: Chronological showcase of the newest library additions with configurable limit via `idle_recent_limit` (default: 15, range: 1–50).
+    - `'random'`: Default shuffle behavior preserving complete backwards compatibility.
+  - Added dedicated media type filtering for Recently Added showcases:
+    - *Movies & TV Shows* (`all`)
+    - *Movies only* (`movies`)
+    - *TV Shows only* (`tvshows`)
+    - *Movies & Episodes* (`movies_episodes`)
+  - Added dynamic spotlight badge labeling: displays `LATEST MOVIE` and `LATEST EPISODE` pills with glassmorphic styling, seamlessly integrated with `show_media_type_badge` and `badge_style` (`poster`, `header`, `inline`, `none`).
+  - Unified display settings across Active Playback and Idle Showcase: idle modes now directly honor `show_title`, `show_year`, `show_runtime`, `show_ratings`, `show_genres`, `show_media_type_badge`, `show_subtitle`, and `show_description`.
+
+### Fixed
+- **Lovelace Custom Card Picker Deduplication**:
+  - Added duplicate registration guards in `src/cards/jellyha-library-card.ts` and `src/cards/jellyha-now-playing-card.ts` to ensure cards are not pushed to `window.customCards` more than once if evaluated multiple times.
+  - Streamlined installation docs across `README.md`, `info.md`, and `docs/troubleshooting.md` to clarify that manual Lovelace resource registration is no longer required.
+
 ## [1.5.5] - 2026-10-05
 
 ### Fixed

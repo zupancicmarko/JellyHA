@@ -8,18 +8,27 @@ Common troubleshooting steps and solutions for JellyHA integration and dashboard
 
 ### Error: "Custom element doesn't exist: jellyha-library-card"
 
-This error indicates that the frontend JavaScript card bundle was not loaded by Home Assistant.
+This error indicates that the frontend JavaScript card bundle was not yet loaded or cached by your browser.
 
-1. **Verify Dashboard Resource URL:**
-   - Navigate to **Settings -> Dashboards -> Resources** (three-dot menu in the upper right corner).
-   - Confirm that `/jellyha/jellyha-cards.js` exists and is set to **JavaScript Module**.
-   - If the Resources menu is missing, enable **Advanced Mode** in your Home Assistant user profile.
+1. **Restart Home Assistant:**
+   - The integration automatically registers the frontend card bundle globally on startup. Restart Home Assistant to ensure the backend registers the frontend path.
 2. **Clear Browser Cache:**
    - Force reload your browser using `Ctrl + F5` (Windows/Linux) or `Cmd + Shift + R` (macOS).
    - Test in a Private / Incognito window or the Home Assistant mobile companion app.
-3. **Re-download Card Resource:**
+3. **Re-download Integration:**
    - If installed via HACS: Go to HACS -> JellyHA -> three dots -> **Redownload**.
    - Restart Home Assistant after redownloading.
+
+---
+
+### Duplicate Cards Shown in "Add to dashboard" Picker
+
+If you see duplicate entries for **JellyHA Library** or **JellyHA Now Playing** when adding a card:
+
+1. JellyHA automatically registers cards globally via Home Assistant's backend.
+2. Navigate to **Settings → Dashboards → Resources** (click the three-dot menu in the upper right).
+3. If `/jellyha/jellyha-cards.js` is listed there from a previous manual configuration, **delete** it.
+4. Hard-refresh your browser (`Ctrl + F5` or `Cmd + Shift + R`).
 
 ---
 
