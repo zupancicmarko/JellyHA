@@ -244,10 +244,12 @@ const existing = customElements.get('ha-bar-media-player');
 if (existing) {
     patchBarMediaPlayer(existing);
 } else {
-    customElements.whenDefined('ha-bar-media-player').then(() => {
-        const el = customElements.get('ha-bar-media-player');
-        if (el) patchBarMediaPlayer(el);
-    });
+    if (typeof customElements.whenDefined === 'function') {
+        customElements.whenDefined('ha-bar-media-player').then(() => {
+            const el = customElements.get('ha-bar-media-player');
+            if (el) patchBarMediaPlayer(el);
+        }).catch(() => {});
+    }
 
     if (!(customElements.define as any).__jellyha_bar_patched) {
         // Take define and get from the same registry. If this runs before HA's scoped

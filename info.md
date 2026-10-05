@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.5.4** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.5** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,11 +8,11 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.5.4
+### 🆕 What's new in v1.5.5
 
-- 📱 **Device Name Display on Now Playing Card** — Added `show_device_name` option to display the active playback device (e.g. "LG Smart TV") alongside user and client names (PR #54 by @idomoshe).
-- 🎨 **Refined Metadata Typography & Spacing** — Enhanced legibility with scaled metadata badges/pills (`0.80rem`–`0.85rem`) and added vertical breathing room (`margin-top: 7px`) between the genres and client/device rows.
-- 🌐 **Full 8-Language Localization** — Complete visual editor translations for the new device name setting across English, German, French, Spanish, Italian, Dutch, Slovenian, and Russian.
+- 🛡️ **HA 2026.10 Compatibility & Scoped Registry Sync** — Fixed an issue where cards could report "Custom element doesn't exist" in Home Assistant Core 2026.10+ due to the frontend's scoped custom element registry polyfill replacing the native registry after initial script evaluation (fixes #56).
+- ⚡ **Resilient Custom Element Lifecycle** — Added dynamic hooks on `window.customElements` and just-in-time element definition to ensure cards and dialogs are always available regardless of whether loaded via `add_extra_js_url`, Lovelace resources, or both.
+- 🔧 **Seek Polyfill Hardening** — Added capability guarding for custom element promise methods across all browser environments.
 
 ---
 
