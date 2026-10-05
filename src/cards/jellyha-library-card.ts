@@ -25,7 +25,7 @@ import '../editors/jellyha-library-editor';
 import '../components/jellyha-media-item';
 
 // Register card in the custom cards array
-const CARD_VERSION = '1.5.5';
+const CARD_VERSION = '1.5.6';
 
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${CARD_VERSION} `,
@@ -35,12 +35,14 @@ console.info(
 
 // Register card for picker
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: 'jellyha-library-card',
-  name: 'JellyHA Library',
-  description: 'Display media from Jellyfin',
-  preview: true,
-});
+if (!window.customCards.some(card => card.type === 'jellyha-library-card')) {
+  window.customCards.push({
+    type: 'jellyha-library-card',
+    name: 'JellyHA Library',
+    description: 'Display media from Jellyfin',
+    preview: true,
+  });
+}
 
 const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   title: '',

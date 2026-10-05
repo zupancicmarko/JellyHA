@@ -62,6 +62,7 @@ export interface MediaItem {
     rating_imdb?: string;
     rating_tmdb?: string;
     description?: string;
+    tagline?: string;
     poster_url: string;
     series_poster_url?: string;
     backdrop_url: string;
@@ -237,7 +238,9 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     idle_backdrop_cycle?: boolean;
     idle_cycle_interval?: number;
     idle_display_mode?: 'backdrop' | 'card';
-    idle_media_type?: 'both' | 'movies' | 'series';
+    idle_media_type?: 'both' | 'movies' | 'series' | 'movies_episodes' | 'episodes';
+    idle_content_source?: 'random' | 'movies' | 'series' | 'recent' | 'latest_movie' | 'latest_episode' | 'latest_both';
+    idle_recent_limit?: number;
     theme?: 'auto' | 'light' | 'dark';
 }
 

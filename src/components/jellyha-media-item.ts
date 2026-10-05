@@ -82,8 +82,8 @@ export class JellyHAMediaItem extends LitElement {
               
               ${showMediaTypeBadge && !isPlaying && !item.series_name
         ? html`<span class="list-type-badge ${item.series_name ? 'series' : (item.type === 'Movie' ? 'movie' : 'series')}">
-                    ${item.series_name && item.season !== undefined && item.episode !== undefined
-            ? `S${String(item.season).padStart(2, '0')}E${String(item.episode).padStart(2, '0')}`
+                    ${item.series_name && item.season != null && item.episode != null && !isNaN(Number(item.season)) && !isNaN(Number(item.episode))
+            ? `S${String(Number(item.season)).padStart(2, '0')}E${String(Number(item.episode)).padStart(2, '0')}`
             : (item.type === 'Movie' ? 'Movie' : 'Series')}
                   </span>`
         : nothing}
@@ -113,8 +113,8 @@ export class JellyHAMediaItem extends LitElement {
           <div class="list-metadata">
             ${showMediaTypeBadge && !isPlaying
         ? html`<span class="list-type-badge ${item.series_name ? 'series' : (item.type === 'Movie' ? 'movie' : 'series')}">
-                  ${item.series_name && item.season !== undefined && item.episode !== undefined
-            ? `S${String(item.season).padStart(2, '0')}E${String(item.episode).padStart(2, '0')}`
+                  ${item.series_name && item.season != null && item.episode != null && !isNaN(Number(item.season)) && !isNaN(Number(item.episode))
+            ? `S${String(Number(item.season)).padStart(2, '0')}E${String(Number(item.episode)).padStart(2, '0')}`
             : (item.type === 'Movie' ? 'Movie' : 'Series')}
                 </span>`
         : nothing}

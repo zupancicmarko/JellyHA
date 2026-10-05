@@ -15,12 +15,14 @@ import '../editors/jellyha-now-playing-editor';
 
 // Register card in the custom cards array
 window.customCards = window.customCards || [];
-window.customCards.push({
-    type: 'jellyha-now-playing-card',
-    name: 'JellyHA Now Playing',
-    description: 'Display currently playing media from Jellyfin',
-    preview: true,
-});
+if (!window.customCards.some(card => card.type === 'jellyha-now-playing-card')) {
+    window.customCards.push({
+        type: 'jellyha-now-playing-card',
+        name: 'JellyHA Now Playing',
+        description: 'Display currently playing media from Jellyfin',
+        preview: true,
+    });
+}
 
 @customElement('jellyha-now-playing-card')
 export class JellyHANowPlayingCard extends LitElement {
@@ -246,12 +248,15 @@ export class JellyHANowPlayingCard extends LitElement {
         const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
 
         // Media type badge text
-        const season = attributes.season !== undefined ? attributes.season : ((stateObj.attributes as any).media_season !== undefined ? (stateObj.attributes as any).media_season : cachedItem?.season);
-        const episode = attributes.episode !== undefined ? attributes.episode : ((stateObj.attributes as any).media_episode !== undefined ? (stateObj.attributes as any).media_episode : cachedItem?.episode);
-        const isEpisodeItem = (mediaType === 'episode' || mediaType === 'tvshow') && season !== undefined && episode !== undefined;
+        const rawSeason = attributes.season !== undefined && attributes.season !== null ? attributes.season : ((stateObj.attributes as any).media_season !== undefined && (stateObj.attributes as any).media_season !== null ? (stateObj.attributes as any).media_season : cachedItem?.season);
+        const rawEpisode = attributes.episode !== undefined && attributes.episode !== null ? attributes.episode : ((stateObj.attributes as any).media_episode !== undefined && (stateObj.attributes as any).media_episode !== null ? (stateObj.attributes as any).media_episode : cachedItem?.episode);
+        const numSeason = Number(rawSeason);
+        const numEpisode = Number(rawEpisode);
+        const hasValidEp = rawSeason != null && rawEpisode != null && !isNaN(numSeason) && !isNaN(numEpisode) && numSeason >= 0 && numEpisode >= 0;
+        const isEpisodeItem = (mediaType === 'episode' || mediaType === 'tvshow') && hasValidEp;
         const badgeText = isEpisodeItem
-            ? `S${String(season).padStart(2, '0')}E${String(episode).padStart(2, '0')}`
-            : (mediaType === 'movie' ? 'MOVIE' : (mediaType === 'episode' || mediaType === 'tvshow' ? 'EPISODE' : (attributes.media_type || cachedItem?.type || '')));
+            ? `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`
+            : (mediaType === 'movie' ? 'MOVIE' : (mediaType === 'episode' ? 'EPISODE' : (mediaType === 'tvshow' ? 'SERIES' : (attributes.media_type || cachedItem?.type || ''))));
 
         // Badge placement style (applies to both Movies and TV Shows; inline applies to TV Shows)
         const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
@@ -267,7 +272,7 @@ export class JellyHANowPlayingCard extends LitElement {
                 showHeaderBadge = true;
             } else if (badgeStyle === 'inline') {
                 if (isEpisodeItem) {
-                    const epPrefix = `S${String(season).padStart(2, '0')}E${String(episode).padStart(2, '0')}`;
+                    const epPrefix = `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`;
                     if (displayTitle && !displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
                         displayTitle = `${epPrefix} • ${displayTitle}`;
                     } else if (!displayTitle) {
@@ -538,6 +543,51 @@ export class JellyHANowPlayingCard extends LitElement {
         return this._renderIdleBackdropMode(currentItem, prevItem, lang);
     }
 
+    private _getItemFromLatestSensor(type: 'movie' | 'episode'): MediaItem | null {
+        if (!this.hass?.states) return null;
+
+        const configEntity = this._config?.entity || '';
+        let prefix = 'jellyha';
+        if (configEntity.startsWith('media_player.')) {
+            const raw = configEntity.replace(/^media_player\./, '');
+            prefix = raw.includes('_') ? raw.substring(0, raw.lastIndexOf('_')) : raw;
+        }
+
+        const sensorEntityId = type === 'movie'
+            ? `sensor.${prefix}_latest_movie`
+            : `sensor.${prefix}_latest_episode`;
+
+        const stateObj = this.hass.states[sensorEntityId] || this.hass.states[`sensor.jellyha_latest_${type}`];
+        if (!stateObj || !stateObj.attributes || stateObj.state === 'unavailable' || stateObj.state === 'unknown') {
+            return null;
+        }
+
+        const attrs = stateObj.attributes;
+        return {
+            id: attrs.item_id || stateObj.state,
+            name: attrs.title || attrs.name || stateObj.state,
+            type: type === 'movie' ? 'Movie' : 'Episode',
+            year: attrs.year,
+            description: attrs.overview || attrs.description,
+            genres: attrs.genres || [],
+            rating: attrs.rating,
+            community_rating: attrs.community_rating,
+            official_rating: attrs.official_rating,
+            critic_rating: attrs.critic_rating,
+            runtime_minutes: attrs.runtime_minutes,
+            poster_url: attrs.poster_url,
+            series_poster_url: attrs.series_poster_url as string | undefined,
+            backdrop_url: attrs.backdrop_url,
+            series_name: attrs.series_name,
+            season: attrs.season,
+            episode: attrs.episode,
+            date_added: attrs.date_added,
+            dynamic_range: attrs.dynamic_range,
+            resolution: attrs.resolution,
+            jellyfin_url: (attrs.jellyfin_url as string) || '',
+        } as unknown as MediaItem;
+    }
+
     private _renderIdleBackdropMode(currentItem: MediaItem, prevItem: MediaItem | null, lang: string): TemplateResult {
         const currentBackdrop = addImageParams(currentItem.backdrop_url || currentItem.poster_url, 960);
         const prevBackdrop = prevItem ? addImageParams(prevItem.backdrop_url || prevItem.poster_url, 960) : '';
@@ -545,7 +595,76 @@ export class JellyHANowPlayingCard extends LitElement {
         const rawRating = currentItem.community_rating ?? currentItem.rating;
         const communityRating = (typeof rawRating === 'number' && !isNaN(rawRating) && rawRating > 0) ? rawRating.toFixed(1) : (rawRating ? String(rawRating) : '');
         const runtime = currentItem.runtime_minutes ? formatRuntime(currentItem.runtime_minutes) : '';
-        const genres = currentItem.genres && currentItem.genres.length > 0 ? currentItem.genres.slice(0, 3) : [];
+        const rawGenres = currentItem.genres && currentItem.genres.length > 0 ? currentItem.genres.slice(0, 3) : [];
+        const genres = this._config.show_genres !== false ? rawGenres : [];
+
+        // Media Type Badge & Option B Latest Spotlight Badge
+        const showBadge = this._config.show_media_type_badge !== false && this._config.badge_style !== 'none';
+        const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
+        const isInlineBadge = showBadge && badgeStyle === 'inline';
+        const isTopBadge = showBadge && !isInlineBadge;
+
+        const isMovie = currentItem.type === 'Movie';
+        const isEpisode = currentItem.type === 'Episode';
+        const isSeries = currentItem.type === 'Series' || (!isMovie && !isEpisode);
+        const rawSeason = currentItem.season;
+        const rawEpisode = currentItem.episode;
+        const numSeason = Number(rawSeason);
+        const numEpisode = Number(rawEpisode);
+        const hasValidEp = rawSeason != null && rawEpisode != null && !isNaN(numSeason) && !isNaN(numEpisode) && numSeason >= 0 && numEpisode >= 0;
+        const isEpisodeItem = isEpisode && hasValidEp;
+        const epPrefix = isEpisodeItem
+            ? `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`
+            : '';
+
+        let displayTitle = '';
+        let subtitle = '';
+
+        if (isEpisode) {
+            if (currentItem.series_name) {
+                displayTitle = currentItem.series_name;
+                const epName = currentItem.name && currentItem.name !== currentItem.series_name ? currentItem.name : '';
+                if (epPrefix && epName) {
+                    subtitle = `${epPrefix} · ${epName}`;
+                } else if (epPrefix) {
+                    subtitle = epPrefix;
+                } else {
+                    subtitle = epName || currentItem.tagline || '';
+                }
+            } else {
+                displayTitle = currentItem.name || '';
+                subtitle = epPrefix ? (currentItem.tagline ? `${epPrefix} · ${currentItem.tagline}` : epPrefix) : (currentItem.tagline || '');
+            }
+        } else {
+            displayTitle = currentItem.name || '';
+            subtitle = currentItem.tagline || '';
+        }
+
+        // Show subtitle setting check
+        if (this._config.show_subtitle === false) {
+            subtitle = '';
+            if (showBadge && isInlineBadge && isEpisodeItem && epPrefix) {
+                if (!displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
+                    displayTitle = `${epPrefix} · ${displayTitle}`;
+                }
+            }
+        }
+
+        const isFirstOfItsType = this._idleItems.findIndex(it => {
+            if (isMovie) return it.type === 'Movie';
+            if (isEpisode) return it.type === 'Episode';
+            return it.type === 'Series' || (it.type !== 'Movie' && it.type !== 'Episode');
+        }) === this._currentIdleIndex;
+
+        const isLatest = this._config.idle_content_source === 'latest_movie' ||
+                         this._config.idle_content_source === 'latest_episode' ||
+                         this._config.idle_content_source === 'latest_both' ||
+                         (this._config.idle_content_source === 'recent' && isFirstOfItsType);
+
+        const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
+        const badgeText = isLatest
+            ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? localize(lang, 'episode') || 'Episode' : localize(lang, 'series') || 'Series'));
 
         return html`
             <ha-card class="jellyha-now-playing idle-showcase-card">
@@ -557,14 +676,31 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="idle-backdrop-scrim"></div>
                 </div>
 
+                ${isTopBadge ? html`
+                    <span class="media-type-badge idle-backdrop-top-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                ` : nothing}
+
                 <div class="idle-bottom-content">
-                    <h2 class="idle-title">${currentItem.name}</h2>
+                    <div class="title-row">
+                        ${this._config.show_title !== false ? html`
+                            <h2 class="idle-title">${displayTitle}</h2>
+                        ` : nothing}
+                    </div>
+                    ${subtitle ? html`
+                        <div class="subtitle-row">
+                            <span class="subtitle">${subtitle}</span>
+                        </div>
+                    ` : nothing}
                     <div class="idle-meta-row">
-                        ${currentItem.year ? html`<span>${currentItem.year}</span>` : nothing}
-                        ${currentItem.year && (runtime || communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                        ${runtime ? html`<span>${runtime}</span>` : nothing}
-                        ${runtime && (communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                        ${communityRating ? html`
+                        ${isInlineBadge ? html`
+                            <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                            <span class="idle-dot">•</span>
+                        ` : nothing}
+                        ${this._config.show_year !== false && currentItem.year ? html`<span class="idle-meta-text">${currentItem.year}</span>` : nothing}
+                        ${this._config.show_year !== false && currentItem.year && ((this._config.show_runtime !== false && runtime) || (this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                        ${this._config.show_runtime !== false && runtime ? html`<span class="idle-meta-text">${runtime}</span>` : nothing}
+                        ${this._config.show_runtime !== false && runtime && ((this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                        ${this._config.show_ratings !== false && communityRating ? html`
                             <span class="idle-rating-pill">
                                 <ha-icon icon="mdi:star"></ha-icon>
                                 <span>${communityRating}</span>
@@ -572,7 +708,7 @@ export class JellyHANowPlayingCard extends LitElement {
                         ` : nothing}
                         ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
                     </div>
-                    ${currentItem.description ? html`
+                    ${this._config.show_description !== false && currentItem.description ? html`
                         <p class="idle-overview">${currentItem.description}</p>
                     ` : nothing}
                 </div>
@@ -584,14 +720,84 @@ export class JellyHANowPlayingCard extends LitElement {
         const backdropUrl = addImageParams(item.backdrop_url || item.poster_url, 960);
         const prevBackdrop = prevItem ? addImageParams(prevItem.backdrop_url || prevItem.poster_url, 960) : '';
 
-        const posterUrl = addImageParams(item.poster_url || item.backdrop_url, 320);
-        const prevPoster = prevItem ? addImageParams(prevItem.poster_url || prevItem.backdrop_url, 320) : '';
+        const posterSrc = (this._config.use_series_image && item.series_poster_url) ? item.series_poster_url : (item.poster_url || item.backdrop_url);
+        const posterUrl = addImageParams(posterSrc, 320);
+
+        const prevPosterSrc = (prevItem && this._config.use_series_image && prevItem.series_poster_url) ? prevItem.series_poster_url : (prevItem?.poster_url || prevItem?.backdrop_url);
+        const prevPoster = prevPosterSrc ? addImageParams(prevPosterSrc, 320) : '';
 
         const rawRating = item.community_rating ?? item.rating;
         const communityRating = (typeof rawRating === 'number' && !isNaN(rawRating) && rawRating > 0) ? rawRating.toFixed(1) : (rawRating ? String(rawRating) : '');
         const runtime = item.runtime_minutes ? formatRuntime(item.runtime_minutes) : '';
-        const genres = item.genres && item.genres.length > 0 ? item.genres.slice(0, 3) : [];
-        const subtitle = item.tagline || '';
+        const rawGenres = item.genres && item.genres.length > 0 ? item.genres.slice(0, 3) : [];
+        const genres = this._config.show_genres !== false ? rawGenres : [];
+
+        // Badge placement style
+        const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
+        const showBadge = this._config.show_media_type_badge !== false && badgeStyle !== 'none';
+        const isInlineBadge = showBadge && badgeStyle === 'inline';
+
+        const isMovie = item.type === 'Movie';
+        const isEpisode = item.type === 'Episode';
+        const isSeries = item.type === 'Series' || (!isMovie && !isEpisode);
+        const rawSeason = item.season;
+        const rawEpisode = item.episode;
+        const numSeason = Number(rawSeason);
+        const numEpisode = Number(rawEpisode);
+        const hasValidEp = rawSeason != null && rawEpisode != null && !isNaN(numSeason) && !isNaN(numEpisode) && numSeason >= 0 && numEpisode >= 0;
+        const isEpisodeItem = isEpisode && hasValidEp;
+        const epPrefix = isEpisodeItem
+            ? `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`
+            : '';
+
+        let displayTitle = '';
+        let subtitle = '';
+
+        if (isEpisode) {
+            if (item.series_name) {
+                displayTitle = item.series_name;
+                const epName = item.name && item.name !== item.series_name ? item.name : '';
+                if (epPrefix && epName) {
+                    subtitle = `${epPrefix} · ${epName}`;
+                } else if (epPrefix) {
+                    subtitle = epPrefix;
+                } else {
+                    subtitle = epName || item.tagline || '';
+                }
+            } else {
+                displayTitle = item.name || '';
+                subtitle = epPrefix ? (item.tagline ? `${epPrefix} · ${item.tagline}` : epPrefix) : (item.tagline || '');
+            }
+        } else {
+            displayTitle = item.name || '';
+            subtitle = item.tagline || '';
+        }
+
+        // Show subtitle setting check
+        if (this._config.show_subtitle === false) {
+            subtitle = '';
+            if (showBadge && isInlineBadge && isEpisodeItem && epPrefix) {
+                if (!displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
+                    displayTitle = `${epPrefix} · ${displayTitle}`;
+                }
+            }
+        }
+
+        const isFirstOfItsType = this._idleItems.findIndex(it => {
+            if (isMovie) return it.type === 'Movie';
+            if (isEpisode) return it.type === 'Episode';
+            return it.type === 'Series' || (it.type !== 'Movie' && it.type !== 'Episode');
+        }) === this._currentIdleIndex;
+
+        const isLatest = this._config.idle_content_source === 'latest_movie' ||
+                         this._config.idle_content_source === 'latest_episode' ||
+                         this._config.idle_content_source === 'latest_both' ||
+                         (this._config.idle_content_source === 'recent' && isFirstOfItsType);
+
+        const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
+        const badgeText = isLatest
+            ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? localize(lang, 'episode') || 'Episode' : localize(lang, 'series') || 'Series'));
 
         return html`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
@@ -612,12 +818,20 @@ export class JellyHANowPlayingCard extends LitElement {
                             ${prevPoster ? html`
                                 <img class="idle-poster-img prev-poster ${this._idleFadeOut ? 'fade-out' : ''}" src="${prevPoster}" alt="" />
                             ` : nothing}
+                            ${showBadge && badgeStyle === 'poster' ? html`
+                                <span class="poster-badge media-type-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                            ` : nothing}
                         </div>
 
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="title-row">
-                                    <span class="title" title="${item.name}">${item.name}</span>
+                                    ${this._config.show_title !== false ? html`
+                                        <span class="title" title="${item.series_name ? `${item.series_name} - ${item.name}` : displayTitle}">${displayTitle}</span>
+                                    ` : nothing}
+                                    ${showBadge && badgeStyle === 'header' ? html`
+                                        <span class="media-type-badge header-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                    ` : nothing}
                                 </div>
                                 ${subtitle ? html`
                                     <div class="subtitle-row">
@@ -625,11 +839,15 @@ export class JellyHANowPlayingCard extends LitElement {
                                     </div>
                                 ` : nothing}
                                 <div class="meta-line idle-meta-row">
-                                    ${item.year ? html`<span>${item.year}</span>` : nothing}
-                                    ${item.year && (runtime || communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                                    ${runtime ? html`<span>${runtime}</span>` : nothing}
-                                    ${runtime && (communityRating || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                                    ${communityRating ? html`
+                                    ${showBadge && badgeStyle === 'inline' ? html`
+                                        <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                        <span class="idle-dot">•</span>
+                                    ` : nothing}
+                                    ${this._config.show_year !== false && item.year ? html`<span class="idle-meta-text">${item.year}</span>` : nothing}
+                                    ${this._config.show_year !== false && item.year && ((this._config.show_runtime !== false && runtime) || (this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                                    ${this._config.show_runtime !== false && runtime ? html`<span class="idle-meta-text">${runtime}</span>` : nothing}
+                                    ${this._config.show_runtime !== false && runtime && ((this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
+                                    ${this._config.show_ratings !== false && communityRating ? html`
                                         <span class="idle-rating-pill">
                                             <ha-icon icon="mdi:star"></ha-icon>
                                             <span>${communityRating}</span>
@@ -637,7 +855,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ` : nothing}
                                     ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
                                 </div>
-                                ${item.description ? html`
+                                ${this._config.show_description !== false && item.description ? html`
                                     <div class="idle-card-desc">${item.description}</div>
                                 ` : nothing}
                             </div>
@@ -700,6 +918,32 @@ export class JellyHANowPlayingCard extends LitElement {
         this._fetchingIdleItems = true;
 
         try {
+            const source = this._config?.idle_content_source || 'random';
+
+            // 1. Direct sensor extraction for static latest spotlights
+            if (source === 'latest_movie' || source === 'latest_episode' || source === 'latest_both') {
+                const items: MediaItem[] = [];
+                if (source === 'latest_movie' || source === 'latest_both') {
+                    const movie = this._getItemFromLatestSensor('movie');
+                    if (movie) items.push(movie);
+                }
+                if (source === 'latest_episode' || source === 'latest_both') {
+                    const ep = this._getItemFromLatestSensor('episode');
+                    if (ep) items.push(ep);
+                }
+
+                if (items.length > 0) {
+                    this._idleItems = items;
+                    this._currentIdleIndex = 0;
+                    this._prevIdleIndex = null;
+                    this._idleFadeOut = false;
+                    this._startIdleTimer();
+                    this.requestUpdate();
+                    return;
+                }
+                // Fallback to WebSocket get_items if sensor not present
+            }
+
             const configEntity = this._config?.entity || '';
             let libraryEntity = Object.keys(this.hass?.states || {}).find(
                 e => e.startsWith('sensor.jellyha') && e.endsWith('_library')
@@ -711,17 +955,45 @@ export class JellyHANowPlayingCard extends LitElement {
                 if (this.hass?.states[scoped]) libraryEntity = scoped;
             }
 
-            const wsMsg: any = {
-                type: 'jellyha/get_items',
-            };
-            if (libraryEntity) wsMsg.server_entity_id = libraryEntity;
-            if (configEntity) wsMsg.entity_id = configEntity;
+            const mediaTypeFilter = (source === 'movies' || source === 'series')
+                ? source
+                : (this._config.idle_media_type || 'both');
+            const isCardMode = this._config.idle_display_mode === 'card';
+            const limit = Math.max(1, this._config.idle_recent_limit || 15);
 
-            const res = await this.hass.callWS<{ items: MediaItem[] }>(wsMsg);
+            let res: { items: MediaItem[] } | null = null;
+            if (source === 'recent') {
+                let itemTypes = ['Movie', 'Series'];
+                if (mediaTypeFilter === 'movies') itemTypes = ['Movie'];
+                else if (mediaTypeFilter === 'series') itemTypes = ['Series'];
+                else if (mediaTypeFilter === 'movies_episodes') itemTypes = ['Movie', 'Episode'];
+                else if (mediaTypeFilter === 'episodes') itemTypes = ['Episode'];
+
+                try {
+                    const latestMsg: any = {
+                        type: 'jellyha/get_latest_items',
+                        item_types: itemTypes,
+                        limit: Math.max(limit * 3, 100),
+                    };
+                    if (libraryEntity) latestMsg.server_entity_id = libraryEntity;
+                    if (configEntity) latestMsg.entity_id = configEntity;
+                    res = await this.hass.callWS<{ items: MediaItem[] }>(latestMsg);
+                } catch (e) {
+                    console.warn('[JellyHA] get_latest_items failed, falling back to get_items:', e);
+                }
+            }
+
+            if (!res || !Array.isArray(res.items) || res.items.length === 0) {
+                const wsMsg: any = {
+                    type: 'jellyha/get_items',
+                };
+                if (libraryEntity) wsMsg.server_entity_id = libraryEntity;
+                if (configEntity) wsMsg.entity_id = configEntity;
+
+                res = await this.hass.callWS<{ items: MediaItem[] }>(wsMsg);
+            }
+
             if (res && Array.isArray(res.items) && res.items.length > 0) {
-                const mediaTypeFilter = this._config.idle_media_type || 'both';
-                const isCardMode = this._config.idle_display_mode === 'card';
-
                 let filtered = res.items.filter(it => {
                     if (isCardMode) {
                         return !!it.poster_url || !!it.backdrop_url;
@@ -732,11 +1004,57 @@ export class JellyHANowPlayingCard extends LitElement {
                 if (mediaTypeFilter === 'movies') {
                     filtered = filtered.filter(it => it.type === 'Movie');
                 } else if (mediaTypeFilter === 'series') {
-                    filtered = filtered.filter(it => it.type === 'Series');
+                    filtered = filtered.filter(it => it.type === 'Series' || it.type === 'Episode');
+                } else if (mediaTypeFilter === 'movies_episodes') {
+                    filtered = filtered.filter(it => it.type === 'Movie' || it.type === 'Episode');
+                } else if (mediaTypeFilter === 'episodes') {
+                    filtered = filtered.filter(it => it.type === 'Episode');
                 }
 
                 if (filtered.length > 0) {
-                    this._idleItems = this._shuffleArray(filtered);
+                    if (source === 'recent') {
+                        filtered.sort((a, b) => {
+                            const timeA = a.date_added ? new Date(a.date_added).getTime() : 0;
+                            const timeB = b.date_added ? new Date(b.date_added).getTime() : 0;
+                            return timeB - timeA;
+                        });
+                        const limit = Math.max(1, this._config.idle_recent_limit || 15);
+                        let sliced = filtered.slice(0, limit);
+
+                        if (mediaTypeFilter === 'movies_episodes') {
+                            const hasMovie = sliced.some(it => it.type === 'Movie');
+                            const hasEp = sliced.some(it => it.type === 'Episode');
+                            if (!hasMovie) {
+                                const latestMovie = filtered.find(it => it.type === 'Movie');
+                                if (latestMovie) sliced.push(latestMovie);
+                            }
+                            if (!hasEp) {
+                                const latestEp = filtered.find(it => it.type === 'Episode');
+                                if (latestEp) sliced.push(latestEp);
+                            }
+                        } else if (mediaTypeFilter === 'both') {
+                            const hasMovie = sliced.some(it => it.type === 'Movie');
+                            const hasSeries = sliced.some(it => it.type === 'Series');
+                            if (!hasMovie) {
+                                const latestMovie = filtered.find(it => it.type === 'Movie');
+                                if (latestMovie) sliced.push(latestMovie);
+                            }
+                            if (!hasSeries) {
+                                const latestSeries = filtered.find(it => it.type === 'Series');
+                                if (latestSeries) sliced.push(latestSeries);
+                            }
+                        }
+                        this._idleItems = sliced;
+                    } else if (source === 'latest_movie') {
+                        const movie = filtered.find(it => it.type === 'Movie');
+                        this._idleItems = movie ? [movie] : filtered.slice(0, 1);
+                    } else if (source === 'latest_episode') {
+                        const ep = filtered.find(it => it.type === 'Episode' || it.type === 'Series');
+                        this._idleItems = ep ? [ep] : filtered.slice(0, 1);
+                    } else {
+                        this._idleItems = this._shuffleArray(filtered);
+                    }
+
                     this._currentIdleIndex = 0;
                     this._prevIdleIndex = null;
                     this._idleFadeOut = false;
@@ -1429,8 +1747,19 @@ export class JellyHANowPlayingCard extends LitElement {
         super.updated(changedProps);
         if (changedProps.has('hass')) {
             this._checkLayout();
-            if (this._config?.idle_backdrop_cycle && this._idleItems.length === 0 && !this._fetchingIdleItems) {
-                this._fetchIdleLibraryItems();
+            if (this._config?.idle_backdrop_cycle) {
+                if (this._idleItems.length === 0 && !this._fetchingIdleItems) {
+                    this._fetchIdleLibraryItems();
+                } else if (this._config.idle_content_source === 'latest_movie' || this._config.idle_content_source === 'latest_episode' || this._config.idle_content_source === 'latest_both') {
+                    // Check if latest sensor changed
+                    const movieSensor = (this._config.idle_content_source === 'latest_movie' || this._config.idle_content_source === 'latest_both') ? this._getItemFromLatestSensor('movie') : null;
+                    const epSensor = (this._config.idle_content_source === 'latest_episode' || this._config.idle_content_source === 'latest_both') ? this._getItemFromLatestSensor('episode') : null;
+                    const currentIds = this._idleItems.map(i => i.id).join(',');
+                    const newIds = [movieSensor?.id, epSensor?.id].filter(Boolean).join(',');
+                    if (newIds && newIds !== currentIds && !this._fetchingIdleItems) {
+                        this._fetchIdleLibraryItems();
+                    }
+                }
             }
         }
         if (changedProps.has('_config')) {
@@ -1440,7 +1769,9 @@ export class JellyHANowPlayingCard extends LitElement {
             } else {
                 const modeChanged = !oldConfig || oldConfig.idle_display_mode !== this._config.idle_display_mode;
                 const filterChanged = !oldConfig || oldConfig.idle_media_type !== this._config.idle_media_type;
-                if (modeChanged || filterChanged || this._idleItems.length === 0) {
+                const sourceChanged = !oldConfig || oldConfig.idle_content_source !== this._config.idle_content_source;
+                const limitChanged = !oldConfig || oldConfig.idle_recent_limit !== this._config.idle_recent_limit;
+                if (modeChanged || filterChanged || sourceChanged || limitChanged || this._idleItems.length === 0) {
                     this._idleItems = [];
                     this._stopIdleTimer();
                     this._fetchIdleLibraryItems();
@@ -1695,23 +2026,79 @@ export class JellyHANowPlayingCard extends LitElement {
             z-index: 5;
             pointer-events: none;
             white-space: nowrap;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
         .media-type-badge {
             top: 6px;
             left: 6px;
             padding: 2px 8px 1px 8px;
+            border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             background: var(--primary-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
-        .media-type-badge.movie { background-color: #AA5CC3; }
-        .media-type-badge.series { background-color: #F2A218; }
-        .media-type-badge.episode { background-color: #F59E0B; }
-        .media-type-badge.tvshow { background-color: #F59E0B; }
-        .media-type-badge.audio { background-color: #10B981; }
+        .media-type-badge.movie,
+        .media-type-badge.latest-badge.movie {
+            background-color: #AA5CC3;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .media-type-badge.series,
+        .media-type-badge.episode,
+        .media-type-badge.tvshow,
+        .media-type-badge.latest-badge.series,
+        .media-type-badge.latest-badge.episode,
+        .media-type-badge.latest-badge.tvshow {
+            background-color: #F2A218;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .media-type-badge.audio,
+        .media-type-badge.latest-badge.audio {
+            background-color: #10B981;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .media-type-badge.idle-backdrop-top-badge {
+            position: absolute !important;
+            top: 14px;
+            right: 16px;
+            left: auto !important;
+            bottom: auto !important;
+            z-index: 5;
+            margin: 0 !important;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            padding: 2px 8px 1px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+            pointer-events: none;
+        }
+        .media-type-badge.inline-badge {
+            position: static !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 22px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            padding: 0 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+            pointer-events: none;
+            flex-shrink: 0;
+        }
 
         .rating-badge {
             bottom: 6px;
@@ -1724,6 +2111,7 @@ export class JellyHANowPlayingCard extends LitElement {
             padding: var(--short-badge-padding, 3px 6px);
             font-weight: 600;
             font-size: 0.8rem;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
         .rating-badge ha-icon {
             --mdc-icon-size: 13px;
@@ -1741,6 +2129,7 @@ export class JellyHANowPlayingCard extends LitElement {
             padding: var(--short-badge-padding, 3px 6px);
             font-weight: 600;
             font-size: 0.8rem;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
         .runtime-badge ha-icon {
             --mdc-icon-size: 12px;
@@ -1831,7 +2220,11 @@ export class JellyHANowPlayingCard extends LitElement {
             flex-shrink: 0;
             margin-top: 6px;
             border-radius: 4px;
+            font-size: 0.8rem;
+            letter-spacing: 0.3px;
+            padding: 2px 8px 1px 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
             pointer-events: none;
             align-self: flex-start;
         }
@@ -2765,10 +3158,11 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             background: linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0) 0%,
-                rgba(0, 0, 0, 0.05) 30%,
-                rgba(0, 0, 0, 0.6) 65%,
-                rgba(0, 0, 0, 0.92) 100%
+                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0) 25%,
+                rgba(0, 0, 0, 0.05) 45%,
+                rgba(0, 0, 0, 0.6) 70%,
+                rgba(0, 0, 0, 0.94) 100%
             );
             pointer-events: none;
             z-index: 3;
@@ -2786,7 +3180,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         ha-card .idle-title,
         .idle-title {
-            margin: 0 0 2px 0 !important;
+            margin: 0 !important;
             padding: 0 !important;
             font-size: 1.35rem;
             font-weight: 700;
@@ -2808,11 +3202,27 @@ export class JellyHANowPlayingCard extends LitElement {
             color: rgba(255, 255, 255, 0.85);
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
             margin: 4px 0 7px 0 !important;
+            line-height: 1;
+        }
+
+        .idle-meta-text {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            line-height: 1;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transform: translateY(1px);
         }
 
         .idle-dot {
             opacity: 0.5;
             font-size: 0.72rem;
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            line-height: 1;
+            transform: translateY(0.5px);
         }
 
         .idle-rating-pill {
@@ -2822,29 +3232,52 @@ export class JellyHANowPlayingCard extends LitElement {
             background: rgba(245, 158, 11, 0.25);
             border: 1px solid rgba(245, 158, 11, 0.45);
             color: #fbbf24;
-            padding: 2px 6px;
+            height: 22px;
+            padding: 0 6px;
             border-radius: 4px;
             font-size: 0.78rem;
             font-weight: 700;
             line-height: 1;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .idle-rating-pill ha-icon {
-            --mdc-icon-size: 13px;
+            --mdc-icon-size: 12px;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -1px;
+            flex-shrink: 0;
+        }
+
+        .idle-rating-pill span {
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+            transform: translateY(0.5px);
         }
 
         .idle-genre-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.16);
-            padding: 2px 7px;
+            height: 22px;
+            padding: 0 7px;
             border-radius: 4px;
-            font-size: 0.80rem;
+            font-size: 0.78rem;
             color: rgba(255, 255, 255, 0.9);
-            line-height: 1.2;
+            line-height: 1;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .idle-overview {
-            margin: 4px 0 0 0 !important;
+            margin: 2px 0 0 0 !important;
             font-size: 0.8rem;
             line-height: 1.35;
             color: rgba(255, 255, 255, 0.72);
@@ -2925,8 +3358,45 @@ export class JellyHANowPlayingCard extends LitElement {
             opacity: 0;
         }
 
-        .idle-card-mode .idle-meta-row {
-            margin-top: 3px !important;
+        .idle-card-mode .title {
+            margin-top: 4px;
+            margin-bottom: 0;
+            line-height: 1.25;
+        }
+
+        .idle-showcase-card .subtitle-row,
+        .idle-card-mode .subtitle-row {
+            margin-top: 5px;
+            margin-bottom: 0;
+        }
+
+        .idle-showcase-card .subtitle,
+        .idle-card-mode .subtitle {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.78);
+            letter-spacing: 0.2px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            margin: 0;
+            line-height: 1.25;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* Movie / no subtitle: Title followed directly by meta row */
+        .idle-card-mode .title-row + .idle-meta-row,
+        .idle-showcase-card .title-row + .idle-meta-row {
+            margin-top: 8px !important;
+            margin-bottom: 6px !important;
+        }
+
+        /* Episode / with subtitle: Subtitle row followed by meta row */
+        .idle-card-mode .subtitle-row + .idle-meta-row,
+        .idle-showcase-card .subtitle-row + .idle-meta-row {
+            margin-top: 5px !important;
             margin-bottom: 6px !important;
         }
 
@@ -2934,7 +3404,7 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 0.82rem;
             color: rgba(255, 255, 255, 0.72);
             line-height: 1.35;
-            margin-top: 4px;
+            margin-top: 2px;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;

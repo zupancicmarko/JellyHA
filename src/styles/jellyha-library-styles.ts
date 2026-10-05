@@ -471,12 +471,13 @@ export const cardStyles = css`
 
   .list-type-badge {
     padding: 2px 8px;
-    border-radius: 6px;
+    border-radius: 4px;
     font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.3px;
     color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   .list-type-badge.movie {
@@ -757,6 +758,7 @@ export const cardStyles = css`
     color: #fff;
     z-index: 5;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   .media-type-badge.movie {
@@ -782,6 +784,7 @@ export const cardStyles = css`
     letter-spacing: 0.3px;
     z-index: 5;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   /* Status Badge (Watched/Unplayed) - Top Right */
@@ -804,6 +807,7 @@ export const cardStyles = css`
     background: #14B8A6;
     color: #fff;
     font-size: 0.8rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   .status-badge.watched ha-icon {
@@ -819,6 +823,7 @@ export const cardStyles = css`
     color: #fff;
     font-size: 0.8rem;
     font-weight: 800;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   /* Rating Badge - Bottom Right */
@@ -837,6 +842,7 @@ export const cardStyles = css`
     font-size: 0.8rem;
     z-index: 5;
     transition: opacity var(--jf-transition);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   .rating ha-icon {
@@ -865,6 +871,7 @@ export const cardStyles = css`
     font-size: 0.8rem;
     z-index: 5;
     transition: opacity var(--jf-transition);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   .runtime ha-icon {

@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.5.5** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.6** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,11 +8,11 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.5.5
+### 🆕 What's new in v1.5.6
 
-- 🛡️ **HA 2026.10 Compatibility & Scoped Registry Sync** — Fixed an issue where cards could report "Custom element doesn't exist" in Home Assistant Core 2026.10+ due to the frontend's scoped custom element registry polyfill replacing the native registry after initial script evaluation (fixes #56).
-- ⚡ **Resilient Custom Element Lifecycle** — Added dynamic hooks on `window.customElements` and just-in-time element definition to ensure cards and dialogs are always available regardless of whether loaded via `add_extra_js_url`, Lovelace resources, or both.
-- 🔧 **Seek Polyfill Hardening** — Added capability guarding for custom element promise methods across all browser environments.
+- 🎬 **Now Playing Idle Showcase & Spotlights** — Screensaver mode can showcase your newest movie, newest episode, or recently added media with flexible filters (Movies, TV Shows, Episodes) and dynamic `LATEST MOVIE` and `LATEST EPISODE` badges.
+- 🏷️ **Unified Badge Typography & Styling** — Standardized font size (`0.8rem`), corner radius (`4px`), and applied a clean, subtle font drop shadow across all badge types (Media Type, NEW, List, Watched, Unplayed, and Ratings).
+- 📐 **Metadata Alignment & Spacing Polish** — Perfectly centered rating pill with star icon, uniform `22px` height across all metadata row elements, and improved typography spacing hierarchy across Fanart and Poster layouts.
 
 ---
 
@@ -34,8 +34,6 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 1. Install via HACS.
 2. **Restart Home Assistant**.
 3. Go to **Settings → Devices & Services → Add Integration → JellyHA**.
-4. Add the Lovelace resource:
-   - **URL**: `/jellyha/jellyha-cards.js`
-   - **Type**: JavaScript Module
+*(Dashboard cards are registered automatically—no manual Lovelace resource entry required!)*
 
 [📖 Full documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs) · [💬 Community](https://github.com/zupancicmarko/JellyHA/discussions) · [🐛 Issues](https://github.com/zupancicmarko/JellyHA/issues)

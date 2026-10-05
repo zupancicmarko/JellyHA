@@ -199,21 +199,27 @@ show_background: true
 | `show_year` | boolean | `true` | Display release year |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
 | `idle_backdrop_cycle` | boolean | `false` | Enable ambient screensaver slideshow when the card is idle |
-| `idle_cycle_interval` | number | `20` | Interval in seconds between slide transitions (min: 5, max: 120) |
+| `idle_content_source` | string | `'random'` | Content to showcase when idle: `'random'` (shuffle library), `'recent'` (newest additions), `'latest_movie'` (spotlight latest movie), `'latest_episode'` (spotlight latest episode), `'latest_both'` (alternate latest movie & episode) |
+| `idle_recent_limit` | number | `15` | Maximum number of recent items to cycle when `idle_content_source: recent` (min: 1, max: 50) |
+| `idle_cycle_interval` | number | `20` | Interval in seconds between slide transitions (min: 5, max: 120, disabled when spotlighting a single static item) |
 | `idle_display_mode` | string | `'backdrop'` | Idle display presentation: `'backdrop'` (full-bleed fanart screensaver) or `'card'` (poster + backdrop spotlight) |
-| `idle_media_type` | string | `'both'` | Media types to cycle during idle: `'both'`, `'movies'`, or `'series'` |
+| `idle_media_type` | string | `'all'` | Media types to cycle during idle: `'all'` (Movies & TV Shows), `'movies'` (Movies only), `'tvshows'` (TV Shows only), or `'movies_episodes'` (Movies & Episodes) |
 
-### Ambient Idle Showcase (Screensaver Mode)
+### Ambient Idle Showcase (Screensaver & Latest Spotlight)
 
-When nothing is actively playing, the Now Playing Card can automatically cycle through your Jellyfin library media covers and fanart backdrops instead of displaying the static idle logo.
+When nothing is actively playing, the Now Playing Card can automatically cycle through your Jellyfin library media covers and fanart backdrops, or spotlight your latest movie / episode additions.
+
+The card directly respects all display settings (`show_title`, `show_year`, `show_runtime`, `show_ratings`, `show_genres`, `show_media_type_badge`, `badge_style`, `show_subtitle`, `show_description`) during idle mode. When spotlighting latest items, the badge dynamically displays `LATEST MOVIE` or `LATEST EPISODE`.
 
 ```yaml
 type: custom:jellyha-now-playing-card
 entity: media_player.jellyha_admin
 idle_backdrop_cycle: true         # Enable ambient slideshow when idle (default: false)
+idle_content_source: recent       # 'random', 'recent', 'latest_movie', 'latest_episode', or 'latest_both'
+idle_recent_limit: 10             # Number of recent items to cycle (default: 15)
 idle_cycle_interval: 20           # Time in seconds per slide (default: 20s)
-idle_display_mode: backdrop       # 'backdrop' (full fanart) or 'card' (poster + backdrop spotlight)
-idle_media_type: both             # 'both', 'movies', or 'series'
+idle_display_mode: card           # 'backdrop' (full fanart) or 'card' (poster + backdrop spotlight)
+idle_media_type: all              # 'all', 'movies', 'tvshows', or 'movies_episodes'
 ```
 
 - **Smooth Crossfades**: Overlapping image layers ensure seamless opacity transitions without flicker.
