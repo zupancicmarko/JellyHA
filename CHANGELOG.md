@@ -5,6 +5,15 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.5] - 2026-10-05
+
+### Fixed
+- **Scoped Custom Element Registry Polyfill Sync & Global Script Bootstrap (Fixes [#56](https://github.com/zupancicmarko/JellyHA/issues/56))**:
+  - Implemented dynamic custom element registry synchronization in `src/shared/safe-custom-elements.ts` for Home Assistant Core 2026.10+ and modern frontend builds bundling `@webcomponents/scoped-custom-element-registry`.
+  - Added an `Object.defineProperty` hook on `window.customElements` to immediately re-sync and define all JellyHA custom elements onto the new scoped registry the moment Home Assistant's `app.js` replaces the native registry, preventing `Custom element doesn't exist: jellyha-library-card` errors caused by asynchronous script loading order.
+  - Added just-in-time element definitions on `customElements.get()` and lifecycle fallback listeners (`whenDefined('home-assistant')`, `whenDefined('hc-main')`) to guarantee card availability across all panels and dashboards.
+  - Guarded `customElements.whenDefined` calls in `src/components/jellyha-seek-polyfill.ts` for safe evaluation across environments without promise-based registry methods.
+
 ## [1.5.4] - 2026-10-03
 
 ### Added
