@@ -5,6 +5,13 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.7] - 2026-10-06
+
+### Fixed
+- **Play Music Service Parameter Binding (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))**:
+  - Passed `hass` as the required first positional argument when constructing `ServiceCall` inside `async_play_music`.
+  - Resolved an issue where service call parameters (`query`, `artist`, `album`, etc.) were shifted into the `service` attribute and discarded from `call.data`, causing `jellyha.play_music` to ignore search filters and always play the first track in the library.
+
 ## [1.5.6] - 2026-10-05
 
 ### Added

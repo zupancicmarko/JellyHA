@@ -724,6 +724,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
             # Search using music_search logic
             search_res = await async_music_search(
                 ServiceCall(
+                    hass,
                     DOMAIN,
                     SERVICE_MUSIC_SEARCH,
                     {
