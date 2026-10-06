@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.5.6** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.5.7** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,8 +8,9 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.5.6
+### 🆕 What's new in v1.5.7
 
+- 🎵 **Play Music Service Parameter Binding (Fixes [#43](https://github.com/zupancicmarko/JellyHA/issues/43))** — Fixed `ServiceCall` construction in `jellyha.play_music` by providing the required Home Assistant core context argument (`hass`). Music search parameters (`query`, `artist`, `album`, etc.) are now correctly retained in service execution rather than falling back to default unfiltered searches.
 - 🎬 **Now Playing Idle Showcase & Spotlights** — Screensaver mode can showcase your newest movie, newest episode, or recently added media with flexible filters (Movies, TV Shows, Episodes) and dynamic `LATEST MOVIE` and `LATEST EPISODE` badges.
 - 🏷️ **Unified Badge Typography & Styling** — Standardized font size (`0.8rem`), corner radius (`4px`), and applied a clean, subtle font drop shadow across all badge types (Media Type, NEW, List, Watched, Unplayed, and Ratings).
 - 📐 **Metadata Alignment & Spacing Polish** — Perfectly centered rating pill with star icon, uniform `22px` height across all metadata row elements, and improved typography spacing hierarchy across Fanart and Poster layouts.
