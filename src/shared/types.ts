@@ -242,6 +242,15 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     idle_content_source?: 'random' | 'movies' | 'series' | 'recent' | 'latest_movie' | 'latest_episode' | 'latest_both';
     idle_recent_limit?: number;
     theme?: 'auto' | 'light' | 'dark';
+    power_entity?: string;
+    power_state_entity?: string;
+    show_power_button?: boolean;
+    show_power?: boolean;
+    stop_on_power_off?: boolean;
+    show_volume?: boolean;
+    volume_entity?: string;
+    show_volume_step_buttons?: boolean;
+    volume_step?: number;
 }
 
 // Card registration info

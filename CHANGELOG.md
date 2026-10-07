@@ -5,6 +5,35 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-10-07
+
+### Added
+- **TV & Display Power Button with Dual-Entity Pairing (Issue [#60](https://github.com/zupancicmarko/JellyHA/issues/60))**:
+  - Top-right circular frosted glass power button with unified `36px` dimensions across Active Playback, Ambient Showcase, and Idle Card states.
+  - State-responsive visual styling: crisp white (`#ffffff`, matching the pause icon) when ON or ready; dimmed gray-white (`rgba(255, 255, 255, 0.45)`, matching the `−` volume button) when OFF or in standby. Zero cyan glow.
+  - Multi-domain support for `media_player`, `switch`, `script`, `button`, `scene`, and `input_boolean`.
+  - Automatic fallback: `power_entity` is completely optional; if not specified, it automatically falls back to controlling the card's primary selected Media Player (`entity`).
+  - Deterministic TV power: issues `media_player.turn_off` and `media_player.turn_on` rather than toggling apps when controlling media players.
+  - Dual-entity pairing via `power_state_entity` for stateless scripts/IR blasters combined with true state sensors (e.g. smart plugs or ping sensors).
+  - Configurable `stop_on_power_off` (default `true`) which automatically halts active Jellyfin playback and saves progress when the TV is powered down.
+  - Haptic feedback (`_haptic('light')`) on tap with visual depression `:active` animation and activating pulse.
+- **Option 1 Capsule Volume Slider with Tactile Scrubbing**:
+  - Translucent pillow capsule row positioned above the progress timeline bar with continuous track, dominant fill, percentage readout, mute toggle, and discrete `−`/`+` step buttons.
+  - External audio routing via `volume_entity` to control AVRs or soundbars while streaming video via Jellyfin (falls back to primary media player if unspecified).
+  - Discrete `_haptic('selection')` tactile notches triggered every 5% interval during continuous slider scrubbing.
+  - Responsive layout: automatically collapses continuous slider track in compact/poster views while preserving mute toggle, percentage readout, and step buttons.
+- **Visual Card Editor Enhancements**:
+  - Added dedicated TV/Display Power and Volume configuration sections with dynamic placeholders (`Default: <entity>`) and contextual helper guidance.
+  - Native Home Assistant clear (`✕`) support on optional entity selectors (`power_entity`, `power_state_entity`, `volume_entity`).
+- **Automatic Lovelace Resource Version Cache-Busting**:
+  - Automatically registers and updates `/jellyha/jellyha-cards.js?v={version}` in Home Assistant Lovelace resource registry on integration startup, eliminating stale frontend caches across releases.
+
+### Fixed
+- **Visual Card Editor Entity Clearing & Save Button Enablement**:
+  - Fixed an issue where clearing an entity selector using the native `✕` button fell back to the previous DOM target value instead of deleting the configuration key, which prevented the dialog's Save button from becoming active.
+- **Playback and Screensaver Typography**:
+  - Reverted playing card subtitle typography to original compact hierarchy with dynamic coloring, and unified subtitle font styling across idle screensaver showcase.
+
 ## [1.5.7] - 2026-10-06
 
 ### Fixed

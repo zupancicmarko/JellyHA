@@ -114,6 +114,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
         
         # Register frontend cards and seek polyfill globally across all panels (e.g. Media Browser)
         add_extra_js_url(hass, f"/jellyha/jellyha-cards.js?v={integration.version}")
+        
+        # Register or update Lovelace dashboard resource with cache-busting version query
+        await _async_register_lovelace_resource(hass, str(integration.version))
 
         hass.data[f"{DOMAIN}_views_registered"] = True
     
@@ -166,4 +169,28 @@ async def async_unload_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> 
 async def async_reload_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> None:
     """Reload config entry."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def _async_register_lovelace_resource(hass: HomeAssistant, version: str) -> None:
+    """Register or update JellyHA cards in Lovelace resources with cache-busting version query."""
+    try:
+        lovelace_data = hass.data.get("lovelace")
+        resources = getattr(lovelace_data, "resources", None)
+        if resources is not None:
+            if not getattr(resources, "loaded", False):
+                await resources.async_load()
+            target_url = f"/jellyha/jellyha-cards.js?v={version}"
+            
+            for item in resources.async_items():
+                url = item.get("url", "")
+                if url.startswith("/jellyha/jellyha-cards.js"):
+                    if url != target_url:
+                        _LOGGER.debug("Updating JellyHA Lovelace resource from %s to %s", url, target_url)
+                        await resources.async_update_item(item["id"], {"res_type": "module", "url": target_url})
+                    return
+            
+            _LOGGER.info("Registering JellyHA Lovelace resource: %s", target_url)
+            await resources.async_create_item({"res_type": "module", "url": target_url})
+    except Exception as err:
+        _LOGGER.warning("Could not automatically register Lovelace resource: %s", err)
 

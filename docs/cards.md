@@ -198,6 +198,14 @@ show_background: true
 | `show_runtime` | boolean | `true` | Display total runtime |
 | `show_year` | boolean | `true` | Display release year |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
+| `power_entity` | string | `entity` | Optional entity controlling TV / display power (`media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`). If omitted, defaults to the primary media player `entity`. |
+| `power_state_entity` | string | `undefined` | Optional secondary entity for reading power state (e.g. smart plug, ping binary sensor) when `power_entity` is a stateless IR script |
+| `show_power_button` | boolean | `true` | Display top-right circular glass power button (also accepts `show_power`) |
+| `stop_on_power_off` | boolean | `true` | Automatically send Stop command to Jellyfin media session when powering off TV |
+| `show_volume` | boolean | `false` | Display the Option 1 translucent capsule volume slider row (automatically enabled if `volume_entity` is set) |
+| `volume_entity` | string | `entity` | Entity to route volume adjustments to (e.g. external AVR, soundbar `media_player.soundbar`) |
+| `show_volume_step_buttons` | boolean | `true` | Display discrete `−` and `+` step buttons inside the volume capsule |
+| `volume_step` | number | `5` | Percentage step delta for discrete `−` and `+` buttons (e.g. `5` for 5%) |
 | `idle_backdrop_cycle` | boolean | `false` | Enable ambient screensaver slideshow when the card is idle |
 | `idle_content_source` | string | `'random'` | Content to showcase when idle: `'random'` (shuffle library), `'recent'` (newest additions), `'latest_movie'` (spotlight latest movie), `'latest_episode'` (spotlight latest episode), `'latest_both'` (alternate latest movie & episode) |
 | `idle_recent_limit` | number | `15` | Maximum number of recent items to cycle when `idle_content_source: recent` (min: 1, max: 50) |
@@ -232,6 +240,42 @@ The Now Playing Card includes built-in playback gestures:
 - **Hold Play / Pause (800ms)**: Acts as a **Stop** button (`media_player.media_stop`). While holding the button, an animated red progress ring fills around it with haptic vibration feedback when the stop command is triggered.
 - **Progress Bar Seek**: Tap or drag across the timeline bar to seek through media.
 - **Rewind Button**: Quickly jumps back 20 seconds.
+
+### TV / Display Power Control
+
+The Now Playing Card integrates direct hardware power management into the card header across Active Playback, Ambient Showcase, and Idle states:
+- **Consistent Top-Right Placement**: Always positioned at the top right with uniform `36px` circular glass dimensions.
+- **Clear Power Status**: Crisp white (`#ffffff`, matching the pause icon) when ON or ready; dimmed gray-white (`rgba(255, 255, 255, 0.45)`, matching the `−` volume button) when OFF or in standby. Zero artificial cyan glow.
+- **Domain Support**: Works with `media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`, and `input_boolean.*`.
+- **Dual-Entity Pairing**: For IR blasters or scripts without state reporting, set `power_state_entity` to a smart plug sensor or ping binary sensor to track true power state.
+- **Auto-Stop on Power Off**: Powering off the TV while content is playing automatically halts the Jellyfin session and saves playback progress (`stop_on_power_off: true`).
+- **Tactile Feedback**: Pressing the power button provides `_haptic('light')` and a momentary visual depression and pulse animation.
+
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_living_room
+power_entity: switch.living_room_tv_socket
+power_state_entity: binary_sensor.living_room_tv_ping
+stop_on_power_off: true
+```
+
+### Option 1 Capsule Volume Slider & Step Buttons
+
+Control audio levels without leaving the card or relying on external mini-players:
+- **Translucent Pillow Capsule**: Frosted glass floating pill positioned above the progress timeline bar.
+- **External AVR / Soundbar Routing**: Route volume directly to an external receiver (`volume_entity: media_player.soundbar`) while streaming video from Jellyfin.
+- **Continuous Scrubber with 5% Haptic Notches**: Dragging the slider dynamically updates volume with subtle `_haptic('selection')` feedback every 5% interval.
+- **Mute Toggle**: Quick speaker button toggles mute state with visual red indication when muted.
+- **Discrete Step Buttons**: Quick `−` and `+` buttons adjust volume in configurable percentage intervals (`volume_step: 5`).
+
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_living_room
+show_volume: true
+volume_entity: media_player.yamaha_avr
+show_volume_step_buttons: true
+volume_step: 5
+```
 
 ### Media Type Badge Presentation (`badge_style`)
 

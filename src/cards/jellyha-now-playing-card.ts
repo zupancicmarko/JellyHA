@@ -9,6 +9,15 @@ import {
 } from '../shared/types';
 import { localize } from '../shared/localize';
 import { formatRuntime, addImageParams } from '../shared/utils';
+import {
+    resolvePowerState,
+    callPowerAction,
+    resolveTargetPowerEntity,
+    resolveVolumeState,
+    setVolumeLevel,
+    stepVolume,
+    toggleMute
+} from '../shared/power-volume-helpers';
 
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
@@ -36,10 +45,15 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _isDragging: boolean = false;
     @state() private _dragPercentage: number = 0;
     @state() private _optimisticSeekPercent: number | null = null;
+    @state() private _powerActivating: boolean = false;
+    @state() private _isVolumeDragging: boolean = false;
+    @state() private _dragVolumePercent: number | null = null;
+    @state() private _optimisticVolume: Record<string, number> = {};
     @state() private _idleItems: MediaItem[] = [];
     @state() private _currentIdleIndex: number = 0;
     @state() private _prevIdleIndex: number | null = null;
     @state() private _idleFadeOut: boolean = false;
+    private _lastHapticVolumeTick: number = 0;
     private _idleTimer?: number;
     private _fetchingIdleItems: boolean = false;
     private _visibilityHandler?: () => void;
@@ -60,6 +74,8 @@ export class JellyHANowPlayingCard extends LitElement {
     private _fetchingMetadataId: string | null = null;
 
     public setConfig(config: JellyHANowPlayingCardConfig): void {
+        const showPowerBtn = config.show_power_button ?? config.show_power ?? true;
+        const showVol = config.show_volume ?? (Boolean(config.volume_entity));
         this._config = {
             show_title: true,
             show_subtitle: true,
@@ -80,7 +96,12 @@ export class JellyHANowPlayingCard extends LitElement {
             idle_cycle_interval: 20,
             idle_display_mode: 'backdrop',
             idle_media_type: 'both',
+            stop_on_power_off: true,
+            show_volume_step_buttons: true,
+            volume_step: 5,
             ...config,
+            show_power_button: showPowerBtn,
+            show_volume: showVol,
         };
     }
 
@@ -239,7 +260,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
         const hasMetaLine = !!(yearStr || genres.length > 0);
 
-        const effectiveUser = attributes.user_name || this.hass.user?.name || '';
+        const effectiveUser = attributes.user_name || (this.hass as any)?.user?.name || '';
         const userName = (this._config.show_user !== false) ? effectiveUser : '';
 
         const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
@@ -345,16 +366,19 @@ export class JellyHANowPlayingCard extends LitElement {
                                 <div class="header">
                                     <div class="title-row">
                                         ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
-                                        ${showHeaderBadge ? html`
-                                            <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
-                                        ` : nothing}
+                                        <div class="header-actions">
+                                            ${showHeaderBadge ? html`
+                                                <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
+                                            ` : nothing}
+                                            ${this._renderPowerButton()}
+                                        </div>
                                     </div>
                                     ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
                                     ${this._overflowState < 2 && hasMetaLine ? html`
                                         <div class="meta-line">
                                             ${yearStr ? html`<span class="meta-year">${yearStr}</span>` : nothing}
                                             ${yearStr && genres.length > 0 ? html`<span class="meta-dot">•</span>` : nothing}
-                                            ${genres.map(g => html`<span class="genre-pill">${g}</span>`)}
+                                            ${genres.map((g: string) => html`<span class="genre-pill">${g}</span>`)}
                                         </div>
                                     ` : nothing}
                                     ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
@@ -422,6 +446,8 @@ export class JellyHANowPlayingCard extends LitElement {
                                         `}
                                     </div>
                                 ` : nothing}
+
+                                ${this._renderVolumeControls()}
 
                                 <div class="progress-container ${supportsRemote ? '' : 'readonly'}"
                                     @pointerdown=${supportsRemote ? this._startDrag : undefined}
@@ -503,6 +529,9 @@ export class JellyHANowPlayingCard extends LitElement {
 
         return html`
             <ha-card class="jellyha-now-playing empty-state">
+                <div class="empty-top-actions">
+                    ${this._renderPowerButton()}
+                </div>
                 <div class="card-content">
                     <div class="logo-container full-logo">
                         <img src="${logoUrl}" alt="JellyHA Logo" />
@@ -676,9 +705,12 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="idle-backdrop-scrim"></div>
                 </div>
 
-                ${isTopBadge ? html`
-                    <span class="media-type-badge idle-backdrop-top-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
-                ` : nothing}
+                <div class="idle-backdrop-top-actions">
+                    ${isTopBadge ? html`
+                        <span class="media-type-badge idle-backdrop-top-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                    ` : nothing}
+                    ${this._renderPowerButton()}
+                </div>
 
                 <div class="idle-bottom-content">
                     <div class="title-row">
@@ -829,9 +861,12 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ${this._config.show_title !== false ? html`
                                         <span class="title" title="${item.series_name ? `${item.series_name} - ${item.name}` : displayTitle}">${displayTitle}</span>
                                     ` : nothing}
-                                    ${showBadge && badgeStyle === 'header' ? html`
-                                        <span class="media-type-badge header-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
-                                    ` : nothing}
+                                    <div class="header-actions">
+                                        ${showBadge && badgeStyle === 'header' ? html`
+                                            <span class="media-type-badge header-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                        ` : nothing}
+                                        ${this._renderPowerButton()}
+                                    </div>
                                 </div>
                                 ${subtitle ? html`
                                     <div class="subtitle-row">
@@ -1275,7 +1310,6 @@ export class JellyHANowPlayingCard extends LitElement {
         if (!stateObj) return false;
         if (this._config.show_controls === false) return false;
         const attrs = stateObj.attributes as any;
-        if (attrs.supports_remote_control === false) return false;
         const isMediaPlayer = stateObj.entity_id.startsWith('media_player.');
         if (isMediaPlayer && attrs.supported_features !== undefined && attrs.supported_features === 0) {
             return false;
@@ -1367,6 +1401,227 @@ export class JellyHANowPlayingCard extends LitElement {
             item_id: itemId,
             is_favorite: newStatus
         });
+    }
+
+    private get _targetPowerEntity(): string | undefined {
+        return resolveTargetPowerEntity(this._config);
+    }
+
+    private async _handlePowerClick(e: Event): Promise<void> {
+        e.stopPropagation();
+        this._haptic('light');
+        const powerEntity = this._targetPowerEntity;
+        if (!powerEntity || !this.hass) return;
+
+        const stateInfo = resolvePowerState(this.hass, powerEntity, this._config?.power_state_entity);
+
+        // If currently ON or if media is playing and stop_on_power_off is enabled (default true), stop Jellyfin session
+        if ((stateInfo.isOn || !stateInfo.isStateless) && this._config.stop_on_power_off !== false) {
+            const entityId = this._config.entity;
+            const stateObj = this.hass.states[entityId];
+            if (stateObj && (stateObj.state === 'playing' || stateObj.state === 'paused')) {
+                await this._handleControl('Stop');
+            }
+        }
+
+        this._powerActivating = true;
+        setTimeout(() => {
+            this._powerActivating = false;
+        }, 800);
+        await callPowerAction(this.hass, powerEntity, this._config?.power_state_entity);
+    }
+
+    private _renderPowerButton(): TemplateResult | typeof nothing {
+        const powerEntity = this._targetPowerEntity;
+        const showPower = this._config?.show_power_button !== false && this._config?.show_power !== false;
+        if (!powerEntity || !showPower || !this.hass) return nothing;
+
+        const stateInfo = resolvePowerState(this.hass, powerEntity, this._config?.power_state_entity);
+        const stateClass = stateInfo.isStateless ? 'stateless-ready' : (stateInfo.isOn ? 'is-on' : 'is-off');
+        const activatingClass = this._powerActivating ? 'activating' : '';
+        const titleText = stateInfo.isOn ? 'Power Off' : 'Power On';
+
+        return html`
+            <ha-icon-button
+                class="power-btn ${stateClass} ${activatingClass}"
+                .label=${titleText}
+                title=${titleText}
+                @click=${this._handlePowerClick}
+            >
+                <ha-icon icon="mdi:power"></ha-icon>
+            </ha-icon-button>
+        `;
+    }
+
+    private async _handleToggleMute(): Promise<void> {
+        this._haptic('light');
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (!targetEntity || !this.hass) return;
+        await toggleMute(this.hass, targetEntity);
+    }
+
+    private async _handleVolumeStep(deltaPercent: number): Promise<void> {
+        this._haptic('light');
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (!targetEntity || !this.hass) return;
+
+        const optPercent = this._optimisticVolume[targetEntity];
+        const vol = resolveVolumeState(this.hass, this._config?.volume_entity, this._config?.entity, optPercent);
+        const currentPct = this._optimisticVolume[targetEntity] ?? vol.volumePercent;
+        const nextPct = Math.max(0, Math.min(100, Math.round(currentPct + deltaPercent)));
+
+        this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: nextPct };
+        this.requestUpdate();
+
+        await stepVolume(this.hass, targetEntity, deltaPercent / 100, currentPct / 100);
+    }
+
+    private _startVolumeDrag(e: PointerEvent): void {
+        e.stopPropagation();
+        e.preventDefault();
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (!track) return;
+
+        track.setPointerCapture(e.pointerId);
+        this._isVolumeDragging = true;
+        this._haptic('selection');
+
+        const rect = track.getBoundingClientRect();
+        const pct = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+        this._dragVolumePercent = pct;
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity) {
+            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: pct };
+        }
+        this._lastHapticVolumeTick = Math.floor(pct / 5);
+    }
+
+    private _handleVolumeDrag(e: PointerEvent): void {
+        if (!this._isVolumeDragging) return;
+        e.stopPropagation();
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (!track) return;
+
+        const rect = track.getBoundingClientRect();
+        const pct = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+        this._dragVolumePercent = pct;
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity) {
+            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: pct };
+        }
+
+        // Trigger selection haptic on 5% notches
+        const notch = Math.floor(pct / 5);
+        if (notch !== this._lastHapticVolumeTick) {
+            this._lastHapticVolumeTick = notch;
+            this._haptic('selection');
+        }
+    }
+
+    private async _endVolumeDrag(e: PointerEvent): Promise<void> {
+        if (!this._isVolumeDragging) return;
+        e.stopPropagation();
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (track && track.hasPointerCapture(e.pointerId)) {
+            track.releasePointerCapture(e.pointerId);
+        }
+
+        const finalPercent = this._dragVolumePercent ?? 0;
+        this._isVolumeDragging = false;
+        this._dragVolumePercent = null;
+
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity && this.hass) {
+            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: finalPercent };
+            this.requestUpdate();
+            await setVolumeLevel(this.hass, targetEntity, finalPercent / 100);
+        }
+    }
+
+    private _cancelVolumeDrag(e: PointerEvent): void {
+        if (!this._isVolumeDragging) return;
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (track && track.hasPointerCapture(e.pointerId)) {
+            track.releasePointerCapture(e.pointerId);
+        }
+        this._isVolumeDragging = false;
+        this._dragVolumePercent = null;
+        this.requestUpdate();
+    }
+
+    private _renderVolumeControls(): TemplateResult | typeof nothing {
+        const shouldShowVolume = this._config?.show_volume === true || (this._config?.show_volume !== false && Boolean(this._config?.volume_entity));
+        if (!shouldShowVolume || !this.hass) return nothing;
+
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        const optPercent = targetEntity ? this._optimisticVolume[targetEntity] : undefined;
+        const vol = resolveVolumeState(this.hass, this._config?.volume_entity, this._config?.entity, optPercent);
+        const isMuted = vol.isMuted;
+        
+        let volumePercent: number;
+        if (this._isVolumeDragging && this._dragVolumePercent !== null) {
+            volumePercent = this._dragVolumePercent;
+        } else if (targetEntity && this._optimisticVolume[targetEntity] !== undefined) {
+            volumePercent = this._optimisticVolume[targetEntity];
+        } else {
+            volumePercent = vol.volumePercent;
+        }
+
+        const showStepButtons = this._config?.show_volume_step_buttons !== false;
+        const stepPct = (typeof this._config?.volume_step === 'number' && this._config.volume_step > 0) ? this._config.volume_step : 5;
+
+        const muteIcon = isMuted ? 'mdi:volume-mute' : (volumePercent === 0 ? 'mdi:volume-off' : (volumePercent < 50 ? 'mdi:volume-medium' : 'mdi:volume-high'));
+
+        return html`
+            <div class="volume-capsule ${!showStepButtons ? 'no-step-buttons' : ''}">
+                <ha-icon-button
+                    class="volume-btn mute-btn ${isMuted ? 'muted' : ''}"
+                    .label=${isMuted ? 'Unmute' : 'Mute'}
+                    title=${isMuted ? 'Unmute' : 'Mute'}
+                    @click=${this._handleToggleMute}
+                >
+                    <ha-icon icon="${muteIcon}"></ha-icon>
+                </ha-icon-button>
+
+                <div
+                    class="volume-slider-track"
+                    @pointerdown=${this._startVolumeDrag}
+                    @pointermove=${this._handleVolumeDrag}
+                    @pointerup=${this._endVolumeDrag}
+                    @pointercancel=${this._cancelVolumeDrag}
+                >
+                    <div
+                        class="volume-slider-fill"
+                        style="width: ${volumePercent}%; background: ${this._dominantColor};"
+                    ></div>
+                    <div
+                        class="volume-slider-thumb"
+                        style="left: ${volumePercent}%; background: ${this._dominantColor};"
+                    ></div>
+                </div>
+
+                <span class="volume-pct">${volumePercent}%</span>
+
+                ${showStepButtons ? html`
+                    <ha-icon-button
+                        class="volume-btn volume-step-btn"
+                        .label=${`Decrease volume by ${stepPct}%`}
+                        title=${`-${stepPct}%`}
+                        @click=${() => this._handleVolumeStep(-stepPct)}
+                    >
+                        <ha-icon icon="mdi:minus"></ha-icon>
+                    </ha-icon-button>
+                    <ha-icon-button
+                        class="volume-btn volume-step-btn"
+                        .label=${`Increase volume by ${stepPct}%`}
+                        title=${`+${stepPct}%`}
+                        @click=${() => this._handleVolumeStep(stepPct)}
+                    >
+                        <ha-icon icon="mdi:plus"></ha-icon>
+                    </ha-icon-button>
+                ` : nothing}
+            </div>
+        `;
     }
 
     private _getDragPercent(e: PointerEvent): number {
@@ -1799,7 +2054,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         // If card is in empty or error state, clear layout classes and exit immediately
         if (haCard.classList.contains('empty-state') || haCard.classList.contains('error-state')) {
-            haCard.classList.remove('compact-height', 'micro-height', 'tall-narrow', 'very-tall-narrow');
+            haCard.classList.remove('compact-height', 'micro-height', 'tall-narrow', 'very-tall-narrow', 'compact-width');
             return;
         }
 
@@ -1822,6 +2077,9 @@ export class JellyHANowPlayingCard extends LitElement {
             ? (h >= 295 && w <= 455)
             : (h >= 305 && w <= 445);
         haCard.classList.toggle('very-tall-narrow', isVeryTallNarrow);
+
+        const isNarrow = haCard.classList.contains('compact-width') ? w <= 310 : w <= 300;
+        haCard.classList.toggle('compact-width', isNarrow);
 
         const titleEl = this.shadowRoot?.querySelector('.title') as HTMLElement;
         const bottomEl = this.shadowRoot?.querySelector('.info-bottom') as HTMLElement;
@@ -2384,6 +2642,269 @@ export class JellyHANowPlayingCard extends LitElement {
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
+        /* --- Header Actions & Uniform Power Button --- */
+        .header-actions {
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        .header-actions .media-type-badge.header-badge {
+            margin-top: 0 !important;
+            align-self: center !important;
+        }
+        .idle-backdrop-top-actions {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 5;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .idle-backdrop-top-actions .media-type-badge.idle-backdrop-top-badge {
+            position: static !important;
+            margin: 0 !important;
+        }
+        .empty-top-actions {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 5;
+        }
+
+        .power-btn {
+            --mdc-icon-button-size: 26px !important;
+            --mdc-icon-size: 16px !important;
+            --mdc-ripple-color: transparent !important;
+            --ha-ripple-color: transparent !important;
+            --md-ripple-hover-color: transparent !important;
+            --md-ripple-pressed-color: transparent !important;
+            --md-ripple-focus-color: transparent !important;
+            width: 26px !important;
+            height: 26px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.16) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            outline: none !important;
+            transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .power-btn:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: rgba(255, 255, 255, 0.28) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+            outline: none !important;
+        }
+        .power-btn:focus,
+        .power-btn:focus-visible {
+            outline: none !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+        }
+        ha-icon-button.power-btn::part(ripple) {
+            display: none !important;
+        }
+        ha-icon-button.power-btn mwc-ripple,
+        ha-icon-button.power-btn md-ripple {
+            display: none !important;
+        }
+        .power-btn:active {
+            transform: scale(0.92) !important;
+        }
+        .power-btn.is-on,
+        .power-btn.stateless-ready,
+        .jellyha-now-playing.has-background .power-btn.is-on,
+        .jellyha-now-playing.has-background .power-btn.stateless-ready {
+            color: #ffffff !important;
+        }
+        .power-btn.is-on ha-icon,
+        .power-btn.stateless-ready ha-icon {
+            color: #ffffff !important;
+        }
+        .power-btn.is-off,
+        .jellyha-now-playing.has-background .power-btn.is-off {
+            color: rgba(255, 255, 255, 0.45) !important;
+        }
+        .power-btn.is-off ha-icon {
+            color: rgba(255, 255, 255, 0.45) !important;
+        }
+        .power-btn.activating {
+            animation: powerPulse 0.8s ease-out;
+        }
+        @keyframes powerPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        /* --- Option 1 Capsule Volume Slider --- */
+        .volume-capsule {
+            height: 38px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+            margin-top: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        .volume-capsule.no-step-buttons {
+            padding-right: 14px;
+        }
+        .volume-capsule.no-step-buttons .volume-pct {
+            margin-right: 0;
+        }
+        .volume-btn {
+            --mdc-icon-button-size: 28px !important;
+            --mdc-icon-size: 18px !important;
+            --mdc-ripple-color: transparent !important;
+            --ha-icon-button-inactive-color: rgba(255, 255, 255, 0.85) !important;
+            width: 28px !important;
+            height: 28px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+        }
+        .volume-btn:active {
+            background: rgba(255, 255, 255, 0.28) !important;
+            transform: scale(0.92) !important;
+            box-shadow: none !important;
+            filter: none !important;
+        }
+        ha-icon-button.volume-btn::part(ripple) {
+            display: none !important;
+        }
+        ha-icon-button.volume-btn ha-icon {
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+            background: transparent !important;
+        }
+        .mute-btn {
+            color: #ffffff !important;
+            --mdc-icon-size: 18px !important;
+        }
+        .mute-btn.muted,
+        .mute-btn.muted ha-icon {
+            color: #ef4444 !important;
+        }
+        .volume-step-btn,
+        .jellyha-now-playing.has-background .volume-step-btn {
+            --mdc-icon-button-size: 28px !important;
+            --mdc-icon-size: 16px !important;
+            width: 28px !important;
+            height: 28px !important;
+            color: rgba(255, 255, 255, 0.75) !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+        }
+        .volume-step-btn ha-icon {
+            color: rgba(255, 255, 255, 0.75) !important;
+            background: transparent !important;
+        }
+        .volume-step-btn:hover,
+        .volume-step-btn:hover ha-icon {
+            color: #ffffff !important;
+        }
+        .volume-slider-track {
+            flex: 1;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.20);
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+        }
+        .volume-slider-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            border-radius: 9999px;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .volume-slider-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 28px;
+            max-width: 100%;
+            background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.28) 100%);
+            pointer-events: none;
+        }
+        .volume-slider-thumb {
+            position: absolute;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: -2px 0 6px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+            filter: blur(0.5px);
+            pointer-events: none;
+            transition: transform 0.1s ease;
+        }
+        .volume-slider-track:hover .volume-slider-thumb,
+        .volume-slider-track:active .volume-slider-thumb {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .volume-pct {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            min-width: 32px;
+            text-align: right;
+            margin-left: 2px;
+            margin-right: 2px;
+            user-select: none;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
         /* --- Progress bar with seek handle --- */
         .progress-container {
             cursor: pointer;
@@ -2525,8 +3046,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Adjust layout when very narrow */
-        @container now-playing (max-width: 280px) {
+        /* Adjust layout when very narrow / minimized */
+        @container now-playing (max-width: 380px) {
             .main-container {
                 gap: 12px;
             }
@@ -2542,6 +3063,54 @@ export class JellyHANowPlayingCard extends LitElement {
                 font-size: 0.7rem;
                 padding: 1px 5px;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
+        }
+
+        ha-card.compact-width .volume-slider-track,
+        ha-card.tall-narrow .volume-slider-track,
+        ha-card.very-tall-narrow .volume-slider-track,
+        ha-card.micro-height .volume-slider-track,
+        ha-card.compact-width .volume-slider-thumb,
+        ha-card.tall-narrow .volume-slider-thumb,
+        ha-card.very-tall-narrow .volume-slider-thumb,
+        ha-card.micro-height .volume-slider-thumb,
+        ha-card.compact-width .volume-slider-fill,
+        ha-card.tall-narrow .volume-slider-fill,
+        ha-card.very-tall-narrow .volume-slider-fill,
+        ha-card.micro-height .volume-slider-fill {
+            display: none !important;
+        }
+        ha-card.compact-width .volume-capsule,
+        ha-card.tall-narrow .volume-capsule,
+        ha-card.very-tall-narrow .volume-capsule,
+        ha-card.micro-height .volume-capsule {
+            gap: 6px !important;
+            padding: 0 8px !important;
+            margin-top: 6px !important;
+            margin-bottom: 6px !important;
+        }
+        ha-card.compact-width .volume-pct,
+        ha-card.tall-narrow .volume-pct,
+        ha-card.very-tall-narrow .volume-pct,
+        ha-card.micro-height .volume-pct {
+            flex: 1 !important;
+            text-align: center !important;
+            margin: 0 !important;
         }
 
         ha-card:not(.empty-state):not(.error-state).compact-height .card-header {
@@ -2701,6 +3270,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
         }
 
         /* Height-Based Compact Mode */
@@ -2831,6 +3416,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 line-height: 1 !important;
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
+            }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
             }
         }
 
@@ -2966,6 +3567,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
         }
 
         /* Very Tall but Narrow Mode */
@@ -3099,6 +3716,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 line-height: 1 !important;
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
+            }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
             }
         }
 
@@ -3371,11 +4004,11 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         .idle-showcase-card .subtitle,
-        .idle-card-mode .subtitle {
-            font-size: 0.95rem;
-            font-weight: 500;
+        .idle-card-mode .subtitle,
+        .idle-bottom-content .subtitle {
+            font-size: 1.05rem;
+            font-weight: 400;
             color: rgba(255, 255, 255, 0.78);
-            letter-spacing: 0.2px;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
             margin: 0;
             line-height: 1.25;

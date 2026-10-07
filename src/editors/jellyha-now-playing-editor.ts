@@ -269,6 +269,123 @@ export class JellyHANowPlayingEditor extends LitElement {
 
         <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
         <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
+          ${localize(lang, 'editor.power_section_title') || 'TV / Display Power'}
+        </div>
+
+        <div class="form-row">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              entity: {
+                domain: ['media_player', 'switch', 'script', 'button', 'scene', 'input_boolean'],
+              },
+            }}
+            .value=${this._config.power_entity || ''}
+            .label="${localize(lang, 'editor.power_entity') || 'Power Entity (TV, Switch, Script, etc.)'}"
+            label="${localize(lang, 'editor.power_entity') || 'Power Entity (TV, Switch, Script, etc.)'}"
+            .helper="${localize(lang, 'editor.power_entity_helper') || 'Optional. If not set, the default selected Media Player will be used.'}"
+            helper="${localize(lang, 'editor.power_entity_helper') || 'Optional. If not set, the default selected Media Player will be used.'}"
+            .placeholder=${this._defaultEntityPlaceholder}
+            placeholder=${this._defaultEntityPlaceholder}
+            .required=${false}
+            @value-changed=${this._powerEntityChanged}
+          ></ha-selector>
+        </div>
+
+        <div class="form-row">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              entity: {},
+            }}
+            .value=${this._config.power_state_entity || ''}
+            .label="${localize(lang, 'editor.power_state_entity') || 'Power State Entity (Optional state sensor)'}"
+            label="${localize(lang, 'editor.power_state_entity') || 'Power State Entity (Optional state sensor)'}"
+            .required=${false}
+            @value-changed=${this._powerStateEntityChanged}
+          ></ha-selector>
+        </div>
+
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_power_button !== false && this._config.show_power !== false}
+              @change=${this._showPowerButtonChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_power_button') || 'Show Power Button'}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.stop_on_power_off !== false}
+              @change=${this._stopOnPowerOffChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.stop_on_power_off') || 'Stop Media on Power Off'}</span>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
+        <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
+          ${localize(lang, 'editor.volume_section_title') || 'Volume Controls'}
+        </div>
+
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_volume === true || (this._config.show_volume !== false && Boolean(this._config.volume_entity))}
+              @change=${this._showVolumeChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_volume') || 'Show Volume Controls'}</span>
+          </div>
+
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_volume_step_buttons !== false}
+              @change=${this._showVolumeStepButtonsChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_volume_step_buttons') || 'Show Step Buttons (− / +)'}</span>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 10px;">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              entity: {
+                domain: 'media_player',
+              },
+            }}
+            .value=${this._config.volume_entity || ''}
+            .label="${localize(lang, 'editor.volume_entity') || 'Volume Entity (External AVR/Soundbar, Optional)'}"
+            label="${localize(lang, 'editor.volume_entity') || 'Volume Entity (External AVR/Soundbar, Optional)'}"
+            .helper="${localize(lang, 'editor.volume_entity_helper') || 'Optional. If not set, the default selected Media Player will be used.'}"
+            helper="${localize(lang, 'editor.volume_entity_helper') || 'Optional. If not set, the default selected Media Player will be used.'}"
+            .placeholder=${this._defaultEntityPlaceholder}
+            placeholder=${this._defaultEntityPlaceholder}
+            .required=${false}
+            @value-changed=${this._volumeEntityChanged}
+          ></ha-selector>
+        </div>
+
+        <div class="form-row" style="margin-top: 10px;">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              number: {
+                min: 1,
+                max: 20,
+                step: 1,
+                mode: 'box',
+              },
+            }}
+            .value=${this._config.volume_step ?? 5}
+            .label="${localize(lang, 'editor.volume_step') || 'Volume Step %'}"
+            label="${localize(lang, 'editor.volume_step') || 'Volume Step %'}"
+            @value-changed=${this._volumeStepChanged}
+          ></ha-selector>
+        </div>
+
+        <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
+        <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
           ${localize(lang, 'editor.idle_section_title') || 'Ambient Showcase (When Idle)'}
         </div>
 
@@ -404,7 +521,7 @@ export class JellyHANowPlayingEditor extends LitElement {
   }
 
   private _idleContentSourceChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       if (value === 'movies') {
         this._updateConfig('idle_content_source', 'movies');
@@ -422,28 +539,30 @@ export class JellyHANowPlayingEditor extends LitElement {
   }
 
   private _idleRecentLimitChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? Number(e.detail.value) : Number((e.target as any)?.value);
+    const rawVal = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    const value = rawVal !== undefined ? Number(rawVal) : NaN;
     if (!isNaN(value)) {
       this._updateConfig('idle_recent_limit', value);
     }
   }
 
   private _idleDisplayModeChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('idle_display_mode', value);
     }
   }
 
   private _idleMediaTypeChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('idle_media_type', value);
     }
   }
 
   private _idleCycleIntervalChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? Number(e.detail.value) : Number((e.target as any)?.value);
+    const rawVal = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    const value = rawVal !== undefined ? Number(rawVal) : NaN;
     if (!isNaN(value)) {
       this._updateConfig('idle_cycle_interval', value);
     }
@@ -454,16 +573,59 @@ export class JellyHANowPlayingEditor extends LitElement {
     this._updateConfig('show_controls', target.checked);
   }
 
+  private _powerEntityChanged(e: CustomEvent): void {
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('power_entity', value || undefined);
+  }
+
+  private _powerStateEntityChanged(e: CustomEvent): void {
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('power_state_entity', value || undefined);
+  }
+
+  private _showPowerButtonChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_power_button', target.checked);
+  }
+
+  private _stopOnPowerOffChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('stop_on_power_off', target.checked);
+  }
+
+  private _showVolumeChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_volume', target.checked);
+  }
+
+  private _volumeEntityChanged(e: CustomEvent): void {
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('volume_entity', value || undefined);
+  }
+
+  private _showVolumeStepButtonsChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_volume_step_buttons', target.checked);
+  }
+
+  private _volumeStepChanged(e: CustomEvent): void {
+    const rawVal = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    const value = rawVal !== undefined ? Number(rawVal) : NaN;
+    if (!isNaN(value)) {
+      this._updateConfig('volume_step', value);
+    }
+  }
+
   private _entityChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('entity', value);
     }
   }
 
   private _titleChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
-    this._updateConfig('title', value);
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('title', value || undefined);
   }
 
   private _showTitleChanged(e: Event): void {
@@ -482,7 +644,7 @@ export class JellyHANowPlayingEditor extends LitElement {
   }
 
   private _badgeStyleChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('badge_style', value);
     }
@@ -538,12 +700,25 @@ export class JellyHANowPlayingEditor extends LitElement {
     this._updateConfig('use_series_image', target.checked);
   }
 
+  private get _defaultEntityPlaceholder(): string {
+    const entity = this._config?.entity;
+    if (entity && !entity.startsWith('sensor.') && !entity.startsWith('binary_sensor.')) {
+      return `Default: ${entity}`;
+    }
+    return '';
+  }
+
   private _updateConfig(key: string, value: unknown): void {
     if (!this._config) {
       return;
     }
 
-    const newConfig = { ...this._config, [key]: value };
+    const newConfig = { ...this._config };
+    if (value === undefined || value === '') {
+      delete (newConfig as any)[key];
+    } else {
+      (newConfig as any)[key] = value;
+    }
     this._config = newConfig;
 
     fireEvent(this as unknown as EventTarget, 'config-changed', { config: newConfig });
