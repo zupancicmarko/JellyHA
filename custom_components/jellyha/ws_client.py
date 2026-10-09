@@ -70,18 +70,24 @@ class JellyfinWebSocketClient:
             
         encoded_id = quote(self._device_id)
         encoded_key = quote(self._api_key)
-        url = f"{url}/socket?api_key={encoded_key}&deviceId={encoded_id}"
+        url = f"{url}/socket?api_key={encoded_key}&token={encoded_key}&deviceId={encoded_id}"
 
         # Jellyfin 12 dropped query-string api_key auth on the API and /socket
         # routes (image/stream routes still accept it), so the token is also sent
         # in the Authorization header. Older servers ignore the header and use the
         # query parameter, so sending both keeps 10.x working.
-        headers = {
-            "Authorization": f'MediaBrowser Client="Home Assistant", '
+        auth_str = (
+            f'MediaBrowser Client="Home Assistant", '
             f'Device="HACS Integration", '
             f'DeviceId="{self._device_id}", '
             f'Version="1.0.0", '
             f'Token="{self._api_key}"'
+        )
+        headers = {
+            "Authorization": auth_str,
+            "X-Emby-Authorization": auth_str,
+            "X-Emby-Token": self._api_key,
+            "X-MediaBrowser-Token": self._api_key,
         }
 
         retry_delay = 2  # Start with 2 seconds

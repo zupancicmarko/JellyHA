@@ -129,6 +129,7 @@ Casts media to a Google Cast / Chromecast / Android TV device with automatic dir
   * If a bitmap/graphic subtitle track (PGS, VOBSUB, DVDSUB) is selected, JellyHA automatically instructs Jellyfin to burn the subtitle track directly into the video stream via HLS server-side transcoding (`SubtitleStreamIndex` + `SubtitleMethod=Encode`).
   * Unique `PlaySessionId` tokens ensure Chromecast never caches outdated subtitle manifests across sequential plays.
 * **CRITICAL BEHAVIOR FOR TV SHOWS**: If `item_id` is a `Series` (or `Season`), `play_on_chromecast` automatically queries Jellyfin's Next Up queue and casts the **next unplayed episode**! If the series has never been started, it automatically falls back to Season 1 Episode 1.
+* **SMART CLIENT DELEGATION**: If `entity_id` targets a JellyHA client device or session entity (e.g. `media_player.jellyha_device_*`, `media_player.jellyha_user_*`), `play_on_chromecast` automatically delegates directly to `jellyha.session_play`, allowing 1-tap playback on native Jellyfin apps without triggering Google Cast transcode errors.
 
 ### 2. `jellyha.search`
 Searches the Jellyfin library and returns structured media objects into an automation `response_variable`.
@@ -683,7 +684,8 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
 * `tv_content`: `'series'` (default) or `'episodes'`. Choose whether TV show libraries display full series poster cards or individual Next Up / latest episodes.
 * `use_series_image`: `true` or `false` (default). When viewing episodes, toggle between episode screen-capture thumbnails and parent series portrait cover art.
 
-### Library Card Cast & Subtitle Options
+### Library Card Playback & Subtitle Options
+* `default_client_device`: Target JellyHA client device `media_player` entity ID (e.g. `'media_player.jellyha_device_living_room_tv'`) used when action is set to `play-client`. Filtered strictly to JellyHA client devices in the visual editor.
 * `default_cast_device`: Target Chromecast `media_player` entity ID (e.g. `'media_player.living_room_tv'`) used when action is set to `cast`. Filtered strictly to Google Cast endpoints in the visual editor.
 * `subtitle_mode`: Subtitle strategy for casting and browser playback: `'auto'` (default, follows Jellyfin profile with English fallback), `'none'` (disabled), `'forced_only'`, or `'custom'`.
 * `subtitle_language`: Prioritized comma-separated language codes/names (e.g. `'sl, en'`) used when `subtitle_mode` is `'custom'`. Automatically burns in graphical subtitles (PGS/VOBSUB) for Chromecast casting, or streams native WebVTT tracks with Closed Captioning (CC) in the browser player.
@@ -692,16 +694,17 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
 * `enable_browser_player`: Boolean (default: `true`). Enables the direct in-dashboard HTML5 dialog player (`<jellyha-browser-player>`) across card actions and the More Info pop-up, with full Closed Captions (CC) subtitle support.
 * `enable_custom_play_actions`: Boolean (default: `false`). When `true`, delegates More Information dialog play actions to the `modal_play_actions` array.
 * `modal_play_actions`: List of target dictionaries controlling the More Info play button and target picker overlay:
-  * `type`: `'browser'`, `'cast'`, or `'script'`.
-  * `name` (Optional, string): Custom label displayed on button or in target picker (e.g. `"Watch in Browser"`, `"Living Room TV"`, `"Play on Apple TV"`).
-  * `icon` (Optional, string): Custom MDI icon (defaults: `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
-  * `device` (String, required for `cast`): Target `media_player` entity ID.
+  * `type`: `'client'`, `'browser'`, `'cast'`, or `'script'`.
+  * `name` (Optional, string): Custom label displayed on button or in target picker (e.g. `"Living Room TV"`, `"Watch in Browser"`, `"Bedroom Chromecast"`, `"Play on Apple TV"`).
+  * `icon` (Optional, string): Custom MDI icon (defaults: `mdi:television-play` for client, `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
+  * `device` (String, required for `client` and `cast`): Target `media_player` entity ID.
   * `service` (String, required for `script`): Target script entity ID.
   * `service_data` (Optional, dict): Extra arguments passed to script.
   * `show_entity_name` (Optional, boolean, default `true`): Set to `false` to hide the entity subtitle in the target picker list.
 
 ### Custom Interactions (`click_action`, `hold_action`, `double_tap_action`)
-* **Available Actions**: `more-info` (default), `play-browser`, `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **Available Actions**: `more-info` (default), `play-browser`, `play-client`, `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
+* **When set to `play-client`**: Immediately initiates native playback on the configured `default_client_device` (or prompts with an active client picker) via `jellyha.session_play` (`POST /Sessions/{sessionId}/Playing`), playing directly inside official Jellyfin apps (Android TV, Google TV, Fire TV, Web, Desktop) without Chromecast transcoding overhead.
 * **When set to `play-browser`**: Immediately launches the in-dashboard `<jellyha-browser-player>` dialog with authenticated media stream resolution via HA's WebSocket API (`jellyha/resolve_playback` with `media_source/resolve_media` fallback), supporting zero-overhead DirectPlay for browser formats (H.264/AAC) and automatic HLS transcode fallback via `hls.js` / native Apple HLS for unsupported codecs (AVI/Xvid, AC3, DTS).
 * **When set to `call-service`**:
   * In the card editor, Home Assistant renders a native `<ha-selector>` entity dropdown picker strictly filtered to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), complete with friendly names, icons, and live search.

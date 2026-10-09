@@ -36,6 +36,8 @@ HA_MODULES = [
     "homeassistant.components.http",
     "homeassistant.components.http.auth",
     "homeassistant.components.frontend",
+    "homeassistant.data_entry_flow",
+    "homeassistant.helpers.selector",
     "homeassistant.components.media_player",
     "homeassistant.components.media_player.const",
     "homeassistant.components.websocket_api",
@@ -57,6 +59,36 @@ class MockHomeAssistantView:
     requires_auth = False
 
 sys.modules["homeassistant.components.http"].HomeAssistantView = MockHomeAssistantView
+
+class MockConfigFlow:
+    def __init_subclass__(cls, domain=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.domain = domain
+
+    def __init__(self):
+        self.hass = None
+        self.context = {}
+
+    def async_show_form(self, step_id=None, data_schema=None, errors=None, description_placeholders=None):
+        return {
+            "type": "form",
+            "step_id": step_id,
+            "data_schema": data_schema,
+            "errors": errors or {},
+            "description_placeholders": description_placeholders,
+        }
+
+    def async_create_entry(self, title="", data=None, options=None):
+        return {
+            "type": "create_entry",
+            "title": title,
+            "data": data or {},
+            "options": options or {},
+        }
+
+sys.modules["homeassistant.config_entries"].ConfigFlow = MockConfigFlow
+sys.modules["homeassistant.config_entries"].SOURCE_REAUTH = "reauth"
+sys.modules["homeassistant.config_entries"].SOURCE_USER = "user"
 
 class MockDataUpdateCoordinator:
     def __init__(self, hass, logger=None, name=None, update_interval=None, **kwargs):

@@ -96,6 +96,7 @@ export class JellyHALibraryEditor extends LitElement {
     const holdAction = this._config.hold_action || 'jellyfin';
     const doubleTapAction = this._config.double_tap_action || 'none';
     const isCastActive = clickAction === 'cast' || holdAction === 'cast' || doubleTapAction === 'cast';
+    const isClientActive = clickAction === 'play-client' || holdAction === 'play-client' || doubleTapAction === 'play-client';
 
     const lang = this.hass.locale?.language || this.hass.language;
 
@@ -322,6 +323,7 @@ export class JellyHALibraryEditor extends LitElement {
                   options: [
                     { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
                     { value: 'play-browser', label: localize(lang, 'editor.action_play_browser') },
+                    { value: 'play-client', label: localize(lang, 'editor.action_play_client') },
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
@@ -346,6 +348,7 @@ export class JellyHALibraryEditor extends LitElement {
                   options: [
                     { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
                     { value: 'play-browser', label: localize(lang, 'editor.action_play_browser') },
+                    { value: 'play-client', label: localize(lang, 'editor.action_play_client') },
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
@@ -363,7 +366,7 @@ export class JellyHALibraryEditor extends LitElement {
         </div>
 
         <div class="side-by-side">
-          <div class="form-row ${isCastActive ? 'double-tap-aligned' : ''}">
+          <div class="form-row ${isCastActive || isClientActive ? 'double-tap-aligned' : ''}">
             <ha-selector
               .hass=${this.hass}
               .selector=${{
@@ -372,6 +375,7 @@ export class JellyHALibraryEditor extends LitElement {
                   options: [
                     { value: 'jellyfin', label: localize(lang, 'editor.action_jellyfin') },
                     { value: 'play-browser', label: localize(lang, 'editor.action_play_browser') },
+                    { value: 'play-client', label: localize(lang, 'editor.action_play_client') },
                     { value: 'cast', label: localize(lang, 'editor.action_cast') },
                     { value: 'more-info', label: localize(lang, 'editor.action_more_info') },
                     { value: 'trailer', label: localize(lang, 'editor.action_trailer') },
@@ -438,6 +442,22 @@ export class JellyHALibraryEditor extends LitElement {
                   : ''}
               `
         : html`<div></div>`}
+
+          ${isClientActive
+        ? html`
+                <div class="form-row">
+                  <ha-entity-picker
+                    .hass=${this.hass}
+                    .value=${this._config.default_client_device}
+                    .includeDomains=${['media_player']}
+                    .entityFilter=${this._filterClientDevices}
+                    .label=${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}
+                    label="${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}"
+                    @value-changed=${this._defaultClientDeviceChanged}
+                  ></ha-entity-picker>
+                </div>
+              `
+        : ''}
         </div>
 
         ${clickAction === 'call-service'
@@ -864,6 +884,26 @@ export class JellyHALibraryEditor extends LitElement {
     return !eid.startsWith('media_player.jellyha_');
   };
 
+  private _filterClientDevices = (stateObj: any): boolean => {
+    const eid = stateObj?.entity_id;
+    if (!eid || !eid.startsWith('media_player.')) {
+      return false;
+    }
+    if (eid === this._config?.default_client_device) {
+      return true;
+    }
+    const platform = (this.hass as any)?.entities?.[eid]?.platform;
+    if (platform === 'jellyha') {
+      return true;
+    }
+    return eid.startsWith('media_player.jellyha_') || !!stateObj?.attributes?.client || !!stateObj?.attributes?.session_id;
+  };
+
+  private _defaultClientDeviceChanged(e: CustomEvent): void {
+    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('default_client_device', value);
+  }
+
   private _defaultCastDeviceChanged(e: CustomEvent): void {
     const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
     this._updateConfig('default_cast_device', value);
@@ -1041,6 +1081,14 @@ export class JellyHALibraryEditor extends LitElement {
             name: 'Cast to Chromecast',
             device: this._config.default_cast_device,
             icon: 'mdi:cast',
+          });
+        }
+        if (this._config.default_client_device) {
+          prefilled.push({
+            type: 'client',
+            name: 'Play on Jellyfin Client',
+            device: this._config.default_client_device,
+            icon: 'mdi:television-play',
           });
         }
         if (this._config.enable_browser_player !== false) {

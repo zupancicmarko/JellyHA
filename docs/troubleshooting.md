@@ -127,6 +127,27 @@ If your existing dashboard cards show an error for the legacy now playing sensor
 
 ---
 
+### Non-Administrator Accounts vs API Key Authentication
+
+- **Non-Admin Accounts**: Non-administrator user accounts can log in with their username and password directly. Because Jellyfin restricts full server user enumeration (`GET /Users`) strictly to administrators, JellyHA automatically detects non-admin credentials, binds to the authenticated user account, and loads their accessible libraries without prompting for a user selection dropdown.
+- **Admin Accounts & API Keys**: When logging in with an administrator account or generating an API key in the Jellyfin Dashboard (**Administration → Dashboard → Advanced → API Keys**), JellyHA is granted server-wide access and allows selecting any managed user on the server to monitor.
+
+---
+
+### Chromecast / Google Cast: "Shows title and cover, but no video/sound"
+
+If casting media to a Chromecast (or Chromecast Ultra) displays the media title and poster/backdrop on the TV screen but video or audio never starts:
+
+1. **Audio Codec & Channels (5.1 AAC vs Stereo)**:
+   - Google Cast hardware decoders natively support AAC in **stereo (2.0 channels)**. Multi-channel AAC (5.1 or 7.1) causes the Chromecast media player to fail initialization. JellyHA automatically transcodes multi-channel streams down to stereo AAC when targeting Cast devices.
+2. **Local Network Reachability**:
+   - The Chromecast device must have direct network reachability to your Jellyfin server's IP and port (e.g. `http://192.168.1.50:8096`).
+   - If Home Assistant, Jellyfin, and the Chromecast reside on different VLANs or subnets, verify that mDNS reflection and cross-subnet routing permit the Chromecast to communicate directly with the Jellyfin host.
+3. **Reverse Proxy & CORS Headers**:
+   - If casting through an external URL or reverse proxy (e.g. Nginx, Caddy, Cloudflare), verify that your proxy allows Cross-Origin Resource Sharing (CORS) requests originating from `https://www.gstatic.com` (the Google Cast Default Media Receiver web app).
+
+---
+
 ## Diagnostic Logs
 
 To enable verbose debug logging for JellyHA, add the following to your `configuration.yaml`:

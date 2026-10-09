@@ -100,10 +100,10 @@ export interface MediaItem {
 }
 
 export interface PlayTarget {
-    type: 'cast' | 'script' | 'browser' | 'play-browser';
+    type: 'cast' | 'script' | 'browser' | 'play-browser' | 'client';
     name?: string;               // Display label (e.g. "Play on Apple TV")
-    icon?: string;               // Optional icon (default: mdi:cast for cast, mdi:play for script, mdi:monitor for browser)
-    device?: string;             // media_player entity_id (for type: 'cast')
+    icon?: string;               // Optional icon (default: mdi:cast for cast, mdi:play for script, mdi:monitor for browser, mdi:television-play for client)
+    device?: string;             // media_player entity_id (for type: 'cast' or 'client')
     service?: string;            // script/service entity_id (for type: 'script')
     service_data?: Record<string, any>; // Optional additional payload passed to script
     show_entity_name?: boolean;  // Whether to display entity/device ID subtitle (default: true)
@@ -135,9 +135,9 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
     horizontal_alignment?: 'left' | 'center';
-    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'none';
-    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'none';
-    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'none';
+    click_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'play-client' | 'none';
+    hold_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'play-client' | 'none';
+    double_tap_action?: 'jellyfin' | 'more-info' | 'cast' | 'trailer' | 'call-service' | 'play-browser' | 'play-client' | 'none';
     click_service?: string;
     click_service_data?: Record<string, any>;
     hold_service?: string;
@@ -147,6 +147,7 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     service?: string;
     service_data?: Record<string, any>;
     default_cast_device?: string;
+    default_client_device?: string;
     click_subtitle_mode?: 'auto' | 'none' | 'forced_only' | 'custom';
     click_subtitle_language?: string;
     hold_subtitle_mode?: 'auto' | 'none' | 'forced_only' | 'custom';

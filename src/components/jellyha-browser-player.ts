@@ -452,7 +452,7 @@ export class JellyHABrowserPlayer extends LitElement {
         const video = this._portalContainer.querySelector('video') as HTMLVideoElement | null;
         if (!video) return;
 
-        const isHls = this._streamUrl.includes('.m3u8') || this._mimeType === 'application/x-mpegURL';
+        const isHls = this._streamUrl.includes('.m3u8') || this._mimeType === 'application/x-mpegURL' || this._mimeType === 'application/vnd.apple.mpegurl';
 
         if (isHls) {
             // Native HLS check (e.g. Safari / iOS)
@@ -843,7 +843,7 @@ export class JellyHABrowserPlayer extends LitElement {
                             </div>
                         ` : html`
                             <video class="jellyha-player-video" controls autoplay playsinline crossorigin="anonymous" @loadedmetadata=${() => this._activateDefaultSubtitle()}>
-                                ${!this._streamUrl?.includes('.m3u8') && this._mimeType !== 'application/x-mpegURL' ? html`
+                                ${!this._streamUrl?.includes('.m3u8') && this._mimeType !== 'application/x-mpegURL' && this._mimeType !== 'application/vnd.apple.mpegurl' ? html`
                                     <source src="${this._streamUrl}" type="${this._mimeType}">
                                 ` : nothing}
                                 ${this._subtitleTracks.map(track => html`

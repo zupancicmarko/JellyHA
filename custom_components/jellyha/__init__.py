@@ -75,8 +75,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
     api_key = entry.data.get(CONF_API_KEY)
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
     
-    # Ensure WebSocket deviceId is unique per instance connecting to the same server
-    ws_device_id = f"{device_name}_{entry.entry_id[:8]}"
+    # Ensure WebSocket deviceId matches the integration's authenticated session DeviceId
+    ws_device_id = "jellyha"
     ws_client = JellyfinWebSocketClient(session, server_url, api_key, ws_device_id)
 
     # Initialize session coordinator (api is initialized in library coordinator)

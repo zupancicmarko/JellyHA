@@ -38,15 +38,16 @@ max_pages: 5
 | `max_pages` | number | `5` | Maximum number of pages to display (set to `0` for infinite pagination) |
 | `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (`0` = disabled) |
 | `new_badge_days` | number | `3` | Items added within X days display a "New" badge |
-| `click_action` | string | `more-info` | Action on single tap: `more-info`, `play-browser`, `cast`, `jellyfin`, `trailer`, `call-service` (Run Script), or `none` |
+| `click_action` | string | `more-info` | Action on single tap: `more-info`, `play-browser`, `play-client`, `cast`, `jellyfin`, `trailer`, `call-service` (Run Script), or `none` |
 | `click_service` | string | `''` | Target Home Assistant script entity to execute on tap (e.g. `script.card_action_play_on_wholpin`) |
-| `hold_action` | string | `jellyfin` | Action on press and hold: `jellyfin`, `play-browser`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
+| `hold_action` | string | `jellyfin` | Action on press and hold: `jellyfin`, `play-browser`, `play-client`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
 | `hold_service` | string | `''` | Target Home Assistant script entity to execute on press and hold |
-| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `play-browser`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
+| `double_tap_action` | string | `none` | Action on double tap: `jellyfin`, `play-browser`, `play-client`, `cast`, `more-info`, `trailer`, `call-service`, or `none` |
 | `double_tap_service` | string | `''` | Target Home Assistant script entity to execute on double tap |
 | `enable_browser_player` | boolean | `true` | Enable "Play in Browser" option in card actions and More Information dialog |
 | `enable_custom_play_actions` | boolean | `false` | Enable custom playback targets in the More Information dialog via `modal_play_actions` |
-| `modal_play_actions` | list | `[]` | List of custom play targets (`browser`, `cast`, `script`) displayed in the More Info dialog |
+| `modal_play_actions` | list | `[]` | List of custom play targets (`client`, `browser`, `cast`, `script`) displayed in the More Info dialog |
+| `default_client_device` | string | `''` | Default `media_player` entity used when action is set to `play-client` (filtered to JellyHA client devices in visual editor) |
 | `default_cast_device` | string | `''` | Default `media_player` entity used when action is set to `cast` (filtered to Google Cast devices in visual editor) |
 | `subtitle_mode` | string | `auto` | Subtitle strategy for casting and browser playback: `auto` (Jellyfin user profile with English fallback), `none` (disabled), `forced_only`, or `custom` |
 | `subtitle_language` | string | `''` | Prioritized comma-separated subtitle language codes/names when `subtitle_mode` is `custom` (e.g. `sl, en` or `slv, eng`) for casting and browser playback |
@@ -81,8 +82,14 @@ JellyHA supports streaming media directly inside Home Assistant dashboards using
 - **Playback Compatibility & HLS Transcoding**:
   JellyHA automatically checks format compatibility against a standardized HTML5 browser device profile via Jellyfin's `PlaybackInfo` endpoint. Browser-supported media (H.264/AAC in MP4/WebM) plays directly with zero server overhead (DirectPlay). Non-native formats (such as AVI/Xvid video containers, AC3/DTS/TrueHD audio) seamlessly initiate an HLS transcode stream powered by `hls.js` on Chromium, Firefox, and Edge, or native HLS decoding on Apple Safari and iOS devices. Active ffmpeg transcode processes are immediately terminated when the player dialog closes.
 - **Single Tap / Hold / Double Tap**: Set `click_action: play-browser` to immediately play any tapped movie or episode in your browser.
+- **Play on Jellyfin Client (`play-client`)**:
+  Initiate native playback directly inside the official Jellyfin app running on an Android TV, Google TV, Fire TV, Web, or Desktop client (remote control feature).
+  - In YAML or Card UI, set `click_action: play-client` and specify `default_client_device: media_player.jellyha_device_living_room_tv`.
+  - When tapped, JellyHA sends `jellyha.session_play` to the active client session, and the native Jellyfin app starts playing immediately without Chromecast transcoding overhead.
+  - *Note*: The Jellyfin app must be running / open on the target device for an active session to exist.
+
 - **More Information Dialog & Target Picker**:
-  By default, the More Information modal provides 1-tap playback or an Action Sheet target picker for configured Cast devices, Browser playback, and scripts.
+  By default, the More Information modal provides 1-tap playback or an Action Sheet target picker for configured Cast devices, Jellyfin clients, Browser playback, and scripts.
 - **Subtitles & Closed Captions**:
   The browser player automatically extracts text-based subtitle streams (SRT, ASS, VTT) and serves them via an authenticated WebVTT proxy endpoint (`/api/jellyha/subtitles/...`). You can switch tracks anytime via the player's native Closed Captions (**CC**) menu. Initial track auto-selection respects the card's `subtitle_mode` and `subtitle_language` preferences (prioritizing clean dialogue tracks over SDH/hearing impaired).
 - **Custom Play Actions (`modal_play_actions`)**:
@@ -93,12 +100,16 @@ type: custom:jellyha-library-card
 entity: sensor.jellyha_library
 enable_custom_play_actions: true
 modal_play_actions:
+  - type: client
+    name: Living Room TV
+    device: media_player.jellyha_device_living_room_tv
+    icon: mdi:television-play
   - type: browser
     name: Play in Browser
     icon: mdi:monitor
   - type: cast
-    name: Living Room TV
-    device: media_player.living_room_chromecast
+    name: Bedroom Chromecast
+    device: media_player.bedroom_chromecast
     icon: mdi:cast
   - type: script
     name: Play on Apple TV
@@ -108,10 +119,10 @@ modal_play_actions:
 ```
 
 Target Options:
-- `type`: Target type (`browser`, `cast`, or `script`).
+- `type`: Target type (`client`, `browser`, `cast`, or `script`).
 - `name` (optional): Custom display label in button and Action Sheet picker.
-- `icon` (optional): Custom MDI icon (defaults: `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
-- `device`: Required for `type: cast`, target `media_player` entity ID.
+- `icon` (optional): Custom MDI icon (defaults: `mdi:television-play` for client, `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
+- `device`: Required for `type: client` and `type: cast`, target `media_player` entity ID.
 - `service`: Required for `type: script`, target script entity ID.
 - `service_data` (optional): Extra payload dictionary passed to script.
 - `show_entity_name` (optional, boolean, default: `true`): Set to `false` to hide the entity subtitle in the Action Sheet picker.

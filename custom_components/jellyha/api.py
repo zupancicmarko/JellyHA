@@ -121,16 +121,24 @@ class JellyfinApiClient:
     @property
     def _headers(self) -> dict[str, str]:
         """Get authentication headers."""
+        auth_val = (
+            'MediaBrowser Client="Home Assistant", '
+            'Device="HACS Integration", '
+            'DeviceId="jellyha", '
+            'Version="1.0.0"'
+        )
+        if self._api_key:
+            auth_val += f', Token="{self._api_key}"'
+
         headers = {
-            "Authorization": f'MediaBrowser Client="Home Assistant", '
-            f'Device="HACS Integration", '
-            f'DeviceId="jellyha", '
-            f'Version="1.0.0"',
+            "Authorization": auth_val,
+            "X-Emby-Authorization": auth_val,
             "Content-Type": "application/json",
         }
 
         if self._api_key:
-            headers["Authorization"] += f', Token="{self._api_key}"'
+            headers["X-MediaBrowser-Token"] = self._api_key
+            headers["X-Emby-Token"] = self._api_key
 
         return headers
 
@@ -233,17 +241,18 @@ class JellyfinApiClient:
 
     async def authenticate(self, username: str, password: str) -> dict[str, Any]:
         """Authenticate with username and password."""
+        auth_header = (
+            'MediaBrowser Client="Home Assistant", '
+            'Device="HACS Integration", '
+            'DeviceId="jellyha", '
+            'Version="1.0.0"'
+        )
         headers = {
             "Content-Type": "application/json",
-            "X-Emby-Authorization": (
-                'MediaBrowser Client="Home Assistant", '
-                'Device="HACS Integration", '
-                'DeviceId="jellyha", '
-                'Version="1.0.0"'
-            ),
+            "Authorization": auth_header,
+            "X-Emby-Authorization": auth_header,
         }
         
-        url = urljoin(self._server_url + "/", "Users/AuthenticateByName")
         url = urljoin(self._server_url + "/", "Users/AuthenticateByName")
         
         try:
@@ -255,6 +264,8 @@ class JellyfinApiClient:
             ) as response:
                 if response.status == 401:
                     raise JellyfinAuthError("Invalid username or password")
+                if response.status == 403:
+                    raise JellyfinAuthError("Access forbidden or account disabled")
                 response.raise_for_status()
                 data = await response.json()
                 
@@ -262,6 +273,8 @@ class JellyfinApiClient:
                 self._user_id = data.get("User", {}).get("Id")
                 return data
                 
+        except (JellyfinAuthError, JellyfinApiError):
+            raise
         except aiohttp.ClientError as err:
             raise JellyfinConnectionError(f"Connection failed: {err}") from err
 

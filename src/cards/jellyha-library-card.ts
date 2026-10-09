@@ -73,6 +73,7 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   hold_action: 'jellyfin',
   double_tap_action: 'none',
   default_cast_device: '',
+  default_client_device: '',
   show_now_playing: true,
   use_series_image: false,
   show_search: false,
@@ -1453,6 +1454,9 @@ export class JellyHALibraryCard extends LitElement {
       case 'jellyfin':
         this._openExternalUrl(item.jellyfin_url, item);
         break;
+      case 'play-client':
+        this._playOnClient(item, type);
+        break;
       case 'cast':
         this._castMedia(item, type);
         break;
@@ -1631,6 +1635,31 @@ export class JellyHALibraryCard extends LitElement {
     }
   }
 
+  private async _playOnClient(item: MediaItem, actionType?: string): Promise<void> {
+    const entityId = this._config.default_client_device;
+    if (!entityId) {
+      console.warn('JellyHA: No default Jellyfin client device configured');
+      fireEvent(this, 'hass-notification', {
+        message: 'No Jellyfin client device configured. Please select a client in the card editor.',
+      });
+      return;
+    }
+
+    try {
+      await this.hass.callService('jellyha', 'session_play', {
+        entity_id: entityId,
+        item_id: item.id,
+        server_entity_id: this._config.entity,
+        ...(item.config_entry_id ? { config_entry_id: item.config_entry_id } : {}),
+      });
+    } catch (err: any) {
+      console.error('JellyHA: Failed to play on Jellyfin client', err);
+      fireEvent(this, 'hass-notification', {
+        message: `Failed to play on Jellyfin client: ${err?.message || err}`,
+      });
+    }
+  }
+
   private _openExternalUrl(url: string | undefined, item?: MediaItem): void {
     let targetUrl = url;
 
@@ -1730,6 +1759,16 @@ export class JellyHALibraryCard extends LitElement {
       });
     }
 
+    if (this._config.default_client_device) {
+      const lang = this.hass?.locale?.language || this.hass?.language || 'en';
+      targets.push({
+        type: 'client',
+        name: localize(lang, 'editor.action_play_client') || 'Play on Jellyfin Client',
+        device: this._config.default_client_device,
+        icon: 'mdi:television-play',
+      });
+    }
+
     if (this._config.enable_browser_player !== false) {
       const lang = this.hass?.locale?.language || this.hass?.language || 'en';
       targets.push({
@@ -1795,6 +1834,7 @@ export class JellyHALibraryCard extends LitElement {
         item,
         hass: this.hass,
         defaultCastDevice: this._config.default_cast_device,
+        defaultClientDevice: this._config.default_client_device,
         serverEntityId: this._config.entity,
         subtitleMode,
         subtitleLanguage,

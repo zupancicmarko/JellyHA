@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.6.0] - 2026-10-07
 
 ### Added
+- **Play on Jellyfin Client Action & Remote Session Control (Feature Request [#62](https://github.com/zupancicmarko/JellyHA/issues/62))**:
+  - Added native `play-client` ("Play on Jellyfin Client") action to `click_action`, `hold_action`, and `double_tap_action` on the Library Card, and `'client'` target support to `modal_play_actions` in the More Information dialog.
+  - Enables direct 1-tap playback to official Jellyfin client applications (Android TV, Google TV, Fire TV, Web, Desktop, Roku) via Jellyfin's remote session control API (`POST /Sessions/{sessionId}/Playing?playCommand=PlayNow&itemIds={itemId}`), bypassing Chromecast transcoding overhead entirely.
+  - Added configurable `default_client_device` in the Library Card YAML configuration and visual editor (filtered to JellyHA client device media players `media_player.jellyha_device_*`).
+  - Added interactive client device picker fallback in the More Information modal when multiple active client sessions are online or when no default device is configured.
+  - Smart Cast Delegation: Updated `jellyha.play_on_chromecast` to automatically intercept JellyHA client device and session media player entities (`media_player.jellyha_device_*`, `media_player.jellyha_user_*`) and seamlessly route them to `jellyha.session_play`, preventing confusing Google Cast media receiver failures when users select their Jellyfin TV client instead of a Chromecast.
 - **TV & Display Power Button with Dual-Entity Pairing (Issue [#60](https://github.com/zupancicmarko/JellyHA/issues/60))**:
   - Top-right circular frosted glass power button with unified `36px` dimensions across Active Playback, Ambient Showcase, and Idle Card states.
   - State-responsive visual styling: crisp white (`#ffffff`, matching the pause icon) when ON or ready; dimmed gray-white (`rgba(255, 255, 255, 0.45)`, matching the `−` volume button) when OFF or in standby. Zero cyan glow.
@@ -55,6 +61,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expanded diagnostics redaction (`diagnostics.py`) to redact all key variants (`ApiKey`, `token`, `Token`, `secret`, `auth_key`).
 
 ### Fixed
+- **Non-Administrator User Login via Username/Password (Fixes [#64](https://github.com/zupancicmarko/JellyHA/issues/64))**:
+  - Resolved an issue where attempting to set up the integration using a Username and Password failed with `invalid_auth` ("Invalid authentication") for non-administrator accounts.
+  - Jellyfin restricts `GET /Users` strictly to server administrators, returning HTTP 403 Forbidden. The config flow now extracts the authenticated user ID and name directly from the login response (`auth_data["User"]`) and automatically advances to library selection when listing all users is prohibited.
+  - Added dual HTTP authentication headers (`Authorization` and `X-Emby-Authorization`, along with `X-Emby-Token` and `X-MediaBrowser-Token`) to ensure reverse proxies and custom server configurations properly forward credentials.
+  - Prevented infinite periodic `GET /Users` retry loops in `JellyHASessionCoordinator` by falling back to the configured user profile when server-wide user enumeration is disallowed.
+- **Chromecast Ultra Video & Audio Stalling on Transcoded Media (Fixes [#63](https://github.com/zupancicmarko/JellyHA/issues/63))**:
+  - Resolved an issue where casting transcoded media (e.g. MPEG-2 video, multi-channel surround) to a Chromecast Ultra displayed the title and thumbnail on the projection/TV screen but never started audio or video playback.
+  - Tuned modern transcoding audio channels: Google Cast hardware decoders natively support AAC strictly in stereo (2 channels) and fail when decoding 6-channel AAC. Set `TranscodingMaxAudioChannels=2` for AAC transcoding to prevent receiver audio decoder stall.
+  - Updated Chromecast HLS streaming content type to the canonical RFC MIME type `application/vnd.apple.mpegurl` (replacing obsolete `application/x-mpegURL`).
+  - Synchronized streaming and WebSocket client `DeviceId` with the integration's authenticated session `DeviceId` (`jellyha`), and included `UserId` and token query parameters in cast streaming URLs, resolving periodic authentication challenges ("CustomAuthentication was challenged / Invalid token").
 - **Visual Card Editor Entity Clearing & Save Button Enablement**:
   - Fixed an issue where clearing an entity selector using the native `✕` button fell back to the previous DOM target value instead of deleting the configuration key, which prevented the dialog's Save button from becoming active.
 - **Playback and Screensaver Typography**:

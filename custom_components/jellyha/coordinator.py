@@ -592,8 +592,14 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             users = await self._api.get_users()
             self.users = {u["Id"]: u["Name"] for u in users}
             _LOGGER.debug("Loaded %d users", len(self.users))
-        except JellyfinApiError as err:
-            _LOGGER.error("Failed to fetch users: %s", err)
+        except (JellyfinApiError, JellyfinAuthError) as err:
+            _LOGGER.debug("Could not fetch full users list (non-admin account or restricted): %s", err)
+            user_id = self.entry.data.get(CONF_USER_ID)
+            username = self.entry.data.get(CONF_USERNAME, "User")
+            if user_id:
+                self.users = {user_id: username}
+            else:
+                self.users = {"default": "User"}
 
     async def _async_update_data(self) -> list[dict[str, Any]]:
         """Fetch sessions from Jellyfin API."""

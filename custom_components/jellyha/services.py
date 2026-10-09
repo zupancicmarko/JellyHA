@@ -422,6 +422,31 @@ async def async_register_services(hass: HomeAssistant) -> None:
         server_entity_id = call.data.get("server_entity_id")
         config_entry_id = call.data.get("config_entry_id")
 
+        # Smart delegation: If target entity is a native JellyHA client device/session player,
+        # route directly to session_play instead of Google Cast
+        target_state = hass.states.get(target_entity_id) if target_entity_id else None
+        is_jellyfin_client = (
+            target_entity_id.startswith("media_player.jellyha_device_")
+            or target_entity_id.startswith("media_player.jellyha_user_")
+            or (
+                target_state
+                and (
+                    target_state.attributes.get("client") is not None
+                    or (
+                        target_state.attributes.get("session_id") is not None
+                        and target_state.attributes.get("device_id") is not None
+                    )
+                )
+            )
+        )
+        if is_jellyfin_client:
+            _LOGGER.info(
+                "play_on_chromecast invoked with Jellyfin client entity %s, delegating to session_play",
+                target_entity_id,
+            )
+            await async_session_play(call)
+            return
+
         try:
             coordinator = _get_coordinator(hass, config_entry_id, server_entity_id)
         except ValueError as e:
@@ -525,6 +550,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
             item_type=item.get("Type"),
             selected_sub=selected_sub,
             media_source_id=media_source_id,
+            user_id=user_id,
         )
 
         # Cast

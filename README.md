@@ -27,7 +27,8 @@ Jellyfin for Home Assistant
 
 - 🎬 Display movies and TV shows from your library
 - ▶️ In-Dashboard Browser Playback: Stream media directly within your Home Assistant dashboards with native Closed Captions (CC) and subtitle track support
-- 🎯 Configurable Play Actions: Instant Browser playback, Chromecast casting, or custom scripts in More Info
+- 📱 Native Jellyfin Client Remote Control: 1-tap playback to official Jellyfin apps (Android TV, Google TV, Fire TV, Web, etc.) via native session control without Chromecast transcoding overhead
+- 🎯 Configurable Play Actions: Instant Browser playback, Native Jellyfin Client playback, Chromecast casting, or custom scripts in More Info
 - 📺 Cast media directly to Chromecast (Gen 1 supported)
 - 📡 Live TV Support: Visual channel browsing in Media Browser
 - 🎵 Music Support
@@ -97,8 +98,10 @@ Before installing JellyHA, ensure you have **HACS (Home Assistant Community Stor
 2. Search for **JellyHA**.
 3. Enter your Jellyfin server URL and select authentication method (**Username/Password** or **API Key**).
    - Optional: Enter an **External URL** if accessing via a reverse proxy or WAN address.
-4. Enter your credentials or API key.
-5. Select the user and libraries to monitor.
+4. Enter your credentials or API key:
+   - **Username / Password**: Fully supports both administrator and standard (non-admin) accounts. Non-admin users automatically bind directly to their own account and personal libraries.
+   - **API Key**: Recommended for server administrators; allows monitoring any managed user across the server without coupling to a personal password.
+5. Select the libraries to monitor (and user account if authenticating with admin privileges).
 6. **Instance Label (Optional)**: Add a custom label (e.g., `4K Server`, `Kids`) when connecting multiple Jellyfin instances.
 7. Click **Submit**.
 
@@ -149,7 +152,7 @@ items_per_page: 3
 max_pages: 5
 ```
 
-Supports custom click, hold, and double-tap actions (Play in Browser, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`).
+Supports custom click, hold, and double-tap actions (Play in Browser, Play on Jellyfin Client, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`).
 
 👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 

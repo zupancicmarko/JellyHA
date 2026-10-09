@@ -502,11 +502,16 @@ class MediaStrategy:
         item_type: str = "Video",
         selected_sub: dict[str, Any] | None = None,
         media_source_id: str | None = None,
+        user_id: str | None = None,
     ) -> dict[str, Any]:
         """Determine playback strategy and return URL/Type."""
         
         is_legacy_device = device_model == "Chromecast"
         
+        auth_query = f"api_key={api_key}&ApiKey={api_key}&token={api_key}&Token={api_key}"
+        if user_id:
+            auth_query += f"&UserId={user_id}"
+
         video_codec = media_info["video_codec"]
         video_height = media_info["video_height"]
         bit_depth = media_info["bit_depth"]
@@ -540,7 +545,7 @@ class MediaStrategy:
                     
                 _LOGGER.info("Strategy Selected: DIRECT PLAY (Audio - %s)", content_type)
                 return {
-                    "media_url": f"{server_url}/Audio/{item_id}/stream?static=true&api_key={api_key}&ApiKey={api_key}",
+                    "media_url": f"{server_url}/Audio/{item_id}/stream?static=true&{auth_query}",
                     "content_type": content_type
                 }
             else:
@@ -548,8 +553,8 @@ class MediaStrategy:
                 _LOGGER.info("Strategy Selected: TRANSCODE (Legacy Audio HLS)")
                 media_url = (
                     f"{server_url}/Audio/{item_id}/master.m3u8"
-                    f"?api_key={api_key}&ApiKey={api_key}"
-                    f"&DeviceId=JellyHA_Cast"
+                    f"?{auth_query}"
+                    f"&DeviceId=jellyha"
                     f"&MediaSourceId={item_id}"
                     f"&AudioCodec=mp3"
                     f"&AudioBitrate=320000"
@@ -558,7 +563,7 @@ class MediaStrategy:
                 )
                 return {
                     "media_url": media_url,
-                    "content_type": "application/x-mpegURL"
+                    "content_type": "application/vnd.apple.mpegurl"
                 }
 
         # Check Format Basics (Video)
@@ -606,7 +611,7 @@ class MediaStrategy:
             if should_direct_play and is_text:
                 # Text subtitle on direct-playable video: deliver WebVTT sidecar (0% server transcode CPU!)
                 ms_id = media_source_id or item_id
-                vtt_url = f"{server_url}/Videos/{item_id}/{ms_id}/Subtitles/{sub_index}/Stream.vtt?api_key={api_key}&ApiKey={api_key}"
+                vtt_url = f"{server_url}/Videos/{item_id}/{ms_id}/Subtitles/{sub_index}/Stream.vtt?{auth_query}"
             else:
                 # Video requires transcode OR subtitle is bitmap (PGS/VobSub): force transcode with burn-in
                 should_direct_play = False
@@ -628,7 +633,7 @@ class MediaStrategy:
             media_url = (
                 f"{server_url}/Videos/{item_id}/stream"
                 f"?Static=true"
-                f"&api_key={api_key}&ApiKey={api_key}"
+                f"&{auth_query}"
                 f"&VideoCodec=h264"
                 f"&AudioCodec=aac"
             )
@@ -643,9 +648,9 @@ class MediaStrategy:
             play_session_id = uuid.uuid4().hex
             media_url = (
                 f"{server_url}/Videos/{item_id}/master.m3u8"
-                f"?api_key={api_key}&ApiKey={api_key}"
+                f"?{auth_query}"
                 f"&PlaySessionId={play_session_id}"
-                f"&DeviceId=JellyHA_Cast"
+                f"&DeviceId=jellyha"
                 f"&MediaSourceId={item_id}"
                 f"&Width=1280"
                 f"&Height=720"
@@ -666,7 +671,7 @@ class MediaStrategy:
                 f"&CopyTimestamps=true"
                 f"{sub_params}"
             )
-            content_type = "application/x-mpegURL"
+            content_type = "application/vnd.apple.mpegurl"
             
         else:
             # [C] MODERN TRANSCODE (Tuned 2026 Settings)
@@ -677,9 +682,9 @@ class MediaStrategy:
             play_session_id = uuid.uuid4().hex
             media_url = (
                 f"{server_url}/Videos/{item_id}/master.m3u8"
-                f"?api_key={api_key}&ApiKey={api_key}"
+                f"?{auth_query}"
                 f"&PlaySessionId={play_session_id}"
-                f"&DeviceId=JellyHA_Cast"
+                f"&DeviceId=jellyha"
                 f"&MediaSourceId={item_id}"
                 f"&Width=1920"
                 f"&Height=1080"
@@ -692,14 +697,14 @@ class MediaStrategy:
                 f"&h264-videobitdepth=8"
                 f"&AudioCodec=aac"
                 f"&AudioBitrate=320000"
-                f"&TranscodingMaxAudioChannels=6"
+                f"&TranscodingMaxAudioChannels=2"
                 f"&SegmentContainer=ts"
                 f"&MinSegments=2"
                 f"&BreakOnNonKeyFrames=False"
                 f"&CopyTimestamps=true"
                 f"{sub_params}"
             )
-            content_type = "application/x-mpegURL"
+            content_type = "application/vnd.apple.mpegurl"
 
         # Log
         safe_url = media_url.replace(api_key, "REDACTED")

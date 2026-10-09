@@ -12,6 +12,7 @@ export class JellyHAItemDetailsModal extends LitElement {
     @state() private _item?: MediaItem;
     @state() private _nextUpItem?: MediaItem;
     @state() private _defaultCastDevice?: string;
+    @state() private _defaultClientDevice?: string;
     @state() private _serverEntityId?: string;
     @state() private _subtitleMode?: string;
     @state() private _subtitleLanguage?: string;
@@ -72,6 +73,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         item: MediaItem;
         hass: HomeAssistant;
         defaultCastDevice?: string;
+        defaultClientDevice?: string;
         serverEntityId?: string;
         subtitleMode?: string;
         subtitleLanguage?: string;
@@ -81,6 +83,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         this._item = params.item;
         this.hass = params.hass;
         this._defaultCastDevice = params.defaultCastDevice;
+        this._defaultClientDevice = params.defaultClientDevice;
         this._serverEntityId = params.serverEntityId;
         this._subtitleMode = params.subtitleMode;
         this._subtitleLanguage = params.subtitleLanguage;
@@ -1868,6 +1871,35 @@ export class JellyHAItemDetailsModal extends LitElement {
                     composed: true
                 }));
             }
+        } else if (target.type === 'client') {
+            const clientDevice = target.device || this._defaultClientDevice;
+            if (!clientDevice) {
+                this.dispatchEvent(new CustomEvent('hass-notification', {
+                    detail: { message: 'No Jellyfin client selected. Please configure a client device in the card editor.' },
+                    bubbles: true,
+                    composed: true
+                }));
+                return;
+            }
+            try {
+                const serviceData: any = {
+                    entity_id: clientDevice,
+                    item_id: item.id,
+                    ...(this._serverEntityId ? { server_entity_id: this._serverEntityId } : {}),
+                };
+                if (item.config_entry_id || this._item?.config_entry_id) {
+                    serviceData.config_entry_id = item.config_entry_id || this._item?.config_entry_id;
+                }
+                await this.hass.callService('jellyha', 'session_play', serviceData);
+                this.closeDialog();
+            } catch (err: any) {
+                console.error('Failed to play on Jellyfin client', err);
+                this.dispatchEvent(new CustomEvent('hass-notification', {
+                    detail: { message: `Failed to play on Jellyfin client: ${err?.message || err}` },
+                    bubbles: true,
+                    composed: true
+                }));
+            }
         } else if (target.type === 'script') {
             if (!target.service) {
                 console.error('No service specified for script play target', target);
@@ -1954,6 +1986,10 @@ export class JellyHAItemDetailsModal extends LitElement {
     private _getTargetDisplayName(target: PlayTarget): string {
         if (target.name) return target.name;
         if (target.type === 'cast') return 'Cast to Chromecast';
+        if (target.type === 'client') {
+            const lang = this.hass?.locale?.language || this.hass?.language || 'en';
+            return localize(lang, 'editor.action_play_client') || 'Play on Jellyfin Client';
+        }
         if (target.type === 'browser' || (target.type as any) === 'play-browser') {
             const lang = this.hass?.locale?.language || this.hass?.language || 'en';
             return localize(lang, 'modal.play_in_browser') || 'Play in Browser';
@@ -1967,7 +2003,8 @@ export class JellyHAItemDetailsModal extends LitElement {
         if (this._playTargets.length === 1) {
             const target = this._playTargets[0];
             const isBrowser = target.type === 'browser' || (target.type as any) === 'play-browser';
-            const icon = target.icon || (target.type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+            const isClient = target.type === 'client';
+            const icon = target.icon || (target.type === 'cast' ? 'mdi:cast' : (isClient ? 'mdi:television-play' : (isBrowser ? 'mdi:monitor' : 'mdi:play')));
             const label = this._getTargetDisplayName(target);
             return html`
                 <button class="primary-play-btn" @click=${this._handlePlay} title="${label}">
@@ -1988,7 +2025,8 @@ export class JellyHAItemDetailsModal extends LitElement {
     private _getNextUpPlayIcon(): string {
         if (this._playTargets.length === 1) {
             const isBrowser = this._playTargets[0].type === 'browser' || (this._playTargets[0].type as any) === 'play-browser';
-            return this._playTargets[0].icon || (this._playTargets[0].type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+            const isClient = this._playTargets[0].type === 'client';
+            return this._playTargets[0].icon || (this._playTargets[0].type === 'cast' ? 'mdi:cast' : (isClient ? 'mdi:television-play' : (isBrowser ? 'mdi:monitor' : 'mdi:play')));
         }
         return 'mdi:play';
     }
@@ -2003,7 +2041,8 @@ export class JellyHAItemDetailsModal extends LitElement {
     private _getEpisodePlayIcon(): string {
         if (this._playTargets.length === 1) {
             const isBrowser = this._playTargets[0].type === 'browser' || (this._playTargets[0].type as any) === 'play-browser';
-            return this._playTargets[0].icon || (this._playTargets[0].type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+            const isClient = this._playTargets[0].type === 'client';
+            return this._playTargets[0].icon || (this._playTargets[0].type === 'cast' ? 'mdi:cast' : (isClient ? 'mdi:television-play' : (isBrowser ? 'mdi:monitor' : 'mdi:play')));
         }
         return 'mdi:play';
     }
@@ -2042,11 +2081,14 @@ export class JellyHAItemDetailsModal extends LitElement {
                     <div class="target-picker-list">
                         ${this._playTargets.map(target => {
                             const isBrowser = target.type === 'browser' || (target.type as any) === 'play-browser';
-                            const icon = target.icon || (target.type === 'cast' ? 'mdi:cast' : (isBrowser ? 'mdi:monitor' : 'mdi:play'));
+                            const isClient = target.type === 'client';
+                            const icon = target.icon || (target.type === 'cast' ? 'mdi:cast' : (isClient ? 'mdi:television-play' : (isBrowser ? 'mdi:monitor' : 'mdi:play')));
                             const name = this._getTargetDisplayName(target);
                             const detail = target.type === 'cast'
                                 ? (target.device || this._defaultCastDevice || 'Chromecast')
-                                : (isBrowser ? 'Web Browser' : (target.service || 'Script'));
+                                : (isClient
+                                    ? (target.device || this._defaultClientDevice || 'Jellyfin Client')
+                                    : (isBrowser ? 'Web Browser' : (target.service || 'Script')));
 
                             const showEntity = target.show_entity_name !== false && target.show_entity !== false && (this._showEntityName !== false);
 
