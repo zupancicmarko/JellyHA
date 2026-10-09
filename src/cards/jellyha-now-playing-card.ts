@@ -16,7 +16,8 @@ import {
     resolveVolumeState,
     setVolumeLevel,
     stepVolume,
-    toggleMute
+    toggleMute,
+    resolveInstanceSensorBase
 } from '../shared/power-volume-helpers';
 
 // Import editor for side effects
@@ -507,15 +508,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
             // Get unwatched number - scope to the same instance as this card's entity
             const configEntity = this._config?.entity || '';
-            let entityBase = '';
-            if (configEntity.startsWith('sensor.')) {
-                entityBase = configEntity.replace(/_now_playing.*$/, '');
-            } else if (configEntity.startsWith('media_player.')) {
-                // e.g. media_player.jellyha_admin -> sensor.jellyha
-                const nameWithoutDomain = configEntity.replace(/^media_player\./, '');
-                const prefix = nameWithoutDomain.includes('_') ? nameWithoutDomain.substring(0, nameWithoutDomain.lastIndexOf('_')) : nameWithoutDomain;
-                entityBase = `sensor.${prefix}`;
-            }
+            const entityBase = resolveInstanceSensorBase(configEntity);
             const scopedSensor = entityBase ? `${entityBase}_unwatched` : '';
             // Try scoped sensor first, fall back to global search for single-instance setups
             let unwatchedSensor = scopedSensor && this.hass.states[scopedSensor] ? scopedSensor : '';

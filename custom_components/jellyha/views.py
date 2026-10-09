@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import aiohttp
 from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
@@ -203,9 +204,8 @@ class JellyHAStreamView(HomeAssistantView):
         """Handle stream request for both GET and HEAD."""
         is_authenticated = request.get("hass_user") is not None
         has_valid_signature = request.get("hass_refresh_token_id") is not None
-        has_auth_sig = bool(request.query.get("authSig"))
 
-        if not is_authenticated and not has_valid_signature and not has_auth_sig:
+        if not is_authenticated and not has_valid_signature:
             _LOGGER.warning("Unauthorized stream request for item %s", item_id)
             return web.Response(status=401, text="Unauthorized")
 
@@ -252,13 +252,13 @@ class JellyHAStreamView(HomeAssistantView):
             req_headers["Range"] = request.headers["Range"]
 
         _LOGGER.info(
-            "JellyHA stream %s: item=%s, media_type=%s, filename=%s, Range=%s, authSig=%s",
+            "JellyHA stream %s: item=%s, media_type=%s, filename=%s, Range=%s, signed=%s",
             "HEAD" if is_head else "GET",
             item_id,
             media_type,
             filename,
             request.headers.get("Range"),
-            bool(has_auth_sig),
+            bool(has_valid_signature),
         )
 
         if is_head:
@@ -370,16 +370,11 @@ class JellyHASubtitleView(HomeAssistantView):
         """Handle subtitle request."""
         is_authenticated = request.get("hass_user") is not None
         has_valid_signature = request.get("hass_refresh_token_id") is not None
-        has_auth_sig = bool(request.query.get("authSig"))
 
-        # Allow requests initiated from within the Home Assistant frontend (e.g. browser video tracks)
-        referer = request.headers.get("Referer", "")
-        is_ha_referer = bool(referer and ("/lovelace" in referer or "/dashboard" in referer or "/api" in referer or ":8123" in referer))
-
-        if not is_authenticated and not has_valid_signature and not has_auth_sig and not is_ha_referer:
+        if not is_authenticated and not has_valid_signature:
             _LOGGER.warning(
-                "Unauthorized subtitle request for item %s, stream %s (referer: %s)",
-                item_id, stream_index, referer
+                "Unauthorized subtitle request for item %s, stream %s",
+                item_id, stream_index
             )
             return web.Response(status=401, text="Unauthorized")
 
@@ -460,5 +455,130 @@ class JellyHASubtitleView(HomeAssistantView):
                 )
         except Exception as err:
             _LOGGER.exception("Subtitle proxy error for item %s, stream %s", item_id, stream_index)
+            return web.Response(status=500, text=str(err))
+
+
+class JellyHAHlsView(HomeAssistantView):
+    """View to proxy Jellyfin HLS transcode streams using capability tokens."""
+
+    url = "/api/jellyha/hls/{token}/{path:.*}"
+    name = "api:jellyha:hls"
+    requires_auth = False  # Authenticated via short-lived in-memory capability token
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        """Initialize."""
+        self.hass = hass
+
+    async def get(self, request: web.Request, token: str, path: str) -> web.Response:
+        """Handle HLS playlist and segment requests."""
+        manager = self.hass.data.get(DOMAIN, {}).get("hls_manager")
+        if not manager:
+            return web.Response(status=503, text="HLS manager not initialized")
+
+        session = manager.get_session(token)
+        if not session:
+            return web.Response(status=404, text="HLS session expired or invalid")
+
+        params = dict(request.query)
+        params["api_key"] = session.api_key
+        params["PlaySessionId"] = session.play_session_id
+
+        if path.startswith("Videos/"):
+            target_url = f"{session.server_url}/{path}"
+        else:
+            target_url = f"{session.server_url}/Videos/{session.item_id}/{path}"
+
+        is_playlist = path.endswith(".m3u8")
+        client_session = session.api.session
+
+        if is_playlist:
+            try:
+                async with client_session.get(
+                    target_url,
+                    params=params,
+                    headers=session.api._headers,
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as resp:
+                    if resp.status != 200:
+                        return web.Response(status=resp.status, text=resp.reason)
+                    raw_text = await resp.text()
+
+                # Rewrite playlist: strip api_key and ApiKey query parameters
+                cleaned_text = re.sub(r'([?&])(api_key|ApiKey)=[^&"\s\n]+', '', raw_text)
+                cleaned_text = re.sub(r'\?&', '?', cleaned_text)
+                cleaned_text = re.sub(r'(\?|\&)\s*$', '', cleaned_text, flags=re.MULTILINE)
+
+                # Rewrite absolute Jellyfin server URLs and /Videos/ paths to token proxy routes
+                if session.server_url:
+                    cleaned_text = cleaned_text.replace(f"{session.server_url}/Videos/{session.item_id}/", "")
+                    cleaned_text = cleaned_text.replace(f"{session.server_url}/Videos/", f"/api/jellyha/hls/{token}/Videos/")
+
+                cleaned_text = re.sub(
+                    rf'(["\']?)/Videos/{re.escape(session.item_id)}/',
+                    rf'\1/api/jellyha/hls/{token}/',
+                    cleaned_text,
+                    flags=re.IGNORECASE,
+                )
+                cleaned_text = re.sub(
+                    r'(["\']?)/Videos/',
+                    rf'\1/api/jellyha/hls/{token}/Videos/',
+                    cleaned_text,
+                    flags=re.IGNORECASE,
+                )
+
+                return web.Response(
+                    text=cleaned_text,
+                    content_type="application/vnd.apple.mpegurl",
+                    charset="utf-8",
+                    headers={
+                        "Access-Control-Allow-Origin": "*",
+                        "Cache-Control": "no-cache",
+                    },
+                )
+            except Exception as err:
+                _LOGGER.error("Error proxying HLS playlist %s: %s", path, err)
+                return web.Response(status=500, text=str(err))
+
+        # Media segments (.ts / .m4s / .mp4 / .key)
+        prepared = False
+        try:
+            req_headers = dict(session.api._headers)
+            if "Range" in request.headers:
+                req_headers["Range"] = request.headers["Range"]
+
+            async with client_session.get(
+                target_url,
+                params=params,
+                headers=req_headers,
+                timeout=aiohttp.ClientTimeout(total=None),
+            ) as resp:
+                if resp.status not in (200, 206):
+                    return web.Response(status=resp.status, text=resp.reason)
+
+                response = web.StreamResponse(status=resp.status, reason=resp.reason)
+                response.headers["Content-Type"] = resp.headers.get("Content-Type", "video/mp2t")
+                response.headers["Access-Control-Allow-Origin"] = "*"
+                if "Accept-Ranges" in resp.headers:
+                    response.headers["Accept-Ranges"] = resp.headers["Accept-Ranges"]
+                if "Content-Length" in resp.headers:
+                    response.headers["Content-Length"] = resp.headers["Content-Length"]
+                if "Content-Range" in resp.headers:
+                    response.headers["Content-Range"] = resp.headers["Content-Range"]
+
+                await response.prepare(request)
+                prepared = True
+
+                async for chunk in resp.content.iter_chunked(65536):
+                    await response.write(chunk)
+                return response
+        except (asyncio.CancelledError, ConnectionResetError, BrokenPipeError):
+            if prepared:
+                return response
+            raise
+        except Exception as err:
+            if prepared:
+                _LOGGER.debug("HLS segment streaming disconnected for %s: %s", path, err)
+                return response
+            _LOGGER.error("HLS segment streaming error for %s: %s", path, err)
             return web.Response(status=500, text=str(err))
 

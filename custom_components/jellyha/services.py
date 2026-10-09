@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import asyncio
+from datetime import timedelta
 from typing import Any
 import random
 import voluptuous as vol
@@ -10,6 +11,7 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, ServiceResponse
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
+from homeassistant.components.http.auth import async_sign_path
 from homeassistant.components.media_player import (
     DOMAIN as MEDIA_PLAYER_DOMAIN,
     SERVICE_PLAY_MEDIA,
@@ -17,6 +19,11 @@ from homeassistant.components.media_player import (
     ATTR_MEDIA_CONTENT_ID,
     ATTR_MEDIA_CONTENT_TYPE,
 )
+
+try:
+    from homeassistant.helpers.network import get_url
+except Exception:  # pragma: no cover
+    get_url = None
 
 from .const import DOMAIN
 
@@ -805,13 +812,29 @@ async def async_register_services(hass: HomeAssistant) -> None:
         # Stream URL
         media_url = item.get("stream_url")
         if not media_url:
-            media_url = f"{api._server_url}/Audio/{item_id}/stream?static=true&api_key={api._api_key}&ApiKey={api._api_key}"
+            stream_path = api.get_stream_path(coordinator.entry.entry_id, item_id, item_type="Audio")
+            media_url = async_sign_path(hass, stream_path, timedelta(hours=24))
 
-        # Cover art: provide direct absolute server URL so external speakers (Chromecast, Sonos) can load it
-        thumb_url = api.get_image_url(item_id, "Primary")
+        # Cover art: signed Home Assistant proxy URL
+        thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{item_id}/Primary"
+        thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
         album_id = item.get("album_id")
         if not thumb_url and album_id:
-            thumb_url = api.get_image_url(album_id, "Primary")
+            thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{album_id}/Primary"
+            thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+
+        base_url = None
+        if get_url:
+            try:
+                base_url = get_url(hass)
+            except Exception:
+                base_url = None
+
+        if base_url:
+            if media_url and media_url.startswith("/"):
+                media_url = f"{base_url.rstrip('/')}{media_url}"
+            if thumb_url and thumb_url.startswith("/"):
+                thumb_url = f"{base_url.rstrip('/')}{thumb_url}"
 
         title = item.get("name")
         artist = item.get("artist_name") or item.get("album_artist")
@@ -1030,9 +1053,27 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
         media_url = first_transformed.get("stream_url")
         if not media_url:
-            media_url = f"{api._server_url}/Audio/{first_id}/stream?static=true&api_key={api._api_key}&ApiKey={api._api_key}"
+            stream_path = api.get_stream_path(coordinator.entry.entry_id, first_id, item_type="Audio")
+            media_url = async_sign_path(hass, stream_path, timedelta(hours=24))
 
-        thumb_url = api.get_image_url(first_id, "Primary") or api.get_image_url(playlist_id, "Primary")
+        thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{first_id}/Primary"
+        thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+        if not thumb_url and playlist_id:
+            thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{playlist_id}/Primary"
+            thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+
+        base_url = None
+        if get_url:
+            try:
+                base_url = get_url(hass)
+            except Exception:
+                base_url = None
+
+        if base_url:
+            if media_url and media_url.startswith("/"):
+                media_url = f"{base_url.rstrip('/')}{media_url}"
+            if thumb_url and thumb_url.startswith("/"):
+                thumb_url = f"{base_url.rstrip('/')}{thumb_url}"
         title = first_transformed.get("name")
         artist = (
             first_transformed.get("artist_name")
@@ -1126,13 +1167,17 @@ async def async_register_services(hass: HomeAssistant) -> None:
             pid = p.get("Id", "")
             run_time_ticks = p.get("RunTimeTicks", 0)
             runtime_mins = round(run_time_ticks / (10_000_000 * 60)) if run_time_ticks else None
+            img_url = None
+            if pid:
+                img_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{pid}/Primary"
+                img_url = async_sign_path(hass, img_path, timedelta(hours=24))
             playlists.append(
                 {
                     "id": pid,
                     "name": p.get("Name", "Unknown Playlist"),
                     "item_count": p.get("ChildCount") or p.get("RecursiveItemCount") or 0,
                     "runtime_minutes": runtime_mins,
-                    "image_url": api.get_image_url(pid, "Primary") if pid else None,
+                    "image_url": img_url,
                     "is_favorite": p.get("UserData", {}).get("IsFavorite", False),
                 }
             )
@@ -1169,13 +1214,20 @@ async def async_register_services(hass: HomeAssistant) -> None:
         collections = []
         for c in raw_collections:
             cid = c.get("Id", "")
+            img_url = None
+            backdrop_url = None
+            if cid:
+                img_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{cid}/Primary"
+                img_url = async_sign_path(hass, img_path, timedelta(hours=24))
+                bd_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{cid}/Backdrop"
+                backdrop_url = async_sign_path(hass, bd_path, timedelta(hours=24))
             col_data = {
                 "id": cid,
                 "name": c.get("Name", "Unknown Collection"),
                 "item_count": c.get("ChildCount") or c.get("RecursiveItemCount") or 0,
                 "overview": c.get("Overview"),
-                "image_url": api.get_image_url(cid, "Primary") if cid else None,
-                "backdrop_url": api.get_image_url(cid, "Backdrop") if cid else None,
+                "image_url": img_url,
+                "backdrop_url": backdrop_url,
             }
 
             if include_items and cid:

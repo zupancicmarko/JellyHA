@@ -1097,7 +1097,7 @@ class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
         self._user_id = user_id
         self._username = username
         self._attr_unique_id = f"{entry.entry_id}_media_player_{user_id}"
-        self._attr_name = f"{username}"
+        self._attr_name = f"User {username}"
         self._attr_icon = "mdi:account-play"
 
     def _get_active_session(self) -> dict[str, Any] | None:
@@ -1160,7 +1160,7 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
         self._device_id = device_id
         self._custom_device_name = custom_device_name
         self._attr_unique_id = f"{entry.entry_id}_device_player_{device_id}"
-        self._attr_name = f"{custom_device_name}"
+        self._attr_name = f"Device {custom_device_name}"
         lower_name = custom_device_name.lower()
         if any(w in lower_name for w in ("phone", "s20", "s21", "s22", "s23", "s24", "s25", "pixel", "iphone", "mobile")):
             self._attr_icon = "mdi:cellphone-play"

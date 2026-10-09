@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import json
+import re
 import aiohttp
 from typing import Optional, Callable, List, Dict, Any
 from urllib.parse import quote
@@ -87,7 +88,8 @@ class JellyfinWebSocketClient:
         
         while not self._stop_event.is_set():
             try:
-                _LOGGER.debug("Connecting to Jellyfin WebSocket: %s", url)
+                safe_log_url = re.sub(r'([?&])api_key=[^&]+', r'\1api_key=REDACTED', url)
+                _LOGGER.debug("Connecting to Jellyfin WebSocket: %s", safe_log_url)
                 async with self._session.ws_connect(url, headers=headers) as ws:
                     self._ws = ws
                     self._connected = True

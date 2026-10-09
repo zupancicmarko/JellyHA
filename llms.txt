@@ -8,8 +8,9 @@ This document serves as the authoritative, compact technical specification for A
 
 ## 1. Core Architecture & Entities
 
-### Primary Playback Entity: `media_player.jellyha_<user>`
-Each configured Jellyfin user gets a dedicated media player entity (e.g., `media_player.jellyha_admin`).
+### Primary Playback Entity: `media_player.jellyha_user_<user>` (or legacy `media_player.jellyha_<user>`)
+Each configured Jellyfin user gets a dedicated media player entity (e.g., `media_player.jellyha_user_admin`). In the Home Assistant UI, display names are explicitly prefixed as `JellyHA User <username>` to distinguish them from hardware device players.
+* **Backward Compatibility**: Existing installations retain their legacy entity IDs (e.g. `media_player.jellyha_admin`) without breaking automations or scripts.
 * **States**: `playing`, `paused`, `idle`, `off`
 * **Standard HA Attributes**:
   * `media_title`: Current item name (Movie title, Episode title, or Song title)
@@ -22,7 +23,7 @@ Each configured Jellyfin user gets a dedicated media player entity (e.g., `media
   * `shuffle`: Boolean (True if shuffle is active)
   * `repeat`: String (`off`, `all`, `one`)
   * `entity_picture`: Authenticated, signed proxy image URL
-* **Extra State Attributes** (`state_attr('media_player.jellyha_<user>', 'attribute_name')`):
+* **Extra State Attributes** (`state_attr('media_player.jellyha_user_<user>', 'attribute_name')`):
   * `title`: String (Item title)
   * `series_title`: String (TV series name for episodes, null for movies)
   * `season`: Integer (Season number)
@@ -54,8 +55,9 @@ Each configured Jellyfin user gets a dedicated media player entity (e.g., `media
   * `supports_remote_control`: Boolean (True if remote controllable, False if non-controllable like mobile ExoPlayer)
   * `entry_id` / `config_entry_id`: String (JellyHA integration instance GUID)
 
-### Client / Device Playback Entity: `media_player.jellyha_<device_name>`
-Users can opt-in to dedicated media player entities per physical client device (e.g., `media_player.jellyha_living_room_tv`, `media_player.jellyha_bedroom_shield`) configured in Integration Options.
+### Client / Device Playback Entity: `media_player.jellyha_device_<device_name>` (or legacy `media_player.jellyha_<device_name>`)
+Users can opt-in to dedicated media player entities per physical client device (e.g., `media_player.jellyha_device_living_room_tv`, `media_player.jellyha_device_bedroom_shield`). These can be selected directly during the initial onboarding configuration wizard (**Select Client Devices** step) or configured post-setup in Integration Options. Display names are prefixed as `JellyHA Device <device_name>` in the Home Assistant UI.
+* **Backward Compatibility**: Existing installations retain their legacy entity IDs (e.g. `media_player.jellyha_living_room_tv`).
 * **States & Attributes**: 100% attribute parity with per-user media players (all standard HA attributes, extra attributes, chapter/segment detection, dynamic range, and transport controls).
 * **Device-Specific Attributes**:
   * `device_id`: Jellyfin physical client device GUID
@@ -97,7 +99,7 @@ Users can opt-in to dedicated media player entities per physical client device (
 
 ### Native Media Browser Support (`/media-browser`)
 JellyHA registers a native Home Assistant Media Browser provider for each server instance. When browsing `media_player` entities or the sidebar Media Browser:
-* All per-user (`media_player.jellyha_<user>`) and per-device (`media_player.jellyha_<device>`) media players expose `BROWSE_MEDIA` and direct library navigation.
+* All per-user (`media_player.jellyha_user_<user>`) and per-device (`media_player.jellyha_device_<device>`) media players expose `BROWSE_MEDIA` and direct library navigation (legacy `media_player.jellyha_<name>` entities are also supported).
 * Displays top-level library folders (Movies, TV Shows, Music), **📦 Collections / BoxSets**, and a dedicated **📡 Live TV** category (when `enable_live_tv` is enabled in Options).
 * Inside **📦 Collections**, tapping Play on any BoxSet automatically resolves and plays its first movie.
 * Inside **📡 Live TV**, channels are rendered with authenticated signed channel logos, channel numbers, and titles, sorted numerically/alphabetically.
@@ -381,7 +383,7 @@ When generating automations for JellyHA, you **MUST NEVER** make the following c
 
 3. **`sensor.jellyha_now_playing_<user>` is DEPRECATED**:
    * *The Mistake*: Directing playback controls or state checks to the legacy sensor.
-   * *The Reality*: Always use `media_player.jellyha_<user>`. Standard HA actions (`media_player.media_play`, `media_player.media_pause`, `media_player.media_seek`, `media_player.shuffle_set`, `media_player.repeat_set`) work out-of-the-box.
+   * *The Reality*: Always use `media_player.jellyha_user_<user>` (or legacy `media_player.jellyha_<user>`). Standard HA actions (`media_player.media_play`, `media_player.media_pause`, `media_player.media_seek`, `media_player.shuffle_set`, `media_player.repeat_set`) work out-of-the-box.
 
 4. **Series Playback on Chromecast**:
    * *The Mistake*: Writing complex scripts to fetch all episodes, filter watched ones, and pick one.
@@ -403,7 +405,7 @@ When generating automations for JellyHA, you **MUST NEVER** make the following c
    * *The Reality*: The Library Card is exclusively dedicated to **Movies** and **TV Shows** (`media_type: movies`, `series`, `episodes`, or `both`). Music, Live TV, Playlists, and BoxSets/Collections are accessed via Home Assistant's native Media Browser (`/media-browser`), all media player entities, or dedicated playback actions (`jellyha.play_music`, `jellyha.play_playlist`, `jellyha.play_live_tv_channel`).
 
 8. **Media Player Browsing**:
-   * All JellyHA media players (`media_player.jellyha_<user>` and `media_player.jellyha_<device>`) support native media browsing (`MediaPlayerEntityFeature.BROWSE_MEDIA`), allowing users to browse their libraries directly from media player cards.
+   * All JellyHA media players (`media_player.jellyha_user_<user>` and `media_player.jellyha_device_<device>`) support native media browsing (`MediaPlayerEntityFeature.BROWSE_MEDIA`), allowing users to browse their libraries directly from media player cards.
 
 ---
 
@@ -482,7 +484,7 @@ condition:
 action:
   - action: media_player.media_seek
     target:
-      entity_id: media_player.jellyha_admin
+      entity_id: media_player.jellyha_user_admin
     data:
       seek_position: "{{ trigger.event.data.segment_end_seconds + 1 }}"
 ```
@@ -494,15 +496,15 @@ alias: "Cinema Lighting"
 mode: restart
 trigger:
   - trigger: state
-    entity_id: media_player.jellyha_admin
+    entity_id: media_player.jellyha_user_admin
     to: "playing"
     id: "playing"
   - trigger: state
-    entity_id: media_player.jellyha_admin
+    entity_id: media_player.jellyha_user_admin
     to: "paused"
     id: "paused"
   - trigger: state
-    entity_id: media_player.jellyha_admin
+    entity_id: media_player.jellyha_user_admin
     to: "idle"
     id: "stopped"
   - trigger: event
@@ -593,14 +595,14 @@ description: "Sync TV picture preset and bias lights based on Dolby Vision/HDR/S
 mode: restart
 trigger:
   - trigger: state
-    entity_id: media_player.jellyha_living_room_tv
+    entity_id: media_player.jellyha_device_living_room_tv
     to: "playing"
 condition:
   - condition: template
-    value_template: "{{ state_attr('media_player.jellyha_living_room_tv', 'dynamic_range') is not none }}"
+    value_template: "{{ state_attr('media_player.jellyha_device_living_room_tv', 'dynamic_range') is not none }}"
 action:
   - variables:
-      hdr_format: "{{ state_attr('media_player.jellyha_living_room_tv', 'dynamic_range') }}"
+      hdr_format: "{{ state_attr('media_player.jellyha_device_living_room_tv', 'dynamic_range') }}"
   - choose:
       - conditions:
           - condition: template
@@ -667,7 +669,7 @@ action:
   - action: jellyha.play_live_tv_channel
     data:
       channel_name: "{{ trigger.slots.channel }}"
-      entity_id: media_player.jellyha_living_room_tv
+      entity_id: media_player.jellyha_device_living_room_tv
   - set_conversation_response: "Tuning to {{ trigger.slots.channel }}."
 ```
 
@@ -700,7 +702,7 @@ The `jellyha-library-card` and `jellyha-now-playing-card` provide rich UI and au
 
 ### Custom Interactions (`click_action`, `hold_action`, `double_tap_action`)
 * **Available Actions**: `more-info` (default), `play-browser`, `cast`, `jellyfin`, `trailer`, `call-service` ("Run Script"), `none`.
-* **When set to `play-browser`**: Immediately launches the in-dashboard `<jellyha-browser-player>` dialog with authenticated media stream resolution via HA's WebSocket API (`media_source/resolve_media`).
+* **When set to `play-browser`**: Immediately launches the in-dashboard `<jellyha-browser-player>` dialog with authenticated media stream resolution via HA's WebSocket API (`jellyha/resolve_playback` with `media_source/resolve_media` fallback), supporting zero-overhead DirectPlay for browser formats (H.264/AAC) and automatic HLS transcode fallback via `hls.js` / native Apple HLS for unsupported codecs (AVI/Xvid, AC3, DTS).
 * **When set to `call-service`**:
   * In the card editor, Home Assistant renders a native `<ha-selector>` entity dropdown picker strictly filtered to `domain: 'script'` (`click_service`, `hold_service`, `double_tap_service`), complete with friendly names, icons, and live search.
   * In YAML, specify the script entity ID (e.g. `click_service: script.play_on_apple_tv`).
@@ -781,7 +783,7 @@ Lovelace custom card rendering active playback status, progress bars, transport 
 ### YAML Configuration Schema
 ```yaml
 type: custom:jellyha-now-playing-card
-entity: media_player.jellyha_admin # (Required) Per-user or per-device media player
+entity: media_player.jellyha_user_admin # (Required) Per-user or per-device media player
 title: "Now Playing"               # (Optional) Header card title
 show_background: true              # (Boolean, default true) Blurred fanart backdrop
 show_title: true                   # (Boolean, default true) Media item title
@@ -798,7 +800,19 @@ show_client: true                  # (Boolean, default true) Active client name
 show_device_name: false            # (Boolean, default false) Active device name
 show_user: true                    # (Boolean, default true) Active user name
 use_series_image: false            # (Boolean, default false) Use series cover instead of episode thumbnail
+# Power Button Options (v1.6.0+)
+show_power_button: true            # (Boolean, default true) Circular frosted glass TV power button
+power_entity: media_player.office_tv # (Optional, string) Target entity for TV power (defaults to primary entity)
+power_state_entity: binary_sensor.tv_ping # (Optional, string) State entity for dual-pairing stateless power scripts
+stop_on_power_off: true            # (Boolean, default true) Automatically halt active playback on power off
+# Volume Capsule Options (v1.6.0+)
+show_volume: false                 # (Boolean, default false) Option 1 translucent volume capsule slider
+volume_entity: media_player.soundbar # (Optional, string) Dedicated entity for external AVR/soundbar volume
+show_volume_step_buttons: true     # (Boolean, default true) Discrete - and + step buttons inside volume capsule
+volume_step: 5                     # (Number, default 5) Step increment percentage
+# Ambient Idle Showcase (Screensaver & Spotlight)
 idle_backdrop_cycle: true         # (Boolean, default false) Cycle library media artwork when idle (instead of static placeholder)
+idle_content_source: random        # (String, default 'random') 'random', 'recent', 'latest_movie', 'latest_episode', 'latest_both'
 idle_display_mode: backdrop       # (String, default 'backdrop') 'backdrop' (full fanart screensaver) or 'card' (poster + backdrop spotlight)
 idle_cycle_interval: 20           # (Integer, default 20) Time in seconds per slide (min: 5, max: 120)
 idle_media_type: both             # (String, default 'both') 'both', 'movies', or 'tvshows'
@@ -811,5 +825,9 @@ When nothing is actively playing, the Now Playing Card can automatically cycle t
   * `'card'`: Card layout with portrait poster art, blurred fanart backdrop, title, release year, rating pill, genre pills, and description.
 * **Seamless Crossfade**: Two-layer hardware-accelerated `<img>` transitions with zero blackout, dimming, or layout shift.
 * **Resource Optimization**: Rotation automatically pauses during active playback, when card disconnects, or when the dashboard tab is in the background (`visibilitychange`).
+
+### TV / Display Power Control Specification
+* **Dual-Entity Pairing**: If `power_entity` is a stateless trigger (`script.*`, `button.*`), pair it with `power_state_entity` (`binary_sensor.tv_ping`, smart plug, or `device_tracker.*`). States `on`, `playing`, `paused`, `idle`, `home`, and `active` are evaluated as ON; `off`, `standby`, and `not_home` are evaluated as OFF.
+* **Separate ON / OFF Scripts**: When controlling displays via separate scripts, wrap them into a `switch: platform: template` in HA or use a branching toggle script with `power_state_entity`.
 
 

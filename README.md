@@ -170,22 +170,22 @@ idle_backdrop_cycle: true # Enable ambient media slideshow when nothing is playi
 
 #### 🔄 Migrating from Legacy Now Playing Sensors to Media Players
 
-Starting in **JellyHA v1.3.0**, per-user `media_player.jellyha_<user>` entities are the primary, official entities for tracking and controlling user playback. Legacy `sensor.jellyha_now_playing_<user>` entities remain active for backward compatibility until **v2.0.0**.
+Starting in **JellyHA v1.3.0**, per-user `media_player.jellyha_user_<user>` entities (and per-device `media_player.jellyha_device_<device>`) are the primary, official entities for tracking and controlling playback. Legacy `sensor.jellyha_now_playing_<user>` entities remain active for backward compatibility until **v2.0.0**.
 
 **Migrating existing cards requires changing only one line:**
 
 ```diff
 type: custom:jellyha-now-playing-card
 -entity: sensor.jellyha_now_playing_<user>
-+entity: media_player.jellyha_<user>
++entity: media_player.jellyha_user_<user>
 title: Now Playing
 show_background: true
 ```
 
 **Why this migration is 100% safe and non-breaking:**
 - **Exact Visual & Feature Parity**: `custom:jellyha-now-playing-card` provides identical styling, dynamic fanart backdrops, poster art, season/episode badges (`S01E05`), IMDB/TMDB ratings, elapsed/remaining runtime, live scrubbing, and tap-to-rewind.
-- **Identical State Values**: `media_player.jellyha_<user>` outputs the exact same state values (`playing`, `paused`, `idle`). Any dashboard conditional visibility rules (e.g. `state: playing` or `state_not: idle`) continue to work seamlessly without modifying your conditions.
-- **Direct Playback Controls**: `media_player.jellyha_<user>` enables native Home Assistant services (`media_player.media_play_pause`, `media_player.media_seek`, `media_player.media_stop`), physical client device tracking (`media_player.jellyha_<device_name>`), and voice commands via Home Assistant Assist.
+- **Identical State Values**: `media_player.jellyha_user_<user>` outputs the exact same state values (`playing`, `paused`, `idle`). Any dashboard conditional visibility rules (e.g. `state: playing` or `state_not: idle`) continue to work seamlessly without modifying your conditions.
+- **Direct Playback Controls**: Enables native Home Assistant services (`media_player.media_play_pause`, `media_player.media_seek`, `media_player.media_stop`), physical client device tracking (`media_player.jellyha_device_<device_name>`), and voice commands via Home Assistant Assist. Existing installations preserve legacy entity IDs without breaking.
 
 👉 **[See full Now Playing Card options in docs/cards.md](docs/cards.md)**
 

@@ -78,6 +78,8 @@ max_pages: 5
 
 JellyHA supports streaming media directly inside Home Assistant dashboards using a dedicated HTML5 browser player (`<jellyha-browser-player>`) with authenticated streaming:
 
+- **Playback Compatibility & HLS Transcoding**:
+  JellyHA automatically checks format compatibility against a standardized HTML5 browser device profile via Jellyfin's `PlaybackInfo` endpoint. Browser-supported media (H.264/AAC in MP4/WebM) plays directly with zero server overhead (DirectPlay). Non-native formats (such as AVI/Xvid video containers, AC3/DTS/TrueHD audio) seamlessly initiate an HLS transcode stream powered by `hls.js` on Chromium, Firefox, and Edge, or native HLS decoding on Apple Safari and iOS devices. Active ffmpeg transcode processes are immediately terminated when the player dialog closes.
 - **Single Tap / Hold / Double Tap**: Set `click_action: play-browser` to immediately play any tapped movie or episode in your browser.
 - **More Information Dialog & Target Picker**:
   By default, the More Information modal provides 1-tap playback or an Action Sheet target picker for configured Cast devices, Browser playback, and scripts.
@@ -171,18 +173,18 @@ The Now Playing Card displays an interactive playback controller for an active u
 
 ```yaml
 type: custom:jellyha-now-playing-card
-entity: media_player.jellyha_admin
+entity: media_player.jellyha_user_admin
 title: Now Playing
 show_background: true
 ```
 
-> **Entity Support:** Accepts per-user media players (e.g. `media_player.jellyha_admin`), per-device media players (e.g. `media_player.jellyha_living_room_tv`), or legacy Now Playing sensors.
+> **Entity Support:** Accepts per-user media players (e.g. `media_player.jellyha_user_admin` or legacy `media_player.jellyha_admin`), per-device media players (e.g. `media_player.jellyha_device_living_room_tv` or legacy `media_player.jellyha_living_room_tv`), or legacy Now Playing sensors.
 
 ### Configuration Options
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `entity` | string | **Required** | The target media player entity (e.g. `media_player.jellyha_admin` or `media_player.jellyha_living_room_tv`) |
+| `entity` | string | **Required** | The target media player entity (e.g. `media_player.jellyha_user_admin` or `media_player.jellyha_device_living_room_tv`) |
 | `title` | string | `Jellyfin` | Header title text |
 | `show_background` | boolean | `true` | Display blurred backdrop fanart as card background |
 | `show_title` | boolean | `true` | Display media title text |
@@ -246,18 +248,114 @@ The Now Playing Card includes built-in playback gestures:
 The Now Playing Card integrates direct hardware power management into the card header across Active Playback, Ambient Showcase, and Idle states:
 - **Consistent Top-Right Placement**: Always positioned at the top right with uniform `36px` circular glass dimensions.
 - **Clear Power Status**: Crisp white (`#ffffff`, matching the pause icon) when ON or ready; dimmed gray-white (`rgba(255, 255, 255, 0.45)`, matching the `−` volume button) when OFF or in standby. Zero artificial cyan glow.
-- **Domain Support**: Works with `media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`, and `input_boolean.*`.
-- **Dual-Entity Pairing**: For IR blasters or scripts without state reporting, set `power_state_entity` to a smart plug sensor or ping binary sensor to track true power state.
+- **Supported Domains**: Works with `media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`, and `input_boolean.*`.
+- **Automatic Fallback**: If `power_entity` is omitted, the card automatically falls back to controlling the primary media player `entity`.
+- **Deterministic Control**: When target is a `media_player`, directly issues `media_player.turn_off` and `media_player.turn_on` rather than toggling apps.
 - **Auto-Stop on Power Off**: Powering off the TV while content is playing automatically halts the Jellyfin session and saves playback progress (`stop_on_power_off: true`).
 - **Tactile Feedback**: Pressing the power button provides `_haptic('light')` and a momentary visual depression and pulse animation.
 
+#### How `power_entity` and `power_state_entity` Work Together
+
+Many TVs, projectors, or displays are controlled via stateless methods (IR blasters, Broadlink remotes, Wake-on-LAN packets, or separate ON/OFF scripts) where the control entity cannot report whether the display is currently on or in standby.
+
+To solve this, JellyHA provides **Dual-Entity Pairing**:
+- **`power_entity`**: The entity that executes the power command (e.g., `switch.living_room_tv`, `media_player.lg_tv`, `script.tv_toggle`).
+- **`power_state_entity`**: An optional secondary sensor that reports the true operational state of the display (e.g., `binary_sensor.tv_ping`, smart plug power meter, or UniFi device tracker). JellyHA automatically treats states `on`, `playing`, `paused`, `idle`, `home`, and `active` as **ON**, and `off`, `standby`, or `not_home` as **OFF**.
+
+---
+
+#### Configuration Patterns for TV Power
+
+##### Pattern 1: Native Smart TV or Smart Plug (Direct)
+If your TV provides a native Home Assistant integration (`media_player.lg_tv`, `media_player.android_tv`) or is plugged into a smart switch:
+
 ```yaml
 type: custom:jellyha-now-playing-card
-entity: media_player.jellyha_living_room
-power_entity: switch.living_room_tv_socket
-power_state_entity: binary_sensor.living_room_tv_ping
+entity: media_player.jellyha_user_admin
+power_entity: media_player.lg_webos_tv
 stop_on_power_off: true
 ```
+*(No `power_state_entity` needed — the entity reports its own state directly).*
+
+##### Pattern 2: Separate ON & OFF Scripts via Template Switch (Recommended)
+If you turn your TV on and off using two distinct scripts (e.g. via IR, Wake-on-LAN, ADB, or HDMI-CEC) and track state via network activity or ping, create a **Template Switch** in Home Assistant:
+
+```yaml
+# In configuration.yaml
+switch:
+  - platform: template
+    switches:
+      living_room_tv:
+        friendly_name: "Living Room TV"
+        unique_id: living_room_tv_power_switch
+        value_template: >-
+          {{ is_state('binary_sensor.tv_network_state', 'on') }}
+        turn_on:
+          action: script.tv_turn_on
+        turn_off:
+          action: script.tv_turn_off
+```
+
+Then in the Now Playing Card:
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_user_admin
+power_entity: switch.living_room_tv
+stop_on_power_off: true
+```
+*Why this is best:* The Template Switch bundles your separate ON script, OFF script, and state tracking into a single standard switch that Home Assistant, voice assistants, and JellyHA handle natively.
+
+##### Pattern 3: Toggle Script + `power_state_entity` Pairing
+If you prefer not to create a template switch, you can create a single wrapper toggle script that branches on your state sensor:
+
+```yaml
+# In scripts.yaml
+tv_power_toggle:
+  alias: "TV Power Toggle"
+  icon: mdi:power
+  sequence:
+    - if:
+        - condition: state
+          entity_id: binary_sensor.tv_network_state
+          state: "on"
+      then:
+        - action: script.tv_turn_off
+      else:
+        - action: script.tv_turn_on
+```
+
+Then in the Now Playing Card:
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_user_admin
+power_entity: script.tv_power_toggle
+power_state_entity: binary_sensor.tv_network_state
+stop_on_power_off: true
+```
+
+---
+
+#### How to Set Up the Power State Entity (`power_state_entity`)
+
+When your TV doesn't have a native integration, use one of the following methods to track whether it is ON or in standby:
+
+1. **Ping Binary Sensor (Fastest & Most Common)**:
+   Add the native **Ping** integration in Home Assistant (**Settings** → **Devices & Services** → **Add Integration** → **Ping**) and enter your TV's static IP address. It creates `binary_sensor.tv_ping`. When the TV enters standby, network responses drop and the sensor switches to `off`.
+2. **UniFi Device Tracker (`device_tracker.tv`)**:
+   If your TV disconnects from Wi-Fi in deep standby, pass the UniFi `device_tracker.<tv>` entity directly into `power_state_entity`. JellyHA natively treats `home` as ON and `not_home` as OFF.
+3. **UniFi Network Activity / Bandwidth Sensor**:
+   If the TV stays associated with Wi-Fi but its network throughput drops to near-zero in standby (as shown in UniFi activity graphs), create a template binary sensor:
+   ```yaml
+   template:
+     - binary_sensor:
+         - name: "TV Network State"
+           unique_id: tv_network_state
+           device_class: running
+           state: >-
+             {{ states('sensor.tv_network_activity') | float(0) > 10 }}
+           delay_off:
+             seconds: 30
+   ```
 
 ### Option 1 Capsule Volume Slider & Step Buttons
 
@@ -309,9 +407,9 @@ show_background: false
 
 ### Migrating from Legacy Now Playing Sensors (`sensor.jellyha_now_playing_*`)
 
-Starting in **v1.3.0**, `sensor.jellyha_now_playing_<user>` is deprecated in favor of `media_player.jellyha_<user>` and scheduled for removal in **v2.0.0**.
+Starting in **v1.3.0**, `sensor.jellyha_now_playing_<user>` is deprecated in favor of native media player entities (such as `media_player.jellyha_user_<user>` or per-device `media_player.jellyha_device_<device>`) and scheduled for removal in **v2.0.0**.
 
-**You do NOT need to replace `custom:jellyha-now-playing-card` or switch to third-party cards.** The card natively supports `media_player` entities with 100% visual and functional parity.
+**You do NOT need to replace `custom:jellyha-now-playing-card` or switch to third-party cards.** The card natively supports all JellyHA `media_player` entities (`media_player.jellyha_user_*`, `media_player.jellyha_device_*`, and legacy `media_player.jellyha_*`) with 100% visual and functional parity.
 
 #### Card Migration Example
 Simply update the `entity` field in your card YAML:
@@ -319,7 +417,7 @@ Simply update the `entity` field in your card YAML:
 ```diff
 type: custom:jellyha-now-playing-card
 -entity: sensor.jellyha_now_playing_marko
-+entity: media_player.jellyha_marko
++entity: media_player.jellyha_user_marko
 title: Now Playing
 show_background: true
 ```

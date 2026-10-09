@@ -25,8 +25,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Visual Card Editor Enhancements**:
   - Added dedicated TV/Display Power and Volume configuration sections with dynamic placeholders (`Default: <entity>`) and contextual helper guidance.
   - Native Home Assistant clear (`✕`) support on optional entity selectors (`power_entity`, `power_state_entity`, `volume_entity`).
+- **Media Player User & Device Naming Differentiation**:
+  - Differentiated per-user and per-device media players in the Home Assistant UI by prefixing entity display names with `User` and `Device` (rendering as `JellyHA User <username>` and `JellyHA Device <device_name>`).
+  - Home Assistant automatically suggests `media_player.jellyha_user_<username>` and `media_player.jellyha_device_<device_name>` for new entities.
+  - Full backwards compatibility: preserved existing entity unique IDs so existing installations, automations, and scripts continue operating seamlessly without breaking changes.
+- **Configuration Wizard Multi-Instance, Device Selection & Library Flow**:
+  - Structured the integration setup wizard into dedicated, intuitive steps:
+    1. **Select Libraries**: Focused solely on choosing which Jellyfin libraries to include (`CONF_LIBRARIES`) and configuring the library refresh interval (`CONF_REFRESH_INTERVAL`).
+    2. **Select Client Devices (Optional)**: Directly select discovered Jellyfin client devices to automatically generate dedicated hardware media players (`CONF_DEVICE_PLAYERS`) for control in Home Assistant and the JellyHA Now Playing Card.
+    3. **Configure Instance**: Dedicated step for assigning an optional instance label (`CONF_INSTANCE_LABEL`) with comprehensive multi-instance and multi-server guidance (`JellyHA Movies`, `JellyHA Music`, `JellyHA Server01`, `JellyHA Server02`), eliminating user confusion between library selection and instance labels.
+- **Browser Player PlaybackInfo-Driven HLS Transcoding Fallback (Fixes [#61](https://github.com/zupancicmarko/JellyHA/issues/61))**:
+  - Automatically queries Jellyfin's `PlaybackInfo` endpoint with a standardized HTML5 browser device profile to determine stream compatibility.
+  - Transparent HLS transcoding fallback for video containers and audio codecs unsupported natively by desktop browsers (e.g., AVI/Xvid, AC3, DTS, TrueHD) while preserving zero-overhead DirectPlay for browser-compatible formats (H.264/AAC in MP4/WebM).
+  - Code-split dynamic loading of `hls.js` on Chromium, Firefox, and Edge browsers, paired with native HLS playback on Apple Safari and iOS devices (`application/vnd.apple.mpegurl`).
+  - Secure in-memory capability token proxy (`/api/jellyha/hls/{token}/{path}`) that dynamically sanitizes `.m3u8` master and variant playlists, rewriting segment routes and completely stripping Jellyfin API keys from client network traffic.
+  - Active transcode session lifecycle management: automatically terminates active ffmpeg encoding sessions (`DELETE /Videos/ActiveEncodings` and `POST /Sessions/Playing/Stopped`) when the browser modal is closed or on background idle session expiration, preventing orphaned transcoding jobs and server CPU exhaustion.
 - **Automatic Lovelace Resource Version Cache-Busting**:
   - Automatically registers and updates `/jellyha/jellyha-cards.js?v={version}` in Home Assistant Lovelace resource registry on integration startup, eliminating stale frontend caches across releases.
+
+### Security
+- **Media Streaming & Subtitle Proxy Authentication Hardening**:
+  - Eliminated unauthenticated `authSig` query parameter check and spoofable `Referer` header bypasses in `JellyHAStreamView` and `JellyHASubtitleView`.
+  - Enforced strict Home Assistant session authentication (`hass_user`) or cryptographically verified HMAC signatures (`hass_refresh_token_id`), closing potential authentication bypass vulnerabilities.
+- **Zero API Key Leakage Across Services, WebSocket & Logging**:
+  - Replaced unproxied direct image URLs in `jellyha.get_playlists` and `jellyha.get_collections` with signed Home Assistant proxy paths (`/api/jellyha/image/...`), preventing leakage of cleartext Jellyfin API keys in `ServiceResponse` payloads returned to users, automations, and scripts.
+  - Hardened library and music audio items in `coordinator.py`: replaced direct `stream_url` (which previously exposed `&api_key=...&ApiKey=...` query parameters to browser WebSocket clients and service queries) with cryptographically signed proxy paths (`/api/jellyha/stream/...`).
+  - Hardened `jellyha.play_music` and `jellyha.play_playlist`: media URLs and cover art thumbnails are routed via signed Home Assistant proxy paths, preventing exposure of API keys in media player entity attributes (`media_content_id`, `entity_picture`).
+  - Redacted query-string API keys in WebSocket connection logging (`ws_client.py`).
+  - Expanded diagnostics redaction (`diagnostics.py`) to redact all key variants (`ApiKey`, `token`, `Token`, `secret`, `auth_key`).
 
 ### Fixed
 - **Visual Card Editor Entity Clearing & Save Button Enablement**:

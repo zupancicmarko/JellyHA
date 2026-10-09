@@ -316,3 +316,33 @@ export async function toggleMute(
         console.error(`[JellyHA] Failed to toggle mute for ${entityId}:`, err);
     }
 }
+
+/**
+ * Resolves the base sensor prefix from a media player or sensor entity ID.
+ * Examples:
+ * - media_player.jellyha_admin -> sensor.jellyha
+ * - media_player.jellyha_user_admin -> sensor.jellyha
+ * - media_player.jellyha_device_tv -> sensor.jellyha
+ * - media_player.jellyha_office_user_marko -> sensor.jellyha_office
+ * - sensor.jellyha_now_playing_admin -> sensor.jellyha
+ */
+export function resolveInstanceSensorBase(entityId: string): string {
+    if (!entityId || typeof entityId !== 'string') return '';
+    if (entityId.startsWith('sensor.')) {
+        return entityId.replace(/_now_playing.*$/, '');
+    }
+    if (entityId.startsWith('media_player.')) {
+        const nameWithoutDomain = entityId.replace(/^media_player\./, '');
+        let prefix = nameWithoutDomain;
+        if (nameWithoutDomain.includes('_user_')) {
+            prefix = nameWithoutDomain.substring(0, nameWithoutDomain.indexOf('_user_'));
+        } else if (nameWithoutDomain.includes('_device_')) {
+            prefix = nameWithoutDomain.substring(0, nameWithoutDomain.indexOf('_device_'));
+        } else if (nameWithoutDomain.includes('_')) {
+            prefix = nameWithoutDomain.substring(0, nameWithoutDomain.lastIndexOf('_'));
+        }
+        return `sensor.${prefix}`;
+    }
+    return '';
+}
+

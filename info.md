@@ -13,6 +13,7 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 - ⚡ **TV & Display Power Button with Dual-Entity Pairing (Issue [#60](https://github.com/zupancicmarko/JellyHA/issues/60))** — Uniform `36px` frosted glass power button across Active Playback, Ambient Showcase, and Idle states. State-responsive white (ON) / dimmed (OFF) styling with script support, dual-entity pairing (`power_state_entity`), haptic feedback, and auto-stopping Jellyfin sessions when powering off.
 - 🔊 **Option 1 Capsule Volume Slider with Tactile Scrubbing** — Sleek translucent pillow capsule row above the timeline bar with continuous track, 5% haptic notches while scrubbing, discrete `−`/`+` step buttons, mute toggle, and AVR/soundbar routing (`volume_entity`).
 - 🛠️ **Visual Card Editor Enhancements** — Dedicated TV Power and Volume settings sections, dynamic placeholders, contextual helpers, and seamless clearing with native `✕` button support.
+- 🏷️ **User & Device Media Player Naming Differentiation** — Clear `JellyHA User <name>` and `JellyHA Device <name>` entity display names in UI pickers and dashboards with zero breakage for existing setups.
 - 🔄 **Automatic Lovelace Resource Version Cache-Busting** — Auto-registers and updates `/jellyha/jellyha-cards.js?v={version}` in Home Assistant Lovelace resources on startup, eliminating stale frontend caches across releases.
 
 ---

@@ -5,7 +5,8 @@ import {
     resolveVolumeState,
     setVolumeLevel,
     stepVolume,
-    toggleMute
+    toggleMute,
+    resolveInstanceSensorBase
 } from '../src/shared/power-volume-helpers';
 import { HomeAssistant } from '../src/shared/types';
 
@@ -224,4 +225,34 @@ describe('power-volume-helpers', () => {
             });
         });
     });
+
+    describe('resolveInstanceSensorBase', () => {
+        it('resolves legacy per-user and per-device media players', () => {
+            expect(resolveInstanceSensorBase('media_player.jellyha_admin')).toBe('sensor.jellyha');
+            expect(resolveInstanceSensorBase('media_player.jellyha_tv')).toBe('sensor.jellyha');
+        });
+
+        it('resolves prefixed user and device media players', () => {
+            expect(resolveInstanceSensorBase('media_player.jellyha_user_admin')).toBe('sensor.jellyha');
+            expect(resolveInstanceSensorBase('media_player.jellyha_user_ela')).toBe('sensor.jellyha');
+            expect(resolveInstanceSensorBase('media_player.jellyha_device_lg_smart_tv')).toBe('sensor.jellyha');
+            expect(resolveInstanceSensorBase('media_player.jellyha_device_marko_s_s23')).toBe('sensor.jellyha');
+        });
+
+        it('resolves multi-instance setups with user and device prefixes', () => {
+            expect(resolveInstanceSensorBase('media_player.jellyha_office_user_marko')).toBe('sensor.jellyha_office');
+            expect(resolveInstanceSensorBase('media_player.jellyha_office_device_shield')).toBe('sensor.jellyha_office');
+        });
+
+        it('resolves legacy now playing sensors', () => {
+            expect(resolveInstanceSensorBase('sensor.jellyha_now_playing_admin')).toBe('sensor.jellyha');
+            expect(resolveInstanceSensorBase('sensor.jellyha_office_now_playing_admin')).toBe('sensor.jellyha_office');
+        });
+
+        it('handles empty or unrecognized input', () => {
+            expect(resolveInstanceSensorBase('')).toBe('');
+            expect(resolveInstanceSensorBase('light.living_room')).toBe('');
+        });
+    });
 });
+

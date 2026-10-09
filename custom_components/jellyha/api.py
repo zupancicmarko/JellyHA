@@ -35,6 +35,48 @@ class JellyfinConnectionError(JellyfinApiError):
     """Connection error."""
 
 
+
+BROWSER_DEVICE_PROFILE: dict[str, Any] = {
+    "Name": "JellyHA Browser Player",
+    "Id": "jellyha-browser-player",
+    "DirectPlayProfiles": [
+        {
+            "Container": "mp4,m4v,webm",
+            "Type": "Video",
+            "VideoCodec": "h264,vp8,vp9,av1",
+            "AudioCodec": "aac,mp3,opus,flac,vorbis",
+        },
+        {
+            "Container": "mp3,m4a,aac,flac,ogg,wav",
+            "Type": "Audio",
+            "AudioCodec": "mp3,aac,flac,opus,vorbis",
+        },
+    ],
+    "TranscodingProfiles": [
+        {
+            "Container": "ts",
+            "Type": "Video",
+            "VideoCodec": "h264",
+            "AudioCodec": "aac",
+            "Protocol": "hls",
+            "Context": "Streaming",
+            "BreakOnNonKeyFrames": False,
+            "MinSegments": 2,
+        },
+        {
+            "Container": "mp3",
+            "Type": "Audio",
+            "AudioCodec": "mp3",
+            "Protocol": "http",
+            "Context": "Streaming",
+        },
+    ],
+    "SubtitleProfiles": [
+        {"Format": "vtt", "Method": "External"},
+    ],
+}
+
+
 class JellyfinApiClient:
     """Async client for Jellyfin API."""
 
@@ -65,6 +107,11 @@ class JellyfinApiClient:
     def server_url(self) -> str:
         """Get the server URL."""
         return self._server_url
+
+    @property
+    def api_key(self) -> str | None:
+        """Get the Jellyfin API key."""
+        return self._api_key
 
     @property
     def session(self) -> aiohttp.ClientSession:
@@ -584,6 +631,24 @@ class JellyfinApiClient:
         if profile:
             return await self._request("POST", f"/Items/{item_id}/PlaybackInfo", params=params, json=profile)
         return await self._request("GET", f"/Items/{item_id}/PlaybackInfo", params=params)
+
+    async def stop_active_encoding(self, play_session_id: str) -> bool:
+        """Stop active transcode encoding in Jellyfin to kill ffmpeg process."""
+        try:
+            await self._request("DELETE", "/Videos/ActiveEncodings", params={"PlaySessionId": play_session_id})
+            return True
+        except Exception as err:
+            _LOGGER.debug("Failed to stop active encoding for %s: %s", play_session_id, err)
+            return False
+
+    async def stop_playback_session(self, play_session_id: str, item_id: str) -> bool:
+        """Report playback stopped to Jellyfin."""
+        try:
+            await self._request("POST", "/Sessions/Playing/Stopped", json={"PlaySessionId": play_session_id, "ItemId": item_id})
+            return True
+        except Exception as err:
+            _LOGGER.debug("Failed to report playback stopped: %s", err)
+            return False
 
     def get_image_url(
         self,

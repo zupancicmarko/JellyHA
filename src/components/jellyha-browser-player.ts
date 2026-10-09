@@ -102,10 +102,14 @@ export class JellyHABrowserPlayer extends LitElement {
     @state() private _error?: string;
     @state() private _streamUrl?: string;
     @state() private _mimeType = 'video/mp4';
+    @state() private _playMethod: 'DirectPlay' | 'Transcode' = 'DirectPlay';
+    @state() private _playSessionId?: string;
+    @state() private _hlsToken?: string;
     @state() private _item?: MediaItem;
     @state() private _subtitleTracks: BrowserPlayerSubtitleTrack[] = [];
 
     private _portalContainer: HTMLElement | null = null;
+    private _hlsInstance?: any;
 
     public connectedCallback(): void {
         super.connectedCallback();
@@ -115,6 +119,7 @@ export class JellyHABrowserPlayer extends LitElement {
     public disconnectedCallback(): void {
         super.disconnectedCallback();
         window.removeEventListener('keydown', this._handleKeyDown);
+        this.close();
         this._destroyPortal();
     }
 
@@ -126,6 +131,9 @@ export class JellyHABrowserPlayer extends LitElement {
     };
 
     public async play(params: BrowserPlayerParams): Promise<void> {
+        // Clean up any previously active playback session first
+        this._teardownActiveSession();
+
         this.hass = params.hass;
         this._item = params.item;
         this._open = true;
@@ -190,7 +198,11 @@ export class JellyHABrowserPlayer extends LitElement {
             }
 
             const streamInfo = await this._resolveStream({ ...params, item: playItem });
-            if (!this._open) return; // Dialog was closed while resolving
+            if (!this._open) {
+                // If user closed dialog while resolution was in-flight, terminate transcode immediately
+                this._teardownActiveSession();
+                return;
+            }
 
             this._streamUrl = streamInfo.url;
             this._mimeType = streamInfo.mimeType;
@@ -221,6 +233,7 @@ export class JellyHABrowserPlayer extends LitElement {
 
             this._loading = false;
             this._renderPortal();
+            this._attachVideoMedia();
             this._activateDefaultSubtitle();
         } catch (err: any) {
             console.error('JellyHA: Failed to resolve media stream for browser playback', err);
@@ -371,10 +384,37 @@ export class JellyHABrowserPlayer extends LitElement {
         });
     }
 
-    public close = () => {
-        this._open = false;
-        this._loading = false;
-        this._error = undefined;
+    private _teardownActiveSession(): void {
+        // Destroy HLS instance if active
+        if (this._hlsInstance) {
+            try {
+                this._hlsInstance.destroy();
+            } catch (e) {
+                console.debug('JellyHA: Error destroying HLS instance', e);
+            }
+            this._hlsInstance = undefined;
+        }
+
+        // Stop active transcode on the server if session was running
+        if (this._hlsToken || this._playSessionId) {
+            const token = this._hlsToken;
+            const playSessionId = this._playSessionId;
+            try {
+                const res = this.hass?.callWS({
+                    type: 'jellyha/stop_playback',
+                    ...(token ? { token } : {}),
+                    ...(playSessionId ? { play_session_id: playSessionId } : {}),
+                });
+                if (res && typeof (res as any).catch === 'function') {
+                    (res as any).catch((e: any) => console.debug('JellyHA: Error terminating playback session', e));
+                }
+            } catch (e: any) {
+                console.debug('JellyHA: Error terminating playback session', e);
+            }
+            this._hlsToken = undefined;
+            this._playSessionId = undefined;
+        }
+        this._playMethod = 'DirectPlay';
 
         // Stop any running media
         if (this._portalContainer) {
@@ -391,12 +431,82 @@ export class JellyHABrowserPlayer extends LitElement {
                 audio.load();
             }
         }
+    }
+
+    public close = () => {
+        this._open = false;
+        this._loading = false;
+        this._error = undefined;
+
+        this._teardownActiveSession();
 
         this._streamUrl = undefined;
         this._subtitleTracks = [];
         this._item = undefined;
         this._renderPortal();
     };
+
+    private async _attachVideoMedia(): Promise<void> {
+        if (!this._portalContainer || !this._streamUrl || this._item?.type === 'Audio') return;
+
+        const video = this._portalContainer.querySelector('video') as HTMLVideoElement | null;
+        if (!video) return;
+
+        const isHls = this._streamUrl.includes('.m3u8') || this._mimeType === 'application/x-mpegURL';
+
+        if (isHls) {
+            // Native HLS check (e.g. Safari / iOS)
+            if (typeof video.canPlayType === 'function' && video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = this._streamUrl;
+                return;
+            }
+
+            // Chromium / Firefox / Edge via hls.js dynamic import
+            try {
+                const HlsModule = await import('hls.js');
+                const Hls = HlsModule.default || HlsModule;
+                if (Hls.isSupported()) {
+                    if (this._hlsInstance) {
+                        this._hlsInstance.destroy();
+                    }
+                    const hls = new Hls({
+                        enableWorker: true,
+                        lowLatencyMode: true,
+                    });
+                    this._hlsInstance = hls;
+                    hls.loadSource(this._streamUrl);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(() => {});
+                        this._activateDefaultSubtitle();
+                    });
+                    hls.on(Hls.Events.ERROR, (_event: any, data: any) => {
+                        if (data.fatal) {
+                            console.error('JellyHA: Hls fatal error', data);
+                            switch (data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    hls.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    hls.recoverMediaError();
+                                    break;
+                                default:
+                                    hls.destroy();
+                                    this._error = 'Playback failed';
+                                    this._renderPortal();
+                                    break;
+                            }
+                        }
+                    });
+                } else {
+                    video.src = this._streamUrl;
+                }
+            } catch (e) {
+                console.error('JellyHA: Error loading hls.js', e);
+                video.src = this._streamUrl;
+            }
+        }
+    }
 
     private async _resolveStream(params: BrowserPlayerParams): Promise<{ url: string; mimeType: string }> {
         const item = params.item;
@@ -419,7 +529,31 @@ export class JellyHABrowserPlayer extends LitElement {
         let resolvedUrl: string | undefined;
         let mime = item.type === 'Audio' ? 'audio/mp4' : 'video/mp4';
 
-        // 2. Resolve via Home Assistant media_source WebSocket command (Media Browser parity)
+        // 2. Resolve via jellyha/resolve_playback WebSocket command (PlaybackInfo driven)
+        try {
+            const res = await hass.callWS<{
+                play_method: 'DirectPlay' | 'Transcode';
+                url: string;
+                mime_type?: string;
+                play_session_id?: string;
+                token?: string;
+            }>({
+                type: 'jellyha/resolve_playback',
+                item_id: item.id,
+                ...(entryId ? { config_entry_id: entryId } : {}),
+                ...(params.serverEntityId ? { server_entity_id: params.serverEntityId } : {}),
+            });
+            if (res?.url) {
+                this._playMethod = res.play_method || 'DirectPlay';
+                this._playSessionId = res.play_session_id;
+                this._hlsToken = res.token;
+                return { url: res.url, mimeType: res.mime_type || mime };
+            }
+        } catch (wsErr) {
+            console.warn('JellyHA: WebSocket jellyha/resolve_playback failed, falling back', wsErr);
+        }
+
+        // 3. Fallback: Home Assistant media_source WebSocket command (Media Browser parity)
         if (entryId) {
             let category = 'video';
             if (item.type === 'Movie') category = 'movie';
@@ -437,16 +571,18 @@ export class JellyHABrowserPlayer extends LitElement {
                 if (res?.url) {
                     resolvedUrl = res.url;
                     if (res.mime_type) mime = res.mime_type;
+                    this._playMethod = 'DirectPlay';
                 }
             } catch (wsErr) {
                 console.warn('JellyHA: WebSocket media_source/resolve_media failed, trying direct proxy route', wsErr);
             }
         }
 
-        // 3. Fallback: Directly use authenticated JellyHA stream proxy endpoint
+        // 4. Fallback: Directly use authenticated JellyHA stream proxy endpoint
         if (!resolvedUrl && entryId) {
             const mediaType = item.type === 'Audio' ? 'Audio' : 'Videos';
             resolvedUrl = `/api/jellyha/stream/${entryId}/${item.id}?media_type=${mediaType}`;
+            this._playMethod = 'DirectPlay';
         }
 
         if (!resolvedUrl) {
@@ -707,7 +843,9 @@ export class JellyHABrowserPlayer extends LitElement {
                             </div>
                         ` : html`
                             <video class="jellyha-player-video" controls autoplay playsinline crossorigin="anonymous" @loadedmetadata=${() => this._activateDefaultSubtitle()}>
-                                <source src="${this._streamUrl}" type="${this._mimeType}">
+                                ${!this._streamUrl?.includes('.m3u8') && this._mimeType !== 'application/x-mpegURL' ? html`
+                                    <source src="${this._streamUrl}" type="${this._mimeType}">
+                                ` : nothing}
                                 ${this._subtitleTracks.map(track => html`
                                     <track
                                         id="jellyha-track-${track.index}"

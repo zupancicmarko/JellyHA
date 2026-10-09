@@ -457,7 +457,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         stream_url = None
         if self._api and item_id and item_type in ("Audio", "MusicAlbum", "MusicArtist"):
-            stream_url = f"{self._api._server_url}/Audio/{item_id}/stream?static=true&api_key={self._api._api_key}&ApiKey={self._api._api_key}"
+            stream_path = self._api.get_stream_path(self.entry.entry_id, item_id, item_type="Audio")
+            stream_url = async_sign_path(self.hass, stream_path, expiration)
 
         # Build direct Jellyfin web UI link
         jellyfin_url = None

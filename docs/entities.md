@@ -12,17 +12,19 @@ JellyHA provides three classes of `media_player` entities:
 
 ### 1. Per-User Media Players
 
-| Entity ID Pattern | Description | Supported Features |
-|---|---|---|
-| `media_player.jellyha_[username]` | Tracks and controls active playback for a specific user | **Transport:** Play, Pause, Stop, Seek, Next Track, Previous Track<br>**Volume:** Volume Set, Mute/Unmute<br>**Controls:** Shuffle, Repeat<br>**Metadata:** Title, Series/Season/Episode, Poster, Backdrop, Position, Chapters, Segments |
+| Entity ID Pattern | UI Display Name | Description | Supported Features |
+|---|---|---|---|
+| `media_player.jellyha_user_[username]`<br>*(legacy: `media_player.jellyha_[username]`)* | `JellyHA User [username]` | Tracks and controls active playback for a specific user | **Transport:** Play, Pause, Stop, Seek, Next Track, Previous Track<br>**Volume:** Volume Set, Mute/Unmute<br>**Controls:** Shuffle, Repeat<br>**Metadata:** Title, Series/Season/Episode, Poster, Backdrop, Position, Chapters, Segments |
+
+> **Naming Convention (v1.6.0+):** Display names in the Home Assistant UI are explicitly prefixed with `User` (e.g. `JellyHA User admin`) to clearly distinguish them from hardware device players. Existing installations retain their existing entity IDs without breaking automations or scripts.
 
 ### 2. Client and Device Media Players
 
-| Entity ID Pattern | Description | Supported Features |
-|---|---|---|
-| `media_player.jellyha_[device_name]` | Tracks playback on a specific physical device (e.g. Living Room TV, Bedroom Android Box) regardless of which user is watching | Full transport, volume, and metadata parity with per-user players, plus active `user_name`, `user_id`, and client device context |
+| Entity ID Pattern | UI Display Name | Description | Supported Features |
+|---|---|---|---|
+| `media_player.jellyha_device_[device_name]`<br>*(legacy: `media_player.jellyha_[device_name]`)* | `JellyHA Device [device_name]` | Tracks playback on a specific physical device (e.g. Living Room TV, Bedroom Android Box) regardless of which user is watching | Full transport, volume, and metadata parity with per-user players, plus active `user_name`, `user_id`, and client device context |
 
-> **Setup:** Enable client devices in **Settings -> Devices & Services -> JellyHA -> Configure** under **Client/Device Media Players**.
+> **Setup:** Client devices can be selected directly during the initial onboarding configuration wizard (**Select Client Devices** step) or configured anytime in **Settings -> Devices & Services -> JellyHA -> Configure** under **Client Devices**.
 
 ### 3. Library Browser Media Player
 

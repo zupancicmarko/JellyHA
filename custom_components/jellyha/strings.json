@@ -42,12 +42,25 @@
                 "title": "Select Libraries",
                 "description": "Choose which libraries to include (leave empty for all)",
                 "data": {
-                    "instance_label": "Instance Label",
                     "libraries": "Libraries",
                     "refresh_interval": "Library Refresh Interval"
+                }
+            },
+            "device_select": {
+                "title": "Select Client Devices",
+                "description": "Choose which client devices to create dedicated media players for (e.g., Living Room TV, Phone, Shield). These media players can be controlled directly and used in the JellyHA Now Playing Card.\n\nLeave empty to skip (you can always configure them later in integration options).",
+                "data": {
+                    "device_players": "Client Devices"
+                }
+            },
+            "instance_label": {
+                "title": "Configure Instance",
+                "description": "Optionally add a label to distinguish this instance in Home Assistant (leave empty for default 'JellyHA').",
+                "data": {
+                    "instance_label": "Instance Label"
                 },
                 "data_description": {
-                    "instance_label": "This integration supports **Multi-Instance** configurations.\n\nAdd a label to distinguish this instance (e.g., *Movies, Music, Home Videos*). Your device will be named **'JellyHA Movies'**, **'JellyHA Music'**, etc., making it easier to identify entities across multiple servers.\n\nLeave empty for the default **'JellyHA'**."
+                    "instance_label": "This integration supports **Multi-Instance** configurations.\n\nAdd a label to distinguish this instance (e.g., *Movies*, *Music*, *Server01*, *Server02*). Your device will be named **'JellyHA Movies'**, **'JellyHA Music'**, **'JellyHA Server01'**, **'JellyHA Server02'**, etc., making it easier to identify entities across multiple servers or libraries.\n\nLeave empty for the default **'JellyHA'**."
                 }
             },
             "reauth_confirm": {
