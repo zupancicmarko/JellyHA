@@ -1,7 +1,7 @@
 # Dashboard Cards Configuration
 
 JellyHA provides two custom Lovelace cards for Home Assistant:
-- **JellyHA Library Card** (`custom:jellyha-library-card`): Browse and play your media collection with Carousel, Grid, and List layouts.
+- **JellyHA Library Card** (`custom:jellyha-library-card`): Browse and play your media collection with Carousel, Grid, List, and Featured layouts.
 - **JellyHA Now Playing Card** (`custom:jellyha-now-playing-card`): View active playback, metadata, and control media sessions with blurred dynamic backdrops.
 
 Both cards feature a full visual configuration editor in the Home Assistant dashboard UI (Add Card -> search for "JellyHA"). YAML configuration is optional.
@@ -30,7 +30,7 @@ max_pages: 5
 |---|---|---|---|
 | `entity` | string | **Required** | The sensor entity ID (e.g. `sensor.jellyha_library`) |
 | `title` | string | `Jellyfin Library` | Card header title |
-| `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
+| `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, `list`, or `featured`. `featured` shows the first item of each page as a large poster and the remaining `items_per_page - 1` items as compact rows beside it. It always pages (also with Auto Swipe); with pagination disabled only the first page is shown. Sizes can be tuned with the CSS variables `--jf-featured-width` (`45%`), `--jf-featured-max-width` (`200px`) and `--jf-featured-side-poster-width` (`64px`), for example via card-mod. |
 | `media_type` | string | `both` | Media filter: `movies`, `series`, `next_up`, or `both` |
 | `tv_content` | string | `series` | Content type when TV shows are active: `series` (Shows / Series) or `episodes` (Individual Episodes) |
 | `columns` | number | `4` | Number of columns for grid and list layout. Changes to number of rows when Grid layout has Auto-Swipe enabled. |
