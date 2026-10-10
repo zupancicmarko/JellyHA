@@ -4,6 +4,7 @@ import { HomeAssistant, MediaItem, JellyHALibraryCardConfig } from '../shared/ty
 import { isNewItem, formatDate, formatRuntime, addImageParams } from '../shared/utils';
 import { localize } from '../shared/localize';
 import { cardStyles } from '../styles/jellyha-library-styles';
+import { findActiveMediaItemPlayer } from '../shared/power-volume-helpers';
 
 @customElement('jellyha-media-item')
 export class JellyHAMediaItem extends LitElement {
@@ -304,16 +305,19 @@ export class JellyHAMediaItem extends LitElement {
   }
 
   private _renderNowPlayingOverlay(item: MediaItem): TemplateResult | typeof nothing {
-    if (!this.config.show_now_playing || !this._isItemPlaying(item)) {
+    if (!this.config.show_now_playing) {
       return nothing;
     }
 
-    const player = this.hass.states[this.config.default_cast_device!];
+    const activePlayer = findActiveMediaItemPlayer(item, this.hass, this.config);
+    if (!activePlayer) {
+      return nothing;
+    }
 
     return html`
       <div 
         class="now-playing-overlay" 
-        @click="${() => this._handleRewind(this.config.default_cast_device!)}"
+        @click="${() => this._handleRewind(activePlayer.entityId)}"
         @mousedown="${this._stopPropagation}"
         @mouseup="${this._stopPropagation}"
         @touchstart="${this._stopPropagation}"
@@ -323,20 +327,20 @@ export class JellyHAMediaItem extends LitElement {
         tabindex="0"
       >
         <span class="now-playing-status">
-          ${this._rewindActive ? 'REWINDING' : player.state}
+          ${this._rewindActive ? 'REWINDING' : activePlayer.state}
         </span>
         <div class="now-playing-controls">
           <ha-icon-button
             class="${this._rewindActive ? 'spinning' : ''}"
             .label=${'Play/Pause'}
-            @click="${(e: Event) => { e.stopPropagation(); this._handlePlayPause(this.config.default_cast_device!); }}"
+            @click="${(e: Event) => { e.stopPropagation(); this._handlePlayPause(activePlayer.entityId); }}"
           >
-            <ha-icon icon="${this._rewindActive ? 'mdi:loading' : (player.state === 'playing' ? 'mdi:pause' : 'mdi:play')}"></ha-icon>
+            <ha-icon icon="${this._rewindActive ? 'mdi:loading' : (activePlayer.state === 'playing' ? 'mdi:pause' : 'mdi:play')}"></ha-icon>
           </ha-icon-button>
           <ha-icon-button
             class="stop"
             .label=${'Stop'}
-            @click="${(e: Event) => { e.stopPropagation(); this._handleStop(this.config.default_cast_device!); }}"
+            @click="${(e: Event) => { e.stopPropagation(); this._handleStop(activePlayer.entityId); }}"
           >
             <ha-icon icon="mdi:stop"></ha-icon>
           </ha-icon-button>
@@ -348,20 +352,7 @@ export class JellyHAMediaItem extends LitElement {
   /* --- Helpers --- */
 
   private _isItemPlaying(item: MediaItem): boolean {
-    if (!this.config.default_cast_device || !this.hass) return false;
-
-    const player = this.hass.states[this.config.default_cast_device];
-    if (!player || (player.state !== 'playing' && player.state !== 'paused' && player.state !== 'buffering')) {
-      return false;
-    }
-
-    const playingTitle = player.attributes.media_title as string;
-    const playingSeries = player.attributes.media_series_title as string;
-
-    return (
-      (item.name && (playingTitle === item.name || playingSeries === item.name)) ||
-      (item.type === 'Series' && playingSeries === item.name)
-    );
+    return Boolean(findActiveMediaItemPlayer(item, this.hass, this.config));
   }
 
   private _getRating(item: MediaItem): number | null {
