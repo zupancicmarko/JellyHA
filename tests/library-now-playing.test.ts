@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { findActiveMediaItemPlayer } from '../src/shared/power-volume-helpers';
+import { describe, it, expect, vi } from 'vitest';
+import { findActiveMediaItemPlayer, stopMediaPlayback } from '../src/shared/power-volume-helpers';
 import { MediaItem, HomeAssistant, JellyHALibraryCardConfig } from '../src/shared/types';
 
 describe('Library Card Multi-Device Now Playing Detection', () => {
@@ -227,5 +227,107 @@ describe('Library Card Multi-Device Now Playing Detection', () => {
         };
 
         expect(findActiveMediaItemPlayer(movieItem, mockHass, config)).toBeNull();
+    });
+});
+
+describe('stopMediaPlayback service selection', () => {
+    it('calls media_player.media_stop for jellyha device client', async () => {
+        const mockCallService = vi.fn().mockResolvedValue(undefined);
+        const mockHass = {
+            states: {
+                'media_player.jellyha_device_samsung_sm_s911b': {
+                    entity_id: 'media_player.jellyha_device_samsung_sm_s911b',
+                    state: 'playing',
+                    attributes: {
+                        supported_features: 4096, // STOP only, no TURN_OFF
+                    },
+                },
+            },
+            callService: mockCallService,
+        } as unknown as HomeAssistant;
+
+        await stopMediaPlayback(mockHass, 'media_player.jellyha_device_samsung_sm_s911b');
+
+        expect(mockCallService).toHaveBeenCalledWith('media_player', 'media_stop', {
+            entity_id: 'media_player.jellyha_device_samsung_sm_s911b',
+        });
+    });
+
+    it('calls media_player.media_stop for default_client_device', async () => {
+        const mockCallService = vi.fn().mockResolvedValue(undefined);
+        const mockHass = {
+            states: {
+                'media_player.moonfin_app': {
+                    entity_id: 'media_player.moonfin_app',
+                    state: 'playing',
+                    attributes: {
+                        supported_features: 4096 | 256,
+                    },
+                },
+            },
+            callService: mockCallService,
+        } as unknown as HomeAssistant;
+
+        const config: JellyHALibraryCardConfig = {
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            default_client_device: 'media_player.moonfin_app',
+        };
+
+        await stopMediaPlayback(mockHass, 'media_player.moonfin_app', config);
+
+        expect(mockCallService).toHaveBeenCalledWith('media_player', 'media_stop', {
+            entity_id: 'media_player.moonfin_app',
+        });
+    });
+
+    it('calls media_player.turn_off for default_cast_device supporting turn_off', async () => {
+        const mockCallService = vi.fn().mockResolvedValue(undefined);
+        const mockHass = {
+            states: {
+                'media_player.chromecast': {
+                    entity_id: 'media_player.chromecast',
+                    state: 'playing',
+                    attributes: {
+                        supported_features: 4096 | 256,
+                    },
+                },
+            },
+            callService: mockCallService,
+        } as unknown as HomeAssistant;
+
+        const config: JellyHALibraryCardConfig = {
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            default_cast_device: 'media_player.chromecast',
+        };
+
+        await stopMediaPlayback(mockHass, 'media_player.chromecast', config);
+
+        expect(mockCallService).toHaveBeenCalledWith('media_player', 'turn_off', {
+            entity_id: 'media_player.chromecast',
+        });
+    });
+
+    it('falls back to media_stop when entity does not support turn_off', async () => {
+        const mockCallService = vi.fn().mockResolvedValue(undefined);
+        const mockHass = {
+            states: {
+                'media_player.browser': {
+                    entity_id: 'media_player.browser',
+                    state: 'playing',
+                    attributes: {
+                        supported_features: 4096, // STOP only
+                    },
+                },
+            },
+            callService: mockCallService,
+        } as unknown as HomeAssistant;
+
+        await stopMediaPlayback(mockHass, 'media_player.browser');
+
+        expect(mockCallService).toHaveBeenCalledWith('media_player', 'media_stop', {
+            entity_id: 'media_player.browser',
+        });
     });
 });

@@ -458,4 +458,32 @@ export function getLibraryWatchedPlayerEntities(
     return list;
 }
 
+/**
+ * Stops playback on a target media player.
+ * For Jellyfin client devices (e.g. media_player.jellyha_* or default_client_device)
+ * or players that do not support turn_off, calls media_player.media_stop.
+ * For cast devices or players that support turn_off, calls media_player.turn_off.
+ */
+export async function stopMediaPlayback(
+    hass: HomeAssistant,
+    entityId: string,
+    config?: JellyHALibraryCardConfig
+): Promise<void> {
+    if (!hass || !entityId) return;
+
+    const stateObj = hass.states?.[entityId];
+    const supportedFeatures = (stateObj?.attributes?.supported_features as number) || 0;
+    const supportsTurnOff = Boolean(supportedFeatures & 256);
+
+    const isJellyfinClient =
+        entityId.startsWith('media_player.jellyha_') ||
+        Boolean(config?.default_client_device && entityId === config.default_client_device);
+
+    if (isJellyfinClient || !supportsTurnOff) {
+        await hass.callService('media_player', 'media_stop', { entity_id: entityId });
+    } else {
+        await hass.callService('media_player', 'turn_off', { entity_id: entityId });
+    }
+}
+
 

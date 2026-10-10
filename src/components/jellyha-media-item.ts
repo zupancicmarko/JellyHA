@@ -4,7 +4,7 @@ import { HomeAssistant, MediaItem, JellyHALibraryCardConfig } from '../shared/ty
 import { isNewItem, formatDate, formatRuntime, addImageParams } from '../shared/utils';
 import { localize } from '../shared/localize';
 import { cardStyles } from '../styles/jellyha-library-styles';
-import { findActiveMediaItemPlayer } from '../shared/power-volume-helpers';
+import { findActiveMediaItemPlayer, stopMediaPlayback } from '../shared/power-volume-helpers';
 
 @customElement('jellyha-media-item')
 export class JellyHAMediaItem extends LitElement {
@@ -539,7 +539,7 @@ export class JellyHAMediaItem extends LitElement {
 
   private _handleStop(entityId: string): void {
     this._dispatchHaptic();
-    this.hass.callService('media_player', 'turn_off', { entity_id: entityId });
+    stopMediaPlayback(this.hass, entityId, this.config);
   }
 
   private _handleRewind(entityId: string): void {
