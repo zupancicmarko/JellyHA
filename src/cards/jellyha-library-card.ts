@@ -13,6 +13,7 @@ import { JellyHAItemDetailsModal } from '../components/jellyha-item-details-moda
 import { showJellyHABrowserPlayer } from '../components/jellyha-browser-player';
 import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
+import { getLibraryWatchedPlayerEntities } from '../shared/power-volume-helpers';
 
 // Import modal for side effects (registration)
 import '../components/jellyha-item-details-modal';
@@ -863,12 +864,15 @@ export class JellyHALibraryCard extends LitElement {
         const oldState = oldHass.states[this._config.entity];
         const newState = this.hass.states[this._config.entity];
 
-        // Also check default cast device state
-        const castEntity = this._config.default_cast_device;
-        if (castEntity) {
-          const oldCastState = oldHass.states[castEntity];
-          const newCastState = this.hass.states[castEntity];
-          if (oldCastState !== newCastState) return true;
+        // Also check candidate watched media players (cast device, client device, active JellyHA players)
+        const watchedPlayers = new Set<string>([
+          ...getLibraryWatchedPlayerEntities(this.hass, this._config),
+          ...getLibraryWatchedPlayerEntities(oldHass, this._config),
+        ]);
+        for (const playerId of watchedPlayers) {
+          if (oldHass.states[playerId] !== this.hass.states[playerId]) {
+            return true;
+          }
         }
 
         return oldState !== newState;
