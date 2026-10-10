@@ -52,6 +52,10 @@ export class JellyHALibraryEditor extends LitElement {
     .side-by-side > .form-row {
       margin-bottom: 0;
     }
+    .side-by-side > .checkbox-row {
+      margin-bottom: 0;
+      align-self: center;
+    }
     .side-by-side > .form-row.double-tap-aligned {
       margin-top: 24px;
       align-self: end;
@@ -197,23 +201,44 @@ export class JellyHALibraryEditor extends LitElement {
 
         ${(this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type)
         ? html`
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                select: {
-                  mode: 'dropdown',
-                  options: [
-                    { value: 'series', label: localize(lang, 'editor.tv_content_series') },
-                    { value: 'episodes', label: localize(lang, 'editor.tv_content_episodes') },
-                  ],
-                },
-              }}
-              .value=${this._config.tv_content || 'series'}
-              .label=${localize(lang, 'editor.tv_content')}
-              label="${localize(lang, 'editor.tv_content')}"
-              @value-changed=${this._tvContentChanged}
-            ></ha-selector>
+          <div class="side-by-side">
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      { value: 'series', label: localize(lang, 'editor.tv_content_series') },
+                      { value: 'episodes', label: localize(lang, 'editor.tv_content_episodes') },
+                    ],
+                  },
+                }}
+                .value=${this._config.tv_content || 'series'}
+                .label=${localize(lang, 'editor.tv_content')}
+                label="${localize(lang, 'editor.tv_content')}"
+                @value-changed=${this._tvContentChanged}
+              ></ha-selector>
+            </div>
+            <div class="checkbox-row">
+              <ha-switch
+                .checked=${this._config.use_series_image === true}
+                @change=${this._useSeriesImageChanged}
+              ></ha-switch>
+              <span>${localize(lang, 'editor.use_series_image')}</span>
+            </div>
+          </div>
+        `
+        : ''}
+
+        ${this._config.media_type === 'next_up'
+        ? html`
+          <div class="checkbox-row" style="margin-bottom: 16px;">
+            <ha-switch
+              .checked=${this._config.use_series_image === true}
+              @change=${this._useSeriesImageChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.use_series_image')}</span>
           </div>
         `
         : ''}
@@ -506,18 +531,6 @@ export class JellyHALibraryEditor extends LitElement {
         <span>${localize(lang, 'editor.filter_new_items')}</span>
       </div>
     </div>
-
-    ${(this._config.media_type === 'next_up' || ((this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type) && this._config.tv_content === 'episodes'))
-        ? html`
-          <div class="checkbox-row">
-            <ha-switch
-              .checked=${this._config.use_series_image === true}
-              @change=${this._useSeriesImageChanged}
-            ></ha-switch>
-            <span>${localize(lang, 'editor.use_series_image')}</span>
-          </div>
-        `
-        : ''}
 
         <div class="side-by-side">
           <div class="form-row">
