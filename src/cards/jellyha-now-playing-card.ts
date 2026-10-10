@@ -3969,8 +3969,12 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 110%;
             object-fit: cover;
             object-position: center;
-            filter: blur(5px) brightness(0.6);
+            filter: blur(5px) brightness(0.8);
             opacity: 1;
+        }
+
+        .idle-card-mode .card-overlay {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.45) 100%);
         }
 
         .idle-card-mode .idle-card-bg-img.prev-bg {

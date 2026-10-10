@@ -29,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - External audio routing via `volume_entity` to control AVRs or soundbars while streaming video via Jellyfin (falls back to primary media player if unspecified).
   - Discrete `_haptic('selection')` tactile notches triggered every 5% interval during continuous slider scrubbing.
   - Responsive layout: automatically collapses continuous slider track in compact/poster views while preserving mute toggle, percentage readout, and step buttons.
-- **Visual Card Editor Enhancements**:
+- **Visual Card Editor & Screensaver Enhancements**:
+  - Enhanced Idle Poster Screensaver Backdrop Visibility: Brightened the background fanart in the Now Playing card's idle poster layout (`idle_display_mode: 'card'`) by increasing backdrop brightness to 0.8 and softening the gradient overlay, allowing the fanart imagery to remain vivid while maintaining crisp typography contrast.
   - Added dedicated TV/Display Power and Volume configuration sections with dynamic placeholders (`Default: <entity>`) and contextual helper guidance.
   - Native Home Assistant clear (`✕`) support on optional entity selectors (`power_entity`, `power_state_entity`, `volume_entity`).
 - **Media Player User & Device Naming Differentiation**:
