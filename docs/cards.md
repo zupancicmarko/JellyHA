@@ -83,10 +83,20 @@ JellyHA supports streaming media directly inside Home Assistant dashboards using
   JellyHA automatically checks format compatibility against a standardized HTML5 browser device profile via Jellyfin's `PlaybackInfo` endpoint. Browser-supported media (H.264/AAC in MP4/WebM) plays directly with zero server overhead (DirectPlay). Non-native formats (such as AVI/Xvid video containers, AC3/DTS/TrueHD audio) seamlessly initiate an HLS transcode stream powered by `hls.js` on Chromium, Firefox, and Edge, or native HLS decoding on Apple Safari and iOS devices. Active ffmpeg transcode processes are immediately terminated when the player dialog closes.
 - **Single Tap / Hold / Double Tap**: Set `click_action: play-browser` to immediately play any tapped movie or episode in your browser.
 - **Play on Jellyfin Client (`play-client`)**:
-  Initiate native playback directly inside the official Jellyfin app running on an Android TV, Google TV, Fire TV, Web, or Desktop client (remote control feature).
+  Initiate native playback directly inside supported Jellyfin client applications via Jellyfin's remote session control protocol (`POST /Sessions/{sessionId}/Playing`).
   - In YAML or Card UI, set `click_action: play-client` and specify `default_client_device: media_player.jellyha_device_living_room_tv`.
   - When tapped, JellyHA sends `jellyha.session_play` to the active client session, and the native Jellyfin app starts playing immediately without Chromecast transcoding overhead.
   - *Note*: The Jellyfin app must be running / open on the target device for an active session to exist.
+  - **Supported Clients**:
+    - **Android TV / Google TV / Fire TV** (official Jellyfin for Android TV app)
+    - **Moonfin for Android** (Android phone/tablet client with full remote playback support)
+    - **Jellyfin Web** (desktop & mobile web browsers)
+    - **Jellyfin Media Player (JMP)** / Desktop (Windows, macOS, Linux)
+    - **Wholphin** (Android TV client)
+    - **Roku** (official Jellyfin for Roku app)
+  - **Client Limitations & Notes**:
+    - **Official Jellyfin Mobile for Android**: The official Jellyfin Android mobile app does not currently implement the incoming remote play receiver protocol (meaning `/Sessions/{id}/Playing` commands are ignored by the app). To remotely trigger playback on Android phones or tablets, use **Moonfin for Android** or the browser web client.
+    - **Official Jellyfin iOS / Swiftfin**: Remote playback initiation is currently not supported by these client apps.
 
 - **More Information Dialog & Target Picker**:
   By default, the More Information modal provides 1-tap playback or an Action Sheet target picker for configured Cast devices, Jellyfin clients, Browser playback, and scripts.

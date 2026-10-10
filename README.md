@@ -152,7 +152,7 @@ items_per_page: 3
 max_pages: 5
 ```
 
-Supports custom click, hold, and double-tap actions (Play in Browser, Play on Jellyfin Client, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`).
+Supports custom click, hold, and double-tap actions (Play in Browser, Play on Jellyfin Client, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`). *(Note: "Play on Jellyfin Client" requires a remote-control capable client such as Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop, Wholphin, or Roku).*
 
 👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 

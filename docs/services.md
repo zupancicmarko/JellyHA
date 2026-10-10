@@ -163,6 +163,9 @@ data:
   play_command: PlayNow
 ```
 
+> [!NOTE]
+> Remote playback relies on the target client implementing Jellyfin's remote control receiver protocol. Supported clients include **Android TV / Google TV / Fire TV**, **Moonfin for Android**, **Jellyfin Web**, **Jellyfin Media Player (Desktop)**, **Wholphin**, and **Roku**. The official Jellyfin Android mobile app and iOS/Swiftfin currently do not implement incoming remote playback initiation commands.
+
 ### Send General Command (e.g. Set Subtitle Track)
 
 ```yaml
