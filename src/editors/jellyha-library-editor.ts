@@ -313,7 +313,213 @@ export class JellyHALibraryEditor extends LitElement {
           </div>
         </div>
 
-        <div class="side-by-side">
+        <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.enable_browser_player !== false}
+        @change=${this._enableBrowserPlayerChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.enable_browser_player')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_title !== false}
+        @change=${this._showTitleChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_title')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_year !== false}
+        @change=${this._showYearChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_year')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_ratings !== false}
+        @change=${this._showRatingsChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_rating')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_runtime !== false}
+        @change=${this._showRuntimeChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_runtime')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_date_added === true}
+        @change=${this._showDateAddedChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_date_added')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_genres !== false}
+        @change=${this._showGenresChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_genres')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_description_on_hover !== false}
+        @change=${this._showDescriptionOnHoverChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_description')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_media_type_badge !== false}
+        @change=${this._showMediaTypeBadgeChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_media_type_badge')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_watched_status !== false}
+        @change=${this._showWatchedStatusChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_watched_status')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_search === true}
+        @change=${this._showSearchChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_search')}</span>
+    </div>
+
+    <div class="side-by-side">
+      <div class="form-row">
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{
+            select: {
+              mode: 'dropdown',
+              options: [
+                { value: 'below', label: localize(lang, 'editor.metadata_below') },
+                { value: 'above', label: localize(lang, 'editor.metadata_above') },
+              ],
+            },
+          }}
+          .value=${this._config.metadata_position || 'below'}
+          .label=${localize(lang, 'editor.metadata_position')}
+          label="${localize(lang, 'editor.metadata_position')}"
+          @value-changed=${this._metadataPositionChanged}
+        ></ha-selector>
+      </div>
+
+      <div class="form-row">
+        ${this._config.media_type !== 'next_up'
+        ? html`
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
+                    { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
+                    { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
+                    { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
+                    { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
+                    { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
+                    { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
+                    { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
+                  ],
+                },
+              }}
+              .value=${this._config.sort_option || 'date_added_desc'}
+              .label=${localize(lang, 'editor.sort_order')}
+              label="${localize(lang, 'editor.sort_order')}"
+              @value-changed=${this._sortOptionChanged}
+            ></ha-selector>
+        `
+        : html`<div></div>`}
+      </div>
+    </div>
+
+    <div class="side-by-side">
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.enable_pagination !== false}
+          @change=${this._enablePaginationChanged}
+        ></ha-switch>
+        <span>${localize(lang, 'editor.enable_pagination')}</span>
+      </div>
+
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.show_pagination_dots !== false}
+          @change=${this._showPaginationDotsChanged}
+        ></ha-switch>
+        <span>${localize(lang, 'editor.show_pagination_dots')}</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <ha-selector
+        .hass=${this.hass}
+        .selector=${{
+          select: {
+            mode: 'dropdown',
+            options: [
+              { value: 'all', label: localize(lang, 'editor.filter_all') },
+              { value: 'unwatched', label: localize(lang, 'editor.filter_unwatched') },
+              { value: 'watched', label: localize(lang, 'editor.filter_watched') },
+            ],
+          },
+        }}
+        .value=${this._config.status_filter || 'all'}
+        .label=${localize(lang, 'editor.filter_watch_status')}
+        label="${localize(lang, 'editor.filter_watch_status')}"
+        @value-changed=${this._statusFilterChanged}
+      ></ha-selector>
+    </div>
+
+    <div class="side-by-side">
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.filter_favorites === true}
+          @change=${this._filterFavoritesChanged}
+        ></ha-switch>
+        <span>${localize(lang, 'editor.filter_favorites')}</span>
+      </div>
+
+      <div class="checkbox-row">
+        <ha-switch
+          .checked=${this._config.filter_newly_added === true}
+          @change=${this._filterNewlyAddedChanged}
+        ></ha-switch>
+        <span>${localize(lang, 'editor.filter_new_items')}</span>
+      </div>
+    </div>
+
+    ${(this._config.media_type === 'next_up' || ((this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type) && this._config.tv_content === 'episodes'))
+        ? html`
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.use_series_image === true}
+              @change=${this._useSeriesImageChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.use_series_image')}</span>
+          </div>
+        `
+        : ''}
+
+        <div class="side-by-side" style="margin-top: 16px;">
           <div class="form-row">
             <ha-selector
               .hass=${this.hass}
@@ -527,213 +733,6 @@ export class JellyHALibraryEditor extends LitElement {
                 <span>${localize(lang, 'editor.show_now_playing_overlay')}</span>
               </div>
             `
-        : ''}
-
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.enable_browser_player !== false}
-        @change=${this._enableBrowserPlayerChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.enable_browser_player')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_title !== false}
-        @change=${this._showTitleChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_title')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_year !== false}
-        @change=${this._showYearChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_year')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_ratings !== false}
-        @change=${this._showRatingsChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_rating')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_runtime !== false}
-        @change=${this._showRuntimeChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_runtime')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_date_added === true}
-        @change=${this._showDateAddedChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_date_added')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_genres !== false}
-        @change=${this._showGenresChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_genres')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_description_on_hover !== false}
-        @change=${this._showDescriptionOnHoverChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_description')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_media_type_badge !== false}
-        @change=${this._showMediaTypeBadgeChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_media_type_badge')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_watched_status !== false}
-        @change=${this._showWatchedStatusChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_watched_status')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_search === true}
-        @change=${this._showSearchChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_search')}</span>
-    </div>
-
-    <div class="side-by-side">
-      <div class="form-row">
-        <ha-selector
-          .hass=${this.hass}
-          .selector=${{
-            select: {
-              mode: 'dropdown',
-              options: [
-                { value: 'below', label: localize(lang, 'editor.metadata_below') },
-                { value: 'above', label: localize(lang, 'editor.metadata_above') },
-              ],
-            },
-          }}
-          .value=${this._config.metadata_position || 'below'}
-          .label=${localize(lang, 'editor.metadata_position')}
-          label="${localize(lang, 'editor.metadata_position')}"
-          @value-changed=${this._metadataPositionChanged}
-        ></ha-selector>
-      </div>
-
-      <div class="form-row">
-        ${this._config.media_type !== 'next_up'
-        ? html`
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                select: {
-                  mode: 'dropdown',
-                  options: [
-                    { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
-                    { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
-                    { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
-                    { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
-                    { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
-                    { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
-                    { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
-                    { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
-                  ],
-                },
-              }}
-              .value=${this._config.sort_option || 'date_added_desc'}
-              .label=${localize(lang, 'editor.sort_order')}
-              label="${localize(lang, 'editor.sort_order')}"
-              @value-changed=${this._sortOptionChanged}
-            ></ha-selector>
-        `
-        : html`<div></div>`}
-      </div>
-    </div>
-
-    <div class="side-by-side">
-      <div class="checkbox-row">
-        <ha-switch
-          .checked=${this._config.enable_pagination !== false}
-          @change=${this._enablePaginationChanged}
-        ></ha-switch>
-        <span>${localize(lang, 'editor.enable_pagination')}</span>
-      </div>
-
-      <div class="checkbox-row">
-        <ha-switch
-          .checked=${this._config.show_pagination_dots !== false}
-          @change=${this._showPaginationDotsChanged}
-        ></ha-switch>
-        <span>${localize(lang, 'editor.show_pagination_dots')}</span>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <ha-selector
-        .hass=${this.hass}
-        .selector=${{
-          select: {
-            mode: 'dropdown',
-            options: [
-              { value: 'all', label: localize(lang, 'editor.filter_all') },
-              { value: 'unwatched', label: localize(lang, 'editor.filter_unwatched') },
-              { value: 'watched', label: localize(lang, 'editor.filter_watched') },
-            ],
-          },
-        }}
-        .value=${this._config.status_filter || 'all'}
-        .label=${localize(lang, 'editor.filter_watch_status')}
-        label="${localize(lang, 'editor.filter_watch_status')}"
-        @value-changed=${this._statusFilterChanged}
-      ></ha-selector>
-    </div>
-
-    <div class="side-by-side">
-      <div class="checkbox-row">
-        <ha-switch
-          .checked=${this._config.filter_favorites === true}
-          @change=${this._filterFavoritesChanged}
-        ></ha-switch>
-        <span>${localize(lang, 'editor.filter_favorites')}</span>
-      </div>
-
-      <div class="checkbox-row">
-        <ha-switch
-          .checked=${this._config.filter_newly_added === true}
-          @change=${this._filterNewlyAddedChanged}
-        ></ha-switch>
-        <span>${localize(lang, 'editor.filter_new_items')}</span>
-      </div>
-    </div>
-
-    ${(this._config.media_type === 'next_up' || ((this._config.media_type === 'series' || this._config.media_type === 'both' || !this._config.media_type) && this._config.tv_content === 'episodes'))
-        ? html`
-          <div class="checkbox-row">
-            <ha-switch
-              .checked=${this._config.use_series_image === true}
-              @change=${this._useSeriesImageChanged}
-            ></ha-switch>
-            <span>${localize(lang, 'editor.use_series_image')}</span>
-          </div>
-        `
         : ''}
 
     <div class="checkbox-row" style="margin-top: 16px; margin-bottom: 4px;">

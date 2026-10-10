@@ -6020,210 +6020,7 @@ let me = class extends W {
           </div>
         </div>
 
-        <div class="side-by-side">
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-      select: {
-        mode: "dropdown",
-        options: [
-          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
-          { value: "play-browser", label: l(o, "editor.action_play_browser") },
-          { value: "play-client", label: l(o, "editor.action_play_client") },
-          { value: "cast", label: l(o, "editor.action_cast") },
-          { value: "more-info", label: l(o, "editor.action_more_info") },
-          { value: "trailer", label: l(o, "editor.action_trailer") },
-          { value: "call-service", label: l(o, "editor.action_call_service") },
-          { value: "none", label: l(o, "editor.action_none") }
-        ]
-      }
-    }}
-              .value=${e}
-              .label=${l(o, "editor.click_action")}
-              label="${l(o, "editor.click_action")}"
-              @value-changed=${this._clickActionChanged}
-            ></ha-selector>
-          </div>
-
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-      select: {
-        mode: "dropdown",
-        options: [
-          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
-          { value: "play-browser", label: l(o, "editor.action_play_browser") },
-          { value: "play-client", label: l(o, "editor.action_play_client") },
-          { value: "cast", label: l(o, "editor.action_cast") },
-          { value: "more-info", label: l(o, "editor.action_more_info") },
-          { value: "trailer", label: l(o, "editor.action_trailer") },
-          { value: "call-service", label: l(o, "editor.action_call_service") },
-          { value: "none", label: l(o, "editor.action_none") }
-        ]
-      }
-    }}
-              .value=${t}
-              .label=${l(o, "editor.hold_action")}
-              label="${l(o, "editor.hold_action")}"
-              @value-changed=${this._holdActionChanged}
-            ></ha-selector>
-          </div>
-        </div>
-
-        <div class="side-by-side">
-          <div class="form-row ${a ? "double-tap-aligned" : ""}">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-      select: {
-        mode: "dropdown",
-        options: [
-          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
-          { value: "play-browser", label: l(o, "editor.action_play_browser") },
-          { value: "play-client", label: l(o, "editor.action_play_client") },
-          { value: "cast", label: l(o, "editor.action_cast") },
-          { value: "more-info", label: l(o, "editor.action_more_info") },
-          { value: "trailer", label: l(o, "editor.action_trailer") },
-          { value: "call-service", label: l(o, "editor.action_call_service") },
-          { value: "none", label: l(o, "editor.action_none") }
-        ]
-      }
-    }}
-              .value=${i}
-              .label=${l(o, "editor.double_tap_action")}
-              label="${l(o, "editor.double_tap_action")}"
-              @value-changed=${this._doubleTapActionChanged}
-            ></ha-selector>
-          </div>
-
-          ${a ? d`
-                <div class="form-row">
-                  <ha-entity-picker
-                    .hass=${this.hass}
-                    .value=${this._config.default_cast_device}
-                    .includeDomains=${["media_player"]}
-                    .entityFilter=${this._filterCastDevices}
-                    .label=${l(o, "editor.default_cast_device") || "Default Cast Device"}
-                    label="${l(o, "editor.default_cast_device") || "Default Cast Device"}"
-                    @value-changed=${this._defaultCastDeviceChanged}
-                  ></ha-entity-picker>
-                </div>
-
-                <div class="form-row">
-                  <ha-selector
-                    .hass=${this.hass}
-                    .selector=${{
-      select: {
-        mode: "dropdown",
-        options: [
-          { value: "auto", label: l(o, "editor.subtitles_auto") || "Auto (Jellyfin User Profile)" },
-          { value: "none", label: l(o, "editor.subtitles_none") || "None (Disabled)" },
-          { value: "forced_only", label: l(o, "editor.subtitles_forced_only") || "Forced Only" },
-          { value: "custom", label: l(o, "editor.subtitles_custom") || "Custom Language List" }
-        ]
-      }
-    }}
-                    .value=${this._config.subtitle_mode || "auto"}
-                    .label=${l(o, "editor.subtitles") || "Cast Subtitles"}
-                    label="${l(o, "editor.subtitles") || "Cast Subtitles"}"
-                    @value-changed=${this._subtitleModeChanged}
-                  ></ha-selector>
-                </div>
-
-                ${this._config.subtitle_mode === "custom" ? d`
-                    <div class="form-row">
-                      <ha-selector
-                        .hass=${this.hass}
-                        .selector=${{ text: {} }}
-                        .value=${this._config.subtitle_language || ""}
-                        .label=${l(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}
-                        label="${l(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}"
-                        @value-changed=${this._subtitleLanguageChanged}
-                      ></ha-selector>
-                    </div>
-                  ` : ""}
-              ` : d`<div></div>`}
-        </div>
-
-        ${s ? d`
-            <div class="form-row">
-              <ha-entity-picker
-                .hass=${this.hass}
-                .value=${this._config.default_client_device}
-                .includeDomains=${["media_player"]}
-                .entityFilter=${this._filterClientDevices}
-                .label=${l(o, "editor.default_client_device") || "Default Jellyfin Client"}
-                label="${l(o, "editor.default_client_device") || "Default Jellyfin Client"}"
-                @value-changed=${this._defaultClientDeviceChanged}
-              ></ha-entity-picker>
-            </div>
-          ` : ""}
-
-        ${e === "call-service" ? d`
-            <div class="form-row">
-              <ha-selector
-                .hass=${this.hass}
-                .selector=${{
-      entity: {
-        domain: "script"
-      }
-    }}
-                .value=${this._config.click_service || this._config.service || ""}
-                .label=${`${l(o, "editor.click_action")}: ${l(o, "editor.service_to_call")}`}
-                label="${l(o, "editor.click_action")}: ${l(o, "editor.service_to_call")}"
-                @value-changed=${this._clickServiceChanged}
-              ></ha-selector>
-            </div>
-          ` : ""}
-
-        ${t === "call-service" ? d`
-            <div class="form-row">
-              <ha-selector
-                .hass=${this.hass}
-                .selector=${{
-      entity: {
-        domain: "script"
-      }
-    }}
-                .value=${this._config.hold_service || this._config.service || ""}
-                .label=${`${l(o, "editor.hold_action")}: ${l(o, "editor.service_to_call")}`}
-                label="${l(o, "editor.hold_action")}: ${l(o, "editor.service_to_call")}"
-                @value-changed=${this._holdServiceChanged}
-              ></ha-selector>
-            </div>
-          ` : ""}
-
-        ${i === "call-service" ? d`
-            <div class="form-row">
-              <ha-selector
-                .hass=${this.hass}
-                .selector=${{
-      entity: {
-        domain: "script"
-      }
-    }}
-                .value=${this._config.double_tap_service || this._config.service || ""}
-                .label=${`${l(o, "editor.double_tap_action")}: ${l(o, "editor.service_to_call")}`}
-                label="${l(o, "editor.double_tap_action")}: ${l(o, "editor.service_to_call")}"
-                @value-changed=${this._doubleTapServiceChanged}
-              ></ha-selector>
-            </div>
-          ` : ""}
-
-        ${e === "cast" || t === "cast" || i === "cast" ? d`
-              <div class="checkbox-row">
-                <ha-switch
-                  .checked=${this._config.show_now_playing !== !1}
-                  @change=${this._showNowPlayingChanged}
-                ></ha-switch>
-                <span>${l(o, "editor.show_now_playing_overlay")}</span>
-              </div>
-            ` : ""}
-
-
-    <div class="checkbox-row">
+        <div class="checkbox-row">
       <ha-switch
         .checked=${this._config.enable_browser_player !== !1}
         @change=${this._enableBrowserPlayerChanged}
@@ -6424,6 +6221,208 @@ let me = class extends W {
             <span>${l(o, "editor.use_series_image")}</span>
           </div>
         ` : ""}
+
+        <div class="side-by-side" style="margin-top: 16px;">
+          <div class="form-row">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
+          { value: "play-browser", label: l(o, "editor.action_play_browser") },
+          { value: "play-client", label: l(o, "editor.action_play_client") },
+          { value: "cast", label: l(o, "editor.action_cast") },
+          { value: "more-info", label: l(o, "editor.action_more_info") },
+          { value: "trailer", label: l(o, "editor.action_trailer") },
+          { value: "call-service", label: l(o, "editor.action_call_service") },
+          { value: "none", label: l(o, "editor.action_none") }
+        ]
+      }
+    }}
+              .value=${e}
+              .label=${l(o, "editor.click_action")}
+              label="${l(o, "editor.click_action")}"
+              @value-changed=${this._clickActionChanged}
+            ></ha-selector>
+          </div>
+
+          <div class="form-row">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
+          { value: "play-browser", label: l(o, "editor.action_play_browser") },
+          { value: "play-client", label: l(o, "editor.action_play_client") },
+          { value: "cast", label: l(o, "editor.action_cast") },
+          { value: "more-info", label: l(o, "editor.action_more_info") },
+          { value: "trailer", label: l(o, "editor.action_trailer") },
+          { value: "call-service", label: l(o, "editor.action_call_service") },
+          { value: "none", label: l(o, "editor.action_none") }
+        ]
+      }
+    }}
+              .value=${t}
+              .label=${l(o, "editor.hold_action")}
+              label="${l(o, "editor.hold_action")}"
+              @value-changed=${this._holdActionChanged}
+            ></ha-selector>
+          </div>
+        </div>
+
+        <div class="side-by-side">
+          <div class="form-row ${a ? "double-tap-aligned" : ""}">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
+          { value: "play-browser", label: l(o, "editor.action_play_browser") },
+          { value: "play-client", label: l(o, "editor.action_play_client") },
+          { value: "cast", label: l(o, "editor.action_cast") },
+          { value: "more-info", label: l(o, "editor.action_more_info") },
+          { value: "trailer", label: l(o, "editor.action_trailer") },
+          { value: "call-service", label: l(o, "editor.action_call_service") },
+          { value: "none", label: l(o, "editor.action_none") }
+        ]
+      }
+    }}
+              .value=${i}
+              .label=${l(o, "editor.double_tap_action")}
+              label="${l(o, "editor.double_tap_action")}"
+              @value-changed=${this._doubleTapActionChanged}
+            ></ha-selector>
+          </div>
+
+          ${a ? d`
+                <div class="form-row">
+                  <ha-entity-picker
+                    .hass=${this.hass}
+                    .value=${this._config.default_cast_device}
+                    .includeDomains=${["media_player"]}
+                    .entityFilter=${this._filterCastDevices}
+                    .label=${l(o, "editor.default_cast_device") || "Default Cast Device"}
+                    label="${l(o, "editor.default_cast_device") || "Default Cast Device"}"
+                    @value-changed=${this._defaultCastDeviceChanged}
+                  ></ha-entity-picker>
+                </div>
+
+                <div class="form-row">
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "auto", label: l(o, "editor.subtitles_auto") || "Auto (Jellyfin User Profile)" },
+          { value: "none", label: l(o, "editor.subtitles_none") || "None (Disabled)" },
+          { value: "forced_only", label: l(o, "editor.subtitles_forced_only") || "Forced Only" },
+          { value: "custom", label: l(o, "editor.subtitles_custom") || "Custom Language List" }
+        ]
+      }
+    }}
+                    .value=${this._config.subtitle_mode || "auto"}
+                    .label=${l(o, "editor.subtitles") || "Cast Subtitles"}
+                    label="${l(o, "editor.subtitles") || "Cast Subtitles"}"
+                    @value-changed=${this._subtitleModeChanged}
+                  ></ha-selector>
+                </div>
+
+                ${this._config.subtitle_mode === "custom" ? d`
+                    <div class="form-row">
+                      <ha-selector
+                        .hass=${this.hass}
+                        .selector=${{ text: {} }}
+                        .value=${this._config.subtitle_language || ""}
+                        .label=${l(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}
+                        label="${l(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}"
+                        @value-changed=${this._subtitleLanguageChanged}
+                      ></ha-selector>
+                    </div>
+                  ` : ""}
+              ` : d`<div></div>`}
+        </div>
+
+        ${s ? d`
+            <div class="form-row">
+              <ha-entity-picker
+                .hass=${this.hass}
+                .value=${this._config.default_client_device}
+                .includeDomains=${["media_player"]}
+                .entityFilter=${this._filterClientDevices}
+                .label=${l(o, "editor.default_client_device") || "Default Jellyfin Client"}
+                label="${l(o, "editor.default_client_device") || "Default Jellyfin Client"}"
+                @value-changed=${this._defaultClientDeviceChanged}
+              ></ha-entity-picker>
+            </div>
+          ` : ""}
+
+        ${e === "call-service" ? d`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+      entity: {
+        domain: "script"
+      }
+    }}
+                .value=${this._config.click_service || this._config.service || ""}
+                .label=${`${l(o, "editor.click_action")}: ${l(o, "editor.service_to_call")}`}
+                label="${l(o, "editor.click_action")}: ${l(o, "editor.service_to_call")}"
+                @value-changed=${this._clickServiceChanged}
+              ></ha-selector>
+            </div>
+          ` : ""}
+
+        ${t === "call-service" ? d`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+      entity: {
+        domain: "script"
+      }
+    }}
+                .value=${this._config.hold_service || this._config.service || ""}
+                .label=${`${l(o, "editor.hold_action")}: ${l(o, "editor.service_to_call")}`}
+                label="${l(o, "editor.hold_action")}: ${l(o, "editor.service_to_call")}"
+                @value-changed=${this._holdServiceChanged}
+              ></ha-selector>
+            </div>
+          ` : ""}
+
+        ${i === "call-service" ? d`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+      entity: {
+        domain: "script"
+      }
+    }}
+                .value=${this._config.double_tap_service || this._config.service || ""}
+                .label=${`${l(o, "editor.double_tap_action")}: ${l(o, "editor.service_to_call")}`}
+                label="${l(o, "editor.double_tap_action")}: ${l(o, "editor.service_to_call")}"
+                @value-changed=${this._doubleTapServiceChanged}
+              ></ha-selector>
+            </div>
+          ` : ""}
+
+        ${e === "cast" || t === "cast" || i === "cast" ? d`
+              <div class="checkbox-row">
+                <ha-switch
+                  .checked=${this._config.show_now_playing !== !1}
+                  @change=${this._showNowPlayingChanged}
+                ></ha-switch>
+                <span>${l(o, "editor.show_now_playing_overlay")}</span>
+              </div>
+            ` : ""}
 
     <div class="checkbox-row" style="margin-top: 16px; margin-bottom: 4px;">
       <ha-switch
