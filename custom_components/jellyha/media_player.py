@@ -124,7 +124,29 @@ async def async_setup_entry(
 
     # Create a media player for each configured client device
     device_ids: list[str] = entry.options.get(CONF_DEVICE_PLAYERS, [])
-    device_names: dict[str, str] = entry.options.get(CONF_DEVICE_NAMES, {})
+    device_names: dict[str, str] = dict(entry.options.get(CONF_DEVICE_NAMES, {}))
+
+    # Enrich device names with client/app info from Jellyfin API if available
+    api = getattr(session_coordinator, "api", None) or getattr(session_coordinator, "_api", None)
+    if device_ids and api:
+        try:
+            remote_devices = await api.get_devices()
+            for dev in remote_devices:
+                dev_id = dev.get("Id")
+                if dev_id and dev_id in device_ids:
+                    dev_name = (
+                        dev.get("CustomName")
+                        or dev.get("Name")
+                        or dev.get("DeviceName")
+                        or dev.get("AppName")
+                        or "Unknown Device"
+                    )
+                    app_name = dev.get("AppName")
+                    label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
+                    device_names[dev_id] = label
+        except Exception as err:
+            _LOGGER.debug("Could not refresh client device names from Jellyfin: %s", err)
+
     for dev_id in device_ids:
         dev_title = device_names.get(dev_id) or "Device"
         entities.append(
@@ -1160,12 +1182,15 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
         self._device_id = device_id
         self._custom_device_name = custom_device_name
         self._attr_unique_id = f"{entry.entry_id}_device_player_{device_id}"
-        self._attr_name = f"Device {custom_device_name}"
+        if custom_device_name.startswith("Device "):
+            self._attr_name = custom_device_name
+        else:
+            self._attr_name = f"Device {custom_device_name}"
         lower_name = custom_device_name.lower()
-        if any(w in lower_name for w in ("phone", "s20", "s21", "s22", "s23", "s24", "s25", "pixel", "iphone", "mobile")):
-            self._attr_icon = "mdi:cellphone-play"
-        elif any(w in lower_name for w in ("tablet", "ipad", "pad", "tab")):
+        if any(w in lower_name for w in ("tablet", "ipad", "pad", "tab", "sm-x", "sm-t")):
             self._attr_icon = "mdi:tablet-play"
+        elif any(w in lower_name for w in ("phone", "s20", "s21", "s22", "s23", "s24", "s25", "pixel", "iphone", "mobile", "galaxy", "sm-s", "sm-g", "sm-a", "sm-n")):
+            self._attr_icon = "mdi:cellphone-play"
         else:
             self._attr_icon = "mdi:television-play"
 
@@ -1185,9 +1210,31 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
             str(s.get("DeviceCustomName") or "").strip().lower(),
         }
         session_names.discard("")
-        target_name = (self._custom_device_name or "").strip().lower()
-        if target_name and target_name in session_names:
-            return True
+
+        raw_target = (self._custom_device_name or "").strip()
+        if not raw_target:
+            return False
+
+        # If custom device name has "(Client/App)", extract base name and client
+        match = re.match(r"^(.*?)\s*\((.*?)\)$", raw_target)
+        if match:
+            base_name = match.group(1).strip().lower()
+            client_target = match.group(2).strip().lower()
+        else:
+            base_name = raw_target.lower()
+            client_target = ""
+
+        # Check if base device name matches session's device name
+        if base_name in session_names or raw_target.lower() in session_names:
+            if not client_target:
+                return True
+            session_client = str(s.get("Client") or s.get("AppName") or "").strip().lower()
+            if not session_client:
+                return True
+            # Compare client names, normalizing optional 'jellyfin ' prefix
+            norm_target = client_target.removeprefix("jellyfin ").strip()
+            norm_session = session_client.removeprefix("jellyfin ").strip()
+            return norm_target == norm_session or client_target == session_client
 
         return False
 

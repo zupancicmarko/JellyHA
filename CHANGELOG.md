@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Native Home Assistant clear (`✕`) support on optional entity selectors (`power_entity`, `power_state_entity`, `volume_entity`).
 - **Media Player User & Device Naming Differentiation**:
   - Differentiated per-user and per-device media players in the Home Assistant UI by prefixing entity display names with `User` and `Device` (rendering as `JellyHA User <username>` and `JellyHA Device <device_name>`).
+  - Preserved client/application metadata in device media player names (e.g. `Device samsung SM-S911B (Moonfin for Android)` and `Device samsung SM-S911B (Android)`) across the config flow, options flow, Home Assistant entity registry, and card dropdowns, disambiguating multiple clients on the same hardware.
+  - Automatically enriches existing device names on startup from the Jellyfin API and matches active sessions using normalized client identifiers.
   - Home Assistant automatically suggests `media_player.jellyha_user_<username>` and `media_player.jellyha_device_<device_name>` for new entities.
   - Full backwards compatibility: preserved existing entity unique IDs so existing installations, automations, and scripts continue operating seamlessly without breaking changes.
 - **Configuration Wizard Multi-Instance, Device Selection & Library Flow**:

@@ -38,6 +38,7 @@ HA_MODULES = [
     "homeassistant.components.frontend",
     "homeassistant.data_entry_flow",
     "homeassistant.helpers.selector",
+    "homeassistant.helpers.entity_platform",
     "homeassistant.components.media_player",
     "homeassistant.components.media_player.const",
     "homeassistant.components.websocket_api",
@@ -99,6 +100,19 @@ class MockDataUpdateCoordinator:
         return cls
 
 sys.modules["homeassistant.helpers.update_coordinator"].DataUpdateCoordinator = MockDataUpdateCoordinator
+
+class MockCoordinatorEntity:
+    def __init__(self, coordinator, *args, **kwargs):
+        self.coordinator = coordinator
+
+    def __class_getitem__(cls, item):
+        return cls
+
+class MockMediaPlayerEntity:
+    pass
+
+sys.modules["homeassistant.helpers.update_coordinator"].CoordinatorEntity = MockCoordinatorEntity
+sys.modules["homeassistant.components.media_player"].MediaPlayerEntity = MockMediaPlayerEntity
 
 auth_mod = sys.modules["homeassistant.components.http.auth"]
 auth_mod.async_sign_path = lambda hass, path, expiration=None: f"{path}{'&' if '?' in path else '?'}authSig=mock_sig"

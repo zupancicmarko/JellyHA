@@ -6073,7 +6073,7 @@ let me = class extends W {
         </div>
 
         <div class="side-by-side">
-          <div class="form-row ${a || s ? "double-tap-aligned" : ""}">
+          <div class="form-row ${a ? "double-tap-aligned" : ""}">
             <ha-selector
               .hass=${this.hass}
               .selector=${{
@@ -6145,21 +6145,21 @@ let me = class extends W {
                     </div>
                   ` : ""}
               ` : d`<div></div>`}
-
-          ${s ? d`
-                <div class="form-row">
-                  <ha-entity-picker
-                    .hass=${this.hass}
-                    .value=${this._config.default_client_device}
-                    .includeDomains=${["media_player"]}
-                    .entityFilter=${this._filterClientDevices}
-                    .label=${l(o, "editor.default_client_device") || "Default Jellyfin Client"}
-                    label="${l(o, "editor.default_client_device") || "Default Jellyfin Client"}"
-                    @value-changed=${this._defaultClientDeviceChanged}
-                  ></ha-entity-picker>
-                </div>
-              ` : ""}
         </div>
+
+        ${s ? d`
+            <div class="form-row">
+              <ha-entity-picker
+                .hass=${this.hass}
+                .value=${this._config.default_client_device}
+                .includeDomains=${["media_player"]}
+                .entityFilter=${this._filterClientDevices}
+                .label=${l(o, "editor.default_client_device") || "Default Jellyfin Client"}
+                label="${l(o, "editor.default_client_device") || "Default Jellyfin Client"}"
+                @value-changed=${this._defaultClientDeviceChanged}
+              ></ha-entity-picker>
+            </div>
+          ` : ""}
 
         ${e === "call-service" ? d`
             <div class="form-row">

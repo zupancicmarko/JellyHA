@@ -366,7 +366,7 @@ export class JellyHALibraryEditor extends LitElement {
         </div>
 
         <div class="side-by-side">
-          <div class="form-row ${isCastActive || isClientActive ? 'double-tap-aligned' : ''}">
+          <div class="form-row ${isCastActive ? 'double-tap-aligned' : ''}">
             <ha-selector
               .hass=${this.hass}
               .selector=${{
@@ -442,23 +442,23 @@ export class JellyHALibraryEditor extends LitElement {
                   : ''}
               `
         : html`<div></div>`}
-
-          ${isClientActive
-        ? html`
-                <div class="form-row">
-                  <ha-entity-picker
-                    .hass=${this.hass}
-                    .value=${this._config.default_client_device}
-                    .includeDomains=${['media_player']}
-                    .entityFilter=${this._filterClientDevices}
-                    .label=${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}
-                    label="${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}"
-                    @value-changed=${this._defaultClientDeviceChanged}
-                  ></ha-entity-picker>
-                </div>
-              `
-        : ''}
         </div>
+
+        ${isClientActive
+        ? html`
+            <div class="form-row">
+              <ha-entity-picker
+                .hass=${this.hass}
+                .value=${this._config.default_client_device}
+                .includeDomains=${['media_player']}
+                .entityFilter=${this._filterClientDevices}
+                .label=${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}
+                label="${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}"
+                @value-changed=${this._defaultClientDeviceChanged}
+              ></ha-entity-picker>
+            </div>
+          `
+        : ''}
 
         ${clickAction === 'call-service'
         ? html`

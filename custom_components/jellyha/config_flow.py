@@ -438,7 +438,7 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             app_name = device_data.get("AppName")
             label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
             device_options.append(selector.SelectOptionDict(value=dev_id, label=label))
-            self._device_map[dev_id] = dev_name
+            self._device_map[dev_id] = label
 
         if not device_options:
             _LOGGER.debug("No client devices found or accessible, advancing directly to instance label step")
@@ -606,7 +606,7 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                     app_name = device_data.get("AppName")
                     label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
                     device_options.append(selector.SelectOptionDict(value=dev_id, label=label))
-                    device_map[dev_id] = dev_name
+                    device_map[dev_id] = label
             except Exception as err:
                 _LOGGER.debug("Could not fetch Jellyfin devices for Options Flow (non-admin or restricted): %s", err)
 
