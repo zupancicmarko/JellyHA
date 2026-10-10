@@ -1424,6 +1424,13 @@ export class JellyHANowPlayingCard extends LitElement {
         await callPowerAction(this.hass, powerEntity, this._config?.power_state_entity);
     }
 
+    private _handlePowerKeydown(e: KeyboardEvent): void {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this._handlePowerClick(e);
+        }
+    }
+
     private _renderPowerButton(): TemplateResult | typeof nothing {
         const powerEntity = this._targetPowerEntity;
         const showPower = this._config?.show_power_button !== false && this._config?.show_power !== false;
@@ -1435,14 +1442,23 @@ export class JellyHANowPlayingCard extends LitElement {
         const titleText = stateInfo.isOn ? 'Power Off' : 'Power On';
 
         return html`
-            <ha-icon-button
-                class="power-btn ${stateClass} ${activatingClass}"
-                .label=${titleText}
+            <div
+                class="power-btn-hit-area"
+                role="button"
+                tabindex="0"
+                aria-label=${titleText}
                 title=${titleText}
                 @click=${this._handlePowerClick}
+                @keydown=${this._handlePowerKeydown}
             >
-                <ha-icon icon="mdi:power"></ha-icon>
-            </ha-icon-button>
+                <ha-icon-button
+                    class="power-btn ${stateClass} ${activatingClass}"
+                    .label=${titleText}
+                    tabindex="-1"
+                >
+                    <ha-icon icon="mdi:power"></ha-icon>
+                </ha-icon-button>
+            </div>
         `;
     }
 
@@ -2668,6 +2684,42 @@ export class JellyHANowPlayingCard extends LitElement {
             z-index: 5;
         }
 
+        .power-btn-hit-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+            cursor: pointer;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .power-btn-hit-area::before {
+            content: '';
+            position: absolute;
+            top: -11px;
+            right: -11px;
+            bottom: -11px;
+            left: -11px;
+            border-radius: 14px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        .power-btn-hit-area:hover .power-btn {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: rgba(255, 255, 255, 0.28) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+        }
+        .power-btn-hit-area:active .power-btn {
+            transform: scale(0.92) !important;
+        }
+        .power-btn-hit-area:focus-visible .power-btn {
+            outline: 2px solid var(--primary-color, #03a9f4) !important;
+            outline-offset: 2px;
+        }
+
         .power-btn {
             --mdc-icon-button-size: 26px !important;
             --mdc-icon-size: 16px !important;
@@ -2694,6 +2746,7 @@ export class JellyHANowPlayingCard extends LitElement {
             transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease, box-shadow 0.2s ease;
             box-sizing: border-box;
             flex-shrink: 0;
+            pointer-events: none;
         }
         .power-btn:hover {
             background: rgba(255, 255, 255, 0.2) !important;

@@ -9890,19 +9890,31 @@ let S = class extends W {
       this._powerActivating = !1;
     }, 800), await fi(this.hass, t, this._config?.power_state_entity);
   }
+  _handlePowerKeydown(e) {
+    (e.key === "Enter" || e.key === " ") && (e.preventDefault(), this._handlePowerClick(e));
+  }
   _renderPowerButton() {
     const e = this._targetPowerEntity, t = this._config?.show_power_button !== !1 && this._config?.show_power !== !1;
     if (!e || !t || !this.hass) return p;
     const i = Re(this.hass, e, this._config?.power_state_entity), a = i.isStateless ? "stateless-ready" : i.isOn ? "is-on" : "is-off", s = this._powerActivating ? "activating" : "", o = i.isOn ? "Power Off" : "Power On";
     return d`
-            <ha-icon-button
-                class="power-btn ${a} ${s}"
-                .label=${o}
+            <div
+                class="power-btn-hit-area"
+                role="button"
+                tabindex="0"
+                aria-label=${o}
                 title=${o}
                 @click=${this._handlePowerClick}
+                @keydown=${this._handlePowerKeydown}
             >
-                <ha-icon icon="mdi:power"></ha-icon>
-            </ha-icon-button>
+                <ha-icon-button
+                    class="power-btn ${a} ${s}"
+                    .label=${o}
+                    tabindex="-1"
+                >
+                    <ha-icon icon="mdi:power"></ha-icon>
+                </ha-icon-button>
+            </div>
         `;
   }
   async _handleToggleMute() {
@@ -10777,6 +10789,42 @@ S.styles = be`
             z-index: 5;
         }
 
+        .power-btn-hit-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+            cursor: pointer;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .power-btn-hit-area::before {
+            content: '';
+            position: absolute;
+            top: -11px;
+            right: -11px;
+            bottom: -11px;
+            left: -11px;
+            border-radius: 14px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        .power-btn-hit-area:hover .power-btn {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: rgba(255, 255, 255, 0.28) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+        }
+        .power-btn-hit-area:active .power-btn {
+            transform: scale(0.92) !important;
+        }
+        .power-btn-hit-area:focus-visible .power-btn {
+            outline: 2px solid var(--primary-color, #03a9f4) !important;
+            outline-offset: 2px;
+        }
+
         .power-btn {
             --mdc-icon-button-size: 26px !important;
             --mdc-icon-size: 16px !important;
@@ -10803,6 +10851,7 @@ S.styles = be`
             transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease, box-shadow 0.2s ease;
             box-sizing: border-box;
             flex-shrink: 0;
+            pointer-events: none;
         }
         .power-btn:hover {
             background: rgba(255, 255, 255, 0.2) !important;

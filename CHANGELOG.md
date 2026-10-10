@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Play on Jellyfin Client Action & Remote Session Control (Feature Request [#62](https://github.com/zupancicmarko/JellyHA/issues/62))**:
   - Added native `play-client` ("Play on Jellyfin Client") action to `click_action`, `hold_action`, and `double_tap_action` on the Library Card, and `'client'` target support to `modal_play_actions` in the More Information dialog.
-  - Enables direct 1-tap playback to supported Jellyfin client applications (Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop/JMP, Wholphin, Roku) via Jellyfin's remote session control API (`POST /Sessions/{sessionId}/Playing?playCommand=PlayNow&itemIds={itemId}`), bypassing Chromecast transcoding overhead entirely.
-  - Documented client compatibility: noted that the official Jellyfin Android mobile app and iOS/Swiftfin currently do not implement incoming remote playback initiation commands, and recommended Moonfin for Android for Android mobile playback.
+  - Enables direct 1-tap playback to supported Jellyfin client applications (Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop/JMP, Wholphin, Roku, etc.) via Jellyfin's remote session control API (`POST /Sessions/{sessionId}/Playing?playCommand=PlayNow&itemIds={itemId}`), bypassing Chromecast transcoding overhead entirely.
+  - Documented client compatibility: noted that the official Jellyfin Android mobile app and iOS/Swiftfin currently do not implement incoming remote playback initiation commands, and recommended Wholpin, Moonfin or similar for Android mobile playback.
   - Added configurable `default_client_device` in the Library Card YAML configuration and visual editor (filtered to JellyHA client device media players `media_player.jellyha_device_*`).
   - Added interactive client device picker fallback in the More Information modal when multiple active client sessions are online or when no default device is configured.
   - Smart Cast Delegation: Updated `jellyha.play_on_chromecast` to automatically intercept JellyHA client device and session media player entities (`media_player.jellyha_device_*`, `media_player.jellyha_user_*`) and seamlessly route them to `jellyha.session_play`, preventing confusing Google Cast media receiver failures when users select their Jellyfin TV client instead of a Chromecast.
@@ -24,7 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dual-entity pairing via `power_state_entity` for stateless scripts/IR blasters combined with true state sensors (e.g. smart plugs or ping sensors).
   - Configurable `stop_on_power_off` (default `true`) which automatically halts active Jellyfin playback and saves progress when the TV is powered down.
   - Haptic feedback (`_haptic('light')`) on tap with visual depression `:active` animation and activating pulse.
-- **Option 1 Capsule Volume Slider with Tactile Scrubbing**:
+  - Expanded 48px touch hit area around the frosted glass button for effortless, reliable tapping on wall tablets and touchscreens without altering card layout.
+- **Capsule Volume Slider with Tactile Scrubbing on Now Playing Card (Issue [#60](https://github.com/zupancicmarko/JellyHA/issues/60))**:
   - Translucent pillow capsule row positioned above the progress timeline bar with continuous track, dominant fill, percentage readout, mute toggle, and discrete `−`/`+` step buttons.
   - External audio routing via `volume_entity` to control AVRs or soundbars while streaming video via Jellyfin (falls back to primary media player if unspecified).
   - Discrete `_haptic('selection')` tactile notches triggered every 5% interval during continuous slider scrubbing.
@@ -32,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Visual Card Editor & Screensaver Enhancements**:
   - Enhanced Idle Poster Screensaver Backdrop Visibility: Brightened the background fanart in the Now Playing card's idle poster layout (`idle_display_mode: 'card'`) by increasing backdrop brightness to 0.8 and softening the gradient overlay, allowing the fanart imagery to remain vivid while maintaining crisp typography contrast.
   - Added dedicated TV/Display Power and Volume configuration sections with dynamic placeholders (`Default: <entity>`) and contextual helper guidance.
-  - Native Home Assistant clear (`✕`) support on optional entity selectors (`power_entity`, `power_state_entity`, `volume_entity`).
 - **Media Player User & Device Naming Differentiation**:
   - Differentiated per-user and per-device media players in the Home Assistant UI by prefixing entity display names with `User` and `Device` (rendering as `JellyHA User <username>` and `JellyHA Device <device_name>`).
   - Preserved client/application metadata in device media player names (e.g. `Device samsung SM-S911B (Moonfin for Android)` and `Device samsung SM-S911B (Android)`) across the config flow, options flow, Home Assistant entity registry, and card dropdowns, disambiguating multiple clients on the same hardware.
