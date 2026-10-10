@@ -51,7 +51,7 @@ max_pages: 5
 | `default_cast_device` | string | `''` | Default `media_player` entity used when action is set to `cast` (filtered to Google Cast devices in visual editor) |
 | `subtitle_mode` | string | `auto` | Subtitle strategy for casting and browser playback: `auto` (Jellyfin user profile with English fallback), `none` (disabled), `forced_only`, or `custom` |
 | `subtitle_language` | string | `''` | Prioritized comma-separated subtitle language codes/names when `subtitle_mode` is `custom` (e.g. `sl, en` or `slv, eng`) for casting and browser playback |
-| `show_now_playing` | boolean | `true` | Display active playback banner at the top of the card |
+| `show_now_playing` | boolean | `true` | Display interactive "Now Playing" overlay with status and controls (Play/Pause, Stop, Rewind) directly on posters for active playback devices (Chromecast, Jellyfin TV client, mobile/session players). Multiple posters can display overlays simultaneously if different media items are playing on separate devices. |
 | `show_title` | boolean | `true` | Display media title text |
 | `show_year` | boolean | `true` | Display release year |
 | `show_ratings` | boolean | `true` | Display community rating score |
