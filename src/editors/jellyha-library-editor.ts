@@ -313,7 +313,7 @@ export class JellyHALibraryEditor extends LitElement {
           </div>
         </div>
 
-        <div class="checkbox-row">
+    <div class="checkbox-row">
       <ha-switch
         .checked=${this._config.enable_browser_player !== false}
         @change=${this._enableBrowserPlayerChanged}
@@ -519,7 +519,7 @@ export class JellyHALibraryEditor extends LitElement {
         `
         : ''}
 
-        <div class="side-by-side" style="margin-top: 16px;">
+        <div class="side-by-side">
           <div class="form-row">
             <ha-selector
               .hass=${this.hass}
