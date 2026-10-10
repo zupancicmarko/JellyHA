@@ -12,6 +12,9 @@ export class JellyHAMediaItem extends LitElement {
   @property({ attribute: false }) item!: MediaItem;
   @property({ type: String }) layout: 'grid' | 'list' = 'grid';
   @property({ type: Boolean }) isNextUpHighlight = false;
+  // Featured layout: large main poster, compact side rows
+  @property({ type: Boolean }) featured = false;
+  @property({ type: Boolean }) compact = false;
 
   @state() private _pressStartTime: number = 0;
   @state() private _holdTimer?: number;
@@ -43,7 +46,7 @@ export class JellyHAMediaItem extends LitElement {
 
     return html`
       <div
-        class="media-item list-item ${isPlaying ? 'playing' : ''} ${!this.config.show_title ? 'no-title' : ''} ${this.config.metadata_position === 'above' ? 'metadata-above' : ''}"
+        class="media-item list-item ${this.compact ? 'compact' : ''} ${isPlaying ? 'playing' : ''} ${!this.config.show_title ? 'no-title' : ''} ${this.config.metadata_position === 'above' ? 'metadata-above' : ''}"
         tabindex="0"
         role="button"
         aria-label="${item.name}"
@@ -156,7 +159,7 @@ export class JellyHAMediaItem extends LitElement {
 
     return html`
       <div
-        class="media-item ${isPlaying ? 'playing' : ''}"
+        class="media-item ${this.featured ? 'featured' : ''} ${isPlaying ? 'playing' : ''}"
         tabindex="0"
         role="button"
         aria-label="${item.name}"
@@ -192,7 +195,7 @@ export class JellyHAMediaItem extends LitElement {
           this.config.use_series_image && item.series_poster_url
             ? item.series_poster_url
             : item.poster_url,
-          300
+          this.featured ? 600 : 300
         )}"
               alt="${item.name}"
               width="140"

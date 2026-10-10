@@ -139,6 +139,7 @@ export class JellyHALibraryEditor extends LitElement {
                     { value: 'carousel', label: localize(lang, 'editor.layout_carousel') },
                     { value: 'grid', label: localize(lang, 'editor.layout_grid') },
                     { value: 'list', label: localize(lang, 'editor.layout_list') },
+                    { value: 'featured', label: localize(lang, 'editor.layout_featured') },
                   ],
                 },
               }}

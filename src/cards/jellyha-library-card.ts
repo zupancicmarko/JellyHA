@@ -185,8 +185,8 @@ export class JellyHALibraryCard extends LitElement {
     const interval = this._config?.auto_swipe_interval;
     if (!interval || interval <= 0) return;
 
-    if (this._config.enable_pagination !== false) {
-      // Version 1: Paginated (Interval-based)
+    if (this._config.enable_pagination !== false || this._config.layout === 'featured') {
+      // Version 1: Paginated (Interval-based); featured has no scroll track, so it always pages
       this._autoSwipeTimer = window.setInterval(() => {
         if (!this._autoSwipePaused) {
           this._handleAutoSwipePage();
@@ -226,7 +226,7 @@ export class JellyHALibraryCard extends LitElement {
       this._lastFrameTime = timestamp;
 
       if (!this._autoSwipePaused && this._config.auto_swipe_interval) {
-        const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+        const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
 
         if (scrollContainer) {
           const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
@@ -320,7 +320,7 @@ export class JellyHALibraryCard extends LitElement {
    * Helper to set scroll position after page change
    */
   private _setScrollPosition(position: 'start' | 'end'): void {
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper');
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper');
     if (scrollContainer) {
       if (position === 'start') {
         scrollContainer.scrollLeft = 0;
@@ -335,7 +335,7 @@ export class JellyHALibraryCard extends LitElement {
    * Helper to animate page changes (Slide & Fade)
    **/
   private async _animatePageChange(direction: 'next' | 'prev', updateState: () => void): Promise<void> {
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
     if (!scrollContainer) {
       updateState();
       return;
@@ -411,7 +411,7 @@ export class JellyHALibraryCard extends LitElement {
     // Only swipe/scroll logic if horizontal movement > vertical
     if (Math.abs(diffX) > Math.abs(diffY)) {
       // Elastic Scroll Effect Logic
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer && Math.abs(diffX) > 0) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
         const maxScroll = scrollWidth - clientWidth;
@@ -460,7 +460,7 @@ export class JellyHALibraryCard extends LitElement {
   private _handleTouchEnd(e: TouchEvent): void {
     // Handle Elastic Reset
     if (this._isOverscrolling) {
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer) {
         scrollContainer.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)';
         scrollContainer.style.transform = '';
@@ -487,7 +487,7 @@ export class JellyHALibraryCard extends LitElement {
     const diffX = e.changedTouches[0].clientX - this._touchStartX;
     const threshold = 50; // Minimum swipe distance
     // Check for either carousel or grid wrapper (whichever is active)
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper');
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper');
 
     if (diffX < -threshold) {
       // Swipe Left (Next Page)
@@ -537,7 +537,7 @@ export class JellyHALibraryCard extends LitElement {
     // Only swipe/scroll logic if horizontal movement > vertical
     if (Math.abs(diffX) > Math.abs(diffY)) {
       // Elastic Scroll Effect Logic
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer && Math.abs(diffX) > 0) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
         const maxScroll = scrollWidth - clientWidth;
@@ -584,7 +584,7 @@ export class JellyHALibraryCard extends LitElement {
 
     // Handle Elastic Reset
     if (this._isOverscrolling) {
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer) {
         scrollContainer.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)';
         scrollContainer.style.transform = '';
@@ -610,7 +610,7 @@ export class JellyHALibraryCard extends LitElement {
 
     const diffX = e.clientX - this._touchStartX;
     const threshold = 50;
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper');
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper');
 
     if (diffX < -threshold) {
       if (scrollContainer) {
@@ -819,7 +819,7 @@ export class JellyHALibraryCard extends LitElement {
    * Get card size for layout
    */
   public getCardSize(): number {
-    return this._config?.layout === 'list' ? 5 : 3;
+    return this._config?.layout === 'list' || this._config?.layout === 'featured' ? 5 : 3;
   }
 
   public getLayoutOptions() {
@@ -1163,6 +1163,10 @@ export class JellyHALibraryCard extends LitElement {
       return this._renderGrid(items, enablePagination);
     }
 
+    if (layout === 'featured') {
+      return this._renderFeatured(items, enablePagination);
+    }
+
     return html`
       <div class="${layout}">
         ${items.map((item) => html`
@@ -1333,6 +1337,65 @@ export class JellyHALibraryCard extends LitElement {
         ? this._renderPagination(totalPages)
         : nothing}
         ${!enablePagination ? this._renderScrollIndicator() : nothing}
+      </div>
+    `;
+  }
+
+  /**
+   * Render featured layout: first item of the page large, the rest as compact rows beside it.
+   * Always works page by page; without pagination only the first page is shown.
+   */
+  private _renderFeatured(items: MediaItem[], enablePagination: boolean): TemplateResult {
+    const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
+    const rawMaxPages = this._config.max_pages;
+    const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
+    const effectiveMaxPages = (maxPagesNum > 0) ? maxPagesNum : Infinity;
+    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
+
+    const startIdx = this._currentPage * itemsPerPage;
+    const [mainItem, ...sideItems] = items.slice(startIdx, startIdx + itemsPerPage);
+    if (!mainItem) return html``;
+
+    return html`
+      <div
+        class="featured-wrapper"
+        @touchstart="${this._handleTouchStart}"
+        @touchmove="${this._handleTouchMove}"
+        @touchend="${this._handleTouchEnd}"
+        @pointerdown="${this._handlePointerDown}"
+        @pointermove="${this._handlePointerMove}"
+        @pointerup="${this._handlePointerUp}"
+      >
+        <div class="featured ${sideItems.length === 0 ? 'single' : ''}">
+          <jellyha-media-item
+              class="featured-main"
+              .hass=${this.hass}
+              .config=${this._config}
+              .item=${mainItem}
+              .layout=${'grid'}
+              .featured=${true}
+              .isNextUpHighlight=${this._config.media_type === 'next_up' && mainItem.id === this._mostRecentNextUpItemId}
+              @jellyha-action=${this._handleItemAction}
+          ></jellyha-media-item>
+          ${sideItems.length > 0 ? html`
+            <div class="featured-side">
+              ${sideItems.map((item) => html`
+                <jellyha-media-item
+                    .hass=${this.hass}
+                    .config=${this._config}
+                    .item=${item}
+                    .layout=${'list'}
+                    .compact=${true}
+                    .isNextUpHighlight=${this._config.media_type === 'next_up' && item.id === this._mostRecentNextUpItemId}
+                    @jellyha-action=${this._handleItemAction}
+                ></jellyha-media-item>
+              `)}
+            </div>
+          ` : nothing}
+        </div>
+        ${enablePagination && totalPages > 1
+        ? this._renderPagination(totalPages)
+        : nothing}
       </div>
     `;
   }

@@ -113,7 +113,7 @@ export interface PlayTarget {
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     entity: string;
     title?: string;
-    layout?: 'carousel' | 'grid' | 'list';
+    layout?: 'carousel' | 'grid' | 'list' | 'featured';
     media_type?: 'movies' | 'series' | 'next_up' | 'both';
     tv_content?: 'series' | 'episodes';
     items_per_page?: number;

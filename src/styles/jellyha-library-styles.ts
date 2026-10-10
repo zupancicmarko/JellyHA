@@ -393,6 +393,72 @@ export const cardStyles = css`
     padding-bottom: 8px;
   }
 
+  /* Featured Layout - first item large, the rest as compact rows beside it */
+  .featured-wrapper {
+    position: relative;
+    touch-action: pan-y;
+  }
+
+  .featured {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 8px 16px 16px 16px;
+  }
+
+  .featured-main {
+    flex: 0 0 var(--jf-featured-width, 45%);
+    max-width: var(--jf-featured-max-width, 200px);
+    min-width: 0;
+  }
+
+  .featured.single .featured-main {
+    margin: 0 auto;
+  }
+
+  .featured-side {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .media-item.featured .poster-container {
+    width: 100%;
+  }
+
+  .media-item.featured .media-info-below,
+  .media-item.featured .media-info-above {
+    max-width: 100%;
+  }
+
+  .media-item.list-item.compact {
+    gap: 12px;
+  }
+
+  .media-item.list-item.compact .poster-container {
+    width: var(--jf-featured-side-poster-width, 64px) !important;
+  }
+
+  .media-item.list-item.compact .list-info {
+    gap: 4px;
+    padding-top: 2px;
+  }
+
+  .media-item.list-item.compact .list-title {
+    font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .media-item.list-item.compact .list-genres,
+  .media-item.list-item.compact .list-description {
+    display: none;
+  }
+
   .media-item.list-item {
     flex-direction: row;
     align-items: flex-start;

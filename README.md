@@ -36,7 +36,7 @@ Jellyfin for Home Assistant
 - 🎮 Per-user media players with transport and volume controls
 - 📺 Dedicated per-device media players with custom Jellyfin nicknames
 - 🌈 Real-time Dynamic Range detection: Reporting of `SDR`, `HDR10`, `HDR10+`, `Dolby Vision`, and `HLG`
-- 🎨 Three Library Card layouts: Carousel, Grid, List
+- 🎨 Four Library Card layouts: Carousel, Grid, List, Featured
 - 🔍 Built-in Search Bar with Title and Genre filtering
 - 🤖 Advanced automation triggers via custom sensors & services
 - 🌍 8 languages: English, German, French, Spanish, Italian, Dutch, Slovenian, Russian
