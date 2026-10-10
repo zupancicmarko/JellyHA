@@ -1,7 +1,7 @@
 /**
  * Helper utilities for Power button and Volume controls in JellyHA
  */
-import { HomeAssistant, JellyHANowPlayingCardConfig } from './types';
+import { HomeAssistant, JellyHANowPlayingCardConfig, JellyHALibraryCardConfig, MediaItem } from './types';
 
 export interface PowerStateInfo {
     isAvailable: boolean;
@@ -345,4 +345,117 @@ export function resolveInstanceSensorBase(entityId: string): string {
     }
     return '';
 }
+
+export interface ActivePlayerInfo {
+    entityId: string;
+    state: string;
+    friendlyName?: string;
+}
+
+/**
+ * Resolves the media player entity actively playing or paused for a given library media item.
+ * Evaluates default_cast_device, default_client_device, and discovered active JellyHA session players.
+ */
+export function findActiveMediaItemPlayer(
+    item: MediaItem,
+    hass?: HomeAssistant,
+    config?: JellyHALibraryCardConfig
+): ActivePlayerInfo | null {
+    if (!item || !hass?.states) return null;
+
+    // 1. Gather candidate entity IDs in priority order
+    const candidateIds: string[] = [];
+
+    if (config?.default_cast_device && !candidateIds.includes(config.default_cast_device)) {
+        candidateIds.push(config.default_cast_device);
+    }
+    if (config?.default_client_device && !candidateIds.includes(config.default_client_device)) {
+        candidateIds.push(config.default_client_device);
+    }
+
+    // Include discovered active JellyHA media players (e.g. device players, user players)
+    for (const entityId of Object.keys(hass.states)) {
+        if (
+            entityId.startsWith('media_player.jellyha_') &&
+            !entityId.includes('_library_browser') &&
+            !entityId.endsWith('_browser') &&
+            !candidateIds.includes(entityId)
+        ) {
+            candidateIds.push(entityId);
+        }
+    }
+
+    // 2. Evaluate candidates for item match
+    let bestMatch: ActivePlayerInfo | null = null;
+
+    for (const entityId of candidateIds) {
+        const player = hass.states[entityId];
+        if (!player) continue;
+
+        const state = player.state;
+        if (state !== 'playing' && state !== 'paused' && state !== 'buffering') {
+            continue;
+        }
+
+        const playingTitle = player.attributes?.media_title as string | undefined;
+        const playingSeries = player.attributes?.media_series_title as string | undefined;
+
+        const isMatch = Boolean(
+            (item.name && (playingTitle === item.name || playingSeries === item.name)) ||
+            (item.series_name && (playingSeries === item.series_name || playingTitle === item.series_name)) ||
+            (item.type === 'Series' && (playingSeries === item.name || playingTitle === item.name))
+        );
+
+        if (isMatch) {
+            const playerInfo: ActivePlayerInfo = {
+                entityId,
+                state,
+                friendlyName: (player.attributes?.friendly_name as string) || entityId,
+            };
+
+            // If actively playing, return immediately as highest priority match
+            if (state === 'playing') {
+                return playerInfo;
+            }
+
+            // Otherwise hold as candidate (e.g. paused/buffering) unless a playing one is found
+            if (!bestMatch) {
+                bestMatch = playerInfo;
+            }
+        }
+    }
+
+    return bestMatch;
+}
+
+/**
+ * Returns all candidate media player entities that should be monitored for state changes.
+ */
+export function getLibraryWatchedPlayerEntities(
+    hass?: HomeAssistant,
+    config?: JellyHALibraryCardConfig
+): string[] {
+    const list: string[] = [];
+    if (config?.default_cast_device) list.push(config.default_cast_device);
+    if (config?.default_client_device && !list.includes(config.default_client_device)) {
+        list.push(config.default_client_device);
+    }
+    if (hass?.states) {
+        for (const entityId of Object.keys(hass.states)) {
+            if (
+                entityId.startsWith('media_player.jellyha_') &&
+                !entityId.includes('_library_browser') &&
+                !entityId.endsWith('_browser') &&
+                !list.includes(entityId)
+            ) {
+                const state = hass.states[entityId]?.state;
+                if (state === 'playing' || state === 'paused' || state === 'buffering') {
+                    list.push(entityId);
+                }
+            }
+        }
+    }
+    return list;
+}
+
 
