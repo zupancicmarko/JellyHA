@@ -104,6 +104,17 @@ export class JellyHALibraryEditor extends LitElement {
 
     const lang = this.hass.locale?.language || this.hass.language;
 
+    // Filter available library entities
+    const librarySensors = Object.keys(this.hass.states || {}).filter(
+      (entity) =>
+        entity.startsWith('sensor.') &&
+        (entity.endsWith('_library') || entity === 'sensor.jellyha_library') &&
+        (entity.includes('jellyha') || this.hass.states[entity]?.attributes?.integration === 'jellyha')
+    );
+    if (this._config.entity && !librarySensors.includes(this._config.entity)) {
+      librarySensors.unshift(this._config.entity);
+    }
+
     // Determine label for columns/rows slider
     const isHorizontalGrid = this._config.layout === 'grid' &&
       this._config.enable_pagination === false &&
@@ -115,7 +126,12 @@ export class JellyHALibraryEditor extends LitElement {
         <div class="form-row">
           <ha-selector
             .hass=${this.hass}
-            .selector=${{ entity: { domain: 'sensor' } }}
+            .selector=${{
+              entity: {
+                domain: 'sensor',
+                ...(librarySensors.length > 0 ? { include_entities: librarySensors } : {}),
+              },
+            }}
             .value=${this._config.entity}
             label="${localize(lang, 'editor.entity')}"
             @value-changed=${this._entityChanged}

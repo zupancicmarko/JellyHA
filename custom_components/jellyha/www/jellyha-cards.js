@@ -5818,13 +5818,22 @@ let me = class extends W {
   render() {
     if (!this.hass || !this._config)
       return d``;
-    const e = this._config.click_action || "more-info", t = this._config.hold_action || "jellyfin", i = this._config.double_tap_action || "none", a = e === "cast" || t === "cast" || i === "cast", s = e === "play-client" || t === "play-client" || i === "play-client", o = this.hass.locale?.language || this.hass.language, n = this._config.layout === "grid" && this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0 ? l(o, "editor.rows") : l(o, "editor.columns");
+    const e = this._config.click_action || "more-info", t = this._config.hold_action || "jellyfin", i = this._config.double_tap_action || "none", a = e === "cast" || t === "cast" || i === "cast", s = e === "play-client" || t === "play-client" || i === "play-client", o = this.hass.locale?.language || this.hass.language, r = Object.keys(this.hass.states || {}).filter(
+      (h) => h.startsWith("sensor.") && (h.endsWith("_library") || h === "sensor.jellyha_library") && (h.includes("jellyha") || this.hass.states[h]?.attributes?.integration === "jellyha")
+    );
+    this._config.entity && !r.includes(this._config.entity) && r.unshift(this._config.entity);
+    const c = this._config.layout === "grid" && this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0 ? l(o, "editor.rows") : l(o, "editor.columns");
     return d`
       <div class="card-config">
         <div class="form-row">
           <ha-selector
             .hass=${this.hass}
-            .selector=${{ entity: { domain: "sensor" } }}
+            .selector=${{
+      entity: {
+        domain: "sensor",
+        ...r.length > 0 ? { include_entities: r } : {}
+      }
+    }}
             .value=${this._config.entity}
             label="${l(o, "editor.entity")}"
             @value-changed=${this._entityChanged}
@@ -5958,8 +5967,8 @@ let me = class extends W {
       }
     }}
                   .value=${this._config.columns || 1}
-                  .label=${`${n}: ${(this._config.columns || 1) === 1 ? l(o, "editor.auto") : this._config.columns}`}
-                  label="${`${n}: ${(this._config.columns || 1) === 1 ? l(o, "editor.auto") : this._config.columns}`}"
+                  .label=${`${c}: ${(this._config.columns || 1) === 1 ? l(o, "editor.auto") : this._config.columns}`}
+                  label="${`${c}: ${(this._config.columns || 1) === 1 ? l(o, "editor.auto") : this._config.columns}`}"
                   @value-changed=${this._columnsChanged}
                 ></ha-selector>
               </div>
