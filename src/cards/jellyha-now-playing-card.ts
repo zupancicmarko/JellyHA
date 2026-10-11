@@ -693,7 +693,7 @@ export class JellyHANowPlayingCard extends LitElement {
             : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisodeWithPrefix ? epPrefix : (localize(lang, 'episode') || 'Episode')));
 
         return html`
-            <ha-card class="jellyha-now-playing idle-showcase-card">
+            <ha-card class="jellyha-now-playing has-background idle-showcase-card">
                 <div class="idle-backdrop-container">
                     <img class="idle-backdrop-img" src="${currentBackdrop}" alt="${currentItem.name}" />
                     ${prevBackdrop ? html`
@@ -723,7 +723,7 @@ export class JellyHANowPlayingCard extends LitElement {
                             <span class="subtitle">${subtitle}</span>
                         </div>
                     ` : nothing}
-                    <div class="idle-meta-row">
+                    <div class="meta-line idle-meta-row">
                         ${isInlineBadge ? html`
                             <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
                             ${episodeBadgeText ? html`
@@ -3867,11 +3867,12 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             background: linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.35) 0%,
                 rgba(0, 0, 0, 0) 25%,
-                rgba(0, 0, 0, 0.05) 45%,
-                rgba(0, 0, 0, 0.6) 70%,
-                rgba(0, 0, 0, 0.94) 100%
+                rgba(0, 0, 0, 0) 55%,
+                rgba(0, 0, 0, 0.22) 72%,
+                rgba(0, 0, 0, 0.55) 88%,
+                rgba(0, 0, 0, 0.82) 100%
             );
             pointer-events: none;
             z-index: 3;
@@ -3894,8 +3895,8 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 1.35rem;
             font-weight: 700;
             line-height: 1.2;
-            color: #ffffff;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -3908,8 +3909,8 @@ export class JellyHANowPlayingCard extends LitElement {
             flex-wrap: wrap;
             gap: 6px 8px;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             margin: 4px 0 7px 0 !important;
             line-height: 1;
         }
@@ -3921,12 +3922,14 @@ export class JellyHANowPlayingCard extends LitElement {
             line-height: 1;
             font-size: 0.85rem;
             font-weight: 500;
+            color: #ffffff;
             transform: translateY(1px);
         }
 
         .idle-dot {
-            opacity: 0.5;
+            opacity: 0.6;
             font-size: 0.72rem;
+            color: #ffffff;
             display: inline-flex;
             align-items: center;
             height: 22px;
@@ -3974,15 +3977,17 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             justify-content: center;
             background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             height: 22px;
             padding: 2px 7px 0 7px !important;
             border-radius: 4px;
-            font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.80rem;
+            color: #ffffff;
+            font-weight: 500;
             line-height: 1 !important;
             box-sizing: border-box;
             flex-shrink: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
         }
 
         .idle-overview {
@@ -4072,6 +4077,8 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         .idle-card-mode .title {
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             margin-top: 4px;
             margin-bottom: 0;
             line-height: 1.25;

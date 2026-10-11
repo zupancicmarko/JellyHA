@@ -9519,7 +9519,7 @@ let C = class extends q {
     v ? (D = e.name || e.series_name || "", M = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (D = e.name || "", M = this._config.show_subtitle !== !1 && e.tagline || "");
     const H = this._idleItems.findIndex((E) => b ? E.type === "Movie" : v ? E.type === "Episode" : E.type === "Series" || E.type !== "Movie" && E.type !== "Episode") === this._currentIdleIndex, N = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && H, O = v && !!T, I = N && O ? T : null, G = b ? "movie" : v ? "episode" : "series", F = N ? b ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : v ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : b ? d(i, "movie") || "Movie" : O ? T : d(i, "episode") || "Episode";
     return l`
-            <ha-card class="jellyha-now-playing idle-showcase-card">
+            <ha-card class="jellyha-now-playing has-background idle-showcase-card">
                 <div class="idle-backdrop-container">
                     <img class="idle-backdrop-img" src="${a}" alt="${e.name}" />
                     ${s ? l`
@@ -9549,7 +9549,7 @@ let C = class extends q {
                             <span class="subtitle">${M}</span>
                         </div>
                     ` : p}
-                    <div class="idle-meta-row">
+                    <div class="meta-line idle-meta-row">
                         ${g ? l`
                             <span class="media-type-badge inline-badge ${N ? "latest-badge" : ""} ${G}">${F}</span>
                             ${I ? l`
@@ -12053,11 +12053,12 @@ C.styles = Se`
             height: 100%;
             background: linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.35) 0%,
                 rgba(0, 0, 0, 0) 25%,
-                rgba(0, 0, 0, 0.05) 45%,
-                rgba(0, 0, 0, 0.6) 70%,
-                rgba(0, 0, 0, 0.94) 100%
+                rgba(0, 0, 0, 0) 55%,
+                rgba(0, 0, 0, 0.22) 72%,
+                rgba(0, 0, 0, 0.55) 88%,
+                rgba(0, 0, 0, 0.82) 100%
             );
             pointer-events: none;
             z-index: 3;
@@ -12080,8 +12081,8 @@ C.styles = Se`
             font-size: 1.35rem;
             font-weight: 700;
             line-height: 1.2;
-            color: #ffffff;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -12094,8 +12095,8 @@ C.styles = Se`
             flex-wrap: wrap;
             gap: 6px 8px;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             margin: 4px 0 7px 0 !important;
             line-height: 1;
         }
@@ -12107,12 +12108,14 @@ C.styles = Se`
             line-height: 1;
             font-size: 0.85rem;
             font-weight: 500;
+            color: #ffffff;
             transform: translateY(1px);
         }
 
         .idle-dot {
-            opacity: 0.5;
+            opacity: 0.6;
             font-size: 0.72rem;
+            color: #ffffff;
             display: inline-flex;
             align-items: center;
             height: 22px;
@@ -12160,15 +12163,17 @@ C.styles = Se`
             align-items: center;
             justify-content: center;
             background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             height: 22px;
             padding: 2px 7px 0 7px !important;
             border-radius: 4px;
-            font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.80rem;
+            color: #ffffff;
+            font-weight: 500;
             line-height: 1 !important;
             box-sizing: border-box;
             flex-shrink: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
         }
 
         .idle-overview {
@@ -12258,6 +12263,8 @@ C.styles = Se`
         }
 
         .idle-card-mode .title {
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             margin-top: 4px;
             margin-bottom: 0;
             line-height: 1.25;
