@@ -1894,12 +1894,6 @@ export class JellyHAItemDetailsModal extends LitElement {
                 this.closeDialog();
             } catch (err: any) {
                 console.error('Failed to play on Jellyfin client', err);
-                const message = err?.message || `Failed to play on Jellyfin client: ${err}`;
-                this.dispatchEvent(new CustomEvent('hass-notification', {
-                    detail: { message },
-                    bubbles: true,
-                    composed: true
-                }));
             }
         } else if (target.type === 'script') {
             if (!target.service) {
