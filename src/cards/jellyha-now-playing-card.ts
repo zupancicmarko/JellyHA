@@ -665,33 +665,13 @@ export class JellyHANowPlayingCard extends LitElement {
         let subtitle = '';
 
         if (isEpisode) {
-            if (currentItem.series_name) {
-                displayTitle = currentItem.series_name;
-                const epName = currentItem.name && currentItem.name !== currentItem.series_name ? currentItem.name : '';
-                if (epPrefix && epName) {
-                    subtitle = `${epPrefix} · ${epName}`;
-                } else if (epPrefix) {
-                    subtitle = epPrefix;
-                } else {
-                    subtitle = epName || currentItem.tagline || '';
-                }
-            } else {
-                displayTitle = currentItem.name || '';
-                subtitle = epPrefix ? (currentItem.tagline ? `${epPrefix} · ${currentItem.tagline}` : epPrefix) : (currentItem.tagline || '');
-            }
+            displayTitle = currentItem.name || currentItem.series_name || '';
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (currentItem.series_name || currentItem.tagline || '') : '';
         } else {
             displayTitle = currentItem.name || '';
-            subtitle = currentItem.tagline || '';
-        }
-
-        // Show subtitle setting check
-        if (this._config.show_subtitle === false) {
-            subtitle = '';
-            if (showBadge && isInlineBadge && isEpisodeItem && epPrefix) {
-                if (!displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
-                    displayTitle = `${epPrefix} · ${displayTitle}`;
-                }
-            }
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (currentItem.tagline || '') : '';
         }
 
         const isFirstOfItsType = this._idleItems.findIndex(it => {
@@ -705,10 +685,12 @@ export class JellyHANowPlayingCard extends LitElement {
                          this._config.idle_content_source === 'latest_both' ||
                          (this._config.idle_content_source === 'recent' && isFirstOfItsType);
 
+        const isEpisodeWithPrefix = isEpisode && !!epPrefix;
+        const episodeBadgeText = (isLatest && isEpisodeWithPrefix) ? epPrefix : null;
         const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
         const badgeText = isLatest
             ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
-            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? localize(lang, 'episode') || 'Episode' : localize(lang, 'series') || 'Series'));
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisodeWithPrefix ? epPrefix : (localize(lang, 'episode') || 'Episode')));
 
         return html`
             <ha-card class="jellyha-now-playing idle-showcase-card">
@@ -723,6 +705,9 @@ export class JellyHANowPlayingCard extends LitElement {
                 <div class="idle-backdrop-top-actions">
                     ${isTopBadge ? html`
                         <span class="media-type-badge idle-backdrop-top-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                        ${episodeBadgeText ? html`
+                            <span class="media-type-badge idle-backdrop-top-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                        ` : nothing}
                     ` : nothing}
                     ${this._renderPowerButton()}
                 </div>
@@ -741,6 +726,9 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="idle-meta-row">
                         ${isInlineBadge ? html`
                             <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                            ${episodeBadgeText ? html`
+                                <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                            ` : nothing}
                             <span class="idle-dot">•</span>
                         ` : nothing}
                         ${this._config.show_year !== false && currentItem.year ? html`<span class="idle-meta-text">${currentItem.year}</span>` : nothing}
@@ -821,10 +809,12 @@ export class JellyHANowPlayingCard extends LitElement {
                          this._config.idle_content_source === 'latest_both' ||
                          (this._config.idle_content_source === 'recent' && isFirstOfItsType);
 
+        const isEpisodeWithPrefix = isEpisode && !!epPrefix;
+        const episodeBadgeText = (isLatest && isEpisodeWithPrefix) ? epPrefix : null;
         const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
         const badgeText = isLatest
             ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
-            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? (epPrefix || localize(lang, 'episode') || 'Episode') : localize(lang, 'series') || 'Series'));
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisodeWithPrefix ? epPrefix : (localize(lang, 'episode') || 'Episode')));
 
         return html`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
@@ -846,7 +836,12 @@ export class JellyHANowPlayingCard extends LitElement {
                                 <img class="idle-poster-img prev-poster ${this._idleFadeOut ? 'fade-out' : ''}" src="${prevPoster}" alt="" />
                             ` : nothing}
                             ${showBadge && badgeStyle === 'poster' ? html`
-                                <span class="poster-badge media-type-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                <div class="poster-badge-group">
+                                    <span class="poster-badge media-type-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                    ${episodeBadgeText ? html`
+                                        <span class="poster-badge media-type-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                                    ` : nothing}
+                                </div>
                             ` : nothing}
                         </div>
 
@@ -859,6 +854,9 @@ export class JellyHANowPlayingCard extends LitElement {
                                     <div class="header-actions">
                                         ${showBadge && badgeStyle === 'header' ? html`
                                             <span class="media-type-badge header-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                            ${episodeBadgeText ? html`
+                                                <span class="media-type-badge header-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                                            ` : nothing}
                                         ` : nothing}
                                         ${this._renderPowerButton()}
                                     </div>
@@ -871,6 +869,9 @@ export class JellyHANowPlayingCard extends LitElement {
                                 <div class="meta-line idle-meta-row">
                                     ${showBadge && badgeStyle === 'inline' ? html`
                                         <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                        ${episodeBadgeText ? html`
+                                            <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                                        ` : nothing}
                                         <span class="idle-dot">•</span>
                                     ` : nothing}
                                     ${this._config.show_year !== false && item.year ? html`<span class="idle-meta-text">${item.year}</span>` : nothing}
@@ -2297,6 +2298,20 @@ export class JellyHANowPlayingCard extends LitElement {
             pointer-events: none;
             white-space: nowrap;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        }
+        .poster-badge-group {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+            max-width: calc(100% - 12px);
+        }
+        .poster-badge-group .poster-badge {
+            position: static !important;
         }
         .media-type-badge {
             top: 6px;

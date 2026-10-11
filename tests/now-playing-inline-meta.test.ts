@@ -177,4 +177,76 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
         // Subtitle should NOT contain "S01E06 · Bad Optics"
         expect(templateStr).not.toContain('S01E06 · Bad Optics');
     });
+
+    it('presents episode title as title and series name as subtitle in idle backdrop (fanart) mode matching active playback', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            idle_backdrop_cycle: true,
+            idle_display_mode: 'backdrop',
+            idle_content_source: 'latest_episode',
+        } as JellyHANowPlayingCardConfig);
+
+        const idleEpisode = {
+            id: 'ep_1',
+            name: 'Bad Optics',
+            series_name: 'Lanterns',
+            type: 'Episode',
+            season: 1,
+            episode: 6,
+            year: 2026,
+            runtime_minutes: 53,
+            community_rating: 7.4,
+            genres: ['Action', 'Adventure', 'Crime'],
+            poster_url: '/api/lanterns.jpg',
+            backdrop_url: '/api/lanterns_bg.jpg',
+        };
+
+        const template = (card as any)._renderIdleBackdropMode(idleEpisode, null, 'en');
+        expect(template).toBeDefined();
+
+        const templateStr = JSON.stringify(template);
+        // Title should be episode name "Bad Optics", subtitle should be series name "Lanterns"
+        expect(templateStr).toContain('Bad Optics');
+        expect(templateStr).toContain('Lanterns');
+        expect(templateStr).not.toContain('S01E06 · Bad Optics');
+
+        // When latest, both "LATEST EPISODE" and "S01E06" badges should be rendered side-by-side
+        expect(templateStr).toContain('LATEST EPISODE');
+        expect(templateStr).toContain('S01E06');
+    });
+
+    it('shows SxxExx badge instead of generic EPISODE when episode is not latest', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            idle_backdrop_cycle: true,
+            idle_display_mode: 'backdrop',
+            idle_content_source: 'random',
+        } as JellyHANowPlayingCardConfig);
+
+        const idleEpisode = {
+            id: 'ep_1',
+            name: 'Bad Optics',
+            series_name: 'Lanterns',
+            type: 'Episode',
+            season: 1,
+            episode: 6,
+            year: 2026,
+            runtime_minutes: 53,
+            community_rating: 7.4,
+            genres: ['Action', 'Adventure', 'Crime'],
+            poster_url: '/api/lanterns.jpg',
+            backdrop_url: '/api/lanterns_bg.jpg',
+        };
+
+        const template = (card as any)._renderIdleBackdropMode(idleEpisode, null, 'en');
+        const templateStr = JSON.stringify(template);
+
+        // When not latest, should display S01E06 as the badge and NOT "LATEST EPISODE" or generic "Episode"
+        expect(templateStr).toContain('S01E06');
+        expect(templateStr).not.toContain('LATEST EPISODE');
+    });
 });
