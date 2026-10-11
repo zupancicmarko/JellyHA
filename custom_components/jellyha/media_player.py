@@ -743,6 +743,7 @@ class JellyHABasePlaybackMediaPlayer(
             "device_name": session.get("DeviceName") if session else None,
             "client": session.get("Client") if session else None,
             "item_id": None,
+            "series_id": None,
             "title": None,
             "progress_percent": 0,
             "position_ticks": 0,
@@ -807,6 +808,7 @@ class JellyHABasePlaybackMediaPlayer(
             attrs["season"] = item.get("ParentIndexNumber")
             attrs["episode"] = item.get("IndexNumber")
             attrs["series_image_url"] = session.get("jellyha_series_poster_url")
+            attrs["series_id"] = item.get("SeriesId")
         elif item_type == "Audio":
             album_artist = item.get("AlbumArtist")
             artists = item.get("Artists", [])

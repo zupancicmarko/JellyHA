@@ -352,6 +352,22 @@ export interface ActivePlayerInfo {
     friendlyName?: string;
 }
 
+function normalizeItemId(id: unknown): string {
+    return id ? String(id).replace(/-/g, '').toLowerCase() : '';
+}
+
+function titlesMatch(a?: string, b?: string): boolean {
+    if (!a || !b) return false;
+    return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+function titleContains(container?: string, target?: string): boolean {
+    if (!container || !target) return false;
+    const c = container.trim().toLowerCase();
+    const t = target.trim().toLowerCase();
+    return c === t || c.endsWith(` - ${t}`) || c.endsWith(`: ${t}`) || c.includes(` - ${t}`);
+}
+
 /**
  * Resolves the media player entity actively playing or paused for a given library media item.
  * Evaluates default_cast_device, default_client_device, and discovered active JellyHA session players.
@@ -387,6 +403,13 @@ export function findActiveMediaItemPlayer(
 
     // 2. Evaluate candidates for item match
     let bestMatch: ActivePlayerInfo | null = null;
+    const cleanItemId = normalizeItemId(item.id);
+    const itemType = (item.type || '').toLowerCase();
+    const isEpisode =
+        itemType === 'episode' ||
+        Boolean(item.series_name && item.name && item.series_name !== item.name && itemType !== 'series');
+    const isSeries = itemType === 'series';
+    const isSeason = itemType === 'season';
 
     for (const entityId of candidateIds) {
         const player = hass.states[entityId];
@@ -397,14 +420,85 @@ export function findActiveMediaItemPlayer(
             continue;
         }
 
-        const playingTitle = player.attributes?.media_title as string | undefined;
-        const playingSeries = player.attributes?.media_series_title as string | undefined;
+        const playingTitle = (player.attributes?.media_title || player.attributes?.title) as string | undefined;
+        const playingSeries = (player.attributes?.media_series_title || player.attributes?.series_title) as string | undefined;
+        const playingId = (player.attributes?.item_id || player.attributes?.media_content_id) as string | undefined;
+        const playingSeriesId = (player.attributes?.series_id || player.attributes?.media_series_id) as string | undefined;
+        const playingSeason = player.attributes?.media_season ?? player.attributes?.season;
+        const playingEpisode = player.attributes?.media_episode ?? player.attributes?.episode;
 
-        const isMatch = Boolean(
-            (item.name && (playingTitle === item.name || playingSeries === item.name)) ||
-            (item.series_name && (playingSeries === item.series_name || playingTitle === item.series_name)) ||
-            (item.type === 'Series' && (playingSeries === item.name || playingTitle === item.name))
-        );
+        const cleanPlayingId = normalizeItemId(playingId);
+        const cleanPlayingSeriesId = normalizeItemId(playingSeriesId);
+
+        let isMatch = false;
+
+        // 1. Direct item ID match (exact episode, movie, or song match)
+        if (cleanPlayingId && cleanItemId && cleanPlayingId === cleanItemId) {
+            isMatch = true;
+        }
+        // 2. Episode item matching
+        else if (isEpisode) {
+            // If the player reported an item ID and it does not match this episode's ID,
+            // then a different item is actively playing on this player.
+            if (cleanPlayingId && cleanItemId && cleanPlayingId !== cleanItemId) {
+                isMatch = false;
+            } else {
+                const seriesMatches = !item.series_name || !playingSeries || titlesMatch(item.series_name, playingSeries);
+
+                const titleMatches = Boolean(
+                    item.name && (titlesMatch(playingTitle, item.name) || titleContains(playingTitle, item.name))
+                );
+
+                const numbersMatch = Boolean(
+                    item.season != null && item.episode != null &&
+                    playingSeason != null && playingEpisode != null &&
+                    Number(item.season) === Number(playingSeason) &&
+                    Number(item.episode) === Number(playingEpisode)
+                );
+
+                const numbersConflict = Boolean(
+                    (item.season != null && playingSeason != null && Number(item.season) !== Number(playingSeason)) ||
+                    (item.episode != null && playingEpisode != null && Number(item.episode) !== Number(playingEpisode))
+                );
+
+                if (!numbersConflict && seriesMatches && (titleMatches || numbersMatch)) {
+                    isMatch = true;
+                }
+            }
+        }
+        // 3. Series item matching (TV Show poster representing the show)
+        else if (isSeries) {
+            const seriesIdMatches = Boolean(
+                (cleanPlayingSeriesId && cleanItemId && cleanPlayingSeriesId === cleanItemId) ||
+                (cleanPlayingId && cleanItemId && cleanPlayingId === cleanItemId)
+            );
+            const seriesNameMatches = Boolean(
+                item.name && (titlesMatch(playingSeries, item.name) || titlesMatch(playingTitle, item.name))
+            );
+            if (seriesIdMatches || seriesNameMatches) {
+                isMatch = true;
+            }
+        }
+        // 4. Season item matching
+        else if (isSeason) {
+            const seriesMatches = !item.series_name || !playingSeries || titlesMatch(item.series_name, playingSeries);
+            const seasonMatches = Boolean(
+                item.season != null && playingSeason != null && Number(item.season) === Number(playingSeason)
+            );
+            const titleMatches = Boolean(item.name && titlesMatch(playingTitle, item.name));
+            if (seriesMatches && (seasonMatches || titleMatches)) {
+                isMatch = true;
+            }
+        }
+        // 5. Generic items (Movies, Music tracks, etc.)
+        else {
+            if (item.name && (playingTitle || playingSeries)) {
+                isMatch = Boolean(
+                    (playingTitle && (titlesMatch(playingTitle, item.name) || titleContains(playingTitle, item.name))) ||
+                    (playingSeries && titlesMatch(playingSeries, item.name))
+                );
+            }
+        }
 
         if (isMatch) {
             const playerInfo: ActivePlayerInfo = {

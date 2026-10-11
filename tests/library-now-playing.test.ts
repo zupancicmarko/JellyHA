@@ -16,6 +16,18 @@ describe('Library Card Multi-Device Now Playing Detection', () => {
         series_name: 'Lanterns',
         type: 'Episode',
         year: 2026,
+        season: 1,
+        episode: 6,
+    };
+
+    const episode2Item: MediaItem = {
+        id: 'episode-2',
+        name: "The Jordan Boys' Legacy",
+        series_name: 'Lanterns',
+        type: 'Episode',
+        year: 2026,
+        season: 1,
+        episode: 5,
     };
 
     const seriesItem: MediaItem = {
@@ -227,6 +239,103 @@ describe('Library Card Multi-Device Now Playing Detection', () => {
         };
 
         expect(findActiveMediaItemPlayer(movieItem, mockHass, config)).toBeNull();
+    });
+
+    it('matches only the playing episode and does not match other episodes of the same series', () => {
+        const mockHass = {
+            states: {
+                'media_player.jellyha_device_moonfin': {
+                    entity_id: 'media_player.jellyha_device_moonfin',
+                    state: 'playing',
+                    attributes: {
+                        media_title: 'Bad Optics',
+                        media_series_title: 'Lanterns',
+                        media_season: 1,
+                        media_episode: 6,
+                        item_id: 'episode-1',
+                        friendly_name: 'Moonfin',
+                    },
+                },
+            },
+        } as unknown as HomeAssistant;
+
+        const config: JellyHALibraryCardConfig = {
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            default_client_device: 'media_player.jellyha_device_moonfin',
+        };
+
+        // Playing episode (Bad Optics) matches
+        const result1 = findActiveMediaItemPlayer(episodeItem, mockHass, config);
+        expect(result1).not.toBeNull();
+        expect(result1?.entityId).toBe('media_player.jellyha_device_moonfin');
+        expect(result1?.state).toBe('playing');
+
+        // Other episode of same series (The Jordan Boys' Legacy) must NOT match
+        const result2 = findActiveMediaItemPlayer(episode2Item, mockHass, config);
+        expect(result2).toBeNull();
+    });
+
+    it('does not match another episode of the same series even without item_id on player', () => {
+        const mockHass = {
+            states: {
+                'media_player.jellyha_device_moonfin': {
+                    entity_id: 'media_player.jellyha_device_moonfin',
+                    state: 'playing',
+                    attributes: {
+                        media_title: 'Bad Optics',
+                        media_series_title: 'Lanterns',
+                        friendly_name: 'Moonfin',
+                    },
+                },
+            },
+        } as unknown as HomeAssistant;
+
+        const config: JellyHALibraryCardConfig = {
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            default_client_device: 'media_player.jellyha_device_moonfin',
+        };
+
+        // Only Bad Optics matches by title
+        expect(findActiveMediaItemPlayer(episodeItem, mockHass, config)).not.toBeNull();
+        // The Jordan Boys' Legacy must return null
+        expect(findActiveMediaItemPlayer(episode2Item, mockHass, config)).toBeNull();
+    });
+
+    it('matches episode by season and episode number when player reports numbers', () => {
+        const epWithoutTitle: MediaItem = {
+            id: 'episode-anon-6',
+            name: 'Episode 6',
+            series_name: 'Lanterns',
+            type: 'Episode',
+            season: 1,
+            episode: 6,
+        };
+
+        const mockHass = {
+            states: {
+                'media_player.tv': {
+                    entity_id: 'media_player.tv',
+                    state: 'playing',
+                    attributes: {
+                        media_title: 'Bad Optics',
+                        media_series_title: 'Lanterns',
+                        media_season: 1,
+                        media_episode: 6,
+                    },
+                },
+            },
+        } as unknown as HomeAssistant;
+
+        const config: JellyHALibraryCardConfig = {
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            default_client_device: 'media_player.tv',
+        };
+
+        expect(findActiveMediaItemPlayer(epWithoutTitle, mockHass, config)).not.toBeNull();
+        expect(findActiveMediaItemPlayer(episode2Item, mockHass, config)).toBeNull();
     });
 });
 
