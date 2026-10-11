@@ -270,10 +270,11 @@ export class JellyHANowPlayingCard extends LitElement {
             ? `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`
             : (mediaType === 'movie' ? 'MOVIE' : (mediaType === 'episode' ? 'EPISODE' : (mediaType === 'tvshow' ? 'SERIES' : (attributes.media_type || cachedItem?.type || ''))));
 
-        // Badge placement style (applies to both Movies and TV Shows; inline applies to TV Shows)
+        // Badge placement style
         const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
         const showBadge = this._config.show_media_type_badge !== false && !!badgeText;
         const isInlineBadge = badgeStyle === 'inline';
+        const showInlineBadge = showBadge && isInlineBadge && !!badgeText;
 
         let showPosterBadge = false;
         let showHeaderBadge = false;
@@ -283,16 +284,6 @@ export class JellyHANowPlayingCard extends LitElement {
                 showPosterBadge = true;
             } else if (badgeStyle === 'header') {
                 showHeaderBadge = true;
-            } else if (isInlineBadge) {
-                if (isEpisodeItem) {
-                    const epPrefix = `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`;
-                    if (displayTitle && !displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
-                        displayTitle = `${epPrefix} • ${displayTitle}`;
-                    } else if (!displayTitle) {
-                        displayTitle = epPrefix;
-                    }
-                }
-                // Movies and other media keep clean displayTitle without any prefix
             }
         }
 
@@ -312,7 +303,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
         const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
         const hasMetaLine = isInlineBadge
-            ? !!(yearStr || runtimeStr || ratingStr || genres.length > 0)
+            ? !!(showInlineBadge || yearStr || runtimeStr || ratingStr || genres.length > 0)
             : !!(yearStr || genres.length > 0);
 
         const effectiveUser = attributes.user_name || (this.hass as any)?.user?.name || '';
@@ -391,6 +382,10 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ${this._overflowState < 2 && hasMetaLine ? html`
                                         <div class="meta-line ${isInlineBadge ? 'idle-meta-row' : ''}">
                                             ${isInlineBadge ? html`
+                                                ${showInlineBadge ? html`
+                                                    <span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>
+                                                    ${(yearStr || runtimeStr || ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                                                ` : nothing}
                                                 ${yearStr ? html`<span class="idle-meta-text meta-year">${yearStr}</span>` : nothing}
                                                 ${yearStr && (runtimeStr || ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
                                                 ${runtimeStr ? html`<span class="idle-meta-text meta-runtime">${runtimeStr}</span>` : nothing}

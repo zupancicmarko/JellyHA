@@ -248,7 +248,7 @@ show_background: true
 | `show_user` | boolean | `true` | Display viewer user name |
 | `show_time` | boolean | `false` | Display elapsed and remaining playback time |
 | `show_media_type_badge` | boolean | `true` | Display media type badge (`MOVIE`, `SERIES`, `EPISODE`) |
-| `badge_style` | string | `'poster'` | Media type badge presentation: `'poster'` (default, overlay on artwork), `'header'` (pill in header next to title, keeps poster artwork 100% uncovered), `'inline'` (prefixed to episode title for TV shows, and moves runtime and rating inline into metadata line alongside year and genres), `'none'` (hidden) |
+| `badge_style` | string | `'poster'` | Media type badge presentation: `'poster'` (default, overlay on artwork), `'header'` (pill in header next to title, keeps poster artwork 100% uncovered), `'inline'` (badge displayed inline in metadata row, e.g. `MOVIE` or `S01E01`, along with runtime and rating), `'none'` (hidden) |
 | `show_genres` | boolean | `true` | Display genre tags |
 | `show_ratings` | boolean | `true` | Display community rating score |
 | `show_runtime` | boolean | `true` | Display total runtime |

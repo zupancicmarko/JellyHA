@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.6.0] - 2026-10-07
 
 ### Added
-- **Now Playing Card Inline Runtime & Rating Badges**:
-  - When `badge_style` is set to "Inline with Title" (`'inline'`), Runtime and Community Rating badges are removed from the poster image overlay and relocated directly inline into the metadata line alongside release year and genres (`Year • Runtime • [★ Rating] [Genre]`), matching the Poster Card layout.
+- **Now Playing Card Inline Media Type, Runtime & Rating Badges**:
+  - When `badge_style` is set to "Inline with Metadata" (`'inline'`), Media Type badges (`MOVIE`, `S01E01`, `SERIES`), Runtime, and Community Rating badges are relocated directly inline into the metadata line alongside release year and genres (`[Badge] • Year • Runtime • [★ Rating] [Genre]`), matching the screensaver / idle card layout.
 - **Simultaneous Multi-Device "Now Playing" Overlays on Library Card Posters**:
   - Dynamically resolves active media players on a per-poster basis across `default_cast_device`, `default_client_device` (e.g. Wholphin, Moonfin, Android TV), and active JellyHA hardware players (`media_player.jellyha_*`).
   - Supports multiple posters simultaneously displaying active playback overlays with live status (`playing`, `paused`, `buffering`, `REWINDING`) when different media items play across separate devices at the same time.

@@ -38,7 +38,7 @@ const translations: Record<string, Record<string, string>> = {
         'editor.badge_style': 'Badge Style',
         'editor.badge_style_poster': 'Badge on Poster (Default)',
         'editor.badge_style_header': 'Badge in Header',
-        'editor.badge_style_inline': 'Inline with Title (TV Shows)',
+        'editor.badge_style_inline': 'Inline with Metadata (Movie, S01E01)',
         'editor.badge_style_none': 'Hidden',
         'editor.show_watched_status': 'Show Watched Status',
         'editor.show_date_added': 'Show Date Added',
