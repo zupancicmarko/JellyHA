@@ -2240,7 +2240,7 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             background-size: cover;
             background-position: center;
-            filter: blur(5px) brightness(0.6);
+            filter: blur(5px) brightness(0.8);
             transform: scale(1.02);
             z-index: 0;
             transition: background-image 0.5s ease-in-out;
@@ -2251,7 +2251,7 @@ export class JellyHANowPlayingCard extends LitElement {
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.45) 100%);
             z-index: 1;
         }
         .card-content {
