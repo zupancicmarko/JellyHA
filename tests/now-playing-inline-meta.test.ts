@@ -249,4 +249,34 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
         expect(templateStr).toContain('S01E06');
         expect(templateStr).not.toContain('LATEST EPISODE');
     });
+
+    it('centralized _renderMetaRow returns nothing when all metadata options are empty', () => {
+        const card = new JellyHANowPlayingCard();
+        const res = (card as any)._renderMetaRow({});
+        expect(res).toBeDefined();
+        // Lit 'nothing' symbol
+        expect(typeof res).toBe('symbol');
+    });
+
+    it('centralized _renderMetaRow renders unified metadata pills, text, and dots', () => {
+        const card = new JellyHANowPlayingCard();
+        const res = (card as any)._renderMetaRow({
+            year: 2026,
+            runtime: '1h 32m',
+            rating: '8.5',
+            genres: ['Action', 'Comedy'],
+            isInline: true,
+        });
+
+        const resStr = JSON.stringify(res);
+        expect(resStr).toContain('meta-line');
+        expect(resStr).toContain('idle-meta-row');
+        expect(resStr).toContain('2026');
+        expect(resStr).toContain('1h 32m');
+        expect(resStr).toContain('rating-pill');
+        expect(resStr).toContain('8.5');
+        expect(resStr).toContain('Action');
+        expect(resStr).toContain('Comedy');
+        expect(resStr).toContain('meta-dot');
+    });
 });

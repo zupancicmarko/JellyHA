@@ -379,31 +379,14 @@ export class JellyHANowPlayingCard extends LitElement {
                                         </div>
                                     </div>
                                     ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
-                                    ${this._overflowState < 2 && hasMetaLine ? html`
-                                        <div class="meta-line ${isInlineBadge ? 'idle-meta-row' : ''}">
-                                            ${isInlineBadge ? html`
-                                                ${showInlineBadge ? html`
-                                                    <span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>
-                                                    ${(yearStr || runtimeStr || ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
-                                                ` : nothing}
-                                                ${yearStr ? html`<span class="idle-meta-text meta-year">${yearStr}</span>` : nothing}
-                                                ${yearStr && (runtimeStr || ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
-                                                ${runtimeStr ? html`<span class="idle-meta-text meta-runtime">${runtimeStr}</span>` : nothing}
-                                                ${runtimeStr && (ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
-                                                ${ratingStr ? html`
-                                                    <span class="idle-rating-pill">
-                                                        <ha-icon icon="mdi:star"></ha-icon>
-                                                        <span>${ratingStr}</span>
-                                                    </span>
-                                                ` : nothing}
-                                                ${genres.map((g: string) => html`<span class="genre-pill idle-genre-pill">${g}</span>`)}
-                                            ` : html`
-                                                ${yearStr ? html`<span class="meta-year">${yearStr}</span>` : nothing}
-                                                ${yearStr && genres.length > 0 ? html`<span class="meta-dot">•</span>` : nothing}
-                                                ${genres.map((g: string) => html`<span class="genre-pill">${g}</span>`)}
-                                            `}
-                                        </div>
-                                    ` : nothing}
+                                    ${this._overflowState < 2 ? this._renderMetaRow({
+                                        badge: showInlineBadge ? html`<span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>` : nothing,
+                                        year: yearStr,
+                                        runtime: isInlineBadge ? runtimeStr : undefined,
+                                        rating: isInlineBadge ? ratingStr : undefined,
+                                        genres,
+                                        isInline: isInlineBadge,
+                                    }) : nothing}
                                     ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
                                 </div>
                             </div>
@@ -723,26 +706,19 @@ export class JellyHANowPlayingCard extends LitElement {
                             <span class="subtitle">${subtitle}</span>
                         </div>
                     ` : nothing}
-                    <div class="meta-line idle-meta-row">
-                        ${isInlineBadge ? html`
+                    ${this._renderMetaRow({
+                        badge: isInlineBadge ? html`
                             <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
                             ${episodeBadgeText ? html`
                                 <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
                             ` : nothing}
-                            <span class="idle-dot">•</span>
-                        ` : nothing}
-                        ${this._config.show_year !== false && currentItem.year ? html`<span class="idle-meta-text">${currentItem.year}</span>` : nothing}
-                        ${this._config.show_year !== false && currentItem.year && ((this._config.show_runtime !== false && runtime) || (this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                        ${this._config.show_runtime !== false && runtime ? html`<span class="idle-meta-text">${runtime}</span>` : nothing}
-                        ${this._config.show_runtime !== false && runtime && ((this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                        ${this._config.show_ratings !== false && communityRating ? html`
-                            <span class="idle-rating-pill">
-                                <ha-icon icon="mdi:star"></ha-icon>
-                                <span>${communityRating}</span>
-                            </span>
-                        ` : nothing}
-                        ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
-                    </div>
+                        ` : nothing,
+                        year: this._config.show_year !== false && currentItem.year ? currentItem.year : undefined,
+                        runtime: this._config.show_runtime !== false && runtime ? runtime : undefined,
+                        rating: this._config.show_ratings !== false && communityRating ? communityRating : undefined,
+                        genres,
+                        isInline: true,
+                    })}
                     ${this._config.show_description !== false && currentItem.description ? html`
                         <p class="idle-overview">${currentItem.description}</p>
                     ` : nothing}
@@ -866,26 +842,19 @@ export class JellyHANowPlayingCard extends LitElement {
                                         <span class="subtitle">${subtitle}</span>
                                     </div>
                                 ` : nothing}
-                                <div class="meta-line idle-meta-row">
-                                    ${showBadge && badgeStyle === 'inline' ? html`
+                                ${this._renderMetaRow({
+                                    badge: (showBadge && badgeStyle === 'inline') ? html`
                                         <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
                                         ${episodeBadgeText ? html`
                                             <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
                                         ` : nothing}
-                                        <span class="idle-dot">•</span>
-                                    ` : nothing}
-                                    ${this._config.show_year !== false && item.year ? html`<span class="idle-meta-text">${item.year}</span>` : nothing}
-                                    ${this._config.show_year !== false && item.year && ((this._config.show_runtime !== false && runtime) || (this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                                    ${this._config.show_runtime !== false && runtime ? html`<span class="idle-meta-text">${runtime}</span>` : nothing}
-                                    ${this._config.show_runtime !== false && runtime && ((this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                                    ${this._config.show_ratings !== false && communityRating ? html`
-                                        <span class="idle-rating-pill">
-                                            <ha-icon icon="mdi:star"></ha-icon>
-                                            <span>${communityRating}</span>
-                                        </span>
-                                    ` : nothing}
-                                    ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
-                                </div>
+                                    ` : nothing,
+                                    year: this._config.show_year !== false && item.year ? item.year : undefined,
+                                    runtime: this._config.show_runtime !== false && runtime ? runtime : undefined,
+                                    rating: this._config.show_ratings !== false && communityRating ? communityRating : undefined,
+                                    genres,
+                                    isInline: true,
+                                })}
                                 ${this._config.show_description !== false && item.description ? html`
                                     <div class="idle-card-desc">${item.description}</div>
                                 ` : nothing}
@@ -894,6 +863,55 @@ export class JellyHANowPlayingCard extends LitElement {
                     </div>
                 </div>
             </ha-card>
+        `;
+    }
+
+    private _renderMetaRow(options: {
+        badge?: TemplateResult | typeof nothing;
+        year?: string | number | null;
+        runtime?: string | null;
+        rating?: string | number | null;
+        genres?: string[];
+        isInline?: boolean;
+    }): TemplateResult | typeof nothing {
+        const { badge, year, runtime, rating, genres = [], isInline = true } = options;
+        const yearStr = year ? String(year) : '';
+        const runtimeStr = runtime ? String(runtime) : '';
+        const ratingStr = rating ? String(rating) : '';
+        const hasGenres = genres && genres.length > 0;
+        const hasBadge = badge && badge !== nothing;
+
+        const hasAny = hasBadge || !!yearStr || !!runtimeStr || !!ratingStr || hasGenres;
+        if (!hasAny) {
+            return nothing;
+        }
+
+        const afterBadge = !!yearStr || !!runtimeStr || !!ratingStr || hasGenres;
+        const afterYear = !!runtimeStr || !!ratingStr || hasGenres;
+        const afterRuntime = !!ratingStr || hasGenres;
+
+        return html`
+            <div class="meta-line ${isInline ? 'idle-meta-row' : ''}">
+                ${hasBadge ? html`
+                    ${badge}
+                    ${afterBadge ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                ` : nothing}
+                ${yearStr ? html`
+                    <span class="idle-meta-text meta-text meta-year">${yearStr}</span>
+                    ${afterYear ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                ` : nothing}
+                ${runtimeStr ? html`
+                    <span class="idle-meta-text meta-text meta-runtime">${runtimeStr}</span>
+                    ${afterRuntime ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                ` : nothing}
+                ${ratingStr ? html`
+                    <span class="idle-rating-pill rating-pill">
+                        <ha-icon icon="mdi:star"></ha-icon>
+                        <span>${ratingStr}</span>
+                    </span>
+                ` : nothing}
+                ${hasGenres ? genres.map(g => html`<span class="genre-pill idle-genre-pill">${g}</span>`) : nothing}
+            </div>
         `;
     }
 
@@ -2558,11 +2576,21 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 0.72rem;
             line-height: 1;
         }
-        ha-card:not(.has-background) .idle-meta-row {
+        ha-card:not(.has-background) .idle-meta-row,
+        ha-card:not(.has-background) .meta-line {
             color: var(--secondary-text-color);
             text-shadow: none;
         }
-        ha-card:not(.has-background) .idle-genre-pill {
+        ha-card:not(.has-background) .idle-meta-text,
+        ha-card:not(.has-background) .meta-text {
+            color: var(--secondary-text-color);
+        }
+        ha-card:not(.has-background) .idle-dot,
+        ha-card:not(.has-background) .meta-dot {
+            color: var(--secondary-text-color);
+        }
+        ha-card:not(.has-background) .idle-genre-pill,
+        ha-card:not(.has-background) .genre-pill {
             background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
             border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
             color: var(--secondary-text-color);
@@ -3950,7 +3978,8 @@ export class JellyHANowPlayingCard extends LitElement {
             overflow: hidden;
         }
 
-        .idle-meta-row {
+        .idle-meta-row,
+        .meta-line.idle-meta-row {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
@@ -3962,7 +3991,8 @@ export class JellyHANowPlayingCard extends LitElement {
             line-height: 1;
         }
 
-        .idle-meta-text {
+        .idle-meta-text,
+        .meta-text {
             display: inline-flex;
             align-items: center;
             height: 22px;
@@ -3973,7 +4003,8 @@ export class JellyHANowPlayingCard extends LitElement {
             transform: translateY(1px);
         }
 
-        .idle-dot {
+        .idle-dot,
+        .meta-dot {
             opacity: 0.6;
             font-size: 0.72rem;
             color: #ffffff;
@@ -3984,7 +4015,8 @@ export class JellyHANowPlayingCard extends LitElement {
             transform: translateY(0.5px);
         }
 
-        .idle-rating-pill {
+        .idle-rating-pill,
+        .rating-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -4002,7 +4034,8 @@ export class JellyHANowPlayingCard extends LitElement {
             flex-shrink: 0;
         }
 
-        .idle-rating-pill ha-icon {
+        .idle-rating-pill ha-icon,
+        .rating-pill ha-icon {
             --mdc-icon-size: 12px;
             width: 12px;
             height: 12px;
@@ -4015,14 +4048,16 @@ export class JellyHANowPlayingCard extends LitElement {
             flex-shrink: 0;
         }
 
-        .idle-rating-pill span {
+        .idle-rating-pill span,
+        .rating-pill span {
             display: inline-flex;
             align-items: center;
             line-height: 1;
         }
 
         .idle-genre-pill,
-        .genre-pill.idle-genre-pill {
+        .genre-pill.idle-genre-pill,
+        .genre-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
