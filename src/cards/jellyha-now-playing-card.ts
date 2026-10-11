@@ -1421,9 +1421,11 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         this._powerActivating = true;
+        this.requestUpdate();
         setTimeout(() => {
             this._powerActivating = false;
-        }, 800);
+            this.requestUpdate();
+        }, 200);
         await callPowerAction(this.hass, powerEntity, this._config?.power_state_entity);
     }
 
@@ -2743,7 +2745,8 @@ export class JellyHANowPlayingCard extends LitElement {
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
         }
         .power-btn-hit-area:active .power-btn {
-            transform: scale(0.92) !important;
+            transform: scale(0.94) !important;
+            transition: transform 0.08s ease;
         }
         .power-btn-hit-area:focus-visible .power-btn {
             outline: 2px solid var(--primary-color, #03a9f4) !important;
@@ -2768,15 +2771,29 @@ export class JellyHANowPlayingCard extends LitElement {
             -webkit-backdrop-filter: blur(8px);
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
             padding: 0 !important;
+            margin: 0 !important;
             display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
+            align-items: center !important;
+            justify-content: center !important;
             cursor: pointer;
             outline: none !important;
-            transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            box-sizing: border-box;
+            transition: background 0.15s ease, transform 0.08s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            box-sizing: border-box !important;
             flex-shrink: 0;
             pointer-events: none;
+            transform-origin: center center;
+        }
+        .power-btn ha-icon {
+            --mdc-icon-size: 16px !important;
+            width: 16px !important;
+            height: 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            transform-origin: center center;
         }
         .power-btn:hover {
             background: rgba(255, 255, 255, 0.2) !important;
@@ -2796,24 +2813,33 @@ export class JellyHANowPlayingCard extends LitElement {
         ha-icon-button.power-btn md-ripple {
             display: none !important;
         }
+        ha-icon-button.power-btn::part(button) {
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
         .power-btn:active {
-            transform: scale(0.92) !important;
+            transform: scale(0.94) !important;
+            transition: transform 0.08s ease;
         }
         .power-btn.is-on,
         .jellyha-now-playing.has-background .power-btn.is-on {
-            background: rgba(255, 255, 255, 0.92) !important;
-            border-color: rgba(255, 255, 255, 0.98) !important;
-            color: #1a1a1a !important;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35) !important;
+            background: rgba(255, 255, 255, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.65) !important;
+            color: #111111 !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
         }
         .power-btn.is-on ha-icon {
-            color: #1a1a1a !important;
+            color: #111111 !important;
         }
         .power-btn-hit-area:hover .power-btn.is-on,
         .power-btn.is-on:hover {
-            background: #ffffff !important;
-            border-color: #ffffff !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+            border-color: rgba(255, 255, 255, 0.85) !important;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35) !important;
             color: #000000 !important;
         }
         .power-btn-hit-area:hover .power-btn.is-on ha-icon,
@@ -2836,12 +2862,11 @@ export class JellyHANowPlayingCard extends LitElement {
             color: rgba(255, 255, 255, 0.45) !important;
         }
         .power-btn.activating {
-            animation: powerPulse 0.8s ease-out;
+            animation: powerTap 0.2s ease-out;
         }
-        @keyframes powerPulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-            50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        @keyframes powerTap {
+            0% { transform: scale(0.94); }
+            100% { transform: scale(1); }
         }
 
         /* --- Option 1 Capsule Volume Slider --- */

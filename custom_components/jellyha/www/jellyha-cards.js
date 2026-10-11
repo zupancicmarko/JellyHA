@@ -58,7 +58,7 @@ if (typeof window < "u") {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ae = globalThis, qe = Ae.ShadowRoot && (Ae.ShadyCSS === void 0 || Ae.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ge = Symbol(), ht = /* @__PURE__ */ new WeakMap();
+const Ae = globalThis, Ye = Ae.ShadowRoot && (Ae.ShadyCSS === void 0 || Ae.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ge = Symbol(), ht = /* @__PURE__ */ new WeakMap();
 let It = class {
   constructor(t, i, a) {
     if (this._$cssResult$ = !0, a !== Ge) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -67,7 +67,7 @@ let It = class {
   get styleSheet() {
     let t = this.o;
     const i = this.t;
-    if (qe && t === void 0) {
+    if (Ye && t === void 0) {
       const a = i !== void 0 && i.length === 1;
       a && (t = ht.get(i)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), a && ht.set(i, t));
     }
@@ -85,12 +85,12 @@ const Ft = (e) => new It(typeof e == "string" ? e : e + "", void 0, Ge), Se = (e
   })(s) + e[o + 1], e[0]);
   return new It(i, e, Ge);
 }, Vt = (e, t) => {
-  if (qe) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
+  if (Ye) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of t) {
     const a = document.createElement("style"), s = Ae.litNonce;
     s !== void 0 && a.setAttribute("nonce", s), a.textContent = i.cssText, e.appendChild(a);
   }
-}, pt = qe ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
+}, pt = Ye ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
   let i = "";
   for (const a of t.cssRules) i += a.cssText;
   return Ft(i);
@@ -100,7 +100,7 @@ const Ft = (e) => new It(typeof e == "string" ? e : e + "", void 0, Ge), Se = (e
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Wt, defineProperty: Jt, getOwnPropertyDescriptor: Yt, getOwnPropertyNames: qt, getOwnPropertySymbols: Gt, getPrototypeOf: Xt } = Object, Le = globalThis, _t = Le.trustedTypes, Zt = _t ? _t.emptyScript : "", Kt = Le.reactiveElementPolyfillSupport, be = (e, t) => e, Me = { toAttribute(e, t) {
+const { is: Wt, defineProperty: Jt, getOwnPropertyDescriptor: qt, getOwnPropertyNames: Yt, getOwnPropertySymbols: Gt, getPrototypeOf: Xt } = Object, Le = globalThis, _t = Le.trustedTypes, Zt = _t ? _t.emptyScript : "", Kt = Le.reactiveElementPolyfillSupport, be = (e, t) => e, Me = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
       e = e ? Zt : null;
@@ -144,7 +144,7 @@ let ce = class extends HTMLElement {
     }
   }
   static getPropertyDescriptor(t, i, a) {
-    const { get: s, set: o } = Yt(this.prototype, t) ?? { get() {
+    const { get: s, set: o } = qt(this.prototype, t) ?? { get() {
       return this[i];
     }, set(r) {
       this[i] = r;
@@ -165,7 +165,7 @@ let ce = class extends HTMLElement {
   static finalize() {
     if (this.hasOwnProperty(be("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(be("properties"))) {
-      const i = this.properties, a = [...qt(i), ...Gt(i)];
+      const i = this.properties, a = [...Yt(i), ...Gt(i)];
       for (const s of a) this.createProperty(s, i[s]);
     }
     const t = this[Symbol.metadata];
@@ -548,7 +548,7 @@ const De = (e, t, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const Qe = globalThis;
-class q extends ce {
+class Y extends ce {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -570,9 +570,9 @@ class q extends ce {
     return _e;
   }
 }
-q._$litElement$ = !0, q.finalized = !0, Qe.litElementHydrateSupport?.({ LitElement: q });
+Y._$litElement$ = !0, Y.finalized = !0, Qe.litElementHydrateSupport?.({ LitElement: Y });
 const di = Qe.litElementPolyfillSupport;
-di?.({ LitElement: q });
+di?.({ LitElement: Y });
 (Qe.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -755,7 +755,7 @@ function bi(e, t, i) {
   } else if (o === a || o.startsWith(a) || r.includes(a)) return !0;
   return !1;
 }
-let U = class extends q {
+let U = class extends Y {
   constructor() {
     super(...arguments), this._open = !1, this._loading = !1, this._mimeType = "video/mp4", this._playMethod = "DirectPlay", this._subtitleTracks = [], this._portalContainer = null, this._handleKeyDown = (e) => {
       e.key === "Escape" && this._open && (this.close(), e.stopPropagation());
@@ -3885,7 +3885,7 @@ function Dt(e, t) {
   } catch {
   }
 }
-function Ye(e, t, i, a) {
+function qe(e, t, i, a) {
   const s = t || i;
   if (!s || !e || !e.states || !e.states[s])
     return {
@@ -3937,7 +3937,7 @@ async function xi(e, t, i, a) {
   if (!e || !t || !e.states[t]) return 0;
   e.states[t];
   let s;
-  typeof a == "number" ? s = a : s = Ye(e, t).volumeLevel;
+  typeof a == "number" ? s = a : s = qe(e, t).volumeLevel;
   const o = Math.max(0, Math.min(1, s + i));
   return await Lt(e, t, o), o;
 }
@@ -4042,7 +4042,7 @@ var Ci = Object.defineProperty, Pi = Object.getOwnPropertyDescriptor, P = (e, t,
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && Ci(t, i, s), s;
 };
-let $ = class extends q {
+let $ = class extends Y {
   constructor() {
     super(...arguments), this._playTargets = [], this._showTargetPicker = !1, this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._selectedSeason = "all", this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._rowTouchStartX = 0, this._rowTouchStartY = 0, this._portalContainer = null, this._handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -6025,7 +6025,7 @@ function Ve(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let $e = class extends q {
+let $e = class extends Y {
   constructor() {
     super(...arguments), this._filterCastDevices = (e) => {
       const t = e?.entity_id;
@@ -6996,7 +6996,7 @@ var ji = Object.defineProperty, Ti = Object.getOwnPropertyDescriptor, B = (e, t,
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && ji(t, i, s), s;
 };
-let L = class extends q {
+let L = class extends Y {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
@@ -7451,7 +7451,7 @@ function de(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let j = class extends q {
+let j = class extends Y {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -8500,7 +8500,7 @@ function Ni(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let ke = class extends q {
+let ke = class extends Y {
   setConfig(e) {
     this._config = e;
   }
@@ -9131,7 +9131,7 @@ typeof window < "u" && (window.customCards = window.customCards || [], window.cu
   description: "Display currently playing media from Jellyfin",
   preview: !0
 }));
-let C = class extends q {
+let C = class extends Y {
   constructor() {
     super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._powerActivating = !1, this._isVolumeDragging = !1, this._dragVolumePercent = null, this._optimisticVolume = {}, this._idleItems = [], this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._lastHapticVolumeTick = 0, this._fetchingIdleItems = !1, this._longPressRaf = null, this._longPressConsumed = !1, this._layoutCheckRaf = null, this._optimisticFavorites = {}, this._resolvedImages = {}, this._fetchingImageKey = null, this._resolvedMetadata = {}, this._fetchingMetadataId = null, this._phrases = [];
   }
@@ -9238,7 +9238,7 @@ let C = class extends q {
     y !== this._cachedColorItemId && b && (this._cachedColorItemId = y, this._extractDominantColor(R(b, 80)));
     const w = this._cachedBackdropUrl, S = this._config.show_background !== !1 && w, k = a ? t.state === "paused" : i.is_paused, x = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), T = x === "audio" || x === "music";
     let D = i.title || t.attributes.media_title || r?.name || "";
-    const M = this._config.show_subtitle !== !1, H = i.series_title || t.attributes.media_series_title || r?.series_name || "", N = M && (i.artist_name || t.attributes.media_artist || H || r?.artist_name) || "", O = i.year ?? r?.year, I = this._config.show_year !== !1 && O ? String(O) : "", G = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, F = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, E = Number(G), ae = Number(F), Y = G != null && F != null && !isNaN(E) && !isNaN(ae) && E >= 0 && ae >= 0, ge = (x === "episode" || x === "tvshow") && Y ? `S${String(E).padStart(2, "0")}E${String(ae).padStart(2, "0")}` : x === "movie" ? "MOVIE" : x === "episode" ? "EPISODE" : x === "tvshow" ? "SERIES" : i.media_type || r?.type || "", Pe = this._config.badge_style || this._config.media_type_badge_style || "poster", it = this._config.show_media_type_badge !== !1 && !!ge, le = Pe === "inline", at = it && le && !!ge;
+    const M = this._config.show_subtitle !== !1, H = i.series_title || t.attributes.media_series_title || r?.series_name || "", N = M && (i.artist_name || t.attributes.media_artist || H || r?.artist_name) || "", O = i.year ?? r?.year, I = this._config.show_year !== !1 && O ? String(O) : "", G = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, F = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, E = Number(G), ae = Number(F), q = G != null && F != null && !isNaN(E) && !isNaN(ae) && E >= 0 && ae >= 0, ge = (x === "episode" || x === "tvshow") && q ? `S${String(E).padStart(2, "0")}E${String(ae).padStart(2, "0")}` : x === "movie" ? "MOVIE" : x === "episode" ? "EPISODE" : x === "tvshow" ? "SERIES" : i.media_type || r?.type || "", Pe = this._config.badge_style || this._config.media_type_badge_style || "poster", it = this._config.show_media_type_badge !== !1 && !!ge, le = Pe === "inline", at = it && le && !!ge;
     let ot = !1, st = !1;
     it && Pe !== "none" && (Pe === "poster" ? ot = !0 : Pe === "header" && (st = !0));
     const rt = i.runtime_minutes || (n > 0 ? Math.round(n / 60) : r?.runtime_minutes || 0), nt = x === "audio" && n > 0 ? `${Math.floor(n / 60)}m ${Math.floor(n % 60)}s` : rt > 0 ? ye(rt) : "", X = this._config.show_runtime !== !1 && nt ? nt : "", Oe = i.community_rating ?? r?.community_rating ?? r?.rating, Re = Number(Oe), lt = !isNaN(Re) && Re > 0 ? Re.toFixed(1) : Oe ? String(Oe) : "", Z = this._config.show_ratings !== !1 && lt ? lt : "", dt = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], K = this._config.show_genres !== !1 && dt?.length ? dt.slice(0, 3) : [], Nt = le ? !!(at || I || X || Z || K.length > 0) : !!(I || K.length > 0), Ot = i.user_name || this.hass?.user?.name || "", Ie = this._config.show_user !== !1 ? Ot : "", Rt = i.client || t.attributes.app_name || t.attributes.friendly_name || "", Ut = this._config.show_client !== !1 ? Rt : "", Bt = this._config.show_device_name === !0 && i.device_name || "", Ue = [...new Set([Bt, Ut].filter(Boolean))].join(" · "), Be = v && this._optimisticFavorites[v] !== void 0 ? this._optimisticFavorites[v] : i.is_favorite || r?.is_favorite || !1, ct = 125.66, Ht = ct * (1 - this._longPressProgress), Q = this._supportsRemote(t);
@@ -9582,7 +9582,7 @@ let C = class extends q {
     const S = e.season, k = e.episode, J = Number(S), x = Number(k), T = S != null && k != null && !isNaN(J) && !isNaN(x) && J >= 0 && x >= 0, M = w && T ? `S${String(J).padStart(2, "0")}E${String(x).padStart(2, "0")}` : "";
     let H = "", N = "";
     w ? (H = e.name || e.series_name || "", N = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (H = e.name || "", N = this._config.show_subtitle !== !1 && e.tagline || "");
-    const O = this._idleItems.findIndex((Y) => y ? Y.type === "Movie" : w ? Y.type === "Episode" : Y.type === "Series" || Y.type !== "Movie" && Y.type !== "Episode") === this._currentIdleIndex, I = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && O, G = w && !!M, F = I && G ? M : null, E = y ? "movie" : w ? "episode" : "series", ae = I ? y ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : w ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : y ? d(i, "movie") || "Movie" : G ? M : d(i, "episode") || "Episode";
+    const O = this._idleItems.findIndex((q) => y ? q.type === "Movie" : w ? q.type === "Episode" : q.type === "Series" || q.type !== "Movie" && q.type !== "Episode") === this._currentIdleIndex, I = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && O, G = w && !!M, F = I && G ? M : null, E = y ? "movie" : w ? "episode" : "series", ae = I ? y ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : w ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : y ? d(i, "movie") || "Movie" : G ? M : d(i, "episode") || "Episode";
     return l`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
                 <div class="idle-card-bg-container">
@@ -9651,7 +9651,7 @@ let C = class extends q {
                                             <span>${_}</span>
                                         </span>
                                     ` : p}
-                                    ${m.map((Y) => l`<span class="idle-genre-pill">${Y}</span>`)}
+                                    ${m.map((q) => l`<span class="idle-genre-pill">${q}</span>`)}
                                 </div>
                                 ${this._config.show_description !== !1 && e.description ? l`
                                     <div class="idle-card-desc">${e.description}</div>
@@ -9970,9 +9970,9 @@ let C = class extends q {
       const a = this._config.entity, s = this.hass.states[a];
       s && (s.state === "playing" || s.state === "paused") && await this._handleControl("Stop");
     }
-    this._powerActivating = !0, setTimeout(() => {
-      this._powerActivating = !1;
-    }, 800), await vi(this.hass, t, this._config?.power_state_entity);
+    this._powerActivating = !0, this.requestUpdate(), setTimeout(() => {
+      this._powerActivating = !1, this.requestUpdate();
+    }, 200), await vi(this.hass, t, this._config?.power_state_entity);
   }
   _handlePowerKeydown(e) {
     (e.key === "Enter" || e.key === " ") && (e.preventDefault(), this._handlePowerClick(e));
@@ -10010,7 +10010,7 @@ let C = class extends q {
     this._haptic("light");
     const t = this._config?.volume_entity || this._config?.entity;
     if (!t || !this.hass) return;
-    const i = this._optimisticVolume[t], a = Ye(this.hass, this._config?.volume_entity, this._config?.entity, i), s = this._optimisticVolume[t] ?? a.volumePercent, o = Math.max(0, Math.min(100, Math.round(s + e)));
+    const i = this._optimisticVolume[t], a = qe(this.hass, this._config?.volume_entity, this._config?.entity, i), s = this._optimisticVolume[t] ?? a.volumePercent, o = Math.max(0, Math.min(100, Math.round(s + e)));
     this._optimisticVolume = { ...this._optimisticVolume, [t]: o }, this.requestUpdate(), await xi(this.hass, t, e / 100, s / 100);
   }
   _startVolumeDrag(e) {
@@ -10052,7 +10052,7 @@ let C = class extends q {
   }
   _renderVolumeControls() {
     if (!(this._config?.show_volume === !0 || this._config?.show_volume !== !1 && !!this._config?.volume_entity) || !this.hass) return p;
-    const t = this._config?.volume_entity || this._config?.entity, i = t ? this._optimisticVolume[t] : void 0, a = Ye(this.hass, this._config?.volume_entity, this._config?.entity, i), s = a.isMuted;
+    const t = this._config?.volume_entity || this._config?.entity, i = t ? this._optimisticVolume[t] : void 0, a = qe(this.hass, this._config?.volume_entity, this._config?.entity, i), s = a.isMuted;
     let o;
     this._isVolumeDragging && this._dragVolumePercent !== null ? o = this._dragVolumePercent : t && this._optimisticVolume[t] !== void 0 ? o = this._optimisticVolume[t] : o = a.volumePercent;
     const r = this._config?.show_volume_step_buttons !== !1, n = typeof this._config?.volume_step == "number" && this._config.volume_step > 0 ? this._config.volume_step : 5, c = s ? "mdi:volume-mute" : o === 0 ? "mdi:volume-off" : o < 50 ? "mdi:volume-medium" : "mdi:volume-high";
@@ -10929,7 +10929,8 @@ C.styles = Se`
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
         }
         .power-btn-hit-area:active .power-btn {
-            transform: scale(0.92) !important;
+            transform: scale(0.94) !important;
+            transition: transform 0.08s ease;
         }
         .power-btn-hit-area:focus-visible .power-btn {
             outline: 2px solid var(--primary-color, #03a9f4) !important;
@@ -10954,15 +10955,29 @@ C.styles = Se`
             -webkit-backdrop-filter: blur(8px);
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
             padding: 0 !important;
+            margin: 0 !important;
             display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
+            align-items: center !important;
+            justify-content: center !important;
             cursor: pointer;
             outline: none !important;
-            transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            box-sizing: border-box;
+            transition: background 0.15s ease, transform 0.08s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            box-sizing: border-box !important;
             flex-shrink: 0;
             pointer-events: none;
+            transform-origin: center center;
+        }
+        .power-btn ha-icon {
+            --mdc-icon-size: 16px !important;
+            width: 16px !important;
+            height: 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            transform-origin: center center;
         }
         .power-btn:hover {
             background: rgba(255, 255, 255, 0.2) !important;
@@ -10982,24 +10997,33 @@ C.styles = Se`
         ha-icon-button.power-btn md-ripple {
             display: none !important;
         }
+        ha-icon-button.power-btn::part(button) {
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
         .power-btn:active {
-            transform: scale(0.92) !important;
+            transform: scale(0.94) !important;
+            transition: transform 0.08s ease;
         }
         .power-btn.is-on,
         .jellyha-now-playing.has-background .power-btn.is-on {
-            background: rgba(255, 255, 255, 0.92) !important;
-            border-color: rgba(255, 255, 255, 0.98) !important;
-            color: #1a1a1a !important;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35) !important;
+            background: rgba(255, 255, 255, 0.55) !important;
+            border: 1px solid rgba(255, 255, 255, 0.65) !important;
+            color: #111111 !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
         }
         .power-btn.is-on ha-icon {
-            color: #1a1a1a !important;
+            color: #111111 !important;
         }
         .power-btn-hit-area:hover .power-btn.is-on,
         .power-btn.is-on:hover {
-            background: #ffffff !important;
-            border-color: #ffffff !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+            border-color: rgba(255, 255, 255, 0.85) !important;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35) !important;
             color: #000000 !important;
         }
         .power-btn-hit-area:hover .power-btn.is-on ha-icon,
@@ -11022,12 +11046,11 @@ C.styles = Se`
             color: rgba(255, 255, 255, 0.45) !important;
         }
         .power-btn.activating {
-            animation: powerPulse 0.8s ease-out;
+            animation: powerTap 0.2s ease-out;
         }
-        @keyframes powerPulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-            50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        @keyframes powerTap {
+            0% { transform: scale(0.94); }
+            100% { transform: scale(1); }
         }
 
         /* --- Option 1 Capsule Volume Slider --- */
