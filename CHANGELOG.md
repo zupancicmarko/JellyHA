@@ -5,23 +5,9 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.0] - 2026-10-07
+## [1.6.0] - 2026-10-11
 
 ### Added
-- **Now Playing Card Inline Media Type, Runtime & Rating Badges**:
-  - When `badge_style` is set to "Inline with Metadata" (`'inline'`), Media Type badges (`MOVIE`, `S01E01`, `SERIES`), Runtime, and Community Rating badges are relocated directly inline into the metadata line alongside release year and genres (`[Badge] • Year • Runtime • [★ Rating] [Genre]`), matching the screensaver / idle card layout.
-- **Simultaneous Multi-Device "Now Playing" Overlays on Library Card Posters**:
-  - Dynamically resolves active media players on a per-poster basis across `default_cast_device`, `default_client_device` (e.g. Wholphin, Moonfin, Android TV), and active JellyHA hardware players (`media_player.jellyha_*`).
-  - Supports multiple posters simultaneously displaying active playback overlays with live status (`playing`, `paused`, `buffering`, `REWINDING`) when different media items play across separate devices at the same time.
-  - Controls (Play/Pause, Stop, Rewind) on each poster independently target the specific media player responsible for that title.
-  - Expanded `shouldUpdate` reactive observation on the Library Card to re-render in real-time when playback starts, pauses, or stops across all candidate devices.
-- **Play on Jellyfin Client Action & Remote Session Control (Feature Request [#62](https://github.com/zupancicmarko/JellyHA/issues/62))**:
-  - Added native `play-client` ("Play on Jellyfin Client") action to `click_action`, `hold_action`, and `double_tap_action` on the Library Card, and `'client'` target support to `modal_play_actions` in the More Information dialog.
-  - Enables direct 1-tap playback to supported Jellyfin client applications (Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop/JMP, Wholphin, Roku, etc.) via Jellyfin's remote session control API (`POST /Sessions/{sessionId}/Playing?playCommand=PlayNow&itemIds={itemId}`), bypassing Chromecast transcoding overhead entirely.
-  - Documented client compatibility: noted that the official Jellyfin Android mobile app and iOS/Swiftfin currently do not implement incoming remote playback initiation commands, and recommended Wholpin, Moonfin or similar for Android mobile playback.
-  - Added configurable `default_client_device` in the Library Card YAML configuration and visual editor (filtered to JellyHA client device media players `media_player.jellyha_device_*`).
-  - Added interactive client device picker fallback in the More Information modal when multiple active client sessions are online or when no default device is configured.
-  - Smart Cast Delegation: Updated `jellyha.play_on_chromecast` to automatically intercept JellyHA client device and session media player entities (`media_player.jellyha_device_*`, `media_player.jellyha_user_*`) and seamlessly route them to `jellyha.session_play`, preventing confusing Google Cast media receiver failures when users select their Jellyfin TV client instead of a Chromecast.
 - **TV & Display Power Button with Dual-Entity Pairing (Issue [#60](https://github.com/zupancicmarko/JellyHA/issues/60))**:
   - Top-right circular frosted glass power button with unified `36px` dimensions across Active Playback, Ambient Showcase, and Idle Card states.
   - State-responsive visual styling: crisp white (`#ffffff`, matching the pause icon) when ON or ready; dimmed gray-white (`rgba(255, 255, 255, 0.45)`, matching the `−` volume button) when OFF or in standby. Zero cyan glow.
@@ -37,13 +23,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - External audio routing via `volume_entity` to control AVRs or soundbars while streaming video via Jellyfin (falls back to primary media player if unspecified).
   - Discrete `_haptic('selection')` tactile notches triggered every 5% interval during continuous slider scrubbing.
   - Responsive layout: automatically collapses continuous slider track in compact/poster views while preserving mute toggle, percentage readout, and step buttons.
-- **Visual Card Editor & Screensaver Enhancements**:
-  - Enhanced Idle Poster Screensaver Backdrop Visibility: Brightened the background fanart in the Now Playing card's idle poster layout (`idle_display_mode: 'card'`) by increasing backdrop brightness to 0.8 and softening the gradient overlay, allowing the fanart imagery to remain vivid while maintaining crisp typography contrast.
-  - Added dedicated TV/Display Power and Volume configuration sections with dynamic placeholders (`Default: <entity>`) and contextual helper guidance.
+- **Play on Jellyfin Client Action & Remote Session Control (Feature Request [#62](https://github.com/zupancicmarko/JellyHA/issues/62))**:
+  - Added native `play-client` ("Play on Jellyfin Client") action to `click_action`, `hold_action`, and `double_tap_action` on the Library Card, and `'client'` target support to `modal_play_actions` in the More Information dialog.
+  - Enables direct 1-tap playback to supported Jellyfin client applications (Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop/JMP, Wholphin, Roku, etc.) via Jellyfin's remote session control API (`POST /Sessions/{sessionId}/Playing?playCommand=PlayNow&itemIds={itemId}`), bypassing Chromecast transcoding overhead entirely.
+  - Documented client compatibility: noted that the official Jellyfin Android mobile app and iOS/Swiftfin currently do not implement incoming remote playback initiation commands, and recommended Wholpin, Moonfin or similar for Android mobile playback.
+  - Added configurable `default_client_device` in the Library Card YAML configuration and visual editor (filtered to JellyHA client device media players `media_player.jellyha_device_*`).
+  - Added interactive client device picker fallback in the More Information modal when multiple active client sessions are online or when no default device is configured.
+  - Smart Cast Delegation: Updated `jellyha.play_on_chromecast` to automatically intercept JellyHA client device and session media player entities (`media_player.jellyha_device_*`, `media_player.jellyha_user_*`) and seamlessly route them to `jellyha.session_play`, preventing confusing Google Cast media receiver failures when users select their Jellyfin TV client instead of a Chromecast.
+- **Now Playing Card Inline Media Type, Runtime & Rating Badges**:
+  - When `badge_style` is set to "Inline with Metadata" (`'inline'`), Media Type badges (`MOVIE`, `S01E01`, `SERIES`), Runtime, and Community Rating badges are relocated directly inline into the metadata line alongside release year and genres (`[Badge] • Year • Runtime • [★ Rating] [Genre]`), matching the screensaver / idle card layout.
+- **Simultaneous Multi-Device "Now Playing" Overlays on Library Card Posters**:
+  - Dynamically resolves active media players on a per-poster basis across `default_cast_device`, `default_client_device` (e.g. Wholphin, Moonfin, Android TV), and active JellyHA hardware players (`media_player.jellyha_*`).
+  - Supports multiple posters simultaneously displaying active playback overlays with live status (`playing`, `paused`, `buffering`, `REWINDING`) when different media items play across separate devices at the same time.
+  - Controls (Play/Pause, Stop, Rewind) on each poster independently target the specific media player responsible for that title.
+  - Expanded `shouldUpdate` reactive observation on the Library Card to re-render in real-time when playback starts, pauses, or stops across all candidate devices.
+- **Browser Player PlaybackInfo-Driven HLS Transcoding Fallback (Fixes [#61](https://github.com/zupancicmarko/JellyHA/issues/61))**:
+  - Automatically queries Jellyfin's `PlaybackInfo` endpoint with a standardized HTML5 browser device profile to determine stream compatibility.
+  - Transparent HLS transcoding fallback for video containers and audio codecs unsupported natively by desktop browsers (e.g., AVI/Xvid, AC3, DTS, TrueHD) while preserving zero-overhead DirectPlay for browser-compatible formats (H.264/AAC in MP4/WebM).
+  - Code-split dynamic loading of `hls.js` on Chromium, Firefox, and Edge browsers, paired with native HLS playback on Apple Safari and iOS devices (`application/vnd.apple.mpegurl`).
+  - Secure in-memory capability token proxy (`/api/jellyha/hls/{token}/{path}`) that dynamically sanitizes `.m3u8` master and variant playlists, rewriting segment routes and completely stripping Jellyfin API keys from client network traffic.
+  - Active transcode session lifecycle management: automatically terminates active ffmpeg encoding sessions (`DELETE /Videos/ActiveEncodings` and `POST /Sessions/Playing/Stopped`) when the browser modal is closed or on background idle session expiration, preventing orphaned transcoding jobs and server CPU exhaustion.
+
+### Changes
 - **Media Player User & Device Naming Differentiation**:
   - Differentiated per-user and per-device media players in the Home Assistant UI by prefixing entity display names with `User` and `Device` (rendering as `JellyHA User <username>` and `JellyHA Device <device_name>`).
-  - Preserved client/application metadata in device media player names (e.g. `Device samsung SM-S911B (Moonfin for Android)` and `Device samsung SM-S911B (Android)`) across the config flow, options flow, Home Assistant entity registry, and card dropdowns, disambiguating multiple clients on the same hardware.
-  - Automatically enriches existing device names on startup from the Jellyfin API and matches active sessions using normalized client identifiers.
   - Home Assistant automatically suggests `media_player.jellyha_user_<username>` and `media_player.jellyha_device_<device_name>` for new entities.
   - Full backwards compatibility: preserved existing entity unique IDs so existing installations, automations, and scripts continue operating seamlessly without breaking changes.
 - **Configuration Wizard Multi-Instance, Device Selection & Library Flow**:
@@ -51,12 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     1. **Select Libraries**: Focused solely on choosing which Jellyfin libraries to include (`CONF_LIBRARIES`) and configuring the library refresh interval (`CONF_REFRESH_INTERVAL`).
     2. **Select Client Devices (Optional)**: Directly select discovered Jellyfin client devices to automatically generate dedicated hardware media players (`CONF_DEVICE_PLAYERS`) for control in Home Assistant and the JellyHA Now Playing Card.
     3. **Configure Instance**: Dedicated step for assigning an optional instance label (`CONF_INSTANCE_LABEL`) with comprehensive multi-instance and multi-server guidance (`JellyHA Movies`, `JellyHA Music`, `JellyHA Server01`, `JellyHA Server02`), eliminating user confusion between library selection and instance labels.
-- **Browser Player PlaybackInfo-Driven HLS Transcoding Fallback (Fixes [#61](https://github.com/zupancicmarko/JellyHA/issues/61))**:
-  - Automatically queries Jellyfin's `PlaybackInfo` endpoint with a standardized HTML5 browser device profile to determine stream compatibility.
-  - Transparent HLS transcoding fallback for video containers and audio codecs unsupported natively by desktop browsers (e.g., AVI/Xvid, AC3, DTS, TrueHD) while preserving zero-overhead DirectPlay for browser-compatible formats (H.264/AAC in MP4/WebM).
-  - Code-split dynamic loading of `hls.js` on Chromium, Firefox, and Edge browsers, paired with native HLS playback on Apple Safari and iOS devices (`application/vnd.apple.mpegurl`).
-  - Secure in-memory capability token proxy (`/api/jellyha/hls/{token}/{path}`) that dynamically sanitizes `.m3u8` master and variant playlists, rewriting segment routes and completely stripping Jellyfin API keys from client network traffic.
-  - Active transcode session lifecycle management: automatically terminates active ffmpeg encoding sessions (`DELETE /Videos/ActiveEncodings` and `POST /Sessions/Playing/Stopped`) when the browser modal is closed or on background idle session expiration, preventing orphaned transcoding jobs and server CPU exhaustion.
 - **Automatic Lovelace Resource Version Cache-Busting**:
   - Automatically registers and updates `/jellyha/jellyha-cards.js?v={version}` in Home Assistant Lovelace resource registry on integration startup, eliminating stale frontend caches across releases.
 
@@ -82,10 +79,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Tuned modern transcoding audio channels: Google Cast hardware decoders natively support AAC strictly in stereo (2 channels) and fail when decoding 6-channel AAC. Set `TranscodingMaxAudioChannels=2` for AAC transcoding to prevent receiver audio decoder stall.
   - Updated Chromecast HLS streaming content type to the canonical RFC MIME type `application/vnd.apple.mpegurl` (replacing obsolete `application/x-mpegURL`).
   - Synchronized streaming and WebSocket client `DeviceId` with the integration's authenticated session `DeviceId` (`jellyha`), and included `UserId` and token query parameters in cast streaming URLs, resolving periodic authentication challenges ("CustomAuthentication was challenged / Invalid token").
-- **Visual Card Editor Entity Clearing & Save Button Enablement**:
-  - Fixed an issue where clearing an entity selector using the native `✕` button fell back to the previous DOM target value instead of deleting the configuration key, which prevented the dialog's Save button from becoming active.
-- **Playback and Screensaver Typography**:
-  - Reverted playing card subtitle typography to original compact hierarchy with dynamic coloring, and unified subtitle font styling across idle screensaver showcase.
 
 ## [1.5.7] - 2026-10-06
 
