@@ -3984,12 +3984,13 @@ export class JellyHANowPlayingCard extends LitElement {
         .idle-rating-pill {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 3px;
             background: rgba(245, 158, 11, 0.25);
             border: 1px solid rgba(245, 158, 11, 0.45);
             color: #fbbf24;
             height: 22px;
-            padding: 1px 6px 0 6px;
+            padding: 0 6px;
             border-radius: 4px;
             font-size: 0.78rem;
             font-weight: 700;
@@ -4005,7 +4006,9 @@ export class JellyHANowPlayingCard extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 0;
+            transform: translateY(-1px);
+            margin: 0;
+            padding: 0;
             flex-shrink: 0;
         }
 
