@@ -11011,8 +11011,8 @@ C.styles = Se`
         }
         .power-btn.is-on,
         .jellyha-now-playing.has-background .power-btn.is-on {
-            background: rgba(255, 255, 255, 0.55) !important;
-            border: 1px solid rgba(255, 255, 255, 0.65) !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+            border: 1px solid rgba(255, 255, 255, 0.75) !important;
             color: #111111 !important;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
         }
@@ -11021,8 +11021,8 @@ C.styles = Se`
         }
         .power-btn-hit-area:hover .power-btn.is-on,
         .power-btn.is-on:hover {
-            background: rgba(255, 255, 255, 0.75) !important;
-            border-color: rgba(255, 255, 255, 0.85) !important;
+            background: rgba(255, 255, 255, 0.88) !important;
+            border-color: rgba(255, 255, 255, 0.88) !important;
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35) !important;
             color: #000000 !important;
         }
