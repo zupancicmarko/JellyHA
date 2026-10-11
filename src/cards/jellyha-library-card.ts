@@ -13,6 +13,7 @@ import { JellyHAItemDetailsModal } from '../components/jellyha-item-details-moda
 import { showJellyHABrowserPlayer } from '../components/jellyha-browser-player';
 import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
+import { getLibraryWatchedPlayerEntities } from '../shared/power-volume-helpers';
 
 // Import modal for side effects (registration)
 import '../components/jellyha-item-details-modal';
@@ -25,7 +26,7 @@ import '../editors/jellyha-library-editor';
 import '../components/jellyha-media-item';
 
 // Register card in the custom cards array
-const CARD_VERSION = '1.5.7';
+const CARD_VERSION = '1.6.0';
 
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${CARD_VERSION} `,
@@ -73,6 +74,7 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   hold_action: 'jellyfin',
   double_tap_action: 'none',
   default_cast_device: '',
+  default_client_device: '',
   show_now_playing: true,
   use_series_image: false,
   show_search: false,
@@ -862,12 +864,15 @@ export class JellyHALibraryCard extends LitElement {
         const oldState = oldHass.states[this._config.entity];
         const newState = this.hass.states[this._config.entity];
 
-        // Also check default cast device state
-        const castEntity = this._config.default_cast_device;
-        if (castEntity) {
-          const oldCastState = oldHass.states[castEntity];
-          const newCastState = this.hass.states[castEntity];
-          if (oldCastState !== newCastState) return true;
+        // Also check candidate watched media players (cast device, client device, active JellyHA players)
+        const watchedPlayers = new Set<string>([
+          ...getLibraryWatchedPlayerEntities(this.hass, this._config),
+          ...getLibraryWatchedPlayerEntities(oldHass, this._config),
+        ]);
+        for (const playerId of watchedPlayers) {
+          if (oldHass.states[playerId] !== this.hass.states[playerId]) {
+            return true;
+          }
         }
 
         return oldState !== newState;
@@ -1453,6 +1458,9 @@ export class JellyHALibraryCard extends LitElement {
       case 'jellyfin':
         this._openExternalUrl(item.jellyfin_url, item);
         break;
+      case 'play-client':
+        this._playOnClient(item, type);
+        break;
       case 'cast':
         this._castMedia(item, type);
         break;
@@ -1631,6 +1639,28 @@ export class JellyHALibraryCard extends LitElement {
     }
   }
 
+  private async _playOnClient(item: MediaItem, actionType?: string): Promise<void> {
+    const entityId = this._config.default_client_device;
+    if (!entityId) {
+      console.warn('JellyHA: No default Jellyfin client device configured');
+      fireEvent(this, 'hass-notification', {
+        message: 'No Jellyfin client device configured. Please select a client in the card editor.',
+      });
+      return;
+    }
+
+    try {
+      await this.hass.callService('jellyha', 'session_play', {
+        entity_id: entityId,
+        item_id: item.id,
+        server_entity_id: this._config.entity,
+        ...(item.config_entry_id ? { config_entry_id: item.config_entry_id } : {}),
+      });
+    } catch (err: any) {
+      console.error('JellyHA: Failed to play on Jellyfin client', err);
+    }
+  }
+
   private _openExternalUrl(url: string | undefined, item?: MediaItem): void {
     let targetUrl = url;
 
@@ -1730,6 +1760,16 @@ export class JellyHALibraryCard extends LitElement {
       });
     }
 
+    if (this._config.default_client_device) {
+      const lang = this.hass?.locale?.language || this.hass?.language || 'en';
+      targets.push({
+        type: 'client',
+        name: localize(lang, 'editor.action_play_client') || 'Play on Jellyfin Client',
+        device: this._config.default_client_device,
+        icon: 'mdi:television-play',
+      });
+    }
+
     if (this._config.enable_browser_player !== false) {
       const lang = this.hass?.locale?.language || this.hass?.language || 'en';
       targets.push({
@@ -1795,6 +1835,7 @@ export class JellyHALibraryCard extends LitElement {
         item,
         hass: this.hass,
         defaultCastDevice: this._config.default_cast_device,
+        defaultClientDevice: this._config.default_client_device,
         serverEntityId: this._config.entity,
         subtitleMode,
         subtitleLanguage,

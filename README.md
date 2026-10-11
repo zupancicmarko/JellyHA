@@ -6,8 +6,8 @@
 Jellyfin for Home Assistant
 
 <div align="center">
-  <img src="./docs/JellyHA-Library-Grid.png" width="48%" alt="Library Card - Grid View" />
-  <img src="./docs/JellyHA-Now-Playing-Card.png" width="48%" alt="Now Playing Card" />
+  <img src="./docs/JellyHA-Library-Grid.png" width="44%" alt="Library Card - Grid View" />
+  <img src="./docs/JellyHA-Now-Playing-Card_Updated.png" width="35%" alt="Now Playing Card" />
 </div>
 
 <details>
@@ -20,6 +20,7 @@ Jellyfin for Home Assistant
     <img src="./docs/JellyHA-Library-More-Information.png" width="48%" alt="More Information" />
     <img src="./docs/JellyHA-Cards.png" width="48%" alt="Add to dashboard" />
     <img src="./docs/JellyHA-Latest-Movie-Card-Mod.png" width="48%" alt="Latest Movie Card Mod" />
+    <img src="./docs/JellyHA-Now-Playing-Card.png" width="97%" alt="Now Playing Card" />
   </div>
 </details>
 
@@ -27,7 +28,8 @@ Jellyfin for Home Assistant
 
 - 🎬 Display movies and TV shows from your library
 - ▶️ In-Dashboard Browser Playback: Stream media directly within your Home Assistant dashboards with native Closed Captions (CC) and subtitle track support
-- 🎯 Configurable Play Actions: Instant Browser playback, Chromecast casting, or custom scripts in More Info
+- 📱 Native Jellyfin Client Remote Control: 1-tap playback to official Jellyfin apps (Android TV, Google TV, Fire TV, Web, etc.) via native session control without Chromecast transcoding overhead
+- 🎯 Configurable Play Actions: Instant Browser playback, Native Jellyfin Client playback, Chromecast casting, or custom scripts in More Info
 - 📺 Cast media directly to Chromecast (Gen 1 supported)
 - 📡 Live TV Support: Visual channel browsing in Media Browser
 - 🎵 Music Support
@@ -97,8 +99,10 @@ Before installing JellyHA, ensure you have **HACS (Home Assistant Community Stor
 2. Search for **JellyHA**.
 3. Enter your Jellyfin server URL and select authentication method (**Username/Password** or **API Key**).
    - Optional: Enter an **External URL** if accessing via a reverse proxy or WAN address.
-4. Enter your credentials or API key.
-5. Select the user and libraries to monitor.
+4. Enter your credentials or API key:
+   - **Username / Password**: Fully supports both administrator and standard (non-admin) accounts. Non-admin users automatically bind directly to their own account and personal libraries.
+   - **API Key**: Recommended for server administrators; allows monitoring any managed user across the server without coupling to a personal password.
+5. Select the libraries to monitor (and user account if authenticating with admin privileges).
 6. **Instance Label (Optional)**: Add a custom label (e.g., `4K Server`, `Kids`) when connecting multiple Jellyfin instances.
 7. Click **Submit**.
 
@@ -149,7 +153,7 @@ items_per_page: 3
 max_pages: 5
 ```
 
-Supports custom click, hold, and double-tap actions (Play in Browser, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`).
+Supports custom click, hold, and double-tap actions (Play in Browser, Play on Jellyfin Client, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`). *(Note: "Play on Jellyfin Client" requires a remote-control capable client such as Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop, Wholphin, Roku, etc).*
 
 👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 
@@ -170,22 +174,22 @@ idle_backdrop_cycle: true # Enable ambient media slideshow when nothing is playi
 
 #### 🔄 Migrating from Legacy Now Playing Sensors to Media Players
 
-Starting in **JellyHA v1.3.0**, per-user `media_player.jellyha_<user>` entities are the primary, official entities for tracking and controlling user playback. Legacy `sensor.jellyha_now_playing_<user>` entities remain active for backward compatibility until **v2.0.0**.
+Starting in **JellyHA v1.3.0**, per-user `media_player.jellyha_user_<user>` entities (and per-device `media_player.jellyha_device_<device>`) are the primary, official entities for tracking and controlling playback. Legacy `sensor.jellyha_now_playing_<user>` entities remain active for backward compatibility until **v2.0.0**.
 
 **Migrating existing cards requires changing only one line:**
 
 ```diff
 type: custom:jellyha-now-playing-card
 -entity: sensor.jellyha_now_playing_<user>
-+entity: media_player.jellyha_<user>
++entity: media_player.jellyha_user_<user>
 title: Now Playing
 show_background: true
 ```
 
 **Why this migration is 100% safe and non-breaking:**
 - **Exact Visual & Feature Parity**: `custom:jellyha-now-playing-card` provides identical styling, dynamic fanart backdrops, poster art, season/episode badges (`S01E05`), IMDB/TMDB ratings, elapsed/remaining runtime, live scrubbing, and tap-to-rewind.
-- **Identical State Values**: `media_player.jellyha_<user>` outputs the exact same state values (`playing`, `paused`, `idle`). Any dashboard conditional visibility rules (e.g. `state: playing` or `state_not: idle`) continue to work seamlessly without modifying your conditions.
-- **Direct Playback Controls**: `media_player.jellyha_<user>` enables native Home Assistant services (`media_player.media_play_pause`, `media_player.media_seek`, `media_player.media_stop`), physical client device tracking (`media_player.jellyha_<device_name>`), and voice commands via Home Assistant Assist.
+- **Identical State Values**: `media_player.jellyha_user_<user>` outputs the exact same state values (`playing`, `paused`, `idle`). Any dashboard conditional visibility rules (e.g. `state: playing` or `state_not: idle`) continue to work seamlessly without modifying your conditions.
+- **Direct Playback Controls**: Enables native Home Assistant services (`media_player.media_play_pause`, `media_player.media_seek`, `media_player.media_stop`), physical client device tracking (`media_player.jellyha_device_<device_name>`), and voice commands via Home Assistant Assist. Existing installations preserve legacy entity IDs without breaking.
 
 👉 **[See full Now Playing Card options in docs/cards.md](docs/cards.md)**
 

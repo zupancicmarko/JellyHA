@@ -536,26 +536,17 @@ class JellyHAUserSensor(CoordinatorEntity[JellyHASessionCoordinator], SensorEnti
         """Check if a session can receive remote control commands."""
         if not session:
             return True
-        # Explicit remote control flag from Jellyfin API
+        # Do not route commands to our own integration or backend server sessions
+        if session.get("Client") in ("home-assistant", "Seerr"):
+            return False
+        # If session explicitly declares remote control support, it is controllable
         if session.get("SupportsRemoteControl") is True:
             return True
-        # Check nested capabilities if top-level is omitted
         caps = session.get("Capabilities") or {}
         if caps.get("SupportsRemoteControl") is True:
             return True
-        # Check if there is another session for the same physical client device that supports remote control
-        dev_id = session.get("DeviceId") or ""
-        if dev_id and self.coordinator.data:
-            for s in self.coordinator.data:
-                sid = s.get("Id")
-                if sid != session.get("Id"):
-                    s_dev_id = s.get("DeviceId") or ""
-                    if s_dev_id == dev_id:
-                        if s.get("SupportsRemoteControl") is True:
-                            return True
-        # If session explicitly declares no remote control and no controllable companion session exists
-        if session.get("SupportsRemoteControl") is False:
-            return False
+        # For client players (Wholphin, Android TV, Smart TVs, Web, Mobile),
+        # Jellyfin accepts /Playing and session commands even when SupportsRemoteControl is False at handshake.
         return True
 
     @property

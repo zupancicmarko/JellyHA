@@ -104,6 +104,12 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._users: list[dict[str, Any]] = []
         self._user_id: str | None = None
         self._libraries: list[dict[str, Any]] = []
+        self._selected_libraries: list[str] = []
+        self._refresh_interval: int = DEFAULT_REFRESH_INTERVAL
+        self._devices: list[dict[str, Any]] = []
+        self._device_map: dict[str, str] = {}
+        self._selected_devices: list[str] = []
+        self._device_names: dict[str, str] = {}
         self._api: JellyfinApiClient | None = None
         self._server_id: str | None = None
 
@@ -253,26 +259,35 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                      self._server_id = unique_id
 
                 self._api_key = auth_data.get("AccessToken")
-                # User ID might be returned in auth data, but we still fetch users list for selection consistency
-                # or we could skip specific user selection if we want to bind to the logged-in user.
-                # For now, let's keep the user selection step to allow picking specific managed users if admin,
-                # or just to verify we can list users.
+                logged_in_user = auth_data.get("User", {})
+                self._user_id = logged_in_user.get("Id")
+                self._username = logged_in_user.get("Name", self._username)
                 
-                # Fetch users to proceed to selection
-                self._users = await self._api.get_users()
-                
-                # OPTIONAL: If we want to auto-select the logged-in user:
-                # logged_in_id = auth_data.get("User", {}).get("Id")
-                # if logged_in_id:
-                #     self._user_id = logged_in_id
-                #     self._libraries = await self._api.get_libraries(self._user_id)
-                #     return await self.async_step_library_select()
-                
+                # Re-initialize API client with AccessToken
+                self._api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
+
                 # Check if this is a reauth flow
                 if self.context.get("source") == config_entries.SOURCE_REAUTH:
                      return await self._async_update_existing_entry()
 
-                return await self.async_step_user_select()
+                # Try fetching all users (succeeds for administrator accounts)
+                try:
+                    self._users = await self._api.get_users()
+                    if self._users:
+                        return await self.async_step_user_select()
+                except (JellyfinAuthError, JellyfinApiError) as err:
+                    _LOGGER.debug(
+                        "Cannot list all users (non-admin account or restricted permissions: %s). "
+                        "Using authenticated user profile '%s' (%s).",
+                        err,
+                        self._username,
+                        self._user_id,
+                    )
+
+                # Non-admin user (or get_users empty): proceed directly with the authenticated user
+                self._users = [{"Id": self._user_id, "Name": self._username}]
+                self._libraries = await self._api.get_libraries(self._user_id)
+                return await self.async_step_library_select()
                 
             except JellyfinAuthError:
                 errors["base"] = "invalid_auth"
@@ -300,6 +315,10 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self._user_id = user_input[CONF_USER_ID]
+            self._username = next(
+                (u["Name"] for u in self._users if u["Id"] == self._user_id),
+                self._username,
+            )
             try:
                 self._libraries = await self._api.get_libraries(self._user_id)
                 return await self.async_step_library_select()
@@ -335,44 +354,9 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle library selection step."""
         if user_input is not None:
-            # Get user name for title
-            user_name = next(
-                (u["Name"] for u in self._users if u["Id"] == self._user_id),
-                "Jellyfin",
-            )
-
-            # Set unique ID using Server ID + User ID + Instance Label
-            if self._server_id and self._user_id:
-                instance_label = user_input.get(CONF_INSTANCE_LABEL, "").strip()
-                unique_id = f"{self._server_id}_{self._user_id}"
-                if instance_label:
-                    # Only append label if provided, leaving empty legacy unchanged
-                    unique_id = f"{unique_id}_{instance_label.lower().replace(' ', '_')}"
-                
-                await self.async_set_unique_id(unique_id)
-                if self.context.get("source") == config_entries.SOURCE_REAUTH:
-                    return await self._async_update_existing_entry()
-                self._abort_if_unique_id_configured()
-
-            # Build the smart device name
-            instance_label = user_input.get(CONF_INSTANCE_LABEL, "")
-            device_name = _build_device_name(instance_label)
-
-            return self.async_create_entry(
-                title=f"{device_name} ({user_name})",
-                data={
-                    CONF_SERVER_URL: self._server_url,
-                    CONF_API_KEY: self._api_key,
-                    CONF_USER_ID: self._user_id,
-                    CONF_LIBRARIES: user_input.get(CONF_LIBRARIES, []),
-                    CONF_DEVICE_NAME: device_name,
-                    CONF_INSTANCE_LABEL: instance_label,
-                },
-                options={
-                    CONF_REFRESH_INTERVAL: int(user_input.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)),
-                    CONF_EXTERNAL_URL: self._external_url or "",
-                },
-            )
+            self._selected_libraries = user_input.get(CONF_LIBRARIES, [])
+            self._refresh_interval = int(user_input.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL))
+            return await self.async_step_device_select()
 
         # Filter to only show movie/series/mixed libraries
         library_options = [
@@ -390,7 +374,6 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="library_select",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(CONF_INSTANCE_LABEL, default=""): str,
                     vol.Optional(CONF_LIBRARIES): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=library_options,
@@ -415,6 +398,121 @@ class JellyHAConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={
                 "hint": "Leave libraries empty to include all",
             },
+        )
+
+    async def async_step_device_select(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle device selection step."""
+        if user_input is not None:
+            self._selected_devices = user_input.get(CONF_DEVICE_PLAYERS, [])
+            self._device_names = {
+                dev_id: self._device_map[dev_id]
+                for dev_id in self._selected_devices
+                if dev_id in self._device_map
+            }
+            return await self.async_step_instance_label()
+
+        if not self._devices and self._server_url and self._api_key:
+            try:
+                session = async_get_clientsession(self.hass)
+                api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
+                self._devices = await api.get_devices()
+            except Exception as err:
+                _LOGGER.debug("Could not fetch Jellyfin devices for wizard (non-admin or restricted): %s", err)
+                self._devices = []
+
+        device_options: list[selector.SelectOptionDict] = []
+        self._device_map = {}
+        for device_data in self._devices:
+            dev_id = device_data.get("Id")
+            if not dev_id:
+                continue
+            dev_name = (
+                device_data.get("CustomName")
+                or device_data.get("Name")
+                or device_data.get("DeviceName")
+                or device_data.get("AppName")
+                or "Unknown Device"
+            )
+            app_name = device_data.get("AppName")
+            label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
+            device_options.append(selector.SelectOptionDict(value=dev_id, label=label))
+            self._device_map[dev_id] = label
+
+        if not device_options:
+            _LOGGER.debug("No client devices found or accessible, advancing directly to instance label step")
+            return await self.async_step_instance_label()
+
+        return self.async_show_form(
+            step_id="device_select",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_DEVICE_PLAYERS, default=[]): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=device_options,
+                            multiple=True,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            ),
+        )
+
+    async def async_step_instance_label(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle instance label and naming step."""
+        if user_input is not None:
+            # Get user name for title
+            user_name = next(
+                (u["Name"] for u in self._users if u["Id"] == self._user_id),
+                "Jellyfin",
+            )
+
+            # Set unique ID using Server ID + User ID + Instance Label
+            if self._server_id and self._user_id:
+                instance_label = user_input.get(CONF_INSTANCE_LABEL, "").strip()
+                unique_id = f"{self._server_id}_{self._user_id}"
+                if instance_label:
+                    # Only append label if provided, leaving empty legacy unchanged
+                    unique_id = f"{unique_id}_{instance_label.lower().replace(' ', '_')}"
+                
+                await self.async_set_unique_id(unique_id)
+                if self.context.get("source") == config_entries.SOURCE_REAUTH:
+                    return await self._async_update_existing_entry()
+                self._abort_if_unique_id_configured()
+
+            # Build the smart device name
+            instance_label = user_input.get(CONF_INSTANCE_LABEL, "").strip()
+            device_name = _build_device_name(instance_label)
+
+            return self.async_create_entry(
+                title=f"{device_name} ({user_name})",
+                data={
+                    CONF_SERVER_URL: self._server_url,
+                    CONF_API_KEY: self._api_key,
+                    CONF_USER_ID: self._user_id,
+                    CONF_USERNAME: self._username or user_name,
+                    CONF_LIBRARIES: self._selected_libraries,
+                    CONF_DEVICE_NAME: device_name,
+                    CONF_INSTANCE_LABEL: instance_label,
+                },
+                options={
+                    CONF_REFRESH_INTERVAL: self._refresh_interval,
+                    CONF_EXTERNAL_URL: self._external_url or "",
+                    CONF_DEVICE_PLAYERS: self._selected_devices,
+                    CONF_DEVICE_NAMES: self._device_names,
+                },
+            )
+
+        return self.async_show_form(
+            step_id="instance_label",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_INSTANCE_LABEL, default=""): str,
+                }
+            ),
         )
         
     async def _async_update_existing_entry(self) -> FlowResult:
@@ -479,16 +577,20 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
         device_map: dict[str, str] = {}
 
         if self._server_url and self._api_key:
-            try:
-                session = async_get_clientsession(self.hass)
-                api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
-                if user_id:
+            session = async_get_clientsession(self.hass)
+            api = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
+            if user_id:
+                try:
                     libraries = await api.get_libraries(user_id)
                     library_options = [
                         selector.SelectOptionDict(value=lib["Id"], label=lib.get("Name", "Unknown"))
                         for lib in libraries
                         if lib.get("CollectionType") in ("movies", "tvshows", "mixed", "musicvideos", "homevideos", "music", "photos", None)
                     ]
+                except Exception as err:
+                    _LOGGER.debug("Failed to fetch libraries for Options Flow: %s", err)
+
+            try:
                 devices = await api.get_devices()
                 for device_data in devices:
                     dev_id = device_data.get("Id")
@@ -504,9 +606,9 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
                     app_name = device_data.get("AppName")
                     label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
                     device_options.append(selector.SelectOptionDict(value=dev_id, label=label))
-                    device_map[dev_id] = dev_name
+                    device_map[dev_id] = label
             except Exception as err:
-                _LOGGER.error("Failed to fetch Jellyfin data for Options Flow: %s", err)
+                _LOGGER.debug("Could not fetch Jellyfin devices for Options Flow (non-admin or restricted): %s", err)
 
         if not library_options:
             library_options = [
@@ -725,9 +827,25 @@ class JellyHAOptionsFlowHandler(config_entries.OptionsFlow):
              try:
                  auth_data = await api.authenticate(user_input[CONF_USERNAME], user_input[CONF_PASSWORD])
                  self._api_key = auth_data.get("AccessToken")
-                 self._users = await api.get_users()
-                 
-                 return await self.async_step_user_select()
+                 logged_in_user = auth_data.get("User", {})
+                 self._user_id = logged_in_user.get("Id", self._user_id)
+                 self._username = logged_in_user.get("Name", user_input[CONF_USERNAME])
+
+                 # If reauth flow, update entry immediately
+                 if self.context.get("source") == config_entries.SOURCE_REAUTH:
+                     return await self._async_update_existing_entry()
+
+                 api_with_key = JellyfinApiClient(self._server_url, session=session, api_key=self._api_key)
+                 try:
+                     self._users = await api_with_key.get_users()
+                     if self._users:
+                         return await self.async_step_user_select()
+                 except (JellyfinAuthError, JellyfinApiError):
+                     _LOGGER.debug("Cannot list all users during reauth, proceeding with authenticated user")
+
+                 self._users = [{"Id": self._user_id, "Name": self._username}]
+                 self._libraries = await api_with_key.get_libraries(self._user_id)
+                 return await self.async_step_library_select()
                  
              except (JellyfinAuthError, JellyfinConnectionError):
                  errors["base"] = "invalid_auth"

@@ -9,8 +9,13 @@ from .const import DOMAIN
 
 TO_REDACT = {
     "api_key",
+    "ApiKey",
     "password",
     "access_token",
+    "token",
+    "Token",
+    "secret",
+    "auth_key",
     "user_id",
 }
 

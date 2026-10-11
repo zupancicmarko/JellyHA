@@ -3,17 +3,21 @@ from __future__ import annotations
 
 import logging
 import asyncio
+import uuid
+from datetime import timedelta
 from typing import Any
 
 import voluptuous as vol
 
 from homeassistant.components import websocket_api
+from homeassistant.components.http.auth import async_sign_path
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN, ITEM_TYPE_EPISODE
+from .api import BROWSER_DEVICE_PROFILE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -81,6 +85,8 @@ def async_register_websocket(hass: HomeAssistant) -> None:
         websocket_api.async_register_command(hass, websocket_search_media)
         websocket_api.async_register_command(hass, websocket_get_latest_items)
         websocket_api.async_register_command(hass, websocket_get_item)
+        websocket_api.async_register_command(hass, websocket_resolve_playback)
+        websocket_api.async_register_command(hass, websocket_stop_playback)
     except HomeAssistantError:
         # Command already registered, which is fine (e.g. multiple entries)
         pass
@@ -458,3 +464,115 @@ async def websocket_get_item(
     except Exception as err:
         _LOGGER.exception("Error fetching item details for %s: %s", item_id, err)
         connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")
+
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/resolve_playback",
+    vol.Required("item_id"): str,
+    vol.Optional("config_entry_id"): cv.string,
+    vol.Optional("server_entity_id"): cv.entity_id,
+    vol.Optional("entity_id"): cv.entity_id,
+})
+@websocket_api.async_response
+async def websocket_resolve_playback(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Resolve playback URL for browser player, deciding DirectPlay vs HLS transcode."""
+    item_id = msg["item_id"]
+    coordinator, err = _get_coordinator_from_msg(hass, msg)
+    if not coordinator:
+        connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, err or "Integration not loaded")
+        return
+
+    try:
+        if not coordinator._api:
+            await coordinator._async_setup()
+
+        user_id = coordinator.entry.data.get("user_id")
+        if not user_id:
+            connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "User ID missing from config")
+            return
+
+        api = coordinator._api
+        raw_item = await api.get_item(user_id, item_id)
+        if not raw_item:
+            connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, f"Item {item_id} not found")
+            return
+
+        item_type = raw_item.get("Type", "Video")
+        playback_info = await api.get_playback_info(user_id, item_id, profile=BROWSER_DEVICE_PROFILE)
+
+        media_sources = playback_info.get("MediaSources", [])
+        media_source = media_sources[0] if media_sources else {}
+        supports_direct_play = media_source.get("SupportsDirectPlay", False)
+        media_source_id = media_source.get("Id", item_id)
+
+        # 1. Direct Play if supported
+        if supports_direct_play:
+            entry_id = coordinator.entry.entry_id
+            stream_path = api.get_stream_path(entry_id, item_id, item_type=item_type)
+            signed_url = async_sign_path(hass, stream_path, timedelta(hours=24))
+            mime = "audio/mp4" if item_type == "Audio" else "video/mp4"
+
+            connection.send_result(msg["id"], {
+                "play_method": "DirectPlay",
+                "url": signed_url,
+                "mime_type": mime,
+            })
+            return
+
+        # 2. HLS Transcode required
+        manager = hass.data.get(DOMAIN, {}).get("hls_manager")
+        if not manager:
+            connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, "HLS session manager not available")
+            return
+
+        play_session_id = playback_info.get("PlaySessionId") or uuid.uuid4().hex
+        session = manager.create_session(
+            entry_id=coordinator.entry.entry_id,
+            item_id=item_id,
+            play_session_id=play_session_id,
+            media_source_id=media_source_id,
+            server_url=api.server_url,
+            api_key=api.api_key,
+            api=api,
+        )
+
+        hls_url = (
+            f"/api/jellyha/hls/{session.token}/master.m3u8"
+            f"?MediaSourceId={media_source_id}&PlaySessionId={play_session_id}"
+        )
+
+        connection.send_result(msg["id"], {
+            "play_method": "Transcode",
+            "url": hls_url,
+            "mime_type": "application/x-mpegURL",
+            "play_session_id": play_session_id,
+            "token": session.token,
+        })
+
+    except Exception as err:
+        _LOGGER.exception("Error resolving playback for %s: %s", item_id, err)
+        connection.send_error(msg["id"], websocket_api.ERR_UNKNOWN_ERROR, f"Error: {str(err)}")
+
+
+@websocket_api.websocket_command({
+    vol.Required("type"): "jellyha/stop_playback",
+    vol.Optional("token"): cv.string,
+    vol.Optional("play_session_id"): cv.string,
+    vol.Optional("config_entry_id"): cv.string,
+})
+@websocket_api.async_response
+async def websocket_stop_playback(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Terminate an active HLS playback session and stop transcode encoding."""
+    manager = hass.data.get(DOMAIN, {}).get("hls_manager")
+    target = msg.get("token") or msg.get("play_session_id")
+    if manager and target:
+        await manager.terminate_session(target)
+    connection.send_result(msg["id"], {"success": True})

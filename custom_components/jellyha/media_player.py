@@ -22,6 +22,7 @@ except ImportError:
     SearchMediaQuery = None  # type: ignore[assignment, misc]
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -124,7 +125,29 @@ async def async_setup_entry(
 
     # Create a media player for each configured client device
     device_ids: list[str] = entry.options.get(CONF_DEVICE_PLAYERS, [])
-    device_names: dict[str, str] = entry.options.get(CONF_DEVICE_NAMES, {})
+    device_names: dict[str, str] = dict(entry.options.get(CONF_DEVICE_NAMES, {}))
+
+    # Enrich device names with client/app info from Jellyfin API if available
+    api = getattr(session_coordinator, "api", None) or getattr(session_coordinator, "_api", None)
+    if device_ids and api:
+        try:
+            remote_devices = await api.get_devices()
+            for dev in remote_devices:
+                dev_id = dev.get("Id")
+                if dev_id and dev_id in device_ids:
+                    dev_name = (
+                        dev.get("CustomName")
+                        or dev.get("Name")
+                        or dev.get("DeviceName")
+                        or dev.get("AppName")
+                        or "Unknown Device"
+                    )
+                    app_name = dev.get("AppName")
+                    label = f"{dev_name} ({app_name})" if app_name and app_name != dev_name else dev_name
+                    device_names[dev_id] = label
+        except Exception as err:
+            _LOGGER.debug("Could not refresh client device names from Jellyfin: %s", err)
+
     for dev_id in device_ids:
         dev_title = device_names.get(dev_id) or "Device"
         entities.append(
@@ -721,6 +744,7 @@ class JellyHABasePlaybackMediaPlayer(
             "device_name": session.get("DeviceName") if session else None,
             "client": session.get("Client") if session else None,
             "item_id": None,
+            "series_id": None,
             "title": None,
             "progress_percent": 0,
             "position_ticks": 0,
@@ -785,6 +809,7 @@ class JellyHABasePlaybackMediaPlayer(
             attrs["season"] = item.get("ParentIndexNumber")
             attrs["episode"] = item.get("IndexNumber")
             attrs["series_image_url"] = session.get("jellyha_series_poster_url")
+            attrs["series_id"] = item.get("SeriesId")
         elif item_type == "Audio":
             album_artist = item.get("AlbumArtist")
             artists = item.get("Artists", [])
@@ -930,10 +955,12 @@ class JellyHABasePlaybackMediaPlayer(
         target_ids = self._get_target_session_ids()
         if not target_ids:
             _LOGGER.warning(
-                "Cannot play on %s: No active Jellyfin session found. Please make sure the app is open on the device.",
+                "Cannot play on %s: No active Jellyfin session found. Make sure the device is on and the app is open on the device.",
                 self.name,
             )
-            return
+            raise HomeAssistantError(
+                f"Cannot play on '{self.name}': No active Jellyfin session found. Make sure the device is on and the app is open on the device."
+            )
 
         # Parse the item ID
         category, parsed_id = parse_item_id(media_id)
@@ -1020,9 +1047,16 @@ class JellyHABasePlaybackMediaPlayer(
                 _LOGGER.debug("Could not resolve series next-up for %s: %s", item_id, e)
 
         _LOGGER.info("Sending session_play(%s) to session(s): %s", item_id, target_ids)
+        any_success = False
         for sid in target_ids:
             success = await api.session_play(sid, item_id)
             _LOGGER.info("session_play to %s result: %s", sid, success)
+            if success:
+                any_success = True
+        if not any_success:
+            raise HomeAssistantError(
+                f"Failed to play on '{self.name}': The device rejected the playback command."
+            )
 
     async def async_media_play(self) -> None:
         """Send play (unpause) command to session."""
@@ -1097,7 +1131,7 @@ class JellyHAUserMediaPlayer(JellyHABasePlaybackMediaPlayer):
         self._user_id = user_id
         self._username = username
         self._attr_unique_id = f"{entry.entry_id}_media_player_{user_id}"
-        self._attr_name = f"{username}"
+        self._attr_name = f"User {username}"
         self._attr_icon = "mdi:account-play"
 
     def _get_active_session(self) -> dict[str, Any] | None:
@@ -1160,12 +1194,15 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
         self._device_id = device_id
         self._custom_device_name = custom_device_name
         self._attr_unique_id = f"{entry.entry_id}_device_player_{device_id}"
-        self._attr_name = f"{custom_device_name}"
+        if custom_device_name.startswith("Device "):
+            self._attr_name = custom_device_name
+        else:
+            self._attr_name = f"Device {custom_device_name}"
         lower_name = custom_device_name.lower()
-        if any(w in lower_name for w in ("phone", "s20", "s21", "s22", "s23", "s24", "s25", "pixel", "iphone", "mobile")):
-            self._attr_icon = "mdi:cellphone-play"
-        elif any(w in lower_name for w in ("tablet", "ipad", "pad", "tab")):
+        if any(w in lower_name for w in ("tablet", "ipad", "pad", "tab", "sm-x", "sm-t")):
             self._attr_icon = "mdi:tablet-play"
+        elif any(w in lower_name for w in ("phone", "s20", "s21", "s22", "s23", "s24", "s25", "pixel", "iphone", "mobile", "galaxy", "sm-s", "sm-g", "sm-a", "sm-n")):
+            self._attr_icon = "mdi:cellphone-play"
         else:
             self._attr_icon = "mdi:television-play"
 
@@ -1185,9 +1222,31 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
             str(s.get("DeviceCustomName") or "").strip().lower(),
         }
         session_names.discard("")
-        target_name = (self._custom_device_name or "").strip().lower()
-        if target_name and target_name in session_names:
-            return True
+
+        raw_target = (self._custom_device_name or "").strip()
+        if not raw_target:
+            return False
+
+        # If custom device name has "(Client/App)", extract base name and client
+        match = re.match(r"^(.*?)\s*\((.*?)\)$", raw_target)
+        if match:
+            base_name = match.group(1).strip().lower()
+            client_target = match.group(2).strip().lower()
+        else:
+            base_name = raw_target.lower()
+            client_target = ""
+
+        # Check if base device name matches session's device name
+        if base_name in session_names or raw_target.lower() in session_names:
+            if not client_target:
+                return True
+            session_client = str(s.get("Client") or s.get("AppName") or "").strip().lower()
+            if not session_client:
+                return True
+            # Compare client names, normalizing optional 'jellyfin ' prefix
+            norm_target = client_target.removeprefix("jellyfin ").strip()
+            norm_session = session_client.removeprefix("jellyfin ").strip()
+            return norm_target == norm_session or client_target == session_client
 
         return False
 

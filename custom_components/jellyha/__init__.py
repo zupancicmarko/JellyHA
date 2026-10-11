@@ -26,7 +26,8 @@ from .coordinator import JellyHALibraryCoordinator, JellyHASessionCoordinator
 from .services import async_register_services
 from .storage import JellyfinLibraryData
 from .websocket import async_register_websocket
-from .views import JellyHAImageView, JellyHAStreamView, JellyHASubtitleView
+from .views import JellyHAImageView, JellyHAStreamView, JellyHASubtitleView, JellyHAHlsView
+from .hls_manager import HlsSessionManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -74,8 +75,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
     api_key = entry.data.get(CONF_API_KEY)
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
     
-    # Ensure WebSocket deviceId is unique per instance connecting to the same server
-    ws_device_id = f"{device_name}_{entry.entry_id[:8]}"
+    # Ensure WebSocket deviceId matches the integration's authenticated session DeviceId
+    ws_device_id = "jellyha"
     ws_client = JellyfinWebSocketClient(session, server_url, api_key, ws_device_id)
 
     # Initialize session coordinator (api is initialized in library coordinator)
@@ -94,6 +95,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
 
 
     
+    # Ensure integration-wide data and HLS session manager exist
+    hass.data.setdefault(DOMAIN, {})
+    if "hls_manager" not in hass.data[DOMAIN]:
+        hass.data[DOMAIN]["hls_manager"] = HlsSessionManager(hass)
+
     # Register services and websocket
     await async_register_services(hass)
     async_register_websocket(hass)
@@ -107,13 +113,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> b
             StaticPathConfig("/jellyha", www_path, False)
         ])
         
-        # Register image and stream proxy views
+        # Register image, stream, subtitle, and HLS proxy views
         hass.http.register_view(JellyHAImageView(hass))
         hass.http.register_view(JellyHAStreamView(hass))
         hass.http.register_view(JellyHASubtitleView(hass))
+        hass.http.register_view(JellyHAHlsView(hass))
         
         # Register frontend cards and seek polyfill globally across all panels (e.g. Media Browser)
         add_extra_js_url(hass, f"/jellyha/jellyha-cards.js?v={integration.version}")
+        
+        # Register or update Lovelace dashboard resource with cache-busting version query
+        await _async_register_lovelace_resource(hass, str(integration.version))
 
         hass.data[f"{DOMAIN}_views_registered"] = True
     
@@ -166,4 +176,28 @@ async def async_unload_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> 
 async def async_reload_entry(hass: HomeAssistant, entry: JellyHAConfigEntry) -> None:
     """Reload config entry."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def _async_register_lovelace_resource(hass: HomeAssistant, version: str) -> None:
+    """Register or update JellyHA cards in Lovelace resources with cache-busting version query."""
+    try:
+        lovelace_data = hass.data.get("lovelace")
+        resources = getattr(lovelace_data, "resources", None)
+        if resources is not None:
+            if not getattr(resources, "loaded", False):
+                await resources.async_load()
+            target_url = f"/jellyha/jellyha-cards.js?v={version}"
+            
+            for item in resources.async_items():
+                url = item.get("url", "")
+                if url.startswith("/jellyha/jellyha-cards.js"):
+                    if url != target_url:
+                        _LOGGER.debug("Updating JellyHA Lovelace resource from %s to %s", url, target_url)
+                        await resources.async_update_item(item["id"], {"res_type": "module", "url": target_url})
+                    return
+            
+            _LOGGER.info("Registering JellyHA Lovelace resource: %s", target_url)
+            await resources.async_create_item({"res_type": "module", "url": target_url})
+    except Exception as err:
+        _LOGGER.warning("Could not automatically register Lovelace resource: %s", err)
 

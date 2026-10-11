@@ -457,7 +457,8 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         stream_url = None
         if self._api and item_id and item_type in ("Audio", "MusicAlbum", "MusicArtist"):
-            stream_url = f"{self._api._server_url}/Audio/{item_id}/stream?static=true&api_key={self._api._api_key}&ApiKey={self._api._api_key}"
+            stream_path = self._api.get_stream_path(self.entry.entry_id, item_id, item_type="Audio")
+            stream_url = async_sign_path(self.hass, stream_path, expiration)
 
         # Build direct Jellyfin web UI link
         jellyfin_url = None
@@ -591,8 +592,14 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
             users = await self._api.get_users()
             self.users = {u["Id"]: u["Name"] for u in users}
             _LOGGER.debug("Loaded %d users", len(self.users))
-        except JellyfinApiError as err:
-            _LOGGER.error("Failed to fetch users: %s", err)
+        except (JellyfinApiError, JellyfinAuthError) as err:
+            _LOGGER.debug("Could not fetch full users list (non-admin account or restricted): %s", err)
+            user_id = self.entry.data.get(CONF_USER_ID)
+            username = self.entry.data.get(CONF_USERNAME, "User")
+            if user_id:
+                self.users = {user_id: username}
+            else:
+                self.users = {"default": "User"}
 
     async def _async_update_data(self) -> list[dict[str, Any]]:
         """Fetch sessions from Jellyfin API."""

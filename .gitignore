@@ -48,3 +48,4 @@ build_log_utf8.txt
 # Agent
 .agent/
 .agents/
+.superpowers/

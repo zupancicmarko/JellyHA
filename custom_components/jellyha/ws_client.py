@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import json
+import re
 import aiohttp
 from typing import Optional, Callable, List, Dict, Any
 from urllib.parse import quote
@@ -69,25 +70,32 @@ class JellyfinWebSocketClient:
             
         encoded_id = quote(self._device_id)
         encoded_key = quote(self._api_key)
-        url = f"{url}/socket?api_key={encoded_key}&deviceId={encoded_id}"
+        url = f"{url}/socket?api_key={encoded_key}&token={encoded_key}&deviceId={encoded_id}"
 
         # Jellyfin 12 dropped query-string api_key auth on the API and /socket
         # routes (image/stream routes still accept it), so the token is also sent
         # in the Authorization header. Older servers ignore the header and use the
         # query parameter, so sending both keeps 10.x working.
-        headers = {
-            "Authorization": f'MediaBrowser Client="Home Assistant", '
+        auth_str = (
+            f'MediaBrowser Client="Home Assistant", '
             f'Device="HACS Integration", '
             f'DeviceId="{self._device_id}", '
             f'Version="1.0.0", '
             f'Token="{self._api_key}"'
+        )
+        headers = {
+            "Authorization": auth_str,
+            "X-Emby-Authorization": auth_str,
+            "X-Emby-Token": self._api_key,
+            "X-MediaBrowser-Token": self._api_key,
         }
 
         retry_delay = 2  # Start with 2 seconds
         
         while not self._stop_event.is_set():
             try:
-                _LOGGER.debug("Connecting to Jellyfin WebSocket: %s", url)
+                safe_log_url = re.sub(r'([?&])api_key=[^&]+', r'\1api_key=REDACTED', url)
+                _LOGGER.debug("Connecting to Jellyfin WebSocket: %s", safe_log_url)
                 async with self._session.ws_connect(url, headers=headers) as ws:
                     self._ws = ws
                     self._connected = True

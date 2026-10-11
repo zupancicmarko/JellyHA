@@ -9,19 +9,31 @@ import {
 } from '../shared/types';
 import { localize } from '../shared/localize';
 import { formatRuntime, addImageParams } from '../shared/utils';
+import {
+    resolvePowerState,
+    callPowerAction,
+    resolveTargetPowerEntity,
+    resolveVolumeState,
+    setVolumeLevel,
+    stepVolume,
+    toggleMute,
+    resolveInstanceSensorBase
+} from '../shared/power-volume-helpers';
 
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
 
 // Register card in the custom cards array
-window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === 'jellyha-now-playing-card')) {
-    window.customCards.push({
-        type: 'jellyha-now-playing-card',
-        name: 'JellyHA Now Playing',
-        description: 'Display currently playing media from Jellyfin',
-        preview: true,
-    });
+if (typeof window !== 'undefined') {
+    window.customCards = window.customCards || [];
+    if (!window.customCards.some(card => card.type === 'jellyha-now-playing-card')) {
+        window.customCards.push({
+            type: 'jellyha-now-playing-card',
+            name: 'JellyHA Now Playing',
+            description: 'Display currently playing media from Jellyfin',
+            preview: true,
+        });
+    }
 }
 
 @customElement('jellyha-now-playing-card')
@@ -36,10 +48,15 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _isDragging: boolean = false;
     @state() private _dragPercentage: number = 0;
     @state() private _optimisticSeekPercent: number | null = null;
+    @state() private _powerActivating: boolean = false;
+    @state() private _isVolumeDragging: boolean = false;
+    @state() private _dragVolumePercent: number | null = null;
+    @state() private _optimisticVolume: Record<string, number> = {};
     @state() private _idleItems: MediaItem[] = [];
     @state() private _currentIdleIndex: number = 0;
     @state() private _prevIdleIndex: number | null = null;
     @state() private _idleFadeOut: boolean = false;
+    private _lastHapticVolumeTick: number = 0;
     private _idleTimer?: number;
     private _fetchingIdleItems: boolean = false;
     private _visibilityHandler?: () => void;
@@ -60,6 +77,8 @@ export class JellyHANowPlayingCard extends LitElement {
     private _fetchingMetadataId: string | null = null;
 
     public setConfig(config: JellyHANowPlayingCardConfig): void {
+        const showPowerBtn = config.show_power_button ?? config.show_power ?? true;
+        const showVol = config.show_volume ?? (Boolean(config.volume_entity));
         this._config = {
             show_title: true,
             show_subtitle: true,
@@ -80,7 +99,12 @@ export class JellyHANowPlayingCard extends LitElement {
             idle_cycle_interval: 20,
             idle_display_mode: 'backdrop',
             idle_media_type: 'both',
+            stop_on_power_off: true,
+            show_volume_step_buttons: true,
+            volume_step: 5,
             ...config,
+            show_power_button: showPowerBtn,
+            show_volume: showVol,
         };
     }
 
@@ -235,18 +259,6 @@ export class JellyHANowPlayingCard extends LitElement {
         const effectiveYear = attributes.year ?? cachedItem?.year;
         const yearStr = (this._config.show_year !== false && effectiveYear) ? String(effectiveYear) : '';
 
-        const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
-        const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
-        const hasMetaLine = !!(yearStr || genres.length > 0);
-
-        const effectiveUser = attributes.user_name || this.hass.user?.name || '';
-        const userName = (this._config.show_user !== false) ? effectiveUser : '';
-
-        const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
-        const clientInfo = (this._config.show_client !== false) ? effectiveClient : '';
-        const deviceInfo = (this._config.show_device_name === true) ? (attributes.device_name || '') : '';
-        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
-
         // Media type badge text
         const rawSeason = attributes.season !== undefined && attributes.season !== null ? attributes.season : ((stateObj.attributes as any).media_season !== undefined && (stateObj.attributes as any).media_season !== null ? (stateObj.attributes as any).media_season : cachedItem?.season);
         const rawEpisode = attributes.episode !== undefined && attributes.episode !== null ? attributes.episode : ((stateObj.attributes as any).media_episode !== undefined && (stateObj.attributes as any).media_episode !== null ? (stateObj.attributes as any).media_episode : cachedItem?.episode);
@@ -258,9 +270,11 @@ export class JellyHANowPlayingCard extends LitElement {
             ? `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`
             : (mediaType === 'movie' ? 'MOVIE' : (mediaType === 'episode' ? 'EPISODE' : (mediaType === 'tvshow' ? 'SERIES' : (attributes.media_type || cachedItem?.type || ''))));
 
-        // Badge placement style (applies to both Movies and TV Shows; inline applies to TV Shows)
+        // Badge placement style
         const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
         const showBadge = this._config.show_media_type_badge !== false && !!badgeText;
+        const isInlineBadge = badgeStyle === 'inline';
+        const showInlineBadge = showBadge && isInlineBadge && !!badgeText;
 
         let showPosterBadge = false;
         let showHeaderBadge = false;
@@ -270,21 +284,35 @@ export class JellyHANowPlayingCard extends LitElement {
                 showPosterBadge = true;
             } else if (badgeStyle === 'header') {
                 showHeaderBadge = true;
-            } else if (badgeStyle === 'inline') {
-                if (isEpisodeItem) {
-                    const epPrefix = `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`;
-                    if (displayTitle && !displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
-                        displayTitle = `${epPrefix} • ${displayTitle}`;
-                    } else if (!displayTitle) {
-                        displayTitle = epPrefix;
-                    }
-                }
-                // Movies and other media keep clean displayTitle without any prefix
             }
         }
 
+        // Runtime
+        const rawMinutes = attributes.runtime_minutes || (durationSeconds > 0 ? Math.round(durationSeconds / 60) : (cachedItem?.runtime_minutes || 0));
+        const runtimeFormatted = (mediaType === 'audio' && durationSeconds > 0)
+            ? `${Math.floor(durationSeconds / 60)}m ${Math.floor(durationSeconds % 60)}s`
+            : (rawMinutes > 0 ? formatRuntime(rawMinutes) : '');
+        const runtimeStr = (this._config.show_runtime !== false && runtimeFormatted) ? runtimeFormatted : '';
+
         // Rating
-        const communityRating = attributes.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
+        const rawRating = attributes.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
+        const numRating = Number(rawRating);
+        const communityRating = (!isNaN(numRating) && numRating > 0) ? numRating.toFixed(1) : (rawRating ? String(rawRating) : '');
+        const ratingStr = (this._config.show_ratings !== false && communityRating) ? communityRating : '';
+
+        const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
+        const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
+        const hasMetaLine = isInlineBadge
+            ? !!(showInlineBadge || yearStr || runtimeStr || ratingStr || genres.length > 0)
+            : !!(yearStr || genres.length > 0);
+
+        const effectiveUser = attributes.user_name || (this.hass as any)?.user?.name || '';
+        const userName = (this._config.show_user !== false) ? effectiveUser : '';
+
+        const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
+        const clientInfo = (this._config.show_client !== false) ? effectiveClient : '';
+        const deviceInfo = (this._config.show_device_name === true) ? (attributes.device_name || '') : '';
+        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
 
         // Determine effective favorite status using optimistic override if available
         const isFavorite = currentItemId && this._optimisticFavorites[currentItemId] !== undefined
@@ -317,18 +345,16 @@ export class JellyHANowPlayingCard extends LitElement {
                                 ${showPosterBadge ? html`
                                     <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
                                 ` : nothing}
-                                ${this._config.show_ratings !== false && communityRating ? html`
+                                ${!isInlineBadge && ratingStr ? html`
                                     <span class="poster-badge rating-badge">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${Number(communityRating).toFixed(1)}
+                                        ${ratingStr}
                                     </span>
                                 ` : nothing}
-                                ${this._config.show_runtime !== false && (attributes.runtime_minutes || durationSeconds > 0) ? html`
+                                ${!isInlineBadge && runtimeStr ? html`
                                     <span class="poster-badge runtime-badge">
                                         <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${mediaType === 'audio' && durationSeconds > 0
-                        ? `${Math.floor(durationSeconds / 60)}m ${Math.floor(durationSeconds % 60)}s`
-                        : formatRuntime(attributes.runtime_minutes || Math.round(durationSeconds / 60))}
+                                        ${runtimeStr}
                                     </span>
                                 ` : nothing}
 
@@ -345,18 +371,22 @@ export class JellyHANowPlayingCard extends LitElement {
                                 <div class="header">
                                     <div class="title-row">
                                         ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
-                                        ${showHeaderBadge ? html`
-                                            <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
-                                        ` : nothing}
+                                        <div class="header-actions">
+                                            ${showHeaderBadge ? html`
+                                                <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
+                                            ` : nothing}
+                                            ${this._renderPowerButton()}
+                                        </div>
                                     </div>
                                     ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
-                                    ${this._overflowState < 2 && hasMetaLine ? html`
-                                        <div class="meta-line">
-                                            ${yearStr ? html`<span class="meta-year">${yearStr}</span>` : nothing}
-                                            ${yearStr && genres.length > 0 ? html`<span class="meta-dot">•</span>` : nothing}
-                                            ${genres.map(g => html`<span class="genre-pill">${g}</span>`)}
-                                        </div>
-                                    ` : nothing}
+                                    ${this._overflowState < 2 ? this._renderMetaRow({
+                                        badge: showInlineBadge ? html`<span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>` : nothing,
+                                        year: yearStr,
+                                        runtime: isInlineBadge ? runtimeStr : undefined,
+                                        rating: isInlineBadge ? ratingStr : undefined,
+                                        genres,
+                                        isInline: isInlineBadge,
+                                    }) : nothing}
                                     ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
                                 </div>
                             </div>
@@ -423,6 +453,8 @@ export class JellyHANowPlayingCard extends LitElement {
                                     </div>
                                 ` : nothing}
 
+                                ${this._renderVolumeControls()}
+
                                 <div class="progress-container ${supportsRemote ? '' : 'readonly'}"
                                     @pointerdown=${supportsRemote ? this._startDrag : undefined}
                                     @pointermove=${supportsRemote ? this._handleDrag : undefined}
@@ -481,15 +513,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
             // Get unwatched number - scope to the same instance as this card's entity
             const configEntity = this._config?.entity || '';
-            let entityBase = '';
-            if (configEntity.startsWith('sensor.')) {
-                entityBase = configEntity.replace(/_now_playing.*$/, '');
-            } else if (configEntity.startsWith('media_player.')) {
-                // e.g. media_player.jellyha_admin -> sensor.jellyha
-                const nameWithoutDomain = configEntity.replace(/^media_player\./, '');
-                const prefix = nameWithoutDomain.includes('_') ? nameWithoutDomain.substring(0, nameWithoutDomain.lastIndexOf('_')) : nameWithoutDomain;
-                entityBase = `sensor.${prefix}`;
-            }
+            const entityBase = resolveInstanceSensorBase(configEntity);
             const scopedSensor = entityBase ? `${entityBase}_unwatched` : '';
             // Try scoped sensor first, fall back to global search for single-instance setups
             let unwatchedSensor = scopedSensor && this.hass.states[scopedSensor] ? scopedSensor : '';
@@ -503,6 +527,9 @@ export class JellyHANowPlayingCard extends LitElement {
 
         return html`
             <ha-card class="jellyha-now-playing empty-state">
+                <div class="empty-top-actions">
+                    ${this._renderPowerButton()}
+                </div>
                 <div class="card-content">
                     <div class="logo-container full-logo">
                         <img src="${logoUrl}" alt="JellyHA Logo" />
@@ -621,33 +648,13 @@ export class JellyHANowPlayingCard extends LitElement {
         let subtitle = '';
 
         if (isEpisode) {
-            if (currentItem.series_name) {
-                displayTitle = currentItem.series_name;
-                const epName = currentItem.name && currentItem.name !== currentItem.series_name ? currentItem.name : '';
-                if (epPrefix && epName) {
-                    subtitle = `${epPrefix} · ${epName}`;
-                } else if (epPrefix) {
-                    subtitle = epPrefix;
-                } else {
-                    subtitle = epName || currentItem.tagline || '';
-                }
-            } else {
-                displayTitle = currentItem.name || '';
-                subtitle = epPrefix ? (currentItem.tagline ? `${epPrefix} · ${currentItem.tagline}` : epPrefix) : (currentItem.tagline || '');
-            }
+            displayTitle = currentItem.name || currentItem.series_name || '';
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (currentItem.series_name || currentItem.tagline || '') : '';
         } else {
             displayTitle = currentItem.name || '';
-            subtitle = currentItem.tagline || '';
-        }
-
-        // Show subtitle setting check
-        if (this._config.show_subtitle === false) {
-            subtitle = '';
-            if (showBadge && isInlineBadge && isEpisodeItem && epPrefix) {
-                if (!displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
-                    displayTitle = `${epPrefix} · ${displayTitle}`;
-                }
-            }
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (currentItem.tagline || '') : '';
         }
 
         const isFirstOfItsType = this._idleItems.findIndex(it => {
@@ -661,13 +668,15 @@ export class JellyHANowPlayingCard extends LitElement {
                          this._config.idle_content_source === 'latest_both' ||
                          (this._config.idle_content_source === 'recent' && isFirstOfItsType);
 
+        const isEpisodeWithPrefix = isEpisode && !!epPrefix;
+        const episodeBadgeText = (isLatest && isEpisodeWithPrefix) ? epPrefix : null;
         const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
         const badgeText = isLatest
             ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
-            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? localize(lang, 'episode') || 'Episode' : localize(lang, 'series') || 'Series'));
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisodeWithPrefix ? epPrefix : (localize(lang, 'episode') || 'Episode')));
 
         return html`
-            <ha-card class="jellyha-now-playing idle-showcase-card">
+            <ha-card class="jellyha-now-playing has-background idle-showcase-card">
                 <div class="idle-backdrop-container">
                     <img class="idle-backdrop-img" src="${currentBackdrop}" alt="${currentItem.name}" />
                     ${prevBackdrop ? html`
@@ -676,9 +685,15 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="idle-backdrop-scrim"></div>
                 </div>
 
-                ${isTopBadge ? html`
-                    <span class="media-type-badge idle-backdrop-top-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
-                ` : nothing}
+                <div class="idle-backdrop-top-actions">
+                    ${isTopBadge ? html`
+                        <span class="media-type-badge idle-backdrop-top-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                        ${episodeBadgeText ? html`
+                            <span class="media-type-badge idle-backdrop-top-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                        ` : nothing}
+                    ` : nothing}
+                    ${this._renderPowerButton()}
+                </div>
 
                 <div class="idle-bottom-content">
                     <div class="title-row">
@@ -691,23 +706,19 @@ export class JellyHANowPlayingCard extends LitElement {
                             <span class="subtitle">${subtitle}</span>
                         </div>
                     ` : nothing}
-                    <div class="idle-meta-row">
-                        ${isInlineBadge ? html`
+                    ${this._renderMetaRow({
+                        badge: isInlineBadge ? html`
                             <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
-                            <span class="idle-dot">•</span>
-                        ` : nothing}
-                        ${this._config.show_year !== false && currentItem.year ? html`<span class="idle-meta-text">${currentItem.year}</span>` : nothing}
-                        ${this._config.show_year !== false && currentItem.year && ((this._config.show_runtime !== false && runtime) || (this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                        ${this._config.show_runtime !== false && runtime ? html`<span class="idle-meta-text">${runtime}</span>` : nothing}
-                        ${this._config.show_runtime !== false && runtime && ((this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                        ${this._config.show_ratings !== false && communityRating ? html`
-                            <span class="idle-rating-pill">
-                                <ha-icon icon="mdi:star"></ha-icon>
-                                <span>${communityRating}</span>
-                            </span>
-                        ` : nothing}
-                        ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
-                    </div>
+                            ${episodeBadgeText ? html`
+                                <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                            ` : nothing}
+                        ` : nothing,
+                        year: this._config.show_year !== false && currentItem.year ? currentItem.year : undefined,
+                        runtime: this._config.show_runtime !== false && runtime ? runtime : undefined,
+                        rating: this._config.show_ratings !== false && communityRating ? communityRating : undefined,
+                        genres,
+                        isInline: true,
+                    })}
                     ${this._config.show_description !== false && currentItem.description ? html`
                         <p class="idle-overview">${currentItem.description}</p>
                     ` : nothing}
@@ -754,33 +765,13 @@ export class JellyHANowPlayingCard extends LitElement {
         let subtitle = '';
 
         if (isEpisode) {
-            if (item.series_name) {
-                displayTitle = item.series_name;
-                const epName = item.name && item.name !== item.series_name ? item.name : '';
-                if (epPrefix && epName) {
-                    subtitle = `${epPrefix} · ${epName}`;
-                } else if (epPrefix) {
-                    subtitle = epPrefix;
-                } else {
-                    subtitle = epName || item.tagline || '';
-                }
-            } else {
-                displayTitle = item.name || '';
-                subtitle = epPrefix ? (item.tagline ? `${epPrefix} · ${item.tagline}` : epPrefix) : (item.tagline || '');
-            }
+            displayTitle = item.name || item.series_name || '';
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (item.series_name || item.tagline || '') : '';
         } else {
             displayTitle = item.name || '';
-            subtitle = item.tagline || '';
-        }
-
-        // Show subtitle setting check
-        if (this._config.show_subtitle === false) {
-            subtitle = '';
-            if (showBadge && isInlineBadge && isEpisodeItem && epPrefix) {
-                if (!displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
-                    displayTitle = `${epPrefix} · ${displayTitle}`;
-                }
-            }
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (item.tagline || '') : '';
         }
 
         const isFirstOfItsType = this._idleItems.findIndex(it => {
@@ -794,10 +785,12 @@ export class JellyHANowPlayingCard extends LitElement {
                          this._config.idle_content_source === 'latest_both' ||
                          (this._config.idle_content_source === 'recent' && isFirstOfItsType);
 
+        const isEpisodeWithPrefix = isEpisode && !!epPrefix;
+        const episodeBadgeText = (isLatest && isEpisodeWithPrefix) ? epPrefix : null;
         const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
         const badgeText = isLatest
             ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
-            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? localize(lang, 'episode') || 'Episode' : localize(lang, 'series') || 'Series'));
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisodeWithPrefix ? epPrefix : (localize(lang, 'episode') || 'Episode')));
 
         return html`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
@@ -819,7 +812,12 @@ export class JellyHANowPlayingCard extends LitElement {
                                 <img class="idle-poster-img prev-poster ${this._idleFadeOut ? 'fade-out' : ''}" src="${prevPoster}" alt="" />
                             ` : nothing}
                             ${showBadge && badgeStyle === 'poster' ? html`
-                                <span class="poster-badge media-type-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                <div class="poster-badge-group">
+                                    <span class="poster-badge media-type-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                    ${episodeBadgeText ? html`
+                                        <span class="poster-badge media-type-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                                    ` : nothing}
+                                </div>
                             ` : nothing}
                         </div>
 
@@ -829,32 +827,34 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ${this._config.show_title !== false ? html`
                                         <span class="title" title="${item.series_name ? `${item.series_name} - ${item.name}` : displayTitle}">${displayTitle}</span>
                                     ` : nothing}
-                                    ${showBadge && badgeStyle === 'header' ? html`
-                                        <span class="media-type-badge header-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
-                                    ` : nothing}
+                                    <div class="header-actions">
+                                        ${showBadge && badgeStyle === 'header' ? html`
+                                            <span class="media-type-badge header-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
+                                            ${episodeBadgeText ? html`
+                                                <span class="media-type-badge header-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                                            ` : nothing}
+                                        ` : nothing}
+                                        ${this._renderPowerButton()}
+                                    </div>
                                 </div>
                                 ${subtitle ? html`
                                     <div class="subtitle-row">
                                         <span class="subtitle">${subtitle}</span>
                                     </div>
                                 ` : nothing}
-                                <div class="meta-line idle-meta-row">
-                                    ${showBadge && badgeStyle === 'inline' ? html`
+                                ${this._renderMetaRow({
+                                    badge: (showBadge && badgeStyle === 'inline') ? html`
                                         <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
-                                        <span class="idle-dot">•</span>
-                                    ` : nothing}
-                                    ${this._config.show_year !== false && item.year ? html`<span class="idle-meta-text">${item.year}</span>` : nothing}
-                                    ${this._config.show_year !== false && item.year && ((this._config.show_runtime !== false && runtime) || (this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                                    ${this._config.show_runtime !== false && runtime ? html`<span class="idle-meta-text">${runtime}</span>` : nothing}
-                                    ${this._config.show_runtime !== false && runtime && ((this._config.show_ratings !== false && communityRating) || genres.length > 0) ? html`<span class="idle-dot">•</span>` : nothing}
-                                    ${this._config.show_ratings !== false && communityRating ? html`
-                                        <span class="idle-rating-pill">
-                                            <ha-icon icon="mdi:star"></ha-icon>
-                                            <span>${communityRating}</span>
-                                        </span>
-                                    ` : nothing}
-                                    ${genres.map(g => html`<span class="idle-genre-pill">${g}</span>`)}
-                                </div>
+                                        ${episodeBadgeText ? html`
+                                            <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
+                                        ` : nothing}
+                                    ` : nothing,
+                                    year: this._config.show_year !== false && item.year ? item.year : undefined,
+                                    runtime: this._config.show_runtime !== false && runtime ? runtime : undefined,
+                                    rating: this._config.show_ratings !== false && communityRating ? communityRating : undefined,
+                                    genres,
+                                    isInline: true,
+                                })}
                                 ${this._config.show_description !== false && item.description ? html`
                                     <div class="idle-card-desc">${item.description}</div>
                                 ` : nothing}
@@ -863,6 +863,55 @@ export class JellyHANowPlayingCard extends LitElement {
                     </div>
                 </div>
             </ha-card>
+        `;
+    }
+
+    private _renderMetaRow(options: {
+        badge?: TemplateResult | typeof nothing;
+        year?: string | number | null;
+        runtime?: string | null;
+        rating?: string | number | null;
+        genres?: string[];
+        isInline?: boolean;
+    }): TemplateResult | typeof nothing {
+        const { badge, year, runtime, rating, genres = [], isInline = true } = options;
+        const yearStr = year ? String(year) : '';
+        const runtimeStr = runtime ? String(runtime) : '';
+        const ratingStr = rating ? String(rating) : '';
+        const hasGenres = genres && genres.length > 0;
+        const hasBadge = badge && badge !== nothing;
+
+        const hasAny = hasBadge || !!yearStr || !!runtimeStr || !!ratingStr || hasGenres;
+        if (!hasAny) {
+            return nothing;
+        }
+
+        const afterBadge = !!yearStr || !!runtimeStr || !!ratingStr || hasGenres;
+        const afterYear = !!runtimeStr || !!ratingStr || hasGenres;
+        const afterRuntime = !!ratingStr || hasGenres;
+
+        return html`
+            <div class="meta-line ${isInline ? 'idle-meta-row' : ''}">
+                ${hasBadge ? html`
+                    ${badge}
+                    ${afterBadge ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                ` : nothing}
+                ${yearStr ? html`
+                    <span class="idle-meta-text meta-text meta-year">${yearStr}</span>
+                    ${afterYear ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                ` : nothing}
+                ${runtimeStr ? html`
+                    <span class="idle-meta-text meta-text meta-runtime">${runtimeStr}</span>
+                    ${afterRuntime ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                ` : nothing}
+                ${ratingStr ? html`
+                    <span class="idle-rating-pill rating-pill">
+                        <ha-icon icon="mdi:star"></ha-icon>
+                        <span>${ratingStr}</span>
+                    </span>
+                ` : nothing}
+                ${hasGenres ? genres.map(g => html`<span class="genre-pill idle-genre-pill">${g}</span>`) : nothing}
+            </div>
         `;
     }
 
@@ -1275,7 +1324,6 @@ export class JellyHANowPlayingCard extends LitElement {
         if (!stateObj) return false;
         if (this._config.show_controls === false) return false;
         const attrs = stateObj.attributes as any;
-        if (attrs.supports_remote_control === false) return false;
         const isMediaPlayer = stateObj.entity_id.startsWith('media_player.');
         if (isMediaPlayer && attrs.supported_features !== undefined && attrs.supported_features === 0) {
             return false;
@@ -1367,6 +1415,245 @@ export class JellyHANowPlayingCard extends LitElement {
             item_id: itemId,
             is_favorite: newStatus
         });
+    }
+
+    private get _targetPowerEntity(): string | undefined {
+        return resolveTargetPowerEntity(this._config);
+    }
+
+    private async _handlePowerClick(e: Event): Promise<void> {
+        e.stopPropagation();
+        this._haptic('light');
+        const powerEntity = this._targetPowerEntity;
+        if (!powerEntity || !this.hass) return;
+
+        const stateInfo = resolvePowerState(this.hass, powerEntity, this._config?.power_state_entity);
+
+        // If currently ON or if media is playing and stop_on_power_off is enabled (default true), stop Jellyfin session
+        if ((stateInfo.isOn || !stateInfo.isStateless) && this._config.stop_on_power_off !== false) {
+            const entityId = this._config.entity;
+            const stateObj = this.hass.states[entityId];
+            if (stateObj && (stateObj.state === 'playing' || stateObj.state === 'paused')) {
+                await this._handleControl('Stop');
+            }
+        }
+
+        this._powerActivating = true;
+        this.requestUpdate();
+        setTimeout(() => {
+            this._powerActivating = false;
+            this.requestUpdate();
+        }, 200);
+        await callPowerAction(this.hass, powerEntity, this._config?.power_state_entity);
+    }
+
+    private _handlePowerKeydown(e: KeyboardEvent): void {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this._handlePowerClick(e);
+        }
+    }
+
+    private _renderPowerButton(): TemplateResult | typeof nothing {
+        const powerEntity = this._targetPowerEntity;
+        const showPower = this._config?.show_power_button !== false && this._config?.show_power !== false;
+        if (!powerEntity || !showPower || !this.hass) return nothing;
+
+        const stateInfo = resolvePowerState(this.hass, powerEntity, this._config?.power_state_entity);
+        const stateClass = stateInfo.isStateless ? 'stateless-ready' : (stateInfo.isOn ? 'is-on' : 'is-off');
+        const activatingClass = this._powerActivating ? 'activating' : '';
+        const titleText = stateInfo.isOn ? 'Power Off' : 'Power On';
+
+        return html`
+            <div
+                class="power-btn-hit-area"
+                role="button"
+                tabindex="0"
+                aria-label=${titleText}
+                title=${titleText}
+                @click=${this._handlePowerClick}
+                @keydown=${this._handlePowerKeydown}
+            >
+                <ha-icon-button
+                    class="power-btn ${stateClass} ${activatingClass}"
+                    .label=${titleText}
+                    tabindex="-1"
+                >
+                    <ha-icon icon="mdi:power"></ha-icon>
+                </ha-icon-button>
+            </div>
+        `;
+    }
+
+    private async _handleToggleMute(): Promise<void> {
+        this._haptic('light');
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (!targetEntity || !this.hass) return;
+        await toggleMute(this.hass, targetEntity);
+    }
+
+    private async _handleVolumeStep(deltaPercent: number): Promise<void> {
+        this._haptic('light');
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (!targetEntity || !this.hass) return;
+
+        const optPercent = this._optimisticVolume[targetEntity];
+        const vol = resolveVolumeState(this.hass, this._config?.volume_entity, this._config?.entity, optPercent);
+        const currentPct = this._optimisticVolume[targetEntity] ?? vol.volumePercent;
+        const nextPct = Math.max(0, Math.min(100, Math.round(currentPct + deltaPercent)));
+
+        this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: nextPct };
+        this.requestUpdate();
+
+        await stepVolume(this.hass, targetEntity, deltaPercent / 100, currentPct / 100);
+    }
+
+    private _startVolumeDrag(e: PointerEvent): void {
+        e.stopPropagation();
+        e.preventDefault();
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (!track) return;
+
+        track.setPointerCapture(e.pointerId);
+        this._isVolumeDragging = true;
+        this._haptic('selection');
+
+        const rect = track.getBoundingClientRect();
+        const pct = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+        this._dragVolumePercent = pct;
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity) {
+            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: pct };
+        }
+        this._lastHapticVolumeTick = Math.floor(pct / 5);
+    }
+
+    private _handleVolumeDrag(e: PointerEvent): void {
+        if (!this._isVolumeDragging) return;
+        e.stopPropagation();
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (!track) return;
+
+        const rect = track.getBoundingClientRect();
+        const pct = Math.min(100, Math.max(0, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+        this._dragVolumePercent = pct;
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity) {
+            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: pct };
+        }
+
+        // Trigger selection haptic on 5% notches
+        const notch = Math.floor(pct / 5);
+        if (notch !== this._lastHapticVolumeTick) {
+            this._lastHapticVolumeTick = notch;
+            this._haptic('selection');
+        }
+    }
+
+    private async _endVolumeDrag(e: PointerEvent): Promise<void> {
+        if (!this._isVolumeDragging) return;
+        e.stopPropagation();
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (track && track.hasPointerCapture(e.pointerId)) {
+            track.releasePointerCapture(e.pointerId);
+        }
+
+        const finalPercent = this._dragVolumePercent ?? 0;
+        this._isVolumeDragging = false;
+        this._dragVolumePercent = null;
+
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity && this.hass) {
+            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: finalPercent };
+            this.requestUpdate();
+            await setVolumeLevel(this.hass, targetEntity, finalPercent / 100);
+        }
+    }
+
+    private _cancelVolumeDrag(e: PointerEvent): void {
+        if (!this._isVolumeDragging) return;
+        const track = (e.currentTarget as HTMLElement).closest('.volume-slider-track') as HTMLElement || (e.currentTarget as HTMLElement);
+        if (track && track.hasPointerCapture(e.pointerId)) {
+            track.releasePointerCapture(e.pointerId);
+        }
+        this._isVolumeDragging = false;
+        this._dragVolumePercent = null;
+        this.requestUpdate();
+    }
+
+    private _renderVolumeControls(): TemplateResult | typeof nothing {
+        const shouldShowVolume = this._config?.show_volume === true || (this._config?.show_volume !== false && Boolean(this._config?.volume_entity));
+        if (!shouldShowVolume || !this.hass) return nothing;
+
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        const optPercent = targetEntity ? this._optimisticVolume[targetEntity] : undefined;
+        const vol = resolveVolumeState(this.hass, this._config?.volume_entity, this._config?.entity, optPercent);
+        const isMuted = vol.isMuted;
+        
+        let volumePercent: number;
+        if (this._isVolumeDragging && this._dragVolumePercent !== null) {
+            volumePercent = this._dragVolumePercent;
+        } else if (targetEntity && this._optimisticVolume[targetEntity] !== undefined) {
+            volumePercent = this._optimisticVolume[targetEntity];
+        } else {
+            volumePercent = vol.volumePercent;
+        }
+
+        const showStepButtons = this._config?.show_volume_step_buttons !== false;
+        const stepPct = (typeof this._config?.volume_step === 'number' && this._config.volume_step > 0) ? this._config.volume_step : 5;
+
+        const muteIcon = isMuted ? 'mdi:volume-mute' : (volumePercent === 0 ? 'mdi:volume-off' : (volumePercent < 50 ? 'mdi:volume-medium' : 'mdi:volume-high'));
+
+        return html`
+            <div class="volume-capsule ${!showStepButtons ? 'no-step-buttons' : ''}">
+                <ha-icon-button
+                    class="volume-btn mute-btn ${isMuted ? 'muted' : ''}"
+                    .label=${isMuted ? 'Unmute' : 'Mute'}
+                    title=${isMuted ? 'Unmute' : 'Mute'}
+                    @click=${this._handleToggleMute}
+                >
+                    <ha-icon icon="${muteIcon}"></ha-icon>
+                </ha-icon-button>
+
+                <div
+                    class="volume-slider-track"
+                    @pointerdown=${this._startVolumeDrag}
+                    @pointermove=${this._handleVolumeDrag}
+                    @pointerup=${this._endVolumeDrag}
+                    @pointercancel=${this._cancelVolumeDrag}
+                >
+                    <div
+                        class="volume-slider-fill"
+                        style="width: ${volumePercent}%; background: ${this._dominantColor};"
+                    ></div>
+                    <div
+                        class="volume-slider-thumb"
+                        style="left: ${volumePercent}%; background: ${this._dominantColor};"
+                    ></div>
+                </div>
+
+                <span class="volume-pct">${volumePercent}%</span>
+
+                ${showStepButtons ? html`
+                    <ha-icon-button
+                        class="volume-btn volume-step-btn"
+                        .label=${`Decrease volume by ${stepPct}%`}
+                        title=${`-${stepPct}%`}
+                        @click=${() => this._handleVolumeStep(-stepPct)}
+                    >
+                        <ha-icon icon="mdi:minus"></ha-icon>
+                    </ha-icon-button>
+                    <ha-icon-button
+                        class="volume-btn volume-step-btn"
+                        .label=${`Increase volume by ${stepPct}%`}
+                        title=${`+${stepPct}%`}
+                        @click=${() => this._handleVolumeStep(stepPct)}
+                    >
+                        <ha-icon icon="mdi:plus"></ha-icon>
+                    </ha-icon-button>
+                ` : nothing}
+            </div>
+        `;
     }
 
     private _getDragPercent(e: PointerEvent): number {
@@ -1615,6 +1902,7 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private _extractDominantColor(imgUrl: string): void {
+        if (typeof Image === 'undefined') return;
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
@@ -1799,7 +2087,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         // If card is in empty or error state, clear layout classes and exit immediately
         if (haCard.classList.contains('empty-state') || haCard.classList.contains('error-state')) {
-            haCard.classList.remove('compact-height', 'micro-height', 'tall-narrow', 'very-tall-narrow');
+            haCard.classList.remove('compact-height', 'micro-height', 'tall-narrow', 'very-tall-narrow', 'compact-width');
             return;
         }
 
@@ -1822,6 +2110,9 @@ export class JellyHANowPlayingCard extends LitElement {
             ? (h >= 295 && w <= 455)
             : (h >= 305 && w <= 445);
         haCard.classList.toggle('very-tall-narrow', isVeryTallNarrow);
+
+        const isNarrow = haCard.classList.contains('compact-width') ? w <= 310 : w <= 300;
+        haCard.classList.toggle('compact-width', isNarrow);
 
         const titleEl = this.shadowRoot?.querySelector('.title') as HTMLElement;
         const bottomEl = this.shadowRoot?.querySelector('.info-bottom') as HTMLElement;
@@ -1929,6 +2220,10 @@ export class JellyHANowPlayingCard extends LitElement {
             color: #fff !important;
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
+        .jellyha-now-playing.has-background .title,
+        .jellyha-now-playing.has-background .subtitle {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+        }
         .jellyha-now-playing.has-background .poster-badge {
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
@@ -1949,7 +2244,7 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             background-size: cover;
             background-position: center;
-            filter: blur(5px) brightness(0.6);
+            filter: blur(5px) brightness(0.72);
             transform: scale(1.02);
             z-index: 0;
             transition: background-image 0.5s ease-in-out;
@@ -1960,7 +2255,7 @@ export class JellyHANowPlayingCard extends LitElement {
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0.52) 100%);
             z-index: 1;
         }
         .card-content {
@@ -2028,6 +2323,20 @@ export class JellyHANowPlayingCard extends LitElement {
             white-space: nowrap;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
         }
+        .poster-badge-group {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            z-index: 5;
+            pointer-events: none;
+            max-width: calc(100% - 12px);
+        }
+        .poster-badge-group .poster-badge {
+            position: static !important;
+        }
         .media-type-badge {
             top: 6px;
             left: 6px;
@@ -2093,7 +2402,8 @@ export class JellyHANowPlayingCard extends LitElement {
             font-weight: 800;
             letter-spacing: 0.3px;
             text-transform: uppercase;
-            padding: 0 8px;
+            padding: 1.5px 8px 0.5px 8px;
+            line-height: 1;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
             pointer-events: none;
@@ -2260,7 +2570,8 @@ export class JellyHANowPlayingCard extends LitElement {
             margin-bottom: 3px;
             line-height: 1.2;
         }
-        .meta-year {
+        .meta-year,
+        .meta-runtime {
             font-size: 0.85rem;
             font-weight: 500;
         }
@@ -2269,16 +2580,39 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 0.72rem;
             line-height: 1;
         }
+        ha-card:not(.has-background) .idle-meta-row,
+        ha-card:not(.has-background) .meta-line {
+            color: var(--secondary-text-color);
+            text-shadow: none;
+        }
+        ha-card:not(.has-background) .idle-meta-text,
+        ha-card:not(.has-background) .meta-text {
+            color: var(--secondary-text-color);
+        }
+        ha-card:not(.has-background) .idle-dot,
+        ha-card:not(.has-background) .meta-dot {
+            color: var(--secondary-text-color);
+        }
+        ha-card:not(.has-background) .idle-genre-pill,
+        ha-card:not(.has-background) .genre-pill {
+            background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
+            border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
+            color: var(--secondary-text-color);
+            text-shadow: none;
+        }
         .genre-pill {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            height: 22px;
+            box-sizing: border-box;
             background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
             border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
-            padding: 2px 7px;
+            padding: 0 7px;
             border-radius: 4px;
             font-size: 0.80rem;
             color: var(--secondary-text-color);
-            line-height: 1.2;
+            line-height: 1;
             font-weight: 500;
             white-space: nowrap;
         }
@@ -2382,6 +2716,348 @@ export class JellyHANowPlayingCard extends LitElement {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
             50% { transform: scale(1.15); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* --- Header Actions & Uniform Power Button --- */
+        .header-actions {
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        .header-actions .media-type-badge.header-badge {
+            margin-top: 0 !important;
+            align-self: center !important;
+        }
+        .idle-backdrop-top-actions {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 5;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .idle-backdrop-top-actions .media-type-badge.idle-backdrop-top-badge {
+            position: static !important;
+            margin: 0 !important;
+        }
+        .empty-top-actions {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            z-index: 5;
+        }
+
+        .power-btn-hit-area {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+            cursor: pointer;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .power-btn-hit-area::before {
+            content: '';
+            position: absolute;
+            top: -11px;
+            right: -11px;
+            bottom: -11px;
+            left: -11px;
+            border-radius: 14px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        .power-btn-hit-area:hover .power-btn {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: rgba(255, 255, 255, 0.28) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+        }
+        .power-btn-hit-area:active .power-btn {
+            transform: scale(0.94) !important;
+            transition: transform 0.08s ease;
+        }
+        .power-btn-hit-area:focus-visible .power-btn {
+            outline: 2px solid var(--primary-color, #03a9f4) !important;
+            outline-offset: 2px;
+        }
+
+        .power-btn {
+            --mdc-icon-button-size: 26px !important;
+            --mdc-icon-size: 16px !important;
+            --mdc-ripple-color: transparent !important;
+            --ha-ripple-color: transparent !important;
+            --md-ripple-hover-color: transparent !important;
+            --md-ripple-pressed-color: transparent !important;
+            --md-ripple-focus-color: transparent !important;
+            width: 26px !important;
+            height: 26px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.16) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+            padding: 0 !important;
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer;
+            outline: none !important;
+            transition: background 0.15s ease, transform 0.08s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            box-sizing: border-box !important;
+            flex-shrink: 0;
+            pointer-events: none;
+            transform-origin: center center;
+        }
+        .power-btn ha-icon {
+            --mdc-icon-size: 16px !important;
+            width: 16px !important;
+            height: 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            transform-origin: center center;
+        }
+        .power-btn:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border-color: rgba(255, 255, 255, 0.28) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+            outline: none !important;
+        }
+        .power-btn:focus,
+        .power-btn:focus-visible {
+            outline: none !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+        }
+        ha-icon-button.power-btn::part(ripple) {
+            display: none !important;
+        }
+        ha-icon-button.power-btn mwc-ripple,
+        ha-icon-button.power-btn md-ripple {
+            display: none !important;
+        }
+        ha-icon-button.power-btn::part(button) {
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .power-btn:active {
+            transform: scale(0.94) !important;
+            transition: transform 0.08s ease;
+        }
+        .power-btn.is-on,
+        .jellyha-now-playing.has-background .power-btn.is-on {
+            background: rgba(255, 255, 255, 0.75) !important;
+            border: 1px solid rgba(255, 255, 255, 0.75) !important;
+            color: #111111 !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+        }
+        .power-btn.is-on ha-icon {
+            color: #111111 !important;
+        }
+        .power-btn-hit-area:hover .power-btn.is-on,
+        .power-btn.is-on:hover {
+            background: rgba(255, 255, 255, 0.88) !important;
+            border-color: rgba(255, 255, 255, 0.88) !important;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35) !important;
+            color: #000000 !important;
+        }
+        .power-btn-hit-area:hover .power-btn.is-on ha-icon,
+        .power-btn.is-on:hover ha-icon {
+            color: #000000 !important;
+        }
+
+        .power-btn.stateless-ready,
+        .jellyha-now-playing.has-background .power-btn.stateless-ready {
+            color: #ffffff !important;
+        }
+        .power-btn.stateless-ready ha-icon {
+            color: #ffffff !important;
+        }
+        .power-btn.is-off,
+        .jellyha-now-playing.has-background .power-btn.is-off {
+            color: rgba(255, 255, 255, 0.45) !important;
+        }
+        .power-btn.is-off ha-icon {
+            color: rgba(255, 255, 255, 0.45) !important;
+        }
+        .power-btn.activating {
+            animation: powerTap 0.2s ease-out;
+        }
+        @keyframes powerTap {
+            0% { transform: scale(0.94); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- Option 1 Capsule Volume Slider --- */
+        .volume-capsule {
+            height: 38px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+            margin-top: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+        .volume-capsule.no-step-buttons {
+            padding-right: 14px;
+        }
+        .volume-capsule.no-step-buttons .volume-pct {
+            margin-right: 0;
+        }
+        .volume-btn {
+            --mdc-icon-button-size: 28px !important;
+            --mdc-icon-size: 18px !important;
+            --mdc-ripple-color: transparent !important;
+            --ha-icon-button-inactive-color: rgba(255, 255, 255, 0.85) !important;
+            width: 28px !important;
+            height: 28px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .volume-btn:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+        }
+        .volume-btn:active {
+            background: rgba(255, 255, 255, 0.28) !important;
+            transform: scale(0.92) !important;
+            box-shadow: none !important;
+            filter: none !important;
+        }
+        ha-icon-button.volume-btn::part(ripple) {
+            display: none !important;
+        }
+        ha-icon-button.volume-btn ha-icon {
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+            background: transparent !important;
+        }
+        .mute-btn {
+            color: #ffffff !important;
+            --mdc-icon-size: 18px !important;
+        }
+        .mute-btn.muted,
+        .mute-btn.muted ha-icon {
+            color: #ef4444 !important;
+        }
+        .volume-step-btn,
+        .jellyha-now-playing.has-background .volume-step-btn {
+            --mdc-icon-button-size: 28px !important;
+            --mdc-icon-size: 16px !important;
+            width: 28px !important;
+            height: 28px !important;
+            color: rgba(255, 255, 255, 0.75) !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+        }
+        .volume-step-btn ha-icon {
+            color: rgba(255, 255, 255, 0.75) !important;
+            background: transparent !important;
+        }
+        .volume-step-btn:hover,
+        .volume-step-btn:hover ha-icon {
+            color: #ffffff !important;
+        }
+        .volume-slider-track {
+            flex: 1;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.20);
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+        }
+        .volume-slider-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            border-radius: 9999px;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .volume-slider-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 28px;
+            max-width: 100%;
+            background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.28) 100%);
+            pointer-events: none;
+        }
+        .volume-slider-thumb {
+            position: absolute;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: -2px 0 6px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+            filter: blur(0.5px);
+            pointer-events: none;
+            transition: transform 0.1s ease;
+        }
+        .volume-slider-track:hover .volume-slider-thumb,
+        .volume-slider-track:active .volume-slider-thumb {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .volume-pct {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            min-width: 32px;
+            text-align: right;
+            margin-left: 2px;
+            margin-right: 2px;
+            user-select: none;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
         }
 
         /* --- Progress bar with seek handle --- */
@@ -2525,8 +3201,8 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
-        /* Adjust layout when very narrow */
-        @container now-playing (max-width: 280px) {
+        /* Adjust layout when very narrow / minimized */
+        @container now-playing (max-width: 380px) {
             .main-container {
                 gap: 12px;
             }
@@ -2542,6 +3218,54 @@ export class JellyHANowPlayingCard extends LitElement {
                 font-size: 0.7rem;
                 padding: 1px 5px;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
+        }
+
+        ha-card.compact-width .volume-slider-track,
+        ha-card.tall-narrow .volume-slider-track,
+        ha-card.very-tall-narrow .volume-slider-track,
+        ha-card.micro-height .volume-slider-track,
+        ha-card.compact-width .volume-slider-thumb,
+        ha-card.tall-narrow .volume-slider-thumb,
+        ha-card.very-tall-narrow .volume-slider-thumb,
+        ha-card.micro-height .volume-slider-thumb,
+        ha-card.compact-width .volume-slider-fill,
+        ha-card.tall-narrow .volume-slider-fill,
+        ha-card.very-tall-narrow .volume-slider-fill,
+        ha-card.micro-height .volume-slider-fill {
+            display: none !important;
+        }
+        ha-card.compact-width .volume-capsule,
+        ha-card.tall-narrow .volume-capsule,
+        ha-card.very-tall-narrow .volume-capsule,
+        ha-card.micro-height .volume-capsule {
+            gap: 6px !important;
+            padding: 0 8px !important;
+            margin-top: 6px !important;
+            margin-bottom: 6px !important;
+        }
+        ha-card.compact-width .volume-pct,
+        ha-card.tall-narrow .volume-pct,
+        ha-card.very-tall-narrow .volume-pct,
+        ha-card.micro-height .volume-pct {
+            flex: 1 !important;
+            text-align: center !important;
+            margin: 0 !important;
         }
 
         ha-card:not(.empty-state):not(.error-state).compact-height .card-header {
@@ -2701,6 +3425,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
         }
 
         /* Height-Based Compact Mode */
@@ -2831,6 +3571,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 line-height: 1 !important;
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
+            }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
             }
         }
 
@@ -2966,6 +3722,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
         }
 
         /* Very Tall but Narrow Mode */
@@ -3100,6 +3872,22 @@ export class JellyHANowPlayingCard extends LitElement {
                 padding: 5px 8px 4px !important;
                 white-space: nowrap;
             }
+            .volume-slider-track,
+            .volume-slider-thumb,
+            .volume-slider-fill {
+                display: none !important;
+            }
+            .volume-capsule {
+                gap: 6px !important;
+                padding: 0 8px !important;
+                margin-top: 6px !important;
+                margin-bottom: 6px !important;
+            }
+            .volume-pct {
+                flex: 1 !important;
+                text-align: center !important;
+                margin: 0 !important;
+            }
         }
 
         /* =========================================================================
@@ -3158,11 +3946,12 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             background: linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.4) 0%,
+                rgba(0, 0, 0, 0.35) 0%,
                 rgba(0, 0, 0, 0) 25%,
-                rgba(0, 0, 0, 0.05) 45%,
-                rgba(0, 0, 0, 0.6) 70%,
-                rgba(0, 0, 0, 0.94) 100%
+                rgba(0, 0, 0, 0) 55%,
+                rgba(0, 0, 0, 0.22) 72%,
+                rgba(0, 0, 0, 0.55) 88%,
+                rgba(0, 0, 0, 0.82) 100%
             );
             pointer-events: none;
             z-index: 3;
@@ -3185,39 +3974,44 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 1.35rem;
             font-weight: 700;
             line-height: 1.2;
-            color: #ffffff;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .idle-meta-row {
+        .idle-meta-row,
+        .meta-line.idle-meta-row {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 6px 8px;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             margin: 4px 0 7px 0 !important;
             line-height: 1;
         }
 
-        .idle-meta-text {
+        .idle-meta-text,
+        .meta-text {
             display: inline-flex;
             align-items: center;
             height: 22px;
             line-height: 1;
             font-size: 0.85rem;
             font-weight: 500;
+            color: #ffffff;
             transform: translateY(1px);
         }
 
-        .idle-dot {
-            opacity: 0.5;
+        .idle-dot,
+        .meta-dot {
+            opacity: 0.6;
             font-size: 0.72rem;
+            color: #ffffff;
             display: inline-flex;
             align-items: center;
             height: 22px;
@@ -3225,9 +4019,11 @@ export class JellyHANowPlayingCard extends LitElement {
             transform: translateY(0.5px);
         }
 
-        .idle-rating-pill {
+        .idle-rating-pill,
+        .rating-pill {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 3px;
             background: rgba(245, 158, 11, 0.25);
             border: 1px solid rgba(245, 158, 11, 0.45);
@@ -3242,38 +4038,45 @@ export class JellyHANowPlayingCard extends LitElement {
             flex-shrink: 0;
         }
 
-        .idle-rating-pill ha-icon {
+        .idle-rating-pill ha-icon,
+        .rating-pill ha-icon {
             --mdc-icon-size: 12px;
             width: 12px;
             height: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: -1px;
+            transform: translateY(-1px);
+            margin: 0;
+            padding: 0;
             flex-shrink: 0;
         }
 
-        .idle-rating-pill span {
+        .idle-rating-pill span,
+        .rating-pill span {
             display: inline-flex;
             align-items: center;
             line-height: 1;
-            transform: translateY(0.5px);
         }
 
-        .idle-genre-pill {
+        .idle-genre-pill,
+        .genre-pill.idle-genre-pill,
+        .genre-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             height: 22px;
-            padding: 0 7px;
+            padding: 0 7px !important;
             border-radius: 4px;
-            font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1;
+            font-size: 0.80rem;
+            color: #ffffff;
+            font-weight: 500;
+            line-height: 1 !important;
             box-sizing: border-box;
             flex-shrink: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
         }
 
         .idle-overview {
@@ -3343,8 +4146,12 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 110%;
             object-fit: cover;
             object-position: center;
-            filter: blur(5px) brightness(0.6);
+            filter: blur(5px) brightness(0.72);
             opacity: 1;
+        }
+
+        .idle-card-mode .card-overlay {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0.52) 100%);
         }
 
         .idle-card-mode .idle-card-bg-img.prev-bg {
@@ -3359,6 +4166,8 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         .idle-card-mode .title {
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
             margin-top: 4px;
             margin-bottom: 0;
             line-height: 1.25;
@@ -3371,11 +4180,11 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         .idle-showcase-card .subtitle,
-        .idle-card-mode .subtitle {
-            font-size: 0.95rem;
-            font-weight: 500;
+        .idle-card-mode .subtitle,
+        .idle-bottom-content .subtitle {
+            font-size: 1.05rem;
+            font-weight: 400;
             color: rgba(255, 255, 255, 0.78);
-            letter-spacing: 0.2px;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
             margin: 0;
             line-height: 1.25;

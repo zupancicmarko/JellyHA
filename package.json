@@ -1,6 +1,6 @@
 {
     "name": "jellyha",
-    "version": "1.5.7",
+    "version": "1.6.0",
     "description": "Jellyfin Custom Integration for Home Assistant",
     "main": "custom_components/jellyha/www/jellyha-cards.js",
     "type": "module",
@@ -26,6 +26,7 @@
         "vitest": "^1.0.0"
     },
     "dependencies": {
+        "hls.js": "^1.7.3",
         "lit": "^3.1.0"
     }
 }
