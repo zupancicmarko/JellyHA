@@ -281,9 +281,9 @@ show_background: true
 | `idle_display_mode` | string | `'backdrop'` | Idle display presentation: `'backdrop'` (full-bleed fanart screensaver) or `'card'` (poster + backdrop spotlight) |
 | `idle_media_type` | string | `'all'` | Media types to cycle during idle: `'all'` (Movies & TV Shows), `'movies'` (Movies only), `'tvshows'` (TV Shows only), or `'movies_episodes'` (Movies & Episodes) |
 
-### Ambient Idle Showcase (Screensaver & Latest Spotlight)
+### Ambient Idle Showcase (Poster or Fanart)
 
-When nothing is actively playing, the Now Playing Card can automatically cycle through your Jellyfin library media covers and fanart backdrops, or spotlight your latest movie / episode additions.
+When nothing is actively playing, the Now Playing Card can automatically cycle through your Jellyfin library media covers and fanart backdrops, or spotlight your latest movie / episode additions. You can choose to display either the media poster or fanart when `idle_backdrop_cycle` is set to `true`.
 
 The card directly respects all display settings (`show_title`, `show_year`, `show_runtime`, `show_ratings`, `show_genres`, `show_media_type_badge`, `badge_style`, `show_subtitle`, `show_description`) during idle mode. When spotlighting latest items, the badge dynamically displays `LATEST MOVIE` or `LATEST EPISODE`.
 
@@ -298,14 +298,12 @@ idle_display_mode: card           # 'backdrop' (full fanart) or 'card' (poster +
 idle_media_type: all              # 'all', 'movies', 'tvshows', or 'movies_episodes'
 ```
 
-- **Smooth Crossfades**: Overlapping image layers ensure seamless opacity transitions without flicker.
-- **Resource Efficient**: Playback automatically halts the rotation timer, and document visibility listeners pause transitions when dashboard tabs are hidden or inactive.
 
 ### Playback Controls & Hold-to-Stop
 
 The Now Playing Card includes built-in playback gestures:
 - **Tap Play / Pause**: Toggles playback state (`play` / `pause`).
-- **Hold Play / Pause (800ms)**: Acts as a **Stop** button (`media_player.media_stop`). While holding the button, an animated red progress ring fills around it with haptic vibration feedback when the stop command is triggered.
+- **Hold Play / Pause (800ms)**: Acts as a **Stop** button (`media_player.media_stop`). While **holding the button**, an animated red progress ring fills around it with haptic vibration feedback when the **stop command is triggered**.
 - **Progress Bar Seek**: Tap or drag across the timeline bar to seek through media.
 - **Rewind Button**: Quickly jumps back 20 seconds.
 
@@ -313,12 +311,11 @@ The Now Playing Card includes built-in playback gestures:
 
 The Now Playing Card integrates direct hardware power management into the card header across Active Playback, Ambient Showcase, and Idle states:
 - **Consistent Top-Right Placement**: Always positioned at the top right with uniform `36px` circular glass dimensions.
-- **Clear Power Status**: Crisp white (`#ffffff`, matching the pause icon) when ON or ready; dimmed gray-white (`rgba(255, 255, 255, 0.45)`, matching the `−` volume button) when OFF or in standby. Zero artificial cyan glow.
+- **Clear Power Status**: Crisp white power icon when ON or ready; dimmed gray-white when OFF or in standby.
 - **Supported Domains**: Works with `media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`, and `input_boolean.*`.
 - **Automatic Fallback**: If `power_entity` is omitted, the card automatically falls back to controlling the primary media player `entity`.
 - **Deterministic Control**: When target is a `media_player`, directly issues `media_player.turn_off` and `media_player.turn_on` rather than toggling apps.
 - **Auto-Stop on Power Off**: Powering off the TV while content is playing automatically halts the Jellyfin session and saves playback progress (`stop_on_power_off: true`).
-- **Tactile Feedback**: Pressing the power button provides `_haptic('light')` and a momentary visual depression and pulse animation.
 
 #### How `power_entity` and `power_state_entity` Work Together
 
@@ -326,7 +323,8 @@ Many TVs, projectors, or displays are controlled via stateless methods (IR blast
 
 To solve this, JellyHA provides **Dual-Entity Pairing**:
 - **`power_entity`**: The entity that executes the power command (e.g., `switch.living_room_tv`, `media_player.lg_tv`, `script.tv_toggle`).
-- **`power_state_entity`**: An optional secondary sensor that reports the true operational state of the display (e.g., `binary_sensor.tv_ping`, smart plug power meter, or UniFi device tracker). JellyHA automatically treats states `on`, `playing`, `paused`, `idle`, `home`, and `active` as **ON**, and `off`, `standby`, or `not_home` as **OFF**.
+- **`power_state_entity`**: An optional secondary sensor that reports the true operational state of the display (e.g., `binary_sensor.tv_ping`, smart plug power meter, or UniFi device tracker). JellyHA automatically treats states `on`, `connected`, `playing`, `paused`, `idle`, `home`, and `active` as **ON**, and `off`, `disconnected`, `standby`, or `not_home` as **OFF**.
+To learn more about ICMP (ping) follow here: https://www.home-assistant.io/integrations/ping/
 
 ---
 
@@ -443,16 +441,16 @@ volume_step: 5
 
 ### Media Type Badge Presentation (`badge_style`)
 
-By default, media type badges (`S01E02` for episodes, `MOVIE` for films, `AUDIO` for music) appear as colored pill badges on the top-left corner of the poster image (`badge_style: poster`).
+By default, media type badges (`S01E02` for episodes, `MOVIE` for films) appear as colored pill badges on the top-left corner of the poster image (`badge_style: poster`).
 
 If you prefer your poster artwork or episode screenshot thumbnails to remain completely unobstructed, you can customize the badge presentation using `badge_style` (or in the card visual editor under **Badge Style**):
 
-| `badge_style` | TV Episodes | Movies & Music | Poster Artwork |
+| `badge_style` | TV Episodes | Movies | Poster Artwork |
 |---|---|---|---|
-| **`poster`** *(default)* | `S01E02` pill on top-left of artwork | `MOVIE` / `AUDIO` pill on top-left of artwork | Overlaid badge |
-| **`header`** | `S01E02` pill in header right-aligned next to episode title | `MOVIE` / `AUDIO` pill in header right-aligned next to title | **100% Uncovered** |
-| **`inline`** | Prepend `S01E02 • ` directly to episode title text (e.g. `S01E02 • Pilot`) | Clean title without prefix (no badge) | **100% Uncovered** |
-| **`none`** | Hidden (no badge or prefix) | Hidden (no badge) | **100% Uncovered** |
+| **`poster`** *(default)* | `S01E02` pill on top-left of artwork | `MOVIE` pill on top-left of artwork | Overlaid badge (runtime and rating on bottom) |
+| **`header`** | `S01E02` pill in header right-aligned next to episode title | `MOVIE` pill in header right-aligned next to title | Top of poster artwork **100% Uncovered** |
+| **`inline`** | `S01E02` pill displayed inline at start of metadata row (e.g. `[S01E02] • 2026 • 53m • ★ 7.4 • Crime`) | `MOVIE` pill displayed inline at start of metadata row (e.g. `[MOVIE] • 2026 • 2h 15m • ★ 8.1 • Action`) | **100% Uncovered** (runtime and rating badges also move inline, mirroring ambient showcase layout) |
+| **`none`** | Hidden (no media type badge) | Hidden (no media type badge) | Top of poster artwork **100% Uncovered** |
 
 #### Example: Uncovered Artwork with Header Badge
 ```yaml
@@ -463,13 +461,14 @@ badge_style: header
 show_background: true
 ```
 
-#### Example: Streamlined Minimal Title Prefix
+#### Example: Inline Metadata Row Badge
 ```yaml
 type: custom:jellyha-now-playing-card
 entity: media_player.jellyha_admin
 badge_style: inline
-show_background: false
+show_background: true
 ```
+*In `badge_style: inline`, the media type badge (`MOVIE`, `S01E06`, etc.) moves directly into the metadata row alongside the release year, total runtime, rating score, and genre pills. The poster artwork remains completely uncovered, providing a clean presentation that mirrors the ambient screensaver showcase layout.*
 
 ### Migrating from Legacy Now Playing Sensors (`sensor.jellyha_now_playing_*`)
 
