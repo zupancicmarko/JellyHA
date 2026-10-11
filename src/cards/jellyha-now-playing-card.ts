@@ -2383,7 +2383,8 @@ export class JellyHANowPlayingCard extends LitElement {
             font-weight: 800;
             letter-spacing: 0.3px;
             text-transform: uppercase;
-            padding: 0 8px;
+            padding: 1.5px 8px 0.5px 8px;
+            line-height: 1;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
             pointer-events: none;
@@ -2575,11 +2576,11 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
             border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
-            padding: 2px 7px;
+            padding: 3px 7px 1px 7px;
             border-radius: 4px;
             font-size: 0.80rem;
             color: var(--secondary-text-color);
-            line-height: 1.2;
+            line-height: 1;
             font-weight: 500;
             white-space: nowrap;
         }
@@ -3946,7 +3947,7 @@ export class JellyHANowPlayingCard extends LitElement {
             border: 1px solid rgba(245, 158, 11, 0.45);
             color: #fbbf24;
             height: 22px;
-            padding: 0 6px;
+            padding: 1px 6px 0 6px;
             border-radius: 4px;
             font-size: 0.78rem;
             font-weight: 700;
@@ -3962,7 +3963,7 @@ export class JellyHANowPlayingCard extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: -1px;
+            margin-top: 0;
             flex-shrink: 0;
         }
 
@@ -3970,21 +3971,21 @@ export class JellyHANowPlayingCard extends LitElement {
             display: inline-flex;
             align-items: center;
             line-height: 1;
-            transform: translateY(0.5px);
         }
 
-        .idle-genre-pill {
+        .idle-genre-pill,
+        .genre-pill.idle-genre-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.16);
             height: 22px;
-            padding: 0 7px;
+            padding: 2px 7px 0 7px !important;
             border-radius: 4px;
             font-size: 0.78rem;
             color: rgba(255, 255, 255, 0.9);
-            line-height: 1;
+            line-height: 1 !important;
             box-sizing: border-box;
             flex-shrink: 0;
         }
