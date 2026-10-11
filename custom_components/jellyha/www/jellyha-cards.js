@@ -10755,9 +10755,12 @@ C.styles = Se`
         .genre-pill {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            height: 22px;
+            box-sizing: border-box;
             background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
             border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
-            padding: 3px 7px 1px 7px;
+            padding: 0 7px;
             border-radius: 4px;
             font-size: 0.80rem;
             color: var(--secondary-text-color);
@@ -12210,7 +12213,7 @@ C.styles = Se`
             background: rgba(255, 255, 255, 0.12);
             border: 1px solid rgba(255, 255, 255, 0.22);
             height: 22px;
-            padding: 2px 7px 0 7px !important;
+            padding: 0 7px !important;
             border-radius: 4px;
             font-size: 0.80rem;
             color: #ffffff;
