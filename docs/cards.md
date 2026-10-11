@@ -270,7 +270,7 @@ show_background: true
 | `power_state_entity` | string | `undefined` | Optional secondary entity for reading power state (e.g. smart plug, ping binary sensor) when `power_entity` is a stateless IR script |
 | `show_power_button` | boolean | `true` | Display top-right circular glass power button (also accepts `show_power`) |
 | `stop_on_power_off` | boolean | `true` | Automatically send Stop command to Jellyfin media session when powering off TV |
-| `show_volume` | boolean | `false` | Display the Option 1 translucent capsule volume slider row (automatically enabled if `volume_entity` is set) |
+| `show_volume` | boolean | `false` | Display the translucent capsule volume slider row (automatically enabled if `volume_entity` is set) |
 | `volume_entity` | string | `entity` | Entity to route volume adjustments to (e.g. external AVR, soundbar `media_player.soundbar`) |
 | `show_volume_step_buttons` | boolean | `true` | Display discrete `−` and `+` step buttons inside the volume capsule |
 | `volume_step` | number | `5` | Percentage step delta for discrete `−` and `+` buttons (e.g. `5` for 5%) |
@@ -306,6 +306,24 @@ The Now Playing Card includes built-in playback gestures:
 - **Hold Play / Pause (800ms)**: Acts as a **Stop** button (`media_player.media_stop`). While **holding the button**, an animated red progress ring fills around it with haptic vibration feedback when the **stop command is triggered**.
 - **Progress Bar Seek**: Tap or drag across the timeline bar to seek through media.
 - **Rewind Button**: Quickly jumps back 20 seconds.
+
+### Volume & Audio Controls
+
+Control audio levels directly within the card without relying on external mini-players:
+- **Translucent Pillow Capsule**: Frosted glass floating pill positioned neatly above the progress timeline bar.
+- **External AVR / Soundbar Routing**: Route volume adjustments directly to an external audio receiver or soundbar (`volume_entity: media_player.soundbar`) while streaming media from Jellyfin. If omitted, volume commands route directly to the primary media player `entity`.
+- **Continuous Scrubber**: Dragging the slider dynamically updates volume with real-time percentage feedback.
+- **Mute Toggle**: Tapping the speaker icon toggles mute state with visual red indication when muted.
+- **Discrete Step Buttons**: Quick `−` and `+` buttons adjust volume in configurable percentage intervals (`volume_step: 5` for ±5%).
+
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_user_admin
+show_volume: true                     # Display volume row (default: false, auto-enabled if volume_entity is set)
+volume_entity: media_player.yamaha_avr # Optional external AVR, TV, or soundbar to route volume to
+show_volume_step_buttons: true        # Display discrete − and + buttons (default: true)
+volume_step: 5                        # Percentage step delta for − and + buttons (default: 5%)
+```
 
 ### TV / Display Power Control
 
@@ -421,23 +439,7 @@ When your TV doesn't have a native integration, use one of the following methods
              seconds: 30
    ```
 
-### Option 1 Capsule Volume Slider & Step Buttons
-
-Control audio levels without leaving the card or relying on external mini-players:
-- **Translucent Pillow Capsule**: Frosted glass floating pill positioned above the progress timeline bar.
-- **External AVR / Soundbar Routing**: Route volume directly to an external receiver (`volume_entity: media_player.soundbar`) while streaming video from Jellyfin.
-- **Continuous Scrubber with 5% Haptic Notches**: Dragging the slider dynamically updates volume with subtle `_haptic('selection')` feedback every 5% interval.
-- **Mute Toggle**: Quick speaker button toggles mute state with visual red indication when muted.
-- **Discrete Step Buttons**: Quick `−` and `+` buttons adjust volume in configurable percentage intervals (`volume_step: 5`).
-
-```yaml
-type: custom:jellyha-now-playing-card
-entity: media_player.jellyha_living_room
-show_volume: true
-volume_entity: media_player.yamaha_avr
-show_volume_step_buttons: true
-volume_step: 5
-```
+---
 
 ### Media Type Badge Presentation (`badge_style`)
 
@@ -469,6 +471,8 @@ badge_style: inline
 show_background: true
 ```
 *In `badge_style: inline`, the media type badge (`MOVIE`, `S01E06`, etc.) moves directly into the metadata row alongside the release year, total runtime, rating score, and genre pills. The poster artwork remains completely uncovered, providing a clean presentation that mirrors the ambient screensaver showcase layout.*
+
+---
 
 ### Migrating from Legacy Now Playing Sensors (`sensor.jellyha_now_playing_*`)
 
