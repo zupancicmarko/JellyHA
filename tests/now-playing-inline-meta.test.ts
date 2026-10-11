@@ -142,4 +142,39 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
         expect(templateStr).not.toContain('inline-badge');
         expect(templateStr).not.toContain('idle-rating-pill');
     });
+
+    it('presents episode title as title and series name as subtitle in idle card mode matching active playback', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            idle_backdrop_cycle: true,
+            idle_display_mode: 'card',
+        } as JellyHANowPlayingCardConfig);
+
+        const idleEpisode = {
+            id: 'ep_1',
+            name: 'Bad Optics',
+            series_name: 'Lanterns',
+            type: 'Episode',
+            season: 1,
+            episode: 6,
+            year: 2026,
+            runtime_minutes: 53,
+            community_rating: 7.4,
+            genres: ['Action', 'Adventure', 'Crime'],
+            poster_url: '/api/lanterns.jpg',
+            backdrop_url: '/api/lanterns_bg.jpg',
+        };
+
+        const template = (card as any)._renderIdleCardMode(idleEpisode, null, 'en');
+        expect(template).toBeDefined();
+
+        const templateStr = JSON.stringify(template);
+        // Title should be episode name "Bad Optics", subtitle should be series name "Lanterns"
+        expect(templateStr).toContain('Bad Optics');
+        expect(templateStr).toContain('Lanterns');
+        // Subtitle should NOT contain "S01E06 · Bad Optics"
+        expect(templateStr).not.toContain('S01E06 · Bad Optics');
+    });
 });

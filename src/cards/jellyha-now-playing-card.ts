@@ -801,33 +801,13 @@ export class JellyHANowPlayingCard extends LitElement {
         let subtitle = '';
 
         if (isEpisode) {
-            if (item.series_name) {
-                displayTitle = item.series_name;
-                const epName = item.name && item.name !== item.series_name ? item.name : '';
-                if (epPrefix && epName) {
-                    subtitle = `${epPrefix} · ${epName}`;
-                } else if (epPrefix) {
-                    subtitle = epPrefix;
-                } else {
-                    subtitle = epName || item.tagline || '';
-                }
-            } else {
-                displayTitle = item.name || '';
-                subtitle = epPrefix ? (item.tagline ? `${epPrefix} · ${item.tagline}` : epPrefix) : (item.tagline || '');
-            }
+            displayTitle = item.name || item.series_name || '';
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (item.series_name || item.tagline || '') : '';
         } else {
             displayTitle = item.name || '';
-            subtitle = item.tagline || '';
-        }
-
-        // Show subtitle setting check
-        if (this._config.show_subtitle === false) {
-            subtitle = '';
-            if (showBadge && isInlineBadge && isEpisodeItem && epPrefix) {
-                if (!displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
-                    displayTitle = `${epPrefix} · ${displayTitle}`;
-                }
-            }
+            const showSubtitle = this._config.show_subtitle !== false;
+            subtitle = showSubtitle ? (item.tagline || '') : '';
         }
 
         const isFirstOfItsType = this._idleItems.findIndex(it => {
@@ -844,7 +824,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const badgeTypeClass = isMovie ? 'movie' : (isEpisode ? 'episode' : 'series');
         const badgeText = isLatest
             ? (isMovie ? localize(lang, 'card.latest_movie_badge') || 'LATEST MOVIE' : (isEpisode ? localize(lang, 'card.latest_episode_badge') || 'LATEST EPISODE' : localize(lang, 'card.latest_series_badge') || 'LATEST SERIES'))
-            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? localize(lang, 'episode') || 'Episode' : localize(lang, 'series') || 'Series'));
+            : (isMovie ? localize(lang, 'movie') || 'Movie' : (isEpisode ? (epPrefix || localize(lang, 'episode') || 'Episode') : localize(lang, 'series') || 'Series'));
 
         return html`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
