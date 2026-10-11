@@ -1894,8 +1894,9 @@ export class JellyHAItemDetailsModal extends LitElement {
                 this.closeDialog();
             } catch (err: any) {
                 console.error('Failed to play on Jellyfin client', err);
+                const message = err?.message || `Failed to play on Jellyfin client: ${err}`;
                 this.dispatchEvent(new CustomEvent('hass-notification', {
-                    detail: { message: `Failed to play on Jellyfin client: ${err?.message || err}` },
+                    detail: { message },
                     bubbles: true,
                     composed: true
                 }));

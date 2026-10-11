@@ -4112,8 +4112,10 @@ let S = class extends J {
           };
           (t.config_entry_id || this._item?.config_entry_id) && (a.config_entry_id = t.config_entry_id || this._item?.config_entry_id), await this.hass.callService("jellyha", "session_play", a), this.closeDialog();
         } catch (a) {
-          console.error("Failed to play on Jellyfin client", a), this.dispatchEvent(new CustomEvent("hass-notification", {
-            detail: { message: `Failed to play on Jellyfin client: ${a?.message || a}` },
+          console.error("Failed to play on Jellyfin client", a);
+          const s = a?.message || `Failed to play on Jellyfin client: ${a}`;
+          this.dispatchEvent(new CustomEvent("hass-notification", {
+            detail: { message: s },
             bubbles: !0,
             composed: !0
           }));
@@ -8257,8 +8259,10 @@ let A = class extends J {
         ...e.config_entry_id ? { config_entry_id: e.config_entry_id } : {}
       });
     } catch (a) {
-      console.error("JellyHA: Failed to play on Jellyfin client", a), ae(this, "hass-notification", {
-        message: `Failed to play on Jellyfin client: ${a?.message || a}`
+      console.error("JellyHA: Failed to play on Jellyfin client", a);
+      const s = a?.message || `Failed to play on Jellyfin client: ${a}`;
+      ae(this, "hass-notification", {
+        message: s
       });
     }
   }

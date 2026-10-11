@@ -56,6 +56,11 @@ for mod_name in list(sys.modules.keys()):
         if parent in sys.modules:
             setattr(sys.modules[parent], parts[-1], sys.modules[mod_name])
 
+class MockHomeAssistantError(Exception):
+    pass
+
+sys.modules["homeassistant.exceptions"].HomeAssistantError = MockHomeAssistantError
+
 class MockHomeAssistantView:
     requires_auth = False
 

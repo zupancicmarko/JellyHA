@@ -1658,8 +1658,9 @@ export class JellyHALibraryCard extends LitElement {
       });
     } catch (err: any) {
       console.error('JellyHA: Failed to play on Jellyfin client', err);
+      const message = err?.message || `Failed to play on Jellyfin client: ${err}`;
       fireEvent(this, 'hass-notification', {
-        message: `Failed to play on Jellyfin client: ${err?.message || err}`,
+        message,
       });
     }
   }

@@ -9,6 +9,7 @@ import random
 import voluptuous as vol
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse, ServiceResponse
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.components.http.auth import async_sign_path
@@ -1378,7 +1379,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 if ent_state:
                     ent_attrs = ent_state.attributes
                     dev_id = dev_id or ent_attrs.get("device_id")
-                    dev_name = dev_name or ent_attrs.get("device_name")
+                    dev_name = dev_name or ent_attrs.get("device_name") or ent_attrs.get("friendly_name")
                     target_session_id = target_session_id or ent_attrs.get("session_id")
 
             if not target_session_id:
@@ -1418,13 +1419,16 @@ async def async_register_services(hass: HomeAssistant) -> None:
                         break
 
             if not target_session_id:
+                client_label = dev_name or client or (entity_id if entity_id and entity_id.startswith("media_player.") else None) or "target device"
                 _LOGGER.warning(
                     "No active session found for device_name=%s, device_id=%s, client=%s",
                     dev_name,
                     dev_id,
                     client,
                 )
-                return
+                raise HomeAssistantError(
+                    f"Cannot play on '{client_label}': No active Jellyfin session found. Make sure the device is on and the app is open on the device."
+                )
 
             item_id = call.data["item_id"]
             # Auto-resolve series to Next Up episode
@@ -1441,14 +1445,22 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 except Exception as e:
                     _LOGGER.debug("Could not resolve series next-up for %s: %s", item_id, e)
 
-            await api.session_play(
+            success = await api.session_play(
                 target_session_id,
                 item_id,
                 play_command=call.data.get("play_command", "PlayNow"),
                 start_position_ticks=call.data.get("start_position_ticks"),
             )
+            if not success:
+                client_label = dev_name or client or (entity_id if entity_id and entity_id.startswith("media_player.") else None) or "target device"
+                raise HomeAssistantError(
+                    f"Failed to play on '{client_label}': The device rejected the playback command."
+                )
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Session play failed: %s", e)
+            raise HomeAssistantError(f"Session play failed: {e}") from e
 
     async def async_get_recommendations(call: ServiceCall) -> ServiceResponse:
         """Get recommendations for an item."""

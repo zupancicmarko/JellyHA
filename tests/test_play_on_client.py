@@ -66,6 +66,100 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
                 start_position_ticks=None,
             )
 
+    async def test_session_play_raises_when_no_active_session_found(self):
+        """When target device has no active session, session_play raises HomeAssistantError."""
+        from homeassistant.exceptions import HomeAssistantError
+
+        mock_hass = MagicMock()
+        registered_services = {}
+
+        def mock_register(domain, service, func, **kwargs):
+            registered_services[service] = func
+
+        mock_hass.services.has_service = MagicMock(return_value=False)
+        mock_hass.services.async_register = mock_register
+
+        target_entity = "media_player.jellyha_device_samsung_sm_s911b"
+        mock_state = MagicMock()
+        mock_state.state = "idle"
+        mock_state.attributes = {
+            "device_id": "samsung_guid",
+            "device_name": "Samsung SM-S911B",
+            "session_id": None,
+        }
+        mock_hass.states.get = MagicMock(side_effect=lambda eid: mock_state if eid == target_entity else None)
+
+        mock_coordinator = MagicMock()
+        mock_api = MagicMock()
+        mock_api._request = AsyncMock(return_value=[])  # Empty live sessions
+        mock_coordinator._api = mock_api
+        mock_coordinator.entry.data = {"user_id": "user_abc"}
+        mock_coordinator.entry.runtime_data.session.data = []
+
+        with patch("custom_components.jellyha.services._get_coordinator", return_value=mock_coordinator):
+            await async_register_services(mock_hass)
+
+            session_play_func = registered_services["session_play"]
+
+            call = MagicMock()
+            call.data = {
+                "entity_id": target_entity,
+                "item_id": "movie_123",
+            }
+
+            with self.assertRaises(HomeAssistantError) as ctx:
+                await session_play_func(call)
+
+            self.assertIn("No active Jellyfin session found", str(ctx.exception))
+            self.assertIn("Make sure the device is on and the app is open on the device", str(ctx.exception))
+
+    async def test_session_play_raises_when_command_rejected(self):
+        """When device rejects session_play, session_play raises HomeAssistantError."""
+        from homeassistant.exceptions import HomeAssistantError
+
+        mock_hass = MagicMock()
+        registered_services = {}
+
+        def mock_register(domain, service, func, **kwargs):
+            registered_services[service] = func
+
+        mock_hass.services.has_service = MagicMock(return_value=False)
+        mock_hass.services.async_register = mock_register
+
+        target_entity = "media_player.jellyha_device_living_room_tv"
+        mock_state = MagicMock()
+        mock_state.state = "idle"
+        mock_state.attributes = {
+            "device_id": "living_room_guid",
+            "device_name": "Living Room TV",
+            "session_id": "session_999",
+        }
+        mock_hass.states.get = MagicMock(side_effect=lambda eid: mock_state if eid == target_entity else None)
+
+        mock_coordinator = MagicMock()
+        mock_api = MagicMock()
+        mock_api.session_play = AsyncMock(return_value=False)  # Device rejected command
+        mock_api.get_item = AsyncMock(return_value={"Id": "movie_123", "Type": "Movie", "Name": "Inception"})
+        mock_coordinator._api = mock_api
+        mock_coordinator.entry.data = {"user_id": "user_abc"}
+        mock_coordinator.entry.runtime_data.session.data = [{"Id": "session_999", "DeviceId": "living_room_guid"}]
+
+        with patch("custom_components.jellyha.services._get_coordinator", return_value=mock_coordinator):
+            await async_register_services(mock_hass)
+
+            session_play_func = registered_services["session_play"]
+
+            call = MagicMock()
+            call.data = {
+                "entity_id": target_entity,
+                "item_id": "movie_123",
+            }
+
+            with self.assertRaises(HomeAssistantError) as ctx:
+                await session_play_func(call)
+
+            self.assertIn("The device rejected the playback command", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

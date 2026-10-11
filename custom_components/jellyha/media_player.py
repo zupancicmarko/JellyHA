@@ -22,6 +22,7 @@ except ImportError:
     SearchMediaQuery = None  # type: ignore[assignment, misc]
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -954,10 +955,12 @@ class JellyHABasePlaybackMediaPlayer(
         target_ids = self._get_target_session_ids()
         if not target_ids:
             _LOGGER.warning(
-                "Cannot play on %s: No active Jellyfin session found. Please make sure the app is open on the device.",
+                "Cannot play on %s: No active Jellyfin session found. Make sure the device is on and the app is open on the device.",
                 self.name,
             )
-            return
+            raise HomeAssistantError(
+                f"Cannot play on '{self.name}': No active Jellyfin session found. Make sure the device is on and the app is open on the device."
+            )
 
         # Parse the item ID
         category, parsed_id = parse_item_id(media_id)
@@ -1044,9 +1047,16 @@ class JellyHABasePlaybackMediaPlayer(
                 _LOGGER.debug("Could not resolve series next-up for %s: %s", item_id, e)
 
         _LOGGER.info("Sending session_play(%s) to session(s): %s", item_id, target_ids)
+        any_success = False
         for sid in target_ids:
             success = await api.session_play(sid, item_id)
             _LOGGER.info("session_play to %s result: %s", sid, success)
+            if success:
+                any_success = True
+        if not any_success:
+            raise HomeAssistantError(
+                f"Failed to play on '{self.name}': The device rejected the playback command."
+            )
 
     async def async_media_play(self) -> None:
         """Send play (unpause) command to session."""

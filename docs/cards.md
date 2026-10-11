@@ -225,9 +225,20 @@ The Now Playing Card displays an interactive playback controller for an active u
 
 ### Basic YAML Configuration
 
+#### User Media Player
+
 ```yaml
 type: custom:jellyha-now-playing-card
 entity: media_player.jellyha_user_admin
+title: Now Playing
+show_background: true
+```
+
+#### Device Media Player
+_Note: You can specify JellyHA devices using JellyHA Integration Configuration_
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_device_living_room_tv
 title: Now Playing
 show_background: true
 ```
