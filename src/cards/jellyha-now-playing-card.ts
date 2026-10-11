@@ -24,14 +24,16 @@ import {
 import '../editors/jellyha-now-playing-editor';
 
 // Register card in the custom cards array
-window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === 'jellyha-now-playing-card')) {
-    window.customCards.push({
-        type: 'jellyha-now-playing-card',
-        name: 'JellyHA Now Playing',
-        description: 'Display currently playing media from Jellyfin',
-        preview: true,
-    });
+if (typeof window !== 'undefined') {
+    window.customCards = window.customCards || [];
+    if (!window.customCards.some(card => card.type === 'jellyha-now-playing-card')) {
+        window.customCards.push({
+            type: 'jellyha-now-playing-card',
+            name: 'JellyHA Now Playing',
+            description: 'Display currently playing media from Jellyfin',
+            preview: true,
+        });
+    }
 }
 
 @customElement('jellyha-now-playing-card')
@@ -257,18 +259,6 @@ export class JellyHANowPlayingCard extends LitElement {
         const effectiveYear = attributes.year ?? cachedItem?.year;
         const yearStr = (this._config.show_year !== false && effectiveYear) ? String(effectiveYear) : '';
 
-        const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
-        const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
-        const hasMetaLine = !!(yearStr || genres.length > 0);
-
-        const effectiveUser = attributes.user_name || (this.hass as any)?.user?.name || '';
-        const userName = (this._config.show_user !== false) ? effectiveUser : '';
-
-        const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
-        const clientInfo = (this._config.show_client !== false) ? effectiveClient : '';
-        const deviceInfo = (this._config.show_device_name === true) ? (attributes.device_name || '') : '';
-        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
-
         // Media type badge text
         const rawSeason = attributes.season !== undefined && attributes.season !== null ? attributes.season : ((stateObj.attributes as any).media_season !== undefined && (stateObj.attributes as any).media_season !== null ? (stateObj.attributes as any).media_season : cachedItem?.season);
         const rawEpisode = attributes.episode !== undefined && attributes.episode !== null ? attributes.episode : ((stateObj.attributes as any).media_episode !== undefined && (stateObj.attributes as any).media_episode !== null ? (stateObj.attributes as any).media_episode : cachedItem?.episode);
@@ -283,6 +273,7 @@ export class JellyHANowPlayingCard extends LitElement {
         // Badge placement style (applies to both Movies and TV Shows; inline applies to TV Shows)
         const badgeStyle = this._config.badge_style || this._config.media_type_badge_style || 'poster';
         const showBadge = this._config.show_media_type_badge !== false && !!badgeText;
+        const isInlineBadge = badgeStyle === 'inline';
 
         let showPosterBadge = false;
         let showHeaderBadge = false;
@@ -292,7 +283,7 @@ export class JellyHANowPlayingCard extends LitElement {
                 showPosterBadge = true;
             } else if (badgeStyle === 'header') {
                 showHeaderBadge = true;
-            } else if (badgeStyle === 'inline') {
+            } else if (isInlineBadge) {
                 if (isEpisodeItem) {
                     const epPrefix = `S${String(numSeason).padStart(2, '0')}E${String(numEpisode).padStart(2, '0')}`;
                     if (displayTitle && !displayTitle.toLowerCase().startsWith(epPrefix.toLowerCase())) {
@@ -305,8 +296,32 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
+        // Runtime
+        const rawMinutes = attributes.runtime_minutes || (durationSeconds > 0 ? Math.round(durationSeconds / 60) : (cachedItem?.runtime_minutes || 0));
+        const runtimeFormatted = (mediaType === 'audio' && durationSeconds > 0)
+            ? `${Math.floor(durationSeconds / 60)}m ${Math.floor(durationSeconds % 60)}s`
+            : (rawMinutes > 0 ? formatRuntime(rawMinutes) : '');
+        const runtimeStr = (this._config.show_runtime !== false && runtimeFormatted) ? runtimeFormatted : '';
+
         // Rating
-        const communityRating = attributes.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
+        const rawRating = attributes.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
+        const numRating = Number(rawRating);
+        const communityRating = (!isNaN(numRating) && numRating > 0) ? numRating.toFixed(1) : (rawRating ? String(rawRating) : '');
+        const ratingStr = (this._config.show_ratings !== false && communityRating) ? communityRating : '';
+
+        const effectiveGenres = (attributes.genres && attributes.genres.length > 0) ? attributes.genres : (cachedItem?.genres || []);
+        const genres = (this._config.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
+        const hasMetaLine = isInlineBadge
+            ? !!(yearStr || runtimeStr || ratingStr || genres.length > 0)
+            : !!(yearStr || genres.length > 0);
+
+        const effectiveUser = attributes.user_name || (this.hass as any)?.user?.name || '';
+        const userName = (this._config.show_user !== false) ? effectiveUser : '';
+
+        const effectiveClient = attributes.client || (stateObj.attributes as any).app_name || (stateObj.attributes as any).friendly_name || '';
+        const clientInfo = (this._config.show_client !== false) ? effectiveClient : '';
+        const deviceInfo = (this._config.show_device_name === true) ? (attributes.device_name || '') : '';
+        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
 
         // Determine effective favorite status using optimistic override if available
         const isFavorite = currentItemId && this._optimisticFavorites[currentItemId] !== undefined
@@ -339,18 +354,16 @@ export class JellyHANowPlayingCard extends LitElement {
                                 ${showPosterBadge ? html`
                                     <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
                                 ` : nothing}
-                                ${this._config.show_ratings !== false && communityRating ? html`
+                                ${!isInlineBadge && ratingStr ? html`
                                     <span class="poster-badge rating-badge">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${Number(communityRating).toFixed(1)}
+                                        ${ratingStr}
                                     </span>
                                 ` : nothing}
-                                ${this._config.show_runtime !== false && (attributes.runtime_minutes || durationSeconds > 0) ? html`
+                                ${!isInlineBadge && runtimeStr ? html`
                                     <span class="poster-badge runtime-badge">
                                         <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${mediaType === 'audio' && durationSeconds > 0
-                        ? `${Math.floor(durationSeconds / 60)}m ${Math.floor(durationSeconds % 60)}s`
-                        : formatRuntime(attributes.runtime_minutes || Math.round(durationSeconds / 60))}
+                                        ${runtimeStr}
                                     </span>
                                 ` : nothing}
 
@@ -376,10 +389,24 @@ export class JellyHANowPlayingCard extends LitElement {
                                     </div>
                                     ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
                                     ${this._overflowState < 2 && hasMetaLine ? html`
-                                        <div class="meta-line">
-                                            ${yearStr ? html`<span class="meta-year">${yearStr}</span>` : nothing}
-                                            ${yearStr && genres.length > 0 ? html`<span class="meta-dot">•</span>` : nothing}
-                                            ${genres.map((g: string) => html`<span class="genre-pill">${g}</span>`)}
+                                        <div class="meta-line ${isInlineBadge ? 'idle-meta-row' : ''}">
+                                            ${isInlineBadge ? html`
+                                                ${yearStr ? html`<span class="idle-meta-text meta-year">${yearStr}</span>` : nothing}
+                                                ${yearStr && (runtimeStr || ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                                                ${runtimeStr ? html`<span class="idle-meta-text meta-runtime">${runtimeStr}</span>` : nothing}
+                                                ${runtimeStr && (ratingStr || genres.length > 0) ? html`<span class="idle-dot meta-dot">•</span>` : nothing}
+                                                ${ratingStr ? html`
+                                                    <span class="idle-rating-pill">
+                                                        <ha-icon icon="mdi:star"></ha-icon>
+                                                        <span>${ratingStr}</span>
+                                                    </span>
+                                                ` : nothing}
+                                                ${genres.map((g: string) => html`<span class="genre-pill idle-genre-pill">${g}</span>`)}
+                                            ` : html`
+                                                ${yearStr ? html`<span class="meta-year">${yearStr}</span>` : nothing}
+                                                ${yearStr && genres.length > 0 ? html`<span class="meta-dot">•</span>` : nothing}
+                                                ${genres.map((g: string) => html`<span class="genre-pill">${g}</span>`)}
+                                            `}
                                         </div>
                                     ` : nothing}
                                     ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
@@ -1879,6 +1906,7 @@ export class JellyHANowPlayingCard extends LitElement {
     }
 
     private _extractDominantColor(imgUrl: string): void {
+        if (typeof Image === 'undefined') return;
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
@@ -2527,7 +2555,8 @@ export class JellyHANowPlayingCard extends LitElement {
             margin-bottom: 3px;
             line-height: 1.2;
         }
-        .meta-year {
+        .meta-year,
+        .meta-runtime {
             font-size: 0.85rem;
             font-weight: 500;
         }
@@ -2535,6 +2564,16 @@ export class JellyHANowPlayingCard extends LitElement {
             opacity: 0.45;
             font-size: 0.72rem;
             line-height: 1;
+        }
+        ha-card:not(.has-background) .idle-meta-row {
+            color: var(--secondary-text-color);
+            text-shadow: none;
+        }
+        ha-card:not(.has-background) .idle-genre-pill {
+            background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.08);
+            border: 1px solid rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
+            color: var(--secondary-text-color);
+            text-shadow: none;
         }
         .genre-pill {
             display: inline-flex;

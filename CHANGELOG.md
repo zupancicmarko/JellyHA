@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.6.0] - 2026-10-07
 
 ### Added
+- **Now Playing Card Inline Runtime & Rating Badges**:
+  - When `badge_style` is set to "Inline with Title" (`'inline'`), Runtime and Community Rating badges are removed from the poster image overlay and relocated directly inline into the metadata line alongside release year and genres (`Year • Runtime • [★ Rating] [Genre]`), matching the Poster Card layout.
 - **Simultaneous Multi-Device "Now Playing" Overlays on Library Card Posters**:
   - Dynamically resolves active media players on a per-poster basis across `default_cast_device`, `default_client_device` (e.g. Wholphin, Moonfin, Android TV), and active JellyHA hardware players (`media_player.jellyha_*`).
   - Supports multiple posters simultaneously displaying active playback overlays with live status (`playing`, `paused`, `buffering`, `REWINDING`) when different media items play across separate devices at the same time.
@@ -70,9 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expanded diagnostics redaction (`diagnostics.py`) to redact all key variants (`ApiKey`, `token`, `Token`, `secret`, `auth_key`).
 
 ### Fixed
-- **Jellyfin Client Playback Stop Routing on Library Card Posters**:
-  - Resolved an issue where clicking the Stop button on an active Jellyfin client poster failed with `Entity media_player.jellyha_* does not support action media_player.turn_off`.
-  - Added `stopMediaPlayback` resolver that routes stop commands to `media_player.media_stop` for Jellyfin client and session players (and players without `turn_off` capability), preserving `media_player.turn_off` for Cast devices to exit the receiver screen.
 - **Non-Administrator User Login via Username/Password (Fixes [#64](https://github.com/zupancicmarko/JellyHA/issues/64))**:
   - Resolved an issue where attempting to set up the integration using a Username and Password failed with `invalid_auth` ("Invalid authentication") for non-administrator accounts.
   - Jellyfin restricts `GET /Users` strictly to server administrators, returning HTTP 403 Forbidden. The config flow now extracts the authenticated user ID and name directly from the login response (`auth_data["User"]`) and automatically advances to library selection when listing all users is prohibited.

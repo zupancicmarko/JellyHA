@@ -6,8 +6,8 @@
 Jellyfin for Home Assistant
 
 <div align="center">
-  <img src="./docs/JellyHA-Library-Grid.png" width="48%" alt="Library Card - Grid View" />
-  <img src="./docs/JellyHA-Now-Playing-Card.png" width="48%" alt="Now Playing Card" />
+  <img src="./docs/JellyHA-Library-Grid.png" width="44%" alt="Library Card - Grid View" />
+  <img src="./docs/JellyHA-Now-Playing-Card_Updated.png" width="35%" alt="Now Playing Card" />
 </div>
 
 <details>
@@ -20,6 +20,7 @@ Jellyfin for Home Assistant
     <img src="./docs/JellyHA-Library-More-Information.png" width="48%" alt="More Information" />
     <img src="./docs/JellyHA-Cards.png" width="48%" alt="Add to dashboard" />
     <img src="./docs/JellyHA-Latest-Movie-Card-Mod.png" width="48%" alt="Latest Movie Card Mod" />
+    <img src="./docs/JellyHA-Now-Playing-Card.png" width="97%" alt="Now Playing Card" />
   </div>
 </details>
 
@@ -152,7 +153,7 @@ items_per_page: 3
 max_pages: 5
 ```
 
-Supports custom click, hold, and double-tap actions (Play in Browser, Play on Jellyfin Client, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`). *(Note: "Play on Jellyfin Client" requires a remote-control capable client such as Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop, Wholphin, or Roku).*
+Supports custom click, hold, and double-tap actions (Play in Browser, Play on Jellyfin Client, Cast, More Info, Open in Jellyfin, Play Trailer, or Run Script with complete item metadata passed automatically), plus configurable More Information dialog play actions (`modal_play_actions`). *(Note: "Play on Jellyfin Client" requires a remote-control capable client such as Android TV, Google TV, Fire TV, Moonfin for Android, Jellyfin Web, Desktop, Wholphin, Roku, etc).*
 
 👉 **[See full Library Card configuration and script variables in docs/cards.md](docs/cards.md)**
 

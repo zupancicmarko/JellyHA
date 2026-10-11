@@ -195,20 +195,29 @@ export class JellyHANowPlayingEditor extends LitElement {
           </div>
         </div>
 
-        <div class="checkbox-row">
-          <ha-switch
-            .checked=${this._config.show_runtime !== false}
-            @change=${this._showRuntimeChanged}
-          ></ha-switch>
-          <span>${localize(lang, 'editor.show_runtime')}</span>
+        <div class="checkbox-pair">
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_runtime !== false}
+              @change=${this._showRuntimeChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_runtime')}</span>
+          </div>
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_ratings !== false}
+              @change=${this._showRatingsChanged}
+            ></ha-switch>
+            <span>${localize(lang, 'editor.show_rating')}</span>
+          </div>
         </div>
 
         <div class="checkbox-row">
           <ha-switch
-            .checked=${this._config.show_ratings !== false}
-            @change=${this._showRatingsChanged}
+            .checked=${this._config.show_description !== false}
+            @change=${this._showDescriptionChanged}
           ></ha-switch>
-          <span>${localize(lang, 'editor.show_rating')}</span>
+          <span>${localize(lang, 'editor.show_description') || 'Show Description'}</span>
         </div>
 
         <div class="checkbox-pair">
@@ -668,6 +677,11 @@ export class JellyHANowPlayingEditor extends LitElement {
   private _showRuntimeChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_runtime', target.checked);
+  }
+
+  private _showDescriptionChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_description', target.checked);
   }
 
   private _showUserChanged(e: Event): void {

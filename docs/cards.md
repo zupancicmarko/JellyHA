@@ -75,73 +75,54 @@ max_pages: 5
 
 ---
 
-### Play in Browser & Custom Play Actions (`modal_play_actions`)
+### Playback Support & Options
 
-JellyHA supports streaming media directly inside Home Assistant dashboards using a dedicated HTML5 browser player (`<jellyha-browser-player>`) with authenticated streaming:
+JellyHA provides flexible playback options configurable for single tap (`click_action`), hold (`hold_action`), double tap (`double_tap_action`), or through the More Information dialog's target picker (`modal_play_actions`).
 
-- **Playback Compatibility & HLS Transcoding**:
-  JellyHA automatically checks format compatibility against a standardized HTML5 browser device profile via Jellyfin's `PlaybackInfo` endpoint. Browser-supported media (H.264/AAC in MP4/WebM) plays directly with zero server overhead (DirectPlay). Non-native formats (such as AVI/Xvid video containers, AC3/DTS/TrueHD audio) seamlessly initiate an HLS transcode stream powered by `hls.js` on Chromium, Firefox, and Edge, or native HLS decoding on Apple Safari and iOS devices. Active ffmpeg transcode processes are immediately terminated when the player dialog closes.
-- **Single Tap / Hold / Double Tap**: Set `click_action: play-browser` to immediately play any tapped movie or episode in your browser.
-- **Play on Jellyfin Client (`play-client`)**:
-  Initiate native playback directly inside supported Jellyfin client applications via Jellyfin's remote session control protocol (`POST /Sessions/{sessionId}/Playing`).
-  - In YAML or Card UI, set `click_action: play-client` and specify `default_client_device: media_player.jellyha_device_living_room_tv`.
-  - When tapped, JellyHA sends `jellyha.session_play` to the active client session, and the native Jellyfin app starts playing immediately without Chromecast transcoding overhead.
-  - *Note*: The Jellyfin app must be running / open on the target device for an active session to exist.
-  - **Supported Clients**:
-    - **Android TV / Google TV / Fire TV** (official Jellyfin for Android TV app)
-    - **Moonfin for Android** (Android phone/tablet client with full remote playback support)
-    - **Jellyfin Web** (desktop & mobile web browsers)
-    - **Jellyfin Media Player (JMP)** / Desktop (Windows, macOS, Linux)
-    - **Wholphin** (Android TV client)
-    - **Roku** (official Jellyfin for Roku app)
-  - **Client Limitations & Notes**:
-    - **Official Jellyfin Mobile for Android**: The official Jellyfin Android mobile app does not currently implement the incoming remote play receiver protocol (meaning `/Sessions/{id}/Playing` commands are ignored by the app). To remotely trigger playback on Android phones or tablets, use **Moonfin for Android** or the browser web client.
-    - **Official Jellyfin iOS / Swiftfin**: Remote playback initiation is currently not supported by these client apps.
+#### Cast to Chromecast (`cast`)
+Stream media directly to Google Cast devices (Chromecast Gen 1, Ultra, Chromecast with Google TV, Nest Hub smart displays, and Android TV Cast receivers).
+- **Configuration**: Set `click_action: cast` (or `hold_action` / `double_tap_action`) and define `default_cast_device: media_player.living_room_chromecast`.
+- **Subtitle Support**: **Supported**.
+  - Subtitle auto-selection and language preferences are controlled via `subtitle_mode` (`auto`, `none`, `forced_only`, `custom`) and `subtitle_language` (e.g. `sl, en` or `slv, eng`).
+  - JellyHA automatically fetches matching text subtitle streams from Jellyfin, converts them to WebVTT, and injects them directly into the Cast media manifest.
 
-- **More Information Dialog & Target Picker**:
-  By default, the More Information modal provides 1-tap playback or an Action Sheet target picker for configured Cast devices, Jellyfin clients, Browser playback, and scripts.
-- **Subtitles & Closed Captions**:
-  The browser player automatically extracts text-based subtitle streams (SRT, ASS, VTT) and serves them via an authenticated WebVTT proxy endpoint (`/api/jellyha/subtitles/...`). You can switch tracks anytime via the player's native Closed Captions (**CC**) menu. Initial track auto-selection respects the card's `subtitle_mode` and `subtitle_language` preferences (prioritizing clean dialogue tracks over SDH/hearing impaired).
-- **Custom Play Actions (`modal_play_actions`)**:
-  When `enable_custom_play_actions: true` is enabled, you can define exactly which play options appear in the More Info dialog:
+#### Play on Jellyfin Client (`play-client`)
+Initiate native DirectPlay playback directly inside supported Jellyfin client applications via Jellyfin's remote session control protocol (`POST /Sessions/{sessionId}/Playing`).
+- **Configuration**: Set `click_action: play-client` and specify `default_client_device: media_player.jellyha_device_living_room_tv`.
+- **How it works**: When tapped, JellyHA sends `jellyha.session_play` to the active client session, and the native Jellyfin app starts playing immediately without Chromecast transcoding overhead.
+- *Note*: The Jellyfin client app must be running / open on the target device for an active session to exist.
+- **Supported Clients (some of them)**:
+  - **Android TV / Google TV / Fire TV** (official Jellyfin for Android TV app)
+  - **Moonfin for Android** (Android phone/tablet client with full remote playback support)
+  - **Jellyfin Web** (desktop & mobile web browsers)
+  - **Jellyfin Media Player (JMP)** / Desktop (Windows, macOS, Linux)
+  - **Wholphin** (Android TV client)
+  - **Roku** (official Jellyfin for Roku app)
+- **Client Limitations & Notes**:
+  - **Official Jellyfin Mobile for Android**: The official Jellyfin Android mobile app does not currently implement the incoming remote play receiver protocol (meaning `/Sessions/{id}/Playing` commands are ignored by the app). To remotely trigger playback on Android phones or tablets, use other clients like **Moonfin for Android** or the browser web client.
+  - **Official Jellyfin iOS / Swiftfin**: Remote playback initiation is currently not supported by these client apps.
+- **Subtitle Support**: Subtitle selection is handled natively inside each client app according to the user's Jellyfin account profile preferences and in-player audio/subtitle menus.
 
-```yaml
-type: custom:jellyha-library-card
-entity: sensor.jellyha_library
-enable_custom_play_actions: true
-modal_play_actions:
-  - type: client
-    name: Living Room TV
-    device: media_player.jellyha_device_living_room_tv
-    icon: mdi:television-play
-  - type: browser
-    name: Play in Browser
-    icon: mdi:monitor
-  - type: cast
-    name: Bedroom Chromecast
-    device: media_player.bedroom_chromecast
-    icon: mdi:cast
-  - type: script
-    name: Play on Apple TV
-    service: script.play_on_apple_tv
-    icon: mdi:apple
-    show_entity_name: false
-```
+#### Play in Browser (`play-browser`)
+Stream media directly inside Home Assistant dashboards using a dedicated authenticated HTML5 browser player (`<jellyha-browser-player>`).
+- **Configuration**: Set `click_action: play-browser`.
+- **Subtitles & Closed Captions**: **Supported**.
+  - The browser player automatically extracts text-based subtitle streams (SRT, ASS, VTT) and serves them via an authenticated WebVTT proxy endpoint (`/api/jellyha/subtitles/...`).
+  - You can switch tracks anytime via the player's native Closed Captions (**CC**) menu.
+  - Initial track auto-selection respects the card's `subtitle_mode` and `subtitle_language` preferences (prioritizing clean dialogue tracks over SDH/hearing impaired).
 
-Target Options:
-- `type`: Target type (`client`, `browser`, `cast`, or `script`).
-- `name` (optional): Custom display label in button and Action Sheet picker.
-- `icon` (optional): Custom MDI icon (defaults: `mdi:television-play` for client, `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
-- `device`: Required for `type: client` and `type: cast`, target `media_player` entity ID.
-- `service`: Required for `type: script`, target script entity ID.
-- `service_data` (optional): Extra payload dictionary passed to script.
-- `show_entity_name` (optional, boolean, default: `true`): Set to `false` to hide the entity subtitle in the Action Sheet picker.
+#### Play via Script (`call-service` / `Run Script`)
+Execute any Home Assistant script when interacting with a card item—or configure it as a custom target in the More Information dialog.
+- **Configuration**: Set `click_action: call-service` and select a script entity from the UI dropdown (or define `click_service: script.my_script` in YAML).
+- **How it works**: The card triggers the selected script and automatically passes the tapped media item's complete metadata as execution variables (item ID, title, file path, stream URLs, etc.).
+- **Subtitle Support**: Managed directly by the target script or external player receiving the media metadata.
+- **Full Metadata & Example Scripts**: See [Custom Script Execution (`Run Script`)](#custom-script-execution-run-script) below for the complete variable reference and ready-to-use scripts.
 
 ---
 
 ### Custom Script Execution (`Run Script`)
 
-When `click_action`, `hold_action`, or `double_tap_action` is set to `call-service` ("Run Script"), you can select any Home Assistant script from the UI dropdown (or define it in YAML via `click_service`).
+When `click_action`, `hold_action`, or `double_tap_action` is set to `call-service` ("Run Script")—or when configured as a script target in `modal_play_actions`—you can select any Home Assistant script from the UI dropdown (or define it in YAML via `click_service`).
 
 When the card triggers the script, it automatically passes the tapped media item's complete metadata as execution variables:
 
@@ -186,9 +167,61 @@ When the card triggers the script, it automatically passes the tapped media item
 
 ---
 
+### Custom Play Actions (`modal_play_actions`)
+
+**More Information Dialog & Play Target Picker**:
+  By default, the More Information modal provides 1-tap playback, however, when more than one action is defined, an Action Sheet target picker for configured Cast devices, Jellyfin clients, Browser playback, and scripts is displayed.
+
+<div align="center">
+  <img src="./JellyHA-Modal-Play-Actions.png" width="48%" alt="Play Actions" />
+</div>
+
+- **Custom Play Actions (`modal_play_actions`)**:
+  When `enable_custom_play_actions: true` is enabled, you can define exactly which play options appear in the More Info dialog. By default when you first enable it, it sets up config from the Single, Double-tap and Hold actions.
+
+```yaml
+type: custom:jellyha-library-card
+entity: sensor.jellyha_library
+enable_custom_play_actions: true
+modal_play_actions:
+  - type: cast
+    name: Cast to Chromecast
+    device: media_player.office_tv
+    icon: mdi:cast
+  - type: client
+    name: Play on Jellyfin Client
+    device: media_player.jellyha_device_samsung_sm_s911b
+    icon: mdi:television-play
+    show_entity_name: false
+  - type: browser
+    name: Play in Browser
+    icon: mdi:monitor
+    show_entity_name: true
+  - type: script
+    name: Play on Apple TV
+    service: script.play_on_apple_tv
+    icon: mdi:play
+    show_entity_name: false
+```
+
+Target Options:
+- `type`: Target type (`client`, `browser`, `cast`, or `script`).
+- `name` (optional): Custom display label in button and Action Sheet picker.
+- `icon` (optional): Custom MDI icon (defaults: `mdi:television-play` for client, `mdi:monitor` for browser, `mdi:cast` for cast, `mdi:play` for script).
+- `device`: Required for `type: client` and `type: cast`, target `media_player` entity ID.
+- `service`: Required for `type: script`, target script entity ID.
+- `service_data` (optional): Extra payload dictionary passed to script.
+- `show_entity_name` (optional, boolean, default: `true`): Set to `false` to hide the entity subtitle in the Action Sheet picker.
+
+---
+
 ## JellyHA Now Playing Card
 
 The Now Playing Card displays an interactive playback controller for an active user or client device.
+
+<div align="center">
+  <img src="./JellyHA-Now-Playing-Card_Updated.png" width="48%" alt="Play Actions" />
+</div>
 
 ### Basic YAML Configuration
 
@@ -215,11 +248,12 @@ show_background: true
 | `show_user` | boolean | `true` | Display viewer user name |
 | `show_time` | boolean | `false` | Display elapsed and remaining playback time |
 | `show_media_type_badge` | boolean | `true` | Display media type badge (`MOVIE`, `SERIES`, `EPISODE`) |
-| `badge_style` | string | `'poster'` | Media type badge presentation: `'poster'` (default, overlay on artwork), `'header'` (pill in header next to title, keeps poster artwork 100% uncovered), `'inline'` (prefixed to episode title for TV shows, e.g. `S01E02 • Title`), `'none'` (hidden) |
+| `badge_style` | string | `'poster'` | Media type badge presentation: `'poster'` (default, overlay on artwork), `'header'` (pill in header next to title, keeps poster artwork 100% uncovered), `'inline'` (prefixed to episode title for TV shows, and moves runtime and rating inline into metadata line alongside year and genres), `'none'` (hidden) |
 | `show_genres` | boolean | `true` | Display genre tags |
 | `show_ratings` | boolean | `true` | Display community rating score |
 | `show_runtime` | boolean | `true` | Display total runtime |
 | `show_year` | boolean | `true` | Display release year |
+| `show_description` | boolean | `true` | Display plot summary / overview in idle showcase |
 | `use_series_image` | boolean | `false` | Display series poster cover instead of episode screenshot thumbnail |
 | `power_entity` | string | `entity` | Optional entity controlling TV / display power (`media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`). If omitted, defaults to the primary media player `entity`. |
 | `power_state_entity` | string | `undefined` | Optional secondary entity for reading power state (e.g. smart plug, ping binary sensor) when `power_entity` is a stateless IR script |
