@@ -10386,6 +10386,10 @@ C.styles = we`
             color: #fff !important;
             text-shadow: 0 1px 4px rgba(0,0,0,0.5);
         }
+        .jellyha-now-playing.has-background .title,
+        .jellyha-now-playing.has-background .subtitle {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+        }
         .jellyha-now-playing.has-background .poster-badge {
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
@@ -10406,7 +10410,7 @@ C.styles = we`
             height: 100%;
             background-size: cover;
             background-position: center;
-            filter: blur(5px) brightness(0.8);
+            filter: blur(5px) brightness(0.72);
             transform: scale(1.02);
             z-index: 0;
             transition: background-image 0.5s ease-in-out;
@@ -10417,7 +10421,7 @@ C.styles = we`
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.45) 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0.52) 100%);
             z-index: 1;
         }
         .card-content {
@@ -12308,12 +12312,12 @@ C.styles = we`
             height: 110%;
             object-fit: cover;
             object-position: center;
-            filter: blur(5px) brightness(0.8);
+            filter: blur(5px) brightness(0.72);
             opacity: 1;
         }
 
         .idle-card-mode .card-overlay {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.45) 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 0.52) 100%);
         }
 
         .idle-card-mode .idle-card-bg-img.prev-bg {
