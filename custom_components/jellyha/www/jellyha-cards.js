@@ -10986,12 +10986,31 @@ C.styles = Se`
             transform: scale(0.92) !important;
         }
         .power-btn.is-on,
+        .jellyha-now-playing.has-background .power-btn.is-on {
+            background: rgba(255, 255, 255, 0.92) !important;
+            border-color: rgba(255, 255, 255, 0.98) !important;
+            color: #1a1a1a !important;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35) !important;
+        }
+        .power-btn.is-on ha-icon {
+            color: #1a1a1a !important;
+        }
+        .power-btn-hit-area:hover .power-btn.is-on,
+        .power-btn.is-on:hover {
+            background: #ffffff !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+            color: #000000 !important;
+        }
+        .power-btn-hit-area:hover .power-btn.is-on ha-icon,
+        .power-btn.is-on:hover ha-icon {
+            color: #000000 !important;
+        }
+
         .power-btn.stateless-ready,
-        .jellyha-now-playing.has-background .power-btn.is-on,
         .jellyha-now-playing.has-background .power-btn.stateless-ready {
             color: #ffffff !important;
         }
-        .power-btn.is-on ha-icon,
         .power-btn.stateless-ready ha-icon {
             color: #ffffff !important;
         }

@@ -329,7 +329,7 @@ volume_step: 5                        # Percentage step delta for − and + butt
 
 The Now Playing Card integrates direct hardware power management into the card header across Active Playback, Ambient Showcase, and Idle states:
 - **Consistent Top-Right Placement**: Always positioned at the top right with uniform `36px` circular glass dimensions.
-- **Clear Power Status**: Crisp white power icon when ON or ready; dimmed gray-white when OFF or in standby.
+- **Clear Power Status**: Inverted bright white-ish button with dark power icon when ON; translucent glass with dimmed gray-white icon when OFF or in standby.
 - **Supported Domains**: Works with `media_player.*`, `switch.*`, `script.*`, `button.*`, `scene.*`, and `input_boolean.*`.
 - **Automatic Fallback**: If `power_entity` is omitted, the card automatically falls back to controlling the primary media player `entity`.
 - **Deterministic Control**: When target is a `media_player`, directly issues `media_player.turn_off` and `media_player.turn_on` rather than toggling apps.
