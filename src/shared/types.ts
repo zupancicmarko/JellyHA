@@ -113,13 +113,14 @@ export interface PlayTarget {
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     entity: string;
     title?: string;
-    layout?: 'carousel' | 'grid' | 'list';
+    layout?: 'carousel' | 'grid' | 'list' | 'featured';
     media_type?: 'movies' | 'series' | 'next_up' | 'both';
     tv_content?: 'series' | 'episodes';
     items_per_page?: number;
     max_pages?: number;
     auto_swipe_interval?: number; // seconds, 0 = disabled
     columns?: number;
+    rows?: number;
     show_title?: boolean;
     show_year?: boolean;
     show_runtime?: boolean;
@@ -132,6 +133,8 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     enable_pagination?: boolean;
     show_pagination_dots?: boolean;
     metadata_position?: 'above' | 'below';
+    show_card_backdrop?: boolean;
+    featured_queue_backdrop?: boolean;
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
     horizontal_alignment?: 'left' | 'center';

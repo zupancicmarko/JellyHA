@@ -15,21 +15,21 @@ if (typeof window < "u") {
       return;
     o.__jellyha_wrapped = !0;
     const r = o.define.bind(o), n = o.get.bind(o);
-    o.define = function(d, h, _) {
-      if (!(typeof d == "string" && d.startsWith("jellyha-") && (t.set(d.toLowerCase(), { constructor: h, options: _ }), n(d))))
-        return r(d, h, _);
-    }, o.get = function(d) {
-      const h = n(d);
+    o.define = function(c, h, _) {
+      if (!(typeof c == "string" && c.startsWith("jellyha-") && (t.set(c.toLowerCase(), { constructor: h, options: _ }), n(c))))
+        return r(c, h, _);
+    }, o.get = function(c) {
+      const h = n(c);
       if (h)
         return h;
-      if (typeof d == "string" && d.startsWith("jellyha-")) {
-        const _ = t.get(d.toLowerCase());
+      if (typeof c == "string" && c.startsWith("jellyha-")) {
+        const _ = t.get(c.toLowerCase());
         if (_) {
           try {
-            r(d, _.constructor, _.options);
+            r(c, _.constructor, _.options);
           } catch {
           }
-          return n(d) || _.constructor;
+          return n(c) || _.constructor;
         }
       }
     };
@@ -37,9 +37,9 @@ if (typeof window < "u") {
   if (typeof window.customElements < "u" && a(window.customElements), !e.__jellyha_def_hooked) {
     e.__jellyha_def_hooked = !0;
     const o = Object.defineProperty;
-    Object.defineProperty = function(r, n, d) {
-      const h = o.call(Object, r, n, d);
-      return r === window && n === "customElements" && d && d.value && (a(d.value), i(d.value)), h;
+    Object.defineProperty = function(r, n, c) {
+      const h = o.call(Object, r, n, c);
+      return r === window && n === "customElements" && c && c.value && (a(c.value), i(c.value)), h;
     };
   }
   ["home-assistant", "hc-main"].forEach((o) => {
@@ -58,8 +58,8 @@ if (typeof window < "u") {
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Te = globalThis, qe = Te.ShadowRoot && (Te.ShadyCSS === void 0 || Te.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ge = Symbol(), ht = /* @__PURE__ */ new WeakMap();
-let It = class {
+const Ae = globalThis, Ye = Ae.ShadowRoot && (Ae.ShadyCSS === void 0 || Ae.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, Ge = Symbol(), ht = /* @__PURE__ */ new WeakMap();
+let jt = class {
   constructor(t, i, a) {
     if (this._$cssResult$ = !0, a !== Ge) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t, this.t = i;
@@ -67,7 +67,7 @@ let It = class {
   get styleSheet() {
     let t = this.o;
     const i = this.t;
-    if (qe && t === void 0) {
+    if (Ye && t === void 0) {
       const a = i !== void 0 && i.length === 1;
       a && (t = ht.get(i)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), a && ht.set(i, t));
     }
@@ -77,30 +77,30 @@ let It = class {
     return this.cssText;
   }
 };
-const Ht = (e) => new It(typeof e == "string" ? e : e + "", void 0, Ge), we = (e, ...t) => {
+const Ft = (e) => new jt(typeof e == "string" ? e : e + "", void 0, Ge), $e = (e, ...t) => {
   const i = e.length === 1 ? e[0] : t.reduce((a, s, o) => a + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(s) + e[o + 1], e[0]);
-  return new It(i, e, Ge);
-}, Ft = (e, t) => {
-  if (qe) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
+  return new jt(i, e, Ge);
+}, Ht = (e, t) => {
+  if (Ye) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of t) {
-    const a = document.createElement("style"), s = Te.litNonce;
+    const a = document.createElement("style"), s = Ae.litNonce;
     s !== void 0 && a.setAttribute("nonce", s), a.textContent = i.cssText, e.appendChild(a);
   }
-}, pt = qe ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
+}, pt = Ye ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
   let i = "";
   for (const a of t.cssRules) i += a.cssText;
-  return Ht(i);
+  return Ft(i);
 })(e) : e;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Vt, defineProperty: Wt, getOwnPropertyDescriptor: Jt, getOwnPropertyNames: Yt, getOwnPropertySymbols: qt, getPrototypeOf: Gt } = Object, De = globalThis, _t = De.trustedTypes, Xt = _t ? _t.emptyScript : "", Zt = De.reactiveElementPolyfillSupport, ue = (e, t) => e, Ae = { toAttribute(e, t) {
+const { is: qt, defineProperty: Wt, getOwnPropertyDescriptor: Vt, getOwnPropertyNames: Jt, getOwnPropertySymbols: Yt, getPrototypeOf: Gt } = Object, Ne = globalThis, _t = Ne.trustedTypes, Xt = _t ? _t.emptyScript : "", Kt = Ne.reactiveElementPolyfillSupport, fe = (e, t) => e, Me = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
       e = e ? Xt : null;
@@ -128,8 +128,8 @@ const { is: Vt, defineProperty: Wt, getOwnPropertyDescriptor: Jt, getOwnProperty
       }
   }
   return i;
-} }, Xe = (e, t) => !Vt(e, t), ut = { attribute: !0, type: String, converter: Ae, reflect: !1, useDefault: !1, hasChanged: Xe };
-Symbol.metadata ??= Symbol("metadata"), De.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+} }, Xe = (e, t) => !qt(e, t), ut = { attribute: !0, type: String, converter: Me, reflect: !1, useDefault: !1, hasChanged: Xe };
+Symbol.metadata ??= Symbol("metadata"), Ne.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let re = class extends HTMLElement {
   static addInitializer(t) {
     this._$Ei(), (this.l ??= []).push(t);
@@ -144,7 +144,7 @@ let re = class extends HTMLElement {
     }
   }
   static getPropertyDescriptor(t, i, a) {
-    const { get: s, set: o } = Jt(this.prototype, t) ?? { get() {
+    const { get: s, set: o } = Vt(this.prototype, t) ?? { get() {
       return this[i];
     }, set(r) {
       this[i] = r;
@@ -158,14 +158,14 @@ let re = class extends HTMLElement {
     return this.elementProperties.get(t) ?? ut;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(ue("elementProperties"))) return;
+    if (this.hasOwnProperty(fe("elementProperties"))) return;
     const t = Gt(this);
     t.finalize(), t.l !== void 0 && (this.l = [...t.l]), this.elementProperties = new Map(t.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(ue("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(ue("properties"))) {
-      const i = this.properties, a = [...Yt(i), ...qt(i)];
+    if (this.hasOwnProperty(fe("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(fe("properties"))) {
+      const i = this.properties, a = [...Jt(i), ...Yt(i)];
       for (const s of a) this.createProperty(s, i[s]);
     }
     const t = this[Symbol.metadata];
@@ -211,7 +211,7 @@ let re = class extends HTMLElement {
   }
   createRenderRoot() {
     const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Ft(t, this.constructor.elementStyles), t;
+    return Ht(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((t) => t.hostConnected?.());
@@ -227,14 +227,14 @@ let re = class extends HTMLElement {
   _$ET(t, i) {
     const a = this.constructor.elementProperties.get(t), s = this.constructor._$Eu(t, a);
     if (s !== void 0 && a.reflect === !0) {
-      const o = (a.converter?.toAttribute !== void 0 ? a.converter : Ae).toAttribute(i, a.type);
+      const o = (a.converter?.toAttribute !== void 0 ? a.converter : Me).toAttribute(i, a.type);
       this._$Em = t, o == null ? this.removeAttribute(s) : this.setAttribute(s, o), this._$Em = null;
     }
   }
   _$AK(t, i) {
     const a = this.constructor, s = a._$Eh.get(t);
     if (s !== void 0 && this._$Em !== s) {
-      const o = a.getPropertyOptions(s), r = typeof o.converter == "function" ? { fromAttribute: o.converter } : o.converter?.fromAttribute !== void 0 ? o.converter : Ae;
+      const o = a.getPropertyOptions(s), r = typeof o.converter == "function" ? { fromAttribute: o.converter } : o.converter?.fromAttribute !== void 0 ? o.converter : Me;
       this._$Em = s;
       const n = r.fromAttribute(i, o.type);
       this[s] = n ?? this._$Ej?.get(s) ?? n, this._$Em = null;
@@ -311,59 +311,59 @@ let re = class extends HTMLElement {
   firstUpdated(t) {
   }
 };
-re.elementStyles = [], re.shadowRootOptions = { mode: "open" }, re[ue("elementProperties")] = /* @__PURE__ */ new Map(), re[ue("finalized")] = /* @__PURE__ */ new Map(), Zt?.({ ReactiveElement: re }), (De.reactiveElementVersions ??= []).push("2.1.2");
+re.elementStyles = [], re.shadowRootOptions = { mode: "open" }, re[fe("elementProperties")] = /* @__PURE__ */ new Map(), re[fe("finalized")] = /* @__PURE__ */ new Map(), Kt?.({ ReactiveElement: re }), (Ne.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Ze = globalThis, gt = (e) => e, Me = Ze.trustedTypes, mt = Me ? Me.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Et = "$lit$", K = `lit$${Math.random().toFixed(9).slice(2)}$`, jt = "?" + K, Kt = `<${jt}>`, ae = document, me = () => ae.createComment(""), fe = (e) => e === null || typeof e != "object" && typeof e != "function", Ke = Array.isArray, Qt = (e) => Ke(e) || typeof e?.[Symbol.iterator] == "function", He = `[ 	
-\f\r]`, pe = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ft = /-->/g, bt = />/g, te = RegExp(`>|${He}(?:([^\\s"'>=/]+)(${He}*=${He}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), yt = /'/g, vt = /"/g, Tt = /^(?:script|style|textarea|title)$/i, ei = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), c = ei(1), de = Symbol.for("lit-noChange"), p = Symbol.for("lit-nothing"), wt = /* @__PURE__ */ new WeakMap(), ie = ae.createTreeWalker(ae, 129);
+const Ke = globalThis, gt = (e) => e, ze = Ke.trustedTypes, mt = ze ? ze.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, It = "$lit$", Z = `lit$${Math.random().toFixed(9).slice(2)}$`, Et = "?" + Z, Zt = `<${Et}>`, ae = document, be = () => ae.createComment(""), ye = (e) => e === null || typeof e != "object" && typeof e != "function", Ze = Array.isArray, Qt = (e) => Ze(e) || typeof e?.[Symbol.iterator] == "function", He = `[ 	
+\f\r]`, _e = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ft = /-->/g, bt = />/g, te = RegExp(`>|${He}(?:([^\\s"'>=/]+)(${He}*=${He}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), yt = /'/g, vt = /"/g, Tt = /^(?:script|style|textarea|title)$/i, ei = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), l = ei(1), ce = Symbol.for("lit-noChange"), p = Symbol.for("lit-nothing"), wt = /* @__PURE__ */ new WeakMap(), ie = ae.createTreeWalker(ae, 129);
 function At(e, t) {
-  if (!Ke(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  if (!Ze(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return mt !== void 0 ? mt.createHTML(t) : t;
 }
 const ti = (e, t) => {
   const i = e.length - 1, a = [];
-  let s, o = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = pe;
+  let s, o = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", r = _e;
   for (let n = 0; n < i; n++) {
-    const d = e[n];
+    const c = e[n];
     let h, _, u = -1, g = 0;
-    for (; g < d.length && (r.lastIndex = g, _ = r.exec(d), _ !== null); ) g = r.lastIndex, r === pe ? _[1] === "!--" ? r = ft : _[1] !== void 0 ? r = bt : _[2] !== void 0 ? (Tt.test(_[2]) && (s = RegExp("</" + _[2], "g")), r = te) : _[3] !== void 0 && (r = te) : r === te ? _[0] === ">" ? (r = s ?? pe, u = -1) : _[1] === void 0 ? u = -2 : (u = r.lastIndex - _[2].length, h = _[1], r = _[3] === void 0 ? te : _[3] === '"' ? vt : yt) : r === vt || r === yt ? r = te : r === ft || r === bt ? r = pe : (r = te, s = void 0);
+    for (; g < c.length && (r.lastIndex = g, _ = r.exec(c), _ !== null); ) g = r.lastIndex, r === _e ? _[1] === "!--" ? r = ft : _[1] !== void 0 ? r = bt : _[2] !== void 0 ? (Tt.test(_[2]) && (s = RegExp("</" + _[2], "g")), r = te) : _[3] !== void 0 && (r = te) : r === te ? _[0] === ">" ? (r = s ?? _e, u = -1) : _[1] === void 0 ? u = -2 : (u = r.lastIndex - _[2].length, h = _[1], r = _[3] === void 0 ? te : _[3] === '"' ? vt : yt) : r === vt || r === yt ? r = te : r === ft || r === bt ? r = _e : (r = te, s = void 0);
     const m = r === te && e[n + 1].startsWith("/>") ? " " : "";
-    o += r === pe ? d + Kt : u >= 0 ? (a.push(h), d.slice(0, u) + Et + d.slice(u) + K + m) : d + K + (u === -2 ? n : m);
+    o += r === _e ? c + Zt : u >= 0 ? (a.push(h), c.slice(0, u) + It + c.slice(u) + Z + m) : c + Z + (u === -2 ? n : m);
   }
   return [At(e, o + (e[i] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), a];
 };
-class be {
+class ve {
   constructor({ strings: t, _$litType$: i }, a) {
     let s;
     this.parts = [];
     let o = 0, r = 0;
-    const n = t.length - 1, d = this.parts, [h, _] = ti(t, i);
-    if (this.el = be.createElement(h, a), ie.currentNode = this.el.content, i === 2 || i === 3) {
+    const n = t.length - 1, c = this.parts, [h, _] = ti(t, i);
+    if (this.el = ve.createElement(h, a), ie.currentNode = this.el.content, i === 2 || i === 3) {
       const u = this.el.content.firstChild;
       u.replaceWith(...u.childNodes);
     }
-    for (; (s = ie.nextNode()) !== null && d.length < n; ) {
+    for (; (s = ie.nextNode()) !== null && c.length < n; ) {
       if (s.nodeType === 1) {
-        if (s.hasAttributes()) for (const u of s.getAttributeNames()) if (u.endsWith(Et)) {
-          const g = _[r++], m = s.getAttribute(u).split(K), b = /([.?@])?(.*)/.exec(g);
-          d.push({ type: 1, index: o, name: b[2], strings: m, ctor: b[1] === "." ? ai : b[1] === "?" ? oi : b[1] === "@" ? si : Le }), s.removeAttribute(u);
-        } else u.startsWith(K) && (d.push({ type: 6, index: o }), s.removeAttribute(u));
+        if (s.hasAttributes()) for (const u of s.getAttributeNames()) if (u.endsWith(It)) {
+          const g = _[r++], m = s.getAttribute(u).split(Z), b = /([.?@])?(.*)/.exec(g);
+          c.push({ type: 1, index: o, name: b[2], strings: m, ctor: b[1] === "." ? ai : b[1] === "?" ? oi : b[1] === "@" ? si : Le }), s.removeAttribute(u);
+        } else u.startsWith(Z) && (c.push({ type: 6, index: o }), s.removeAttribute(u));
         if (Tt.test(s.tagName)) {
-          const u = s.textContent.split(K), g = u.length - 1;
+          const u = s.textContent.split(Z), g = u.length - 1;
           if (g > 0) {
-            s.textContent = Me ? Me.emptyScript : "";
-            for (let m = 0; m < g; m++) s.append(u[m], me()), ie.nextNode(), d.push({ type: 2, index: ++o });
-            s.append(u[g], me());
+            s.textContent = ze ? ze.emptyScript : "";
+            for (let m = 0; m < g; m++) s.append(u[m], be()), ie.nextNode(), c.push({ type: 2, index: ++o });
+            s.append(u[g], be());
           }
         }
-      } else if (s.nodeType === 8) if (s.data === jt) d.push({ type: 2, index: o });
+      } else if (s.nodeType === 8) if (s.data === Et) c.push({ type: 2, index: o });
       else {
         let u = -1;
-        for (; (u = s.data.indexOf(K, u + 1)) !== -1; ) d.push({ type: 7, index: o }), u += K.length - 1;
+        for (; (u = s.data.indexOf(Z, u + 1)) !== -1; ) c.push({ type: 7, index: o }), u += Z.length - 1;
       }
       o++;
     }
@@ -373,11 +373,11 @@ class be {
     return a.innerHTML = t, a;
   }
 }
-function ce(e, t, i = e, a) {
-  if (t === de) return t;
+function he(e, t, i = e, a) {
+  if (t === ce) return t;
   let s = a !== void 0 ? i._$Co?.[a] : i._$Cl;
-  const o = fe(t) ? void 0 : t._$litDirective$;
-  return s?.constructor !== o && (s?._$AO?.(!1), o === void 0 ? s = void 0 : (s = new o(e), s._$AT(e, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = s : i._$Cl = s), s !== void 0 && (t = ce(e, s._$AS(e, t.values), s, a)), t;
+  const o = ye(t) ? void 0 : t._$litDirective$;
+  return s?.constructor !== o && (s?._$AO?.(!1), o === void 0 ? s = void 0 : (s = new o(e), s._$AT(e, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = s : i._$Cl = s), s !== void 0 && (t = he(e, s._$AS(e, t.values), s, a)), t;
 }
 class ii {
   constructor(t, i) {
@@ -392,13 +392,13 @@ class ii {
   u(t) {
     const { el: { content: i }, parts: a } = this._$AD, s = (t?.creationScope ?? ae).importNode(i, !0);
     ie.currentNode = s;
-    let o = ie.nextNode(), r = 0, n = 0, d = a[0];
-    for (; d !== void 0; ) {
-      if (r === d.index) {
+    let o = ie.nextNode(), r = 0, n = 0, c = a[0];
+    for (; c !== void 0; ) {
+      if (r === c.index) {
         let h;
-        d.type === 2 ? h = new xe(o, o.nextSibling, this, t) : d.type === 1 ? h = new d.ctor(o, d.name, d.strings, this, t) : d.type === 6 && (h = new ri(o, this, t)), this._$AV.push(h), d = a[++n];
+        c.type === 2 ? h = new ke(o, o.nextSibling, this, t) : c.type === 1 ? h = new c.ctor(o, c.name, c.strings, this, t) : c.type === 6 && (h = new ri(o, this, t)), this._$AV.push(h), c = a[++n];
       }
-      r !== d?.index && (o = ie.nextNode(), r++);
+      r !== c?.index && (o = ie.nextNode(), r++);
     }
     return ie.currentNode = ae, s;
   }
@@ -407,7 +407,7 @@ class ii {
     for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(t, a, i), i += a.strings.length - 2) : a._$AI(t[i])), i++;
   }
 }
-class xe {
+class ke {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -426,7 +426,7 @@ class xe {
     return this._$AB;
   }
   _$AI(t, i = this) {
-    t = ce(this, t, i), fe(t) ? t === p || t == null || t === "" ? (this._$AH !== p && this._$AR(), this._$AH = p) : t !== this._$AH && t !== de && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Qt(t) ? this.k(t) : this._(t);
+    t = he(this, t, i), ye(t) ? t === p || t == null || t === "" ? (this._$AH !== p && this._$AR(), this._$AH = p) : t !== this._$AH && t !== ce && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Qt(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -435,10 +435,10 @@ class xe {
     this._$AH !== t && (this._$AR(), this._$AH = this.O(t));
   }
   _(t) {
-    this._$AH !== p && fe(this._$AH) ? this._$AA.nextSibling.data = t : this.T(ae.createTextNode(t)), this._$AH = t;
+    this._$AH !== p && ye(this._$AH) ? this._$AA.nextSibling.data = t : this.T(ae.createTextNode(t)), this._$AH = t;
   }
   $(t) {
-    const { values: i, _$litType$: a } = t, s = typeof a == "number" ? this._$AC(t) : (a.el === void 0 && (a.el = be.createElement(At(a.h, a.h[0]), this.options)), a);
+    const { values: i, _$litType$: a } = t, s = typeof a == "number" ? this._$AC(t) : (a.el === void 0 && (a.el = ve.createElement(At(a.h, a.h[0]), this.options)), a);
     if (this._$AH?._$AD === s) this._$AH.p(i);
     else {
       const o = new ii(s, this), r = o.u(this.options);
@@ -447,13 +447,13 @@ class xe {
   }
   _$AC(t) {
     let i = wt.get(t.strings);
-    return i === void 0 && wt.set(t.strings, i = new be(t)), i;
+    return i === void 0 && wt.set(t.strings, i = new ve(t)), i;
   }
   k(t) {
-    Ke(this._$AH) || (this._$AH = [], this._$AR());
+    Ze(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let a, s = 0;
-    for (const o of t) s === i.length ? i.push(a = new xe(this.O(me()), this.O(me()), this, this.options)) : a = i[s], a._$AI(o), s++;
+    for (const o of t) s === i.length ? i.push(a = new ke(this.O(be()), this.O(be()), this, this.options)) : a = i[s], a._$AI(o), s++;
     s < i.length && (this._$AR(a && a._$AB.nextSibling, s), i.length = s);
   }
   _$AR(t = this._$AA.nextSibling, i) {
@@ -479,11 +479,11 @@ class Le {
   _$AI(t, i = this, a, s) {
     const o = this.strings;
     let r = !1;
-    if (o === void 0) t = ce(this, t, i, 0), r = !fe(t) || t !== this._$AH && t !== de, r && (this._$AH = t);
+    if (o === void 0) t = he(this, t, i, 0), r = !ye(t) || t !== this._$AH && t !== ce, r && (this._$AH = t);
     else {
       const n = t;
-      let d, h;
-      for (t = o[0], d = 0; d < o.length - 1; d++) h = ce(this, n[a + d], i, d), h === de && (h = this._$AH[d]), r ||= !fe(h) || h !== this._$AH[d], h === p ? t = p : t !== p && (t += (h ?? "") + o[d + 1]), this._$AH[d] = h;
+      let c, h;
+      for (t = o[0], c = 0; c < o.length - 1; c++) h = he(this, n[a + c], i, c), h === ce && (h = this._$AH[c]), r ||= !ye(h) || h !== this._$AH[c], h === p ? t = p : t !== p && (t += (h ?? "") + o[c + 1]), this._$AH[c] = h;
     }
     r && !s && this.j(t);
   }
@@ -512,7 +512,7 @@ class si extends Le {
     super(t, i, a, s, o), this.type = 5;
   }
   _$AI(t, i = this) {
-    if ((t = ce(this, t, i, 0) ?? p) === de) return;
+    if ((t = he(this, t, i, 0) ?? p) === ce) return;
     const a = this._$AH, s = t === p && a !== p || t.capture !== a.capture || t.once !== a.once || t.passive !== a.passive, o = t !== p && (a === p || s);
     s && this.element.removeEventListener(this.name, this, a), o && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
@@ -528,17 +528,17 @@ class ri {
     return this._$AM._$AU;
   }
   _$AI(t) {
-    ce(this, t);
+    he(this, t);
   }
 }
-const ni = Ze.litHtmlPolyfillSupport;
-ni?.(be, xe), (Ze.litHtmlVersions ??= []).push("3.3.2");
-const ze = (e, t, i) => {
+const ni = Ke.litHtmlPolyfillSupport;
+ni?.(ve, ke), (Ke.litHtmlVersions ??= []).push("3.3.2");
+const De = (e, t, i) => {
   const a = i?.renderBefore ?? t;
   let s = a._$litPart$;
   if (s === void 0) {
     const o = i?.renderBefore ?? null;
-    a._$litPart$ = s = new xe(t.insertBefore(me(), o), o, void 0, i ?? {});
+    a._$litPart$ = s = new ke(t.insertBefore(be(), o), o, void 0, i ?? {});
   }
   return s._$AI(e), s;
 };
@@ -548,7 +548,7 @@ const ze = (e, t, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const Qe = globalThis;
-class Y extends re {
+class J extends re {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -558,7 +558,7 @@ class Y extends re {
   }
   update(t) {
     const i = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = ze(i, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = De(i, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -567,12 +567,12 @@ class Y extends re {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return de;
+    return ce;
   }
 }
-Y._$litElement$ = !0, Y.finalized = !0, Qe.litElementHydrateSupport?.({ LitElement: Y });
+J._$litElement$ = !0, J.finalized = !0, Qe.litElementHydrateSupport?.({ LitElement: J });
 const li = Qe.litElementPolyfillSupport;
-li?.({ LitElement: Y });
+li?.({ LitElement: J });
 (Qe.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -589,14 +589,14 @@ const oe = (e) => (t, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const di = { attribute: !0, type: String, converter: Ae, reflect: !1, hasChanged: Xe }, ci = (e = di, t, i) => {
+const di = { attribute: !0, type: String, converter: Me, reflect: !1, hasChanged: Xe }, ci = (e = di, t, i) => {
   const { kind: a, metadata: s } = i;
   let o = globalThis.litPropertyMetadata.get(s);
   if (o === void 0 && globalThis.litPropertyMetadata.set(s, o = /* @__PURE__ */ new Map()), a === "setter" && ((e = Object.create(e)).wrapped = !0), o.set(i.name, e), a === "accessor") {
     const { name: r } = i;
     return { set(n) {
-      const d = t.get.call(this);
-      t.set.call(this, n), this.requestUpdate(r, d, e, !0, n);
+      const c = t.get.call(this);
+      t.set.call(this, n), this.requestUpdate(r, c, e, !0, n);
     }, init(n) {
       return n !== void 0 && this.C(r, void 0, e, n), n;
     } };
@@ -604,13 +604,13 @@ const di = { attribute: !0, type: String, converter: Ae, reflect: !1, hasChanged
   if (a === "setter") {
     const { name: r } = i;
     return function(n) {
-      const d = this[r];
-      t.call(this, n), this.requestUpdate(r, d, e, !0, n);
+      const c = this[r];
+      t.call(this, n), this.requestUpdate(r, c, e, !0, n);
     };
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function V(e) {
+function F(e) {
   return (t, i) => typeof i == "object" ? ci(e, t, i) : ((a, s, o) => {
     const r = s.hasOwnProperty(o);
     return s.constructor.createProperty(o, a), r ? Object.getOwnPropertyDescriptor(s, o) : void 0;
@@ -622,7 +622,7 @@ function V(e) {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 function f(e) {
-  return V({ ...e, state: !0, attribute: !1 });
+  return F({ ...e, state: !0, attribute: !1 });
 }
 /**
  * @license
@@ -643,13 +643,13 @@ function pi(e, t) {
     } });
   };
 }
-function We(e, t) {
+function me(e, t) {
   if (!t || !e.date_added)
     return !1;
   const i = new Date(e.date_added);
   return ((/* @__PURE__ */ new Date()).getTime() - i.getTime()) / (1e3 * 60 * 60 * 24) <= t;
 }
-function Ie(e, t = "en") {
+function ue(e, t = "en") {
   try {
     const i = new Date(e);
     return new Intl.DateTimeFormat(t, {
@@ -661,13 +661,13 @@ function Ie(e, t = "en") {
     return e;
   }
 }
-function ge(e) {
+function de(e) {
   if (e < 60)
     return `${e}m`;
   const t = Math.floor(e / 60), i = e % 60;
   return i > 0 ? `${t}h ${i}m` : `${t}h`;
 }
-function R(e, t) {
+function D(e, t) {
   if (!e || e.includes("width=")) return e;
   const i = e.includes("?") ? "&" : "?";
   return `${e}${i}width=${t}`;
@@ -745,17 +745,17 @@ function fi(e, t, i) {
     /* @__PURE__ */ new Set(["zh", "zho", "chi", "chinese", "zhs", "zht"])
   ], o = (e || "").trim().toLowerCase(), r = (t || "").trim().toLowerCase();
   let n;
-  for (const d of s)
-    if (d.has(a)) {
-      n = d;
+  for (const c of s)
+    if (c.has(a)) {
+      n = c;
       break;
     }
   if (n) {
-    if (n.has(o) || r && Array.from(n).some((d) => r.includes(d))) return !0;
+    if (n.has(o) || r && Array.from(n).some((c) => r.includes(c))) return !0;
   } else if (o === a || o.startsWith(a) || r.includes(a)) return !0;
   return !1;
 }
-let U = class extends Y {
+let B = class extends J {
   constructor() {
     super(...arguments), this._open = !1, this._loading = !1, this._mimeType = "video/mp4", this._playMethod = "DirectPlay", this._subtitleTracks = [], this._portalContainer = null, this._handleKeyDown = (e) => {
       e.key === "Escape" && this._open && (this.close(), e.stopPropagation());
@@ -883,9 +883,9 @@ let U = class extends Y {
         h && (r = h.Index);
       }
     }
-    const d = e.media_source_id || e.MediaSources?.[0]?.Id || e.id;
+    const c = e.media_source_id || e.MediaSources?.[0]?.Id || e.id;
     return a.map((h) => {
-      const _ = (h.Language || "en").trim().toLowerCase(), u = _.length === 3 && mi[_] || _, g = h.DisplayTitle || h.Title || (u ? u.toUpperCase() : `Subtitle ${h.Index}`), m = `/api/jellyha/subtitles/${t}/${e.id}/${h.Index}/stream.vtt?media_source_id=${encodeURIComponent(d)}`;
+      const _ = (h.Language || "en").trim().toLowerCase(), u = _.length === 3 && mi[_] || _, g = h.DisplayTitle || h.Title || (u ? u.toUpperCase() : `Subtitle ${h.Index}`), m = `/api/jellyha/subtitles/${t}/${e.id}/${h.Index}/stream.vtt?media_source_id=${encodeURIComponent(c)}`;
       return {
         index: h.Index,
         label: g,
@@ -1027,13 +1027,13 @@ let U = class extends Y {
       t.type === "Movie" ? r = "movie" : t.type === "Episode" ? r = "episode" : t.type === "Series" ? r = "series" : t.type === "Season" ? r = "season" : t.type === "Audio" && (r = "track");
       const n = `media-source://jellyha/${a}/${r}/${t.id}`;
       try {
-        const d = await i.callWS({
+        const c = await i.callWS({
           type: "media_source/resolve_media",
           media_content_id: n
         });
-        d?.url && (s = d.url, d.mime_type && (o = d.mime_type), this._playMethod = "DirectPlay");
-      } catch (d) {
-        console.warn("JellyHA: WebSocket media_source/resolve_media failed, trying direct proxy route", d);
+        c?.url && (s = c.url, c.mime_type && (o = c.mime_type), this._playMethod = "DirectPlay");
+      } catch (c) {
+        console.warn("JellyHA: WebSocket media_source/resolve_media failed, trying direct proxy route", c);
       }
     }
     if (!s && a) {
@@ -1051,7 +1051,7 @@ let U = class extends Y {
     this._portalContainer && (this._portalContainer.remove(), this._portalContainer = null);
   }
   _getPortalStyles() {
-    return c`
+    return l`
         <style>
             .jellyha-player-scrim {
                 position: fixed;
@@ -1227,19 +1227,19 @@ let U = class extends Y {
   _renderPortal() {
     if (!this._portalContainer) return;
     if (!this._open) {
-      ze(c``, this._portalContainer);
+      De(l``, this._portalContainer);
       return;
     }
     const e = this._item, t = e?.type === "Audio";
     let i = "", a = e?.name || "Playing Media";
     e?.type === "Episode" ? (i = e.series_name || "", a = `${e.season != null && e.episode != null ? `S${e.season}:E${e.episode} • ` : ""}${e.name || "Episode"}`) : e?.type === "Movie" && e?.year ? i = `${e.year}` : t && e?.artist_name && (i = e.artist_name);
-    const s = c`
+    const s = l`
             ${this._getPortalStyles()}
             <div class="jellyha-player-scrim" @click=${this.close}>
                 <div class="jellyha-player-surface" @click=${(o) => o.stopPropagation()}>
                     <div class="jellyha-player-header">
                         <div class="jellyha-player-title-wrap">
-                            ${i ? c`<span class="jellyha-player-subtitle">${i}</span>` : p}
+                            ${i ? l`<span class="jellyha-player-subtitle">${i}</span>` : p}
                             <span class="jellyha-player-title" title="${a}">${a}</span>
                         </div>
                         <button class="jellyha-player-close-btn" @click=${this.close} aria-label="Close" title="Close">
@@ -1248,19 +1248,19 @@ let U = class extends Y {
                     </div>
 
                     <div class="jellyha-player-content">
-                        ${this._loading ? c`
+                        ${this._loading ? l`
                             <div class="jellyha-player-loading">
                                 <div class="jellyha-spinner"></div>
                                 <span>Loading stream...</span>
                             </div>
-                        ` : this._error ? c`
+                        ` : this._error ? l`
                             <div class="jellyha-player-error">
                                 <ha-icon icon="mdi:alert-circle-outline" style="--mdc-icon-size: 40px; color: #ff5252;"></ha-icon>
                                 <span>${this._error}</span>
                             </div>
-                        ` : t ? c`
+                        ` : t ? l`
                             <div class="jellyha-player-audio-wrap">
-                                ${e?.poster_url ? c`
+                                ${e?.poster_url ? l`
                                     <img class="jellyha-player-audio-poster" src="${e.poster_url}" alt="" />
                                 ` : p}
                                 <audio class="jellyha-player-audio" controls autoplay>
@@ -1268,12 +1268,12 @@ let U = class extends Y {
                                     Audio format not supported.
                                 </audio>
                             </div>
-                        ` : c`
+                        ` : l`
                             <video class="jellyha-player-video" controls autoplay playsinline crossorigin="anonymous" @loadedmetadata=${() => this._activateDefaultSubtitle()}>
-                                ${!this._streamUrl?.includes(".m3u8") && this._mimeType !== "application/x-mpegURL" && this._mimeType !== "application/vnd.apple.mpegurl" ? c`
+                                ${!this._streamUrl?.includes(".m3u8") && this._mimeType !== "application/x-mpegURL" && this._mimeType !== "application/vnd.apple.mpegurl" ? l`
                                     <source src="${this._streamUrl}" type="${this._mimeType}">
                                 ` : p}
-                                ${this._subtitleTracks.map((o) => c`
+                                ${this._subtitleTracks.map((o) => l`
                                     <track
                                         id="jellyha-track-${o.index}"
                                         kind="subtitles"
@@ -1289,53 +1289,53 @@ let U = class extends Y {
                 </div>
             </div>
         `;
-    ze(s, this._portalContainer);
+    De(s, this._portalContainer);
   }
   render() {
     return p;
   }
 };
 W([
-  V({ attribute: !1 })
-], U.prototype, "hass", 2);
+  F({ attribute: !1 })
+], B.prototype, "hass", 2);
 W([
   f()
-], U.prototype, "_open", 2);
+], B.prototype, "_open", 2);
 W([
   f()
-], U.prototype, "_loading", 2);
+], B.prototype, "_loading", 2);
 W([
   f()
-], U.prototype, "_error", 2);
+], B.prototype, "_error", 2);
 W([
   f()
-], U.prototype, "_streamUrl", 2);
+], B.prototype, "_streamUrl", 2);
 W([
   f()
-], U.prototype, "_mimeType", 2);
+], B.prototype, "_mimeType", 2);
 W([
   f()
-], U.prototype, "_playMethod", 2);
+], B.prototype, "_playMethod", 2);
 W([
   f()
-], U.prototype, "_playSessionId", 2);
+], B.prototype, "_playSessionId", 2);
 W([
   f()
-], U.prototype, "_hlsToken", 2);
+], B.prototype, "_hlsToken", 2);
 W([
   f()
-], U.prototype, "_item", 2);
+], B.prototype, "_item", 2);
 W([
   f()
-], U.prototype, "_subtitleTracks", 2);
-U = W([
+], B.prototype, "_subtitleTracks", 2);
+B = W([
   oe("jellyha-browser-player")
-], U);
-let _e = null;
+], B);
+let ge = null;
 async function Mt(e) {
-  (!_e || !document.body.contains(_e)) && (_e = document.createElement("jellyha-browser-player"), document.body.appendChild(_e)), await _e.play(e);
+  (!ge || !document.body.contains(ge)) && (ge = document.createElement("jellyha-browser-player"), document.body.appendChild(ge)), await ge.play(e);
 }
-const zt = we`
+const zt = $e`
   :host {
     display: block;
     height: 100%;
@@ -1725,6 +1725,861 @@ const zt = we`
   /* Extra bottom padding when pagination is enabled */
   .list.paginated {
     padding-bottom: 8px;
+  }
+
+  /* =========================================================================
+     Featured Layout (Concept 1: Spotlight Hero)
+     ========================================================================= */
+  .featured-wrapper {
+    position: relative;
+    width: 100%;
+    touch-action: pan-y;
+    container-type: inline-size;
+  }
+
+  .featured {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    padding: 8px 16px 16px 16px;
+    box-sizing: border-box;
+    width: 100%;
+    max-height: 400px;
+  }
+
+  .featured.single {
+    justify-content: center;
+  }
+
+  .featured.single .featured-hero-container {
+    flex: 0 0 auto;
+    max-width: 250px;
+    width: 100%;
+    max-height: 380px;
+    margin: 0 auto;
+  }
+
+  .featured-hero-container {
+    flex: 0 0 42%;
+    max-width: 260px;
+    min-width: 180px;
+    max-height: 380px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .featured.multi-column .featured-hero-container {
+    flex: 0 0 auto;
+    width: clamp(200px, 30%, 250px);
+    max-width: 250px;
+    max-height: 380px;
+  }
+
+  .featured.rows-2 .featured-hero-container {
+    max-height: 250px;
+    max-width: 175px;
+    width: clamp(140px, 25%, 175px);
+  }
+
+  .featured.rows-2 .poster-container.featured-hero-poster {
+    max-height: 250px;
+  }
+
+  .featured-hero-container .featured-main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .media-item.featured-hero {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .media-item.featured-hero:hover {
+    z-index: 10;
+  }
+
+  .poster-container.featured-hero-poster {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 380px;
+    flex: 1;
+    aspect-ratio: 2/3;
+    border-radius: var(--jf-poster-radius, 12px);
+    overflow: visible;
+    position: relative;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .poster-container.featured-hero-poster .poster-inner {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--jf-poster-radius, 12px);
+    overflow: hidden;
+    border: 1px solid var(--ha-card-border-color, var(--jf-border-color));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: transform var(--jf-transition), box-shadow var(--jf-transition), border-color var(--jf-transition);
+    transform-origin: center center;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    z-index: 1;
+    box-sizing: border-box;
+  }
+
+  .media-item.featured-hero:hover .poster-inner {
+    transform: scale(1.02);
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 
+      0 0 6px rgba(255, 255, 255, 0.08),
+      0 8px 22px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+  }
+
+  .poster-container.featured-hero-poster .poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+
+  .featured-hero-scrim {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 40px 14px 14px 14px;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.75) 50%,
+      rgba(0, 0, 0, 0.3) 80%,
+      transparent 100%
+    );
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .featured-hero-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  }
+
+  .featured-hero-subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Metadata Line & Now Playing Style Pills */
+  .meta-line {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.8rem;
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .meta-text-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    row-gap: 2px;
+    flex-wrap: wrap;
+    line-height: 1;
+  }
+
+  .meta-pills-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    line-height: 1;
+  }
+
+  .meta-text {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    line-height: 1;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--jf-text-secondary);
+    white-space: nowrap;
+  }
+
+  .meta-dot {
+    opacity: 0.5;
+    font-size: 0.7rem;
+    color: var(--jf-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    line-height: 1;
+  }
+
+  .rating-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+
+  .rating-pill ha-icon {
+    --mdc-icon-size: 11px;
+    width: 11px;
+    height: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-0.5px);
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .rating-pill span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+  }
+
+  .genre-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--jf-text), transparent 90%);
+    border: 1px solid color-mix(in srgb, var(--jf-text), transparent 80%);
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--jf-text);
+    font-weight: 500;
+    line-height: 1;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Scrim overrides for hero poster metadata */
+  .featured-hero-scrim .meta-text {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  .featured-hero-scrim .meta-dot {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .featured-hero-scrim .rating-pill {
+    background: rgba(245, 158, 11, 0.25);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    color: #fbbf24;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .featured-hero-scrim .genre-pill {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Featured Queue (Side items) */
+  .featured-side {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--jf-featured-columns, 1), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--jf-featured-rows, 3), 1fr);
+    grid-auto-flow: column;
+    gap: 10px;
+  }
+
+  .featured-side jellyha-media-item {
+    display: flex;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .media-item.featured-queue-item {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 104px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 12px;
+    background: color-mix(in srgb, var(--jf-text), transparent 96%);
+    border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.16));
+    border-radius: var(--jf-poster-radius, 12px) !important;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
+    cursor: pointer;
+  }
+
+  .media-item.featured-queue-item:hover,
+  .media-item.featured-queue-item:focus-visible {
+    background: color-mix(in srgb, var(--jf-text), transparent 90%);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateX(4px);
+    box-shadow: 
+      0 0 4px rgba(255, 255, 255, 0.04),
+      0 4px 14px rgba(0, 0, 0, 0.3);
+  }
+
+  .media-item.featured-queue-item:hover .poster-container.featured-queue-poster .poster-inner {
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .media-item.featured-queue-item.playing {
+    border-color: var(--jf-primary);
+    background: color-mix(in srgb, var(--jf-primary), transparent 90%);
+  }
+
+  .featured-queue-poster-wrapper {
+    flex-shrink: 0;
+  }
+
+  .poster-container.featured-queue-poster {
+    width: 60px !important;
+    height: 90px !important;
+    aspect-ratio: 2/3;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--jf-border-color);
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .poster-container.featured-queue-poster .poster-inner {
+    border-radius: 6px;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .poster-container.featured-queue-poster .poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+
+  .poster-container.featured-queue-poster .media-type-badge {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    top: 4px;
+    left: 4px;
+    border-radius: 3px;
+    letter-spacing: 0.2px;
+  }
+
+  .poster-container.featured-queue-poster .new-badge {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+    top: 4px;
+    right: 4px;
+    border-radius: 3px;
+    letter-spacing: 0.2px;
+  }
+
+  .poster-container.featured-queue-poster .status-badge.watched {
+    top: 4px;
+    right: 4px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+  }
+
+  .poster-container.featured-queue-poster .status-badge.watched ha-icon {
+    --mdc-icon-size: 11px;
+    margin: 0;
+  }
+
+  .poster-container.featured-queue-poster .status-badge.unplayed {
+    top: 4px;
+    right: 4px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+  }
+
+  .featured-queue-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  .featured-queue-info .meta-text-row {
+    flex-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .featured-queue-info .meta-pills-row {
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .featured-queue-badges {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    pointer-events: none;
+  }
+
+  .media-item.featured-queue-item:not(.cramped) .featured-queue-badges {
+    position: static;
+    float: right;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    margin-bottom: 2px;
+    line-height: 1;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .featured-queue-subtitle,
+  .featured-queue-series {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--jf-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    box-sizing: border-box;
+  }
+
+  .featured-queue-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--jf-text);
+    line-height: 1.25;
+    max-height: 2.55em;
+    overflow: hidden;
+    word-break: break-word;
+    transition: color 0.2s;
+    box-sizing: border-box;
+  }
+
+  .media-item.featured-queue-item:hover .featured-queue-title {
+    color: var(--jf-primary);
+  }
+
+  /* Cramped / Compact queue card layout (for 2+ columns) */
+  .media-item.featured-queue-item.cramped {
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 6px 8px !important;
+    gap: 0 !important;
+    height: 100% !important;
+    min-height: 110px !important;
+    box-sizing: border-box !important;
+  }
+
+  .media-item.featured-queue-item.cramped .featured-queue-info {
+    display: none !important;
+  }
+
+  .media-item.featured-queue-item.cramped .featured-queue-poster-wrapper {
+    margin: 0 auto !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: calc(100% - 10px) !important;
+    max-height: 100px !important;
+    z-index: 3 !important;
+  }
+
+  .media-item.featured-queue-item.cramped .poster-container.featured-queue-poster {
+    width: auto !important;
+    max-width: 72px !important;
+    height: 100% !important;
+    max-height: 100px !important;
+    aspect-ratio: 2/3 !important;
+    border-radius: var(--jf-poster-radius, 8px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    margin: 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .media-item.featured-queue-item.cramped .poster-container.featured-queue-poster .poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .media-item.featured-queue-item.cramped .featured-queue-badges {
+    position: absolute !important;
+    top: 6px !important;
+    right: 6px !important;
+    float: none !important;
+    max-width: calc(100% - 12px) !important;
+    gap: 3px !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+    z-index: 4 !important;
+  }
+
+  .media-item.featured-queue-item.cramped .featured-queue-action {
+    position: absolute !important;
+    bottom: 6px !important;
+    right: 6px !important;
+    z-index: 4 !important;
+  }
+
+  .media-item.featured-queue-item.cramped .featured-queue-backdrop-scrim {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.25) 50%,
+      rgba(0, 0, 0, 0.65) 100%
+    ) !important;
+  }
+
+  .media-item.featured-queue-item.cramped:hover,
+  .media-item.featured-queue-item.cramped:focus-visible {
+    transform: translateY(-2px) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 
+      0 0 6px rgba(255, 255, 255, 0.08),
+      0 6px 18px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* Backdrop Fanart Background for Featured Queue Cards */
+  .media-item.featured-queue-item.has-backdrop {
+    background: #111;
+    border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18));
+  }
+
+  .featured-queue-backdrop-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .featured-queue-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    filter: brightness(1.05) saturate(1.05);
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease;
+  }
+
+  .media-item.featured-queue-item:hover .featured-queue-backdrop {
+    transform: scale(1.008);
+    filter: brightness(1.08) saturate(1.04);
+  }
+
+  .media-item.featured-queue-item:hover .featured-queue-poster .poster-inner {
+    transform: none;
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  .featured-queue-backdrop-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.88) 0%,
+      rgba(0, 0, 0, 0.72) 38%,
+      rgba(0, 0, 0, 0.32) 75%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .media-item.featured-queue-item.has-backdrop .featured-queue-poster-wrapper {
+    position: relative;
+    z-index: 3;
+  }
+
+  .media-item.featured-queue-item.has-backdrop .poster-container.featured-queue-poster {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+  }
+
+  .media-item.featured-queue-item .featured-queue-info {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .featured-queue-header-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .media-type-badge.inline-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 19px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  .new-badge.inline-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 19px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    background: #009ac7;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  .status-badge.inline-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  .status-badge.inline-badge ha-icon {
+    --mdc-icon-size: 13px;
+    margin: 0;
+  }
+
+  .featured-queue-subtitle,
+  .featured-queue-series {
+    margin: 0;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--jf-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .media-item.featured-queue-item.has-backdrop .featured-queue-subtitle,
+  .media-item.featured-queue-item.has-backdrop .featured-queue-series {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  .media-item.featured-queue-item.has-backdrop .featured-queue-title {
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  .media-item.featured-queue-item.has-backdrop .meta-text {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  .media-item.featured-queue-item.has-backdrop .meta-dot {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .media-item.featured-queue-item.has-backdrop .rating-pill {
+    background: rgba(245, 158, 11, 0.25);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    color: #fbbf24;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .media-item.featured-queue-item.has-backdrop .genre-pill {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .media-item.featured-queue-item.has-backdrop .featured-queue-action {
+    position: relative;
+    z-index: 3;
+  }
+
+  .media-item.featured-queue-item.has-backdrop:hover,
+  .media-item.featured-queue-item.has-backdrop:focus-visible {
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 
+      0 0 4px rgba(255, 255, 255, 0.04),
+      0 4px 14px rgba(0, 0, 0, 0.3);
+    transform: translateX(4px);
+  }
+
+  .media-item.featured-queue-item.has-backdrop.playing {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--jf-primary), transparent 60%);
+  }
+
+  .featured-queue-action {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 4px;
+  }
+
+  .featured-queue-playing-icon {
+    --mdc-icon-size: 20px;
+    color: var(--jf-primary);
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+
+  /* Responsive Stacking: On screens under 640px, stack hero and side cleanly */
+  @media (max-width: 640px) {
+    .featured {
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px 16px 14px;
+      max-height: none;
+    }
+
+    .featured-hero-container {
+      flex: 0 0 auto;
+      max-width: 250px;
+      width: 100%;
+      height: 375px;
+      max-height: 380px;
+    }
+
+    .featured.multi-column .featured-hero-container {
+      width: 100%;
+      max-width: 250px;
+      height: 375px;
+      max-height: 380px;
+    }
+
+    .featured-side {
+      width: 100%;
+      gap: 10px;
+      display: grid !important;
+      grid-template-columns: repeat(var(--jf-featured-columns, 1), minmax(0, 1fr)) !important;
+      grid-template-rows: repeat(3, auto) !important;
+      grid-auto-flow: column;
+    }
+
+    .featured-side jellyha-media-item {
+      flex: 0 0 auto;
+      width: 100%;
+    }
+
+    .media-item.featured-queue-item {
+      flex: 0 0 auto;
+      min-height: 110px;
+      padding: 8px 12px;
+    }
   }
 
   .media-item.list-item {
@@ -2710,6 +3565,14 @@ const zt = we`
     "editor.layout_carousel": "Carousel",
     "editor.layout_grid": "Grid",
     "editor.layout_list": "List",
+    "editor.layout_featured": "Featured",
+    "editor.featured_columns_helper": "Number of side card columns beside the hero poster (1 to 4)",
+    "editor.featured_rows": "Rows",
+    "editor.featured_rows_helper": "Number of side card rows beside the hero poster (2 or 3)",
+    "editor.featured_queue_backdrop": "Show Card Backdrop",
+    "editor.featured_queue_backdrop_helper": "Show backdrop fanart in the background of cards",
+    "editor.show_card_backdrop": "Show Card Backdrop",
+    "editor.show_card_backdrop_helper": "Show backdrop fanart in the background of cards",
     "editor.media_type": "Media Type",
     "editor.media_type_both": "Movies & TV Shows",
     "editor.media_type_movies_episodes": "Movies & Episodes",
@@ -2862,6 +3725,14 @@ const zt = we`
     "editor.layout_carousel": "Karussell",
     "editor.layout_grid": "Raster",
     "editor.layout_list": "Liste",
+    "editor.layout_featured": "Hervorgehoben",
+    "editor.featured_columns_helper": "Anzahl der Spalten für Seitenkarten neben dem Hauptposter (1 bis 4)",
+    "editor.featured_rows": "Zeilen",
+    "editor.featured_rows_helper": "Anzahl der Zeilen für Seitenkarten neben dem Hauptposter (2 oder 3)",
+    "editor.featured_queue_backdrop": "Karten-Hintergrundbild anzeigen",
+    "editor.featured_queue_backdrop_helper": "Fanart-Hintergrundbild in den Karten anzeigen",
+    "editor.show_card_backdrop": "Karten-Hintergrundbild anzeigen",
+    "editor.show_card_backdrop_helper": "Fanart-Hintergrundbild in den Karten anzeigen",
     "editor.media_type": "Medientyp",
     "editor.media_type_both": "Filme & Serien",
     "editor.media_type_movies_episodes": "Filme & Episoden",
@@ -3002,6 +3873,14 @@ const zt = we`
     "editor.layout_carousel": "Carrousel",
     "editor.layout_grid": "Grille",
     "editor.layout_list": "Liste",
+    "editor.layout_featured": "En vedette",
+    "editor.featured_columns_helper": "Nombre de colonnes de cartes latérales à côté de l'affiche principale (1 à 4)",
+    "editor.featured_rows": "Lignes",
+    "editor.featured_rows_helper": "Nombre de lignes de cartes latérales à côté de l'affiche principale (2 ou 3)",
+    "editor.featured_queue_backdrop": "Afficher l'arrière-plan des cartes",
+    "editor.featured_queue_backdrop_helper": "Afficher l'arrière-plan fanart dans les cartes",
+    "editor.show_card_backdrop": "Afficher l'arrière-plan des cartes",
+    "editor.show_card_backdrop_helper": "Afficher l'arrière-plan fanart dans les cartes",
     "editor.media_type": "Type de média",
     "editor.media_type_both": "Films et séries",
     "editor.media_type_movies_episodes": "Films et épisodes",
@@ -3142,6 +4021,14 @@ const zt = we`
     "editor.layout_carousel": "Carrusel",
     "editor.layout_grid": "Cuadrícula",
     "editor.layout_list": "Lista",
+    "editor.layout_featured": "Destacado",
+    "editor.featured_columns_helper": "Número de columnas de tarjetas laterales junto al póster principal (1 a 4)",
+    "editor.featured_rows": "Filas",
+    "editor.featured_rows_helper": "Número de filas de tarjetas laterales junto al póster principal (2 o 3)",
+    "editor.featured_queue_backdrop": "Mostrar fondo de tarjetas",
+    "editor.featured_queue_backdrop_helper": "Mostrar imagen de fondo fanart en las tarjetas",
+    "editor.show_card_backdrop": "Mostrar fondo de tarjetas",
+    "editor.show_card_backdrop_helper": "Mostrar imagen de fondo fanart en las tarjetas",
     "editor.media_type": "Tipo de medio",
     "editor.media_type_both": "Películas y Series",
     "editor.media_type_movies_episodes": "Películas y episodios",
@@ -3282,6 +4169,14 @@ const zt = we`
     "editor.layout_carousel": "Carosello",
     "editor.layout_grid": "Griglia",
     "editor.layout_list": "Elenco",
+    "editor.layout_featured": "In evidenza",
+    "editor.featured_columns_helper": "Numero di colonne di schede laterali accanto al poster principale (da 1 a 4)",
+    "editor.featured_rows": "Righe",
+    "editor.featured_rows_helper": "Numero di righe di schede laterali accanto al poster principale (2 o 3)",
+    "editor.featured_queue_backdrop": "Mostra sfondo schede",
+    "editor.featured_queue_backdrop_helper": "Mostra lo sfondo fanart nelle schede",
+    "editor.show_card_backdrop": "Mostra sfondo schede",
+    "editor.show_card_backdrop_helper": "Mostra lo sfondo fanart nelle schede",
     "editor.media_type": "Tipo di media",
     "editor.media_type_both": "Film e Serie TV",
     "editor.media_type_movies_episodes": "Film ed episodi",
@@ -3422,6 +4317,14 @@ const zt = we`
     "editor.layout_carousel": "Carrousel",
     "editor.layout_grid": "Raster",
     "editor.layout_list": "Lijst",
+    "editor.layout_featured": "Uitgelicht",
+    "editor.featured_columns_helper": "Aantal kolommen voor zijkaarten naast de hoofdposter (1 tot 4)",
+    "editor.featured_rows": "Rijen",
+    "editor.featured_rows_helper": "Aantal rijen zijkarten naast de hoofdposter (2 of 3)",
+    "editor.featured_queue_backdrop": "Kaartachtergrond tonen",
+    "editor.featured_queue_backdrop_helper": "Toon fanart-achtergrond in de kaarten",
+    "editor.show_card_backdrop": "Kaartachtergrond tonen",
+    "editor.show_card_backdrop_helper": "Toon fanart-achtergrond in de kaarten",
     "editor.media_type": "Mediatype",
     "editor.media_type_both": "Films & Series",
     "editor.media_type_movies_episodes": "Films en afleveringen",
@@ -3562,6 +4465,14 @@ const zt = we`
     "editor.layout_carousel": "Vrtiljak",
     "editor.layout_grid": "Mreža",
     "editor.layout_list": "Seznam",
+    "editor.layout_featured": "Izpostavljeno",
+    "editor.featured_columns_helper": "Število stolpcev stranskih kartic poleg glavnega plakata (1 do 4)",
+    "editor.featured_rows": "Vrstice",
+    "editor.featured_rows_helper": "Število vrstic stranskih kartic poleg glavnega plakata (2 ali 3)",
+    "editor.featured_queue_backdrop": "Prikaži ozadje kartic",
+    "editor.featured_queue_backdrop_helper": "Prikaži sliko v ozadju kartic",
+    "editor.show_card_backdrop": "Prikaži ozadje kartic",
+    "editor.show_card_backdrop_helper": "Prikaži sliko v ozadju kartic",
     "editor.media_type": "Tip medija",
     "editor.media_type_both": "Filmi in serije",
     "editor.media_type_movies_episodes": "Filmi in epizode",
@@ -3702,6 +4613,14 @@ const zt = we`
     "editor.layout_carousel": "Карусель",
     "editor.layout_grid": "Сетка",
     "editor.layout_list": "Список",
+    "editor.layout_featured": "Витрина",
+    "editor.featured_columns_helper": "Количество столбцов боковых карточек рядом с главным постером (от 1 до 4)",
+    "editor.featured_rows": "Строки",
+    "editor.featured_rows_helper": "Количество строк боковых карточек рядом с главным постером (2 или 3)",
+    "editor.featured_queue_backdrop": "Показывать фон карточек",
+    "editor.featured_queue_backdrop_helper": "Показывать арт-фон позади карточек",
+    "editor.show_card_backdrop": "Показывать фон карточек",
+    "editor.show_card_backdrop_helper": "Показывать арт-фон позади карточек",
     "editor.media_type": "Тип медиа",
     "editor.media_type_both": "Фильмы и Сериалы",
     "editor.media_type_movies_episodes": "Фильмы и серии",
@@ -3800,7 +4719,7 @@ const zt = we`
     "search.all_genres": "Все жанры"
   }
 };
-function l(e, t, i) {
+function d(e, t, i) {
   if (!t) return i || "";
   const a = (e || "en").split("-")[0].toLowerCase();
   return Ee[a]?.[t] ? Ee[a][t] : Ee.en?.[t] ? Ee.en[t] : i !== void 0 ? i : "";
@@ -3812,7 +4731,7 @@ function bi(e) {
   if (t && !t.startsWith("sensor.") && !t.startsWith("binary_sensor."))
     return t;
 }
-function Je(e, t, i) {
+function Ve(e, t, i) {
   if (!t || !e || !e.states)
     return { isAvailable: !1, isStateless: !1, isOn: !1 };
   const a = e.states[t];
@@ -3829,18 +4748,18 @@ function Je(e, t, i) {
     };
   }
   const s = t.split(".")[0], o = s === "script" || s === "button" || s === "scene", r = a.state.toLowerCase(), n = r !== "unavailable" && r !== "unknown";
-  let d = !1;
-  return o ? d = r === "on" : s === "media_player" ? d = r === "on" || r === "playing" || r === "paused" || r === "idle" || r === "buffering" : d = r === "on" || r === "playing" || r === "home" || r === "active", {
+  let c = !1;
+  return o ? c = r === "on" : s === "media_player" ? c = r === "on" || r === "playing" || r === "paused" || r === "idle" || r === "buffering" : c = r === "on" || r === "playing" || r === "home" || r === "active", {
     isAvailable: n,
     isStateless: o,
-    isOn: d,
+    isOn: c,
     state: a.state,
     entityId: t
   };
 }
 async function yi(e, t, i) {
   if (!e || !t) return;
-  const a = t.split(".")[0], s = Je(e, t, i);
+  const a = t.split(".")[0], s = Ve(e, t, i);
   try {
     if (a === "script")
       await e.callService("script", "turn_on", { entity_id: t });
@@ -3885,7 +4804,7 @@ function Dt(e, t) {
   } catch {
   }
 }
-function Ye(e, t, i, a) {
+function Je(e, t, i, a) {
   const s = t || i;
   if (!s || !e || !e.states || !e.states[s])
     return {
@@ -3908,18 +4827,18 @@ function Ye(e, t, i, a) {
     }
   }
   n === void 0 && typeof a == "number" && (n = a / 100), n === void 0 && (n = vi(s));
-  const d = typeof n == "number" ? Math.max(0, Math.min(1, n)) : 0, h = Math.round(d * 100);
-  n !== void 0 && Dt(s, d);
+  const c = typeof n == "number" ? Math.max(0, Math.min(1, n)) : 0, h = Math.round(c * 100);
+  n !== void 0 && Dt(s, c);
   const _ = !!r.is_volume_muted;
   return {
     canControl: o.state !== "unavailable" && o.state !== "unknown",
-    volumeLevel: d,
+    volumeLevel: c,
     volumePercent: h,
     isMuted: _,
     entityId: s
   };
 }
-async function Lt(e, t, i) {
+async function Nt(e, t, i) {
   if (!e || !t) return;
   const a = Math.max(0, Math.min(1, i));
   Dt(t, a);
@@ -3937,9 +4856,9 @@ async function wi(e, t, i, a) {
   if (!e || !t || !e.states[t]) return 0;
   e.states[t];
   let s;
-  typeof a == "number" ? s = a : s = Ye(e, t).volumeLevel;
+  typeof a == "number" ? s = a : s = Je(e, t).volumeLevel;
   const o = Math.max(0, Math.min(1, s + i));
-  return await Lt(e, t, o), o;
+  return await Nt(e, t, o), o;
 }
 async function xi(e, t) {
   if (!e || !t || !e.states[t]) return;
@@ -3964,10 +4883,10 @@ function $i(e) {
   }
   return "";
 }
-function Fe(e) {
+function qe(e) {
   return e ? String(e).replace(/-/g, "").toLowerCase() : "";
 }
-function Z(e, t) {
+function K(e, t) {
   return !e || !t ? !1 : e.trim().toLowerCase() === t.trim().toLowerCase();
 }
 function xt(e, t) {
@@ -3982,41 +4901,41 @@ function $t(e, t, i) {
   for (const _ of Object.keys(t.states))
     _.startsWith("media_player.jellyha_") && !_.includes("_library_browser") && !_.endsWith("_browser") && !a.includes(_) && a.push(_);
   let s = null;
-  const o = Fe(e.id), r = (e.type || "").toLowerCase(), n = r === "episode" || !!(e.series_name && e.name && e.series_name !== e.name && r !== "series"), d = r === "series", h = r === "season";
+  const o = qe(e.id), r = (e.type || "").toLowerCase(), n = r === "episode" || !!(e.series_name && e.name && e.series_name !== e.name && r !== "series"), c = r === "series", h = r === "season";
   for (const _ of a) {
     const u = t.states[_];
     if (!u) continue;
     const g = u.state;
     if (g !== "playing" && g !== "paused" && g !== "buffering")
       continue;
-    const m = u.attributes?.media_title || u.attributes?.title, b = u.attributes?.media_series_title || u.attributes?.series_title, v = u.attributes?.item_id || u.attributes?.media_content_id, y = u.attributes?.series_id || u.attributes?.media_series_id, w = u.attributes?.media_season ?? u.attributes?.season, S = u.attributes?.media_episode ?? u.attributes?.episode, k = Fe(v), J = Fe(y);
+    const m = u.attributes?.media_title || u.attributes?.title, b = u.attributes?.media_series_title || u.attributes?.series_title, v = u.attributes?.item_id || u.attributes?.media_content_id, y = u.attributes?.series_id || u.attributes?.media_series_id, w = u.attributes?.media_season ?? u.attributes?.season, $ = u.attributes?.media_episode ?? u.attributes?.episode, S = qe(v), V = qe(y);
     let x = !1;
-    if (k && o && k === o)
+    if (S && o && S === o)
       x = !0;
     else if (n)
-      if (k && o && k !== o)
+      if (S && o && S !== o)
         x = !1;
       else {
-        const E = !e.series_name || !b || Z(e.series_name, b), z = !!(e.name && (Z(m, e.name) || xt(m, e.name))), T = e.season != null && e.episode != null && w != null && S != null && Number(e.season) === Number(w) && Number(e.episode) === Number(S);
-        !(e.season != null && w != null && Number(e.season) !== Number(w) || e.episode != null && S != null && Number(e.episode) !== Number(S)) && E && (z || T) && (x = !0);
+        const I = !e.series_name || !b || K(e.series_name, b), z = !!(e.name && (K(m, e.name) || xt(m, e.name))), A = e.season != null && e.episode != null && w != null && $ != null && Number(e.season) === Number(w) && Number(e.episode) === Number($);
+        !(e.season != null && w != null && Number(e.season) !== Number(w) || e.episode != null && $ != null && Number(e.episode) !== Number($)) && I && (z || A) && (x = !0);
       }
-    else if (d) {
-      const E = !!(J && o && J === o || k && o && k === o), z = !!(e.name && (Z(b, e.name) || Z(m, e.name)));
-      (E || z) && (x = !0);
+    else if (c) {
+      const I = !!(V && o && V === o || S && o && S === o), z = !!(e.name && (K(b, e.name) || K(m, e.name)));
+      (I || z) && (x = !0);
     } else if (h) {
-      const E = !e.series_name || !b || Z(e.series_name, b), z = e.season != null && w != null && Number(e.season) === Number(w), T = !!(e.name && Z(m, e.name));
-      E && (z || T) && (x = !0);
+      const I = !e.series_name || !b || K(e.series_name, b), z = e.season != null && w != null && Number(e.season) === Number(w), A = !!(e.name && K(m, e.name));
+      I && (z || A) && (x = !0);
     } else
-      e.name && (m || b) && (x = !!(m && (Z(m, e.name) || xt(m, e.name)) || b && Z(b, e.name)));
+      e.name && (m || b) && (x = !!(m && (K(m, e.name) || xt(m, e.name)) || b && K(b, e.name)));
     if (x) {
-      const E = {
+      const I = {
         entityId: _,
         state: g,
         friendlyName: u.attributes?.friendly_name || _
       };
       if (g === "playing")
-        return E;
-      s || (s = E);
+        return I;
+      s || (s = I);
     }
   }
   return s;
@@ -4037,12 +4956,12 @@ async function ki(e, t, i) {
   const o = !!((e.states?.[t]?.attributes?.supported_features || 0) & 256);
   t.startsWith("media_player.jellyha_") || !!(i?.default_client_device && t === i.default_client_device) || !o ? await e.callService("media_player", "media_stop", { entity_id: t }) : await e.callService("media_player", "turn_off", { entity_id: t });
 }
-var Si = Object.defineProperty, Ci = Object.getOwnPropertyDescriptor, P = (e, t, i, a) => {
+var Si = Object.defineProperty, Ci = Object.getOwnPropertyDescriptor, j = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? Ci(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && Si(t, i, s), s;
 };
-let $ = class extends Y {
+let k = class extends J {
   constructor() {
     super(...arguments), this._playTargets = [], this._showTargetPicker = !1, this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._selectedSeason = "all", this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._rowTouchStartX = 0, this._rowTouchStartY = 0, this._portalContainer = null, this._handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -4334,16 +5253,16 @@ let $ = class extends Y {
   }
   updated() {
     if (this._portalContainer) {
-      ze(this._renderDialogContent(), this._portalContainer);
+      De(this._renderDialogContent(), this._portalContainer);
       const e = this._portalContainer.querySelector(".jellyha-modal-surface");
       e && (e.removeEventListener("touchstart", this._handleModalTouchStart), e.removeEventListener("touchmove", this._handleModalTouchMove), e.removeEventListener("touchend", this._handleModalTouchEnd), e.addEventListener("touchstart", this._handleModalTouchStart, { passive: !0 }), e.addEventListener("touchmove", this._handleModalTouchMove, { passive: !1 }), e.addEventListener("touchend", this._handleModalTouchEnd, { passive: !0 }));
     }
   }
   render() {
-    return c``;
+    return l``;
   }
   _getPortalStyles() {
-    return c`
+    return l`
         <style>
             .jellyha-modal-scrim {
                 position: fixed;
@@ -5444,7 +6363,7 @@ let $ = class extends Y {
         `;
   }
   _renderDialogContent() {
-    return !this._open || !this._item ? c`` : c`
+    return !this._open || !this._item ? l`` : l`
             ${this._getPortalStyles()}
             <div class="jellyha-modal-scrim" @click=${this.closeDialog}>
                 <div 
@@ -5457,7 +6376,7 @@ let $ = class extends Y {
                     </button>
                     ${(() => {
       const e = this._item.backdrop_url || (this._item.type === "Episode" ? this._item.series_poster_url || this._item.poster_url : this._item.poster_url);
-      return e ? c`
+      return e ? l`
                             <div class="backdrop-hero">
                                 <img class="backdrop-img" src="${e}" alt="" />
                             </div>
@@ -5470,27 +6389,27 @@ let $ = class extends Y {
         `;
   }
   _renderDefaultContent() {
-    if (!this._item) return c``;
+    if (!this._item) return l``;
     const e = this._item, t = e.type === "Series", i = e.year || (e.date_added ? new Date(e.date_added).getFullYear() : ""), a = t && this._nextUpItem ? this._nextUpItem : e;
-    return c`
+    return l`
         <div class="default-layout">
             <div class="poster-col">
                 <img class="poster-img" src="${e.poster_url}" alt="${e.name}" />
 
                 <div class="poster-actions">
-                    ${this._confirmDelete ? c`
+                    ${this._confirmDelete ? l`
                             <div class="confirmation-box">
                                 <span>Delete item?</span>
                                 <button class="confirm-btn confirm-yes" @click=${this._handleDeleteConfirm}>Yes</button>
                                 <button class="confirm-btn" @click=${() => this._confirmDelete = !1}>No</button>
                             </div>
-                        ` : c`
+                        ` : l`
                             <!-- Primary Play Button -->
                             ${this._renderPrimaryPlayButton(a)}
 
                             <!-- Secondary Action Icons Toolbar -->
                             <div class="actions-icon-row">
-                                ${t ? c`
+                                ${t ? l`
                                     <button class="action-btn" @click=${(s) => {
       this._haptic(), this._toggleEpisodesView(s);
     }} title="View All Episodes" type="button">
@@ -5498,7 +6417,7 @@ let $ = class extends Y {
                                     </button>
                                 ` : p}
 
-                                ${e.trailer_url ? c`
+                                ${e.trailer_url ? l`
                                     <button class="action-btn" @click=${this._handleWatchTrailer} title="Watch Trailer">
                                         <ha-icon icon="mdi:filmstrip"></ha-icon>
                                     </button>
@@ -5532,19 +6451,19 @@ let $ = class extends Y {
                 <div class="header-group">
                     <h1>${e.name}</h1>
                     <div class="header-sub">
-                        ${e.series_name ? c`<span>${e.series_name}</span>` : p}
-                        ${e.type === "Episode" && e.season != null && e.episode != null ? c`<span class="badge">S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}</span>` : p}
-                        ${i ? c`<span>${i}</span>` : p}
+                        ${e.series_name ? l`<span>${e.series_name}</span>` : p}
+                        ${e.type === "Episode" && e.season != null && e.episode != null ? l`<span class="badge">S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}</span>` : p}
+                        ${i ? l`<span>${i}</span>` : p}
                         <span class="badge">${e.type}</span>
-                        ${e.official_rating ? c`<span class="badge">${e.official_rating}</span>` : p}
+                        ${e.official_rating ? l`<span class="badge">${e.official_rating}</span>` : p}
                     </div>
                 </div>
                 
-                ${this._nextUpItem ? c`
+                ${this._nextUpItem ? l`
                     <div class="next-up-card" @click=${this._playTargets.length > 0 ? this._playNextUp : void 0} style="${this._playTargets.length === 0 ? "cursor: default;" : ""}">
                         <div class="next-up-thumb-wrap">
                             <img class="next-up-thumb" src="${this._nextUpItem.poster_url || this._nextUpItem.backdrop_url || this._item.poster_url}" alt="${this._nextUpItem.name}" />
-                            ${this._playTargets.length > 0 ? c`
+                            ${this._playTargets.length > 0 ? l`
                                 <div class="next-up-play-overlay">
                                     <ha-icon icon="mdi:play"></ha-icon>
                                 </div>
@@ -5552,23 +6471,23 @@ let $ = class extends Y {
                         </div>
                         <div class="next-up-info">
                             <div class="next-up-header-row">
-                                ${this._nextUpItem.season != null && (this._nextUpItem.episode != null || this._nextUpItem.index_number != null) ? c`
+                                ${this._nextUpItem.season != null && (this._nextUpItem.episode != null || this._nextUpItem.index_number != null) ? l`
                                     <span class="next-up-ep-code">S${this._nextUpItem.season}:E${this._nextUpItem.episode ?? this._nextUpItem.index_number}</span>
-                                ` : this._nextUpItem.episode != null || this._nextUpItem.index_number != null ? c`
+                                ` : this._nextUpItem.episode != null || this._nextUpItem.index_number != null ? l`
                                     <span class="next-up-ep-code">E${this._nextUpItem.episode ?? this._nextUpItem.index_number}</span>
                                 ` : p}
                                 <span class="next-up-badge">NEXT UP</span>
                             </div>
                             <h3 class="next-up-title">${this._nextUpItem.name}</h3>
                             <div class="next-up-sub">
-                                ${this._nextUpItem.runtime_minutes ? c`<span>${this._formatRuntime(this._nextUpItem.runtime_minutes)}</span>` : p}
-                                ${this._nextUpItem.rating ? c`
+                                ${this._nextUpItem.runtime_minutes ? l`<span>${this._formatRuntime(this._nextUpItem.runtime_minutes)}</span>` : p}
+                                ${this._nextUpItem.rating ? l`
                                     <span>•</span>
                                     <span class="next-up-rating"><ha-icon icon="mdi:star"></ha-icon> ${this._nextUpItem.rating.toFixed(1)}</span>
                                 ` : p}
                             </div>
                         </div>
-                        ${this._playTargets.length > 0 ? c`
+                        ${this._playTargets.length > 0 ? l`
                             <button class="next-up-cast-btn" title="${this._getNextUpPlayTitle()}" @click=${(s) => {
       s.stopPropagation(), this._playNextUp();
     }}>
@@ -5579,21 +6498,21 @@ let $ = class extends Y {
                 ` : p}
 
                 <div class="stats-row">
-                    ${e.rating ? c`
+                    ${e.rating ? l`
                         <div class="stat-item">
                             <ha-icon icon="mdi:star" style="color: #FBC02D;"></ha-icon>
                             <span>${e.rating.toFixed(1)}</span>
                         </div>
                     ` : p}
-                    ${t ? c`
-                        ${e.unplayed_count !== void 0 ? c`
+                    ${t ? l`
+                        ${e.unplayed_count !== void 0 ? l`
                             <div class="stat-item">
                                 <ha-icon icon="mdi:television-classic"></ha-icon>
                                 <span>${e.unplayed_count} Unplayed</span>
                             </div>
                         ` : p}
-                    ` : c`
-                        ${e.runtime_minutes ? c`
+                    ` : l`
+                        ${e.runtime_minutes ? l`
                             <div class="stat-item">
                                 <ha-icon icon="mdi:clock-outline"></ha-icon>
                                 <span>${this._formatRuntime(e.runtime_minutes)}</span>
@@ -5602,11 +6521,11 @@ let $ = class extends Y {
                     `}
                 </div>
 
-                ${e.description ? c`<div class="description">${e.description}</div>` : p}
+                ${e.description ? l`<div class="description">${e.description}</div>` : p}
 
-                ${e.genres && e.genres.length > 0 ? c`
+                ${e.genres && e.genres.length > 0 ? l`
                     <div class="genres-list">
-                        ${e.genres.map((s) => c`<span class="genre-tag">${s}</span>`)}
+                        ${e.genres.map((s) => l`<span class="genre-tag">${s}</span>`)}
                     </div>
                 ` : p}
 
@@ -5616,13 +6535,13 @@ let $ = class extends Y {
         `;
   }
   _renderEpisodesContent() {
-    if (!this._item) return c``;
+    if (!this._item) return l``;
     const e = this._item.name, t = Array.from(
       new Set(
         this._episodes.map((a) => a.season).filter((a) => typeof a == "number" && !isNaN(a))
       )
     ).sort((a, s) => a - s), i = this._selectedSeason && this._selectedSeason !== "all" ? this._episodes.filter((a) => a.season === this._selectedSeason) : this._episodes;
-    return c`
+    return l`
             <div class="episodes-container">
                 <div class="episodes-header">
                     <button class="back-btn" @click=${(a) => this._toggleEpisodesView(a)} type="button" title="Back to Details">
@@ -5631,12 +6550,12 @@ let $ = class extends Y {
                     <h2 class="episodes-title">${e}</h2>
                 </div>
 
-                ${t.length > 1 ? c`
+                ${t.length > 1 ? l`
                     <div class="season-selector">
                         <button class="season-tab ${this._selectedSeason === "all" || !this._selectedSeason ? "active" : ""}" @click=${() => {
       this._haptic("selection"), this._selectedSeason = "all", this.requestUpdate();
     }}>All</button>
-                        ${t.map((a) => c`
+                        ${t.map((a) => l`
                             <button class="season-tab ${this._selectedSeason === a ? "active" : ""}" @click=${() => {
       this._haptic("selection"), this._selectedSeason = a, this.requestUpdate();
     }}>Season ${a}</button>
@@ -5645,13 +6564,13 @@ let $ = class extends Y {
                 ` : p}
                 
                 <div class="episodes-list">
-                    ${i.length === 0 ? c`
+                    ${i.length === 0 ? l`
                         <div style="text-align: center; color: rgba(255,255,255,0.6); padding: 40px 20px;">
                             No episodes found.
                         </div>
                     ` : i.map((a) => {
       const s = !!(this._nextUpItem && a.id === this._nextUpItem.id), o = a.season ? `S${a.season}:E${a.episode ?? a.index_number ?? ""}` : a.episode ?? a.index_number ? `E${a.episode ?? a.index_number}` : "", r = this._formatRuntime(a.runtime_minutes);
-      return c`
+      return l`
                             <div class="episode-row ${s ? "next-up-highlight" : ""}"
                                 @click=${(n) => {
         n.stopPropagation(), this._playTargets.length > 0 && this._handlePlayEpisode(a);
@@ -5664,7 +6583,7 @@ let $ = class extends Y {
                                 
                                 <div class="episode-thumb-wrap">
                                     <img class="episode-thumb" src="${a.poster_url || a.backdrop_url || this._item.poster_url}" alt="${a.name || ""}" />
-                                    ${this._playTargets.length > 0 ? c`
+                                    ${this._playTargets.length > 0 ? l`
                                         <div class="episode-play-overlay">
                                             <ha-icon icon="mdi:play"></ha-icon>
                                         </div>
@@ -5672,20 +6591,20 @@ let $ = class extends Y {
                                 </div>
                                 
                                 <div class="episode-content">
-                                    ${o || s ? c`
+                                    ${o || s ? l`
                                         <div class="episode-header-line">
-                                            ${o ? c`<span class="episode-number">${o}</span>` : p}
-                                            ${s ? c`<span class="next-up-badge">NEXT UP</span>` : p}
+                                            ${o ? l`<span class="episode-number">${o}</span>` : p}
+                                            ${s ? l`<span class="next-up-badge">NEXT UP</span>` : p}
                                         </div>
                                     ` : p}
 
                                     <h4 class="episode-title" title="${a.name || "Episode"}">${a.name || "Episode"}</h4>
                                     
-                                    ${r || a.rating ? c`
+                                    ${r || a.rating ? l`
                                         <div class="episode-meta">
-                                            ${r ? c`<span>${r}</span>` : p}
-                                            ${r && a.rating ? c`<span class="meta-dot">•</span>` : p}
-                                            ${a.rating ? c`<span class="episode-rating"><ha-icon icon="mdi:star"></ha-icon>${a.rating.toFixed(1)}</span>` : p}
+                                            ${r ? l`<span>${r}</span>` : p}
+                                            ${r && a.rating ? l`<span class="meta-dot">•</span>` : p}
+                                            ${a.rating ? l`<span class="episode-rating"><ha-icon icon="mdi:star"></ha-icon>${a.rating.toFixed(1)}</span>` : p}
                                         </div>
                                     ` : p}
                                 </div>
@@ -5702,7 +6621,7 @@ let $ = class extends Y {
                                         <ha-icon icon="mdi:check"></ha-icon>
                                     </button>
 
-                                    ${this._playTargets.length > 0 ? c`
+                                    ${this._playTargets.length > 0 ? l`
                                         <button class="play-episode-btn"
                                             @click=${(n) => {
         n.stopPropagation(), this._handlePlayEpisode(a);
@@ -5732,18 +6651,18 @@ let $ = class extends Y {
     if (a) {
       if (a.Width && a.Height) {
         let _ = "";
-        a.Width >= 3800 || a.Height >= 2e3 ? _ = "4K UHD" : a.Height >= 1e3 || a.Width >= 1900 ? _ = "1080p" : a.Height >= 700 || a.Width >= 1200 ? _ = "720p" : _ = `${a.Width}x${a.Height}`, t.push(c`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${_}</span>`);
+        a.Width >= 3800 || a.Height >= 2e3 ? _ = "4K UHD" : a.Height >= 1e3 || a.Width >= 1900 ? _ = "1080p" : a.Height >= 700 || a.Width >= 1200 ? _ = "720p" : _ = `${a.Width}x${a.Height}`, t.push(l`<span class="tech-chip"><ha-icon icon="mdi:video-outline"></ha-icon>${_}</span>`);
       }
-      const o = (a.VideoRangeType || "").toUpperCase(), r = (a.VideoRange || "").toUpperCase(), n = (a.ColorTransfer || "").toLowerCase(), d = a.DvProfile;
+      const o = (a.VideoRangeType || "").toUpperCase(), r = (a.VideoRange || "").toUpperCase(), n = (a.ColorTransfer || "").toLowerCase(), c = a.DvProfile;
       let h = e.dynamic_range || "";
-      h || (o.startsWith("DOVI") || d != null ? h = "Dolby Vision" : o === "HDR10PLUS" || o === "HDR10+" ? h = "HDR10+" : o === "HDR10" || n === "smpte2084" ? h = "HDR10" : o === "HLG" || n === "arib-std-b67" ? h = "HLG" : r === "HDR" && (h = "HDR")), h && h !== "SDR" && t.push(c`<span class="tech-chip tech-chip-hdr"><ha-icon icon="mdi:hdr"></ha-icon>${h}</span>`), a.Codec && t.push(c`<span class="tech-chip">${a.Codec.toUpperCase()}</span>`);
+      h || (o.startsWith("DOVI") || c != null ? h = "Dolby Vision" : o === "HDR10PLUS" || o === "HDR10+" ? h = "HDR10+" : o === "HDR10" || n === "smpte2084" ? h = "HDR10" : o === "HLG" || n === "arib-std-b67" ? h = "HLG" : r === "HDR" && (h = "HDR")), h && h !== "SDR" && t.push(l`<span class="tech-chip tech-chip-hdr"><ha-icon icon="mdi:hdr"></ha-icon>${h}</span>`), a.Codec && t.push(l`<span class="tech-chip">${a.Codec.toUpperCase()}</span>`);
     }
     const s = i.find((o) => o.Type?.toLowerCase() === "audio" && !!o.IsDefault) || i.find((o) => o.Type?.toLowerCase() === "audio");
-    if (s && (s.Codec && t.push(c`<span class="tech-chip"><ha-icon icon="mdi:volume-high"></ha-icon>${s.Codec.toUpperCase()}</span>`), s.Channels)) {
+    if (s && (s.Codec && t.push(l`<span class="tech-chip"><ha-icon icon="mdi:volume-high"></ha-icon>${s.Codec.toUpperCase()}</span>`), s.Channels)) {
       let o = `${s.Channels} ch`;
-      s.Channels === 6 ? o = "5.1" : s.Channels === 8 ? o = "7.1" : s.Channels === 2 && (o = "Stereo"), t.push(c`<span class="tech-chip">${o}</span>`);
+      s.Channels === 6 ? o = "5.1" : s.Channels === 8 ? o = "7.1" : s.Channels === 2 && (o = "Stereo"), t.push(l`<span class="tech-chip">${o}</span>`);
     }
-    return t.length === 0 ? c`` : c`
+    return t.length === 0 ? l`` : l`
             <div class="divider"></div>
             <div class="tech-specs-row">
                 ${t}
@@ -5786,11 +6705,11 @@ let $ = class extends Y {
     if (e.type === "cast") return "Cast to Chromecast";
     if (e.type === "client") {
       const t = this.hass?.locale?.language || this.hass?.language || "en";
-      return l(t, "editor.action_play_client") || "Play on Jellyfin Client";
+      return d(t, "editor.action_play_client") || "Play on Jellyfin Client";
     }
     if (e.type === "browser" || e.type === "play-browser") {
       const t = this.hass?.locale?.language || this.hass?.language || "en";
-      return l(t, "modal.play_in_browser") || "Play in Browser";
+      return d(t, "modal.play_in_browser") || "Play in Browser";
     }
     return le(this.hass, e.service);
   }
@@ -5798,14 +6717,14 @@ let $ = class extends Y {
     if (this._playTargets.length === 0) return p;
     if (this._playTargets.length === 1) {
       const t = this._playTargets[0], i = t.type === "browser" || t.type === "play-browser", a = t.type === "client", s = t.icon || (t.type === "cast" ? "mdi:cast" : a ? "mdi:television-play" : i ? "mdi:monitor" : "mdi:play"), o = this._getTargetDisplayName(t);
-      return c`
+      return l`
                 <button class="primary-play-btn" @click=${this._handlePlay} title="${o}">
                     <ha-icon icon="${s}"></ha-icon>
                     <span>${o}</span>
                 </button>
             `;
     }
-    return c`
+    return l`
             <button class="primary-play-btn" @click=${this._handlePlay} title="Play">
                 <ha-icon icon="mdi:play"></ha-icon>
                 <span>Play</span>
@@ -5834,8 +6753,8 @@ let $ = class extends Y {
   }
   _renderTargetPickerOverlay() {
     if (!this._showTargetPicker || !this._pendingPlayItem) return p;
-    const e = this._pendingPlayItem.series_name ? `${this._pendingPlayItem.series_name} - ${this._pendingPlayItem.name}` : this._pendingPlayItem.name, t = this.hass?.locale?.language || this.hass?.language || "en", i = l(t, "modal.play_on") || "Play On", a = l(t, "modal.cancel") || "Cancel";
-    return c`
+    const e = this._pendingPlayItem.series_name ? `${this._pendingPlayItem.series_name} - ${this._pendingPlayItem.name}` : this._pendingPlayItem.name, t = this.hass?.locale?.language || this.hass?.language || "en", i = d(t, "modal.play_on") || "Play On", a = d(t, "modal.cancel") || "Cancel";
+    return l`
             <div class="target-picker-overlay" @click=${this._closeTargetPicker}>
                 <div class="target-picker-card" @click=${(s) => s.stopPropagation()}>
                     <div class="target-picker-header">
@@ -5850,15 +6769,15 @@ let $ = class extends Y {
 
                     <div class="target-picker-list">
                         ${this._playTargets.map((s) => {
-      const o = s.type === "browser" || s.type === "play-browser", r = s.type === "client", n = s.icon || (s.type === "cast" ? "mdi:cast" : r ? "mdi:television-play" : o ? "mdi:monitor" : "mdi:play"), d = this._getTargetDisplayName(s), h = s.type === "cast" ? s.device || this._defaultCastDevice || "Chromecast" : r ? s.device || this._defaultClientDevice || "Jellyfin Client" : o ? "Web Browser" : s.service || "Script", _ = s.show_entity_name !== !1 && s.show_entity !== !1 && this._showEntityName !== !1;
-      return c`
+      const o = s.type === "browser" || s.type === "play-browser", r = s.type === "client", n = s.icon || (s.type === "cast" ? "mdi:cast" : r ? "mdi:television-play" : o ? "mdi:monitor" : "mdi:play"), c = this._getTargetDisplayName(s), h = s.type === "cast" ? s.device || this._defaultCastDevice || "Chromecast" : r ? s.device || this._defaultClientDevice || "Jellyfin Client" : o ? "Web Browser" : s.service || "Script", _ = s.show_entity_name !== !1 && s.show_entity !== !1 && this._showEntityName !== !1;
+      return l`
                                 <button class="target-option-btn" @click=${() => this._executePlayTarget(s, this._pendingPlayItem)}>
                                     <div class="target-icon-badge">
                                         <ha-icon icon="${n}"></ha-icon>
                                     </div>
                                     <div class="target-info">
-                                        <span class="target-name">${d}</span>
-                                        ${_ && h ? c`<span class="target-detail">${h}</span>` : p}
+                                        <span class="target-name">${c}</span>
+                                        ${_ && h ? l`<span class="target-detail">${h}</span>` : p}
                                     </div>
                                     <ha-icon icon="mdi:chevron-right" class="target-chevron"></ha-icon>
                                 </button>
@@ -5946,78 +6865,78 @@ let $ = class extends Y {
     return null;
   }
 };
-$.styles = we`
+k.styles = $e`
         /* Styles handled in _getPortalStyles */
     `;
-P([
-  V({ attribute: !1 })
-], $.prototype, "hass", 2);
-P([
+j([
+  F({ attribute: !1 })
+], k.prototype, "hass", 2);
+j([
   f()
-], $.prototype, "_item", 2);
-P([
+], k.prototype, "_item", 2);
+j([
   f()
-], $.prototype, "_nextUpItem", 2);
-P([
+], k.prototype, "_nextUpItem", 2);
+j([
   f()
-], $.prototype, "_defaultCastDevice", 2);
-P([
+], k.prototype, "_defaultCastDevice", 2);
+j([
   f()
-], $.prototype, "_defaultClientDevice", 2);
-P([
+], k.prototype, "_defaultClientDevice", 2);
+j([
   f()
-], $.prototype, "_serverEntityId", 2);
-P([
+], k.prototype, "_serverEntityId", 2);
+j([
   f()
-], $.prototype, "_subtitleMode", 2);
-P([
+], k.prototype, "_subtitleMode", 2);
+j([
   f()
-], $.prototype, "_subtitleLanguage", 2);
-P([
+], k.prototype, "_subtitleLanguage", 2);
+j([
   f()
-], $.prototype, "_playTargets", 2);
-P([
+], k.prototype, "_playTargets", 2);
+j([
   f()
-], $.prototype, "_showTargetPicker", 2);
-P([
+], k.prototype, "_showTargetPicker", 2);
+j([
   f()
-], $.prototype, "_pendingPlayItem", 2);
-P([
+], k.prototype, "_pendingPlayItem", 2);
+j([
   f()
-], $.prototype, "_showEntityName", 2);
-P([
+], k.prototype, "_showEntityName", 2);
+j([
   f()
-], $.prototype, "_open", 2);
-P([
+], k.prototype, "_open", 2);
+j([
   f()
-], $.prototype, "_confirmDelete", 2);
-P([
+], k.prototype, "_confirmDelete", 2);
+j([
   f()
-], $.prototype, "_viewMode", 2);
-P([
+], k.prototype, "_viewMode", 2);
+j([
   f()
-], $.prototype, "_episodes", 2);
-P([
+], k.prototype, "_episodes", 2);
+j([
   f()
-], $.prototype, "_selectedSeason", 2);
-P([
+], k.prototype, "_selectedSeason", 2);
+j([
   f()
-], $.prototype, "_touchStartY", 2);
-P([
+], k.prototype, "_touchStartY", 2);
+j([
   f()
-], $.prototype, "_currentTranslateY", 2);
-P([
+], k.prototype, "_currentTranslateY", 2);
+j([
   f()
-], $.prototype, "_isDragging", 2);
-$ = P([
+], k.prototype, "_isDragging", 2);
+k = j([
   oe("jellyha-item-details-modal")
-], $);
-var Pi = Object.defineProperty, Ii = Object.getOwnPropertyDescriptor, et = (e, t, i, a) => {
-  for (var s = a > 1 ? void 0 : a ? Ii(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+], k);
+var Pi = Object.defineProperty, ji = Object.getOwnPropertyDescriptor, et = (e, t, i, a) => {
+  for (var s = a > 1 ? void 0 : a ? ji(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && Pi(t, i, s), s;
 };
-function Ve(e, t, i) {
+function We(e, t, i) {
   const a = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
@@ -6025,7 +6944,7 @@ function Ve(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let ye = class extends Y {
+let we = class extends J {
   constructor() {
     super(...arguments), this._filterCastDevices = (e) => {
       const t = e?.entity_id;
@@ -6045,13 +6964,13 @@ let ye = class extends Y {
   }
   render() {
     if (!this.hass || !this._config)
-      return c``;
+      return l``;
     const e = this._config.click_action || "more-info", t = this._config.hold_action || "jellyfin", i = this._config.double_tap_action || "none", a = e === "cast" || t === "cast" || i === "cast", s = e === "play-client" || t === "play-client" || i === "play-client", o = this.hass.locale?.language || this.hass.language, r = Object.keys(this.hass.states || {}).filter(
       (h) => h.startsWith("sensor.") && (h.endsWith("_library") || h === "sensor.jellyha_library") && (h.includes("jellyha") || this.hass.states[h]?.attributes?.integration === "jellyha")
     );
     this._config.entity && !r.includes(this._config.entity) && r.unshift(this._config.entity);
-    const d = this._config.layout === "grid" && this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0 ? l(o, "editor.rows") : l(o, "editor.columns");
-    return c`
+    const c = this._config.layout === "grid" && this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0 ? d(o, "editor.rows") : d(o, "editor.columns");
+    return l`
       <div class="card-config">
         <div class="form-row">
           <ha-selector
@@ -6063,7 +6982,7 @@ let ye = class extends Y {
       }
     }}
             .value=${this._config.entity}
-            label="${l(o, "editor.entity")}"
+            label="${d(o, "editor.entity")}"
             @value-changed=${this._entityChanged}
           ></ha-selector>
         </div>
@@ -6073,8 +6992,8 @@ let ye = class extends Y {
             .hass=${this.hass}
             .selector=${{ text: {} }}
             .value=${this._config.title || ""}
-            .label=${l(o, "editor.title")}
-            label="${l(o, "editor.title")}"
+            .label=${d(o, "editor.title")}
+            label="${d(o, "editor.title")}"
             @value-changed=${this._titleChanged}
           ></ha-selector>
         </div>
@@ -6087,15 +7006,16 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "carousel", label: l(o, "editor.layout_carousel") },
-          { value: "grid", label: l(o, "editor.layout_grid") },
-          { value: "list", label: l(o, "editor.layout_list") }
+          { value: "carousel", label: d(o, "editor.layout_carousel") },
+          { value: "grid", label: d(o, "editor.layout_grid") },
+          { value: "list", label: d(o, "editor.layout_list") },
+          { value: "featured", label: d(o, "editor.layout_featured") }
         ]
       }
     }}
               .value=${this._config.layout || "carousel"}
-              .label=${l(o, "editor.layout")}
-              label="${l(o, "editor.layout")}"
+              .label=${d(o, "editor.layout")}
+              label="${d(o, "editor.layout")}"
               @value-changed=${this._layoutChanged}
             ></ha-selector>
           </div>
@@ -6107,22 +7027,22 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "both", label: l(o, "editor.media_type_both") },
-          { value: "movies", label: l(o, "editor.media_type_movies") },
-          { value: "series", label: l(o, "editor.media_type_series") },
-          { value: "next_up", label: l(o, "editor.media_type_next_up") }
+          { value: "both", label: d(o, "editor.media_type_both") },
+          { value: "movies", label: d(o, "editor.media_type_movies") },
+          { value: "series", label: d(o, "editor.media_type_series") },
+          { value: "next_up", label: d(o, "editor.media_type_next_up") }
         ]
       }
     }}
               .value=${this._config.media_type || "both"}
-              .label=${l(o, "editor.media_type")}
-              label="${l(o, "editor.media_type")}"
+              .label=${d(o, "editor.media_type")}
+              label="${d(o, "editor.media_type")}"
               @value-changed=${this._mediaTypeChanged}
             ></ha-selector>
           </div>
         </div>
 
-        ${!this._config.layout || this._config.layout === "carousel" ? c`
+        ${!this._config.layout || this._config.layout === "carousel" ? l`
           <div class="form-row">
             <ha-selector
               .hass=${this.hass}
@@ -6130,20 +7050,20 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "center", label: l(o, "editor.alignment_center") || "Center" },
-          { value: "left", label: l(o, "editor.alignment_left") || "Left" }
+          { value: "center", label: d(o, "editor.alignment_center") || "Center" },
+          { value: "left", label: d(o, "editor.alignment_left") || "Left" }
         ]
       }
     }}
               .value=${this._config.horizontal_alignment || "center"}
-              .label=${l(o, "editor.horizontal_alignment") || "Carousel Alignment"}
-              label="${l(o, "editor.horizontal_alignment") || "Carousel Alignment"}"
+              .label=${d(o, "editor.horizontal_alignment") || "Carousel Alignment"}
+              label="${d(o, "editor.horizontal_alignment") || "Carousel Alignment"}"
               @value-changed=${this._horizontalAlignmentChanged}
             ></ha-selector>
           </div>
         ` : ""}
 
-        ${this._config.media_type === "series" || this._config.media_type === "both" || !this._config.media_type ? c`
+        ${this._config.media_type === "series" || this._config.media_type === "both" || !this._config.media_type ? l`
           <div class="side-by-side">
             <div class="form-row">
               <ha-selector
@@ -6152,14 +7072,14 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "series", label: l(o, "editor.tv_content_series") },
-          { value: "episodes", label: l(o, "editor.tv_content_episodes") }
+          { value: "series", label: d(o, "editor.tv_content_series") },
+          { value: "episodes", label: d(o, "editor.tv_content_episodes") }
         ]
       }
     }}
                 .value=${this._config.tv_content || "series"}
-                .label=${l(o, "editor.tv_content")}
-                label="${l(o, "editor.tv_content")}"
+                .label=${d(o, "editor.tv_content")}
+                label="${d(o, "editor.tv_content")}"
                 @value-changed=${this._tvContentChanged}
               ></ha-selector>
             </div>
@@ -6168,75 +7088,131 @@ let ye = class extends Y {
                 .checked=${this._config.use_series_image === !0}
                 @change=${this._useSeriesImageChanged}
               ></ha-switch>
-              <span>${l(o, "editor.use_series_image")}</span>
+              <span>${d(o, "editor.use_series_image")}</span>
             </div>
           </div>
         ` : ""}
 
-        ${this._config.media_type === "next_up" ? c`
+        ${this._config.media_type === "next_up" ? l`
           <div class="checkbox-row" style="margin-bottom: 16px;">
             <ha-switch
               .checked=${this._config.use_series_image === !0}
               @change=${this._useSeriesImageChanged}
             ></ha-switch>
-            <span>${l(o, "editor.use_series_image")}</span>
+            <span>${d(o, "editor.use_series_image")}</span>
           </div>
         ` : ""}
 
-        ${this._config.layout === "grid" || this._config.layout === "list" ? c`
+        ${this._config.layout === "grid" || this._config.layout === "list" || this._config.layout === "featured" ? l`
               <div class="form-row">
                 <ha-selector
                   .hass=${this.hass}
                   .selector=${{
       number: {
         min: 1,
-        max: this._config.layout === "list" ? 8 : 12,
+        max: this._config.layout === "featured" ? 4 : this._config.layout === "list" ? 8 : 12,
         mode: "slider"
       }
     }}
                   .value=${this._config.columns || 1}
-                  .label=${`${d}: ${(this._config.columns || 1) === 1 ? l(o, "editor.auto") : this._config.columns}`}
-                  label="${`${d}: ${(this._config.columns || 1) === 1 ? l(o, "editor.auto") : this._config.columns}`}"
+                  .label=${this._config.layout === "featured" ? `${d(o, "editor.columns")}: ${this._config.columns || 1}` : `${c}: ${(this._config.columns || 1) === 1 ? d(o, "editor.auto") : this._config.columns}`}
+                  label="${this._config.layout === "featured" ? `${d(o, "editor.columns")}: ${this._config.columns || 1}` : `${c}: ${(this._config.columns || 1) === 1 ? d(o, "editor.auto") : this._config.columns}`}"
                   @value-changed=${this._columnsChanged}
                 ></ha-selector>
               </div>
-            ` : ""}
-
-        <div class="side-by-side">
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
+              ${this._config.layout === "featured" ? l`
+                <div class="helper-text" style="margin-top: -8px; margin-bottom: 12px;">
+                  ${d(o, "editor.featured_columns_helper")}
+                </div>
+                <div class="form-row">
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{
       number: {
-        min: 1,
-        max: 50,
-        mode: "box"
+        min: 2,
+        max: 3,
+        mode: "slider"
       }
     }}
-              .value=${this._config.items_per_page !== void 0 && this._config.items_per_page !== null ? this._config.items_per_page : 5}
-              .label=${l(o, "editor.items_per_page")}
-              label="${l(o, "editor.items_per_page")}"
-              @value-changed=${this._itemsPerPageChanged}
-            ></ha-selector>
-          </div>
+                    .value=${this._config.rows || 3}
+                    .label=${`${d(o, "editor.featured_rows") || "Rows"}: ${this._config.rows || 3}`}
+                    label="${`${d(o, "editor.featured_rows") || "Rows"}: ${this._config.rows || 3}`}"
+                    @value-changed=${this._rowsChanged}
+                  ></ha-selector>
+                </div>
+                <div class="helper-text" style="margin-top: -8px; margin-bottom: 12px;">
+                  ${d(o, "editor.featured_rows_helper")}
+                </div>
+              ` : ""}
+            ` : ""}
 
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
+        ${this._config.layout === "featured" ? l`
+            <div class="checkbox-row" style="margin-bottom: 4px;">
+              <ha-switch
+                .checked=${this._config.show_card_backdrop !== void 0 ? this._config.show_card_backdrop !== !1 : this._config.featured_queue_backdrop !== !1}
+                @change=${this._showCardBackdropChanged}
+              ></ha-switch>
+              <span>${d(o, "editor.show_card_backdrop")}</span>
+            </div>
+            <div class="helper-text" style="margin-bottom: 16px;">
+              ${d(o, "editor.show_card_backdrop_helper")}
+            </div>
+          ` : ""}
+
+        ${this._config.layout === "featured" ? l`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
       number: {
         min: 0,
         max: 20,
         mode: "box"
       }
     }}
-              .value=${this._config.max_pages !== void 0 && this._config.max_pages !== null ? this._config.max_pages : 5}
-              .label=${l(o, "editor.max_pages")}
-              label="${l(o, "editor.max_pages")}"
-              @value-changed=${this._maxPagesChanged}
-            ></ha-selector>
-          </div>
-        </div>
+                .value=${this._config.max_pages !== void 0 && this._config.max_pages !== null ? this._config.max_pages : 5}
+                .label=${d(o, "editor.max_pages")}
+                label="${d(o, "editor.max_pages")}"
+                @value-changed=${this._maxPagesChanged}
+              ></ha-selector>
+            </div>
+          ` : l`
+            <div class="side-by-side">
+              <div class="form-row">
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+      number: {
+        min: 1,
+        max: 50,
+        mode: "box"
+      }
+    }}
+                  .value=${this._config.items_per_page !== void 0 && this._config.items_per_page !== null ? this._config.items_per_page : 5}
+                  .label=${d(o, "editor.items_per_page")}
+                  label="${d(o, "editor.items_per_page")}"
+                  @value-changed=${this._itemsPerPageChanged}
+                ></ha-selector>
+              </div>
+
+              <div class="form-row">
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+      number: {
+        min: 0,
+        max: 20,
+        mode: "box"
+      }
+    }}
+                  .value=${this._config.max_pages !== void 0 && this._config.max_pages !== null ? this._config.max_pages : 5}
+                  .label=${d(o, "editor.max_pages")}
+                  label="${d(o, "editor.max_pages")}"
+                  @value-changed=${this._maxPagesChanged}
+                ></ha-selector>
+              </div>
+            </div>
+          `}
 
         <div class="side-by-side">
           <div class="form-row">
@@ -6251,8 +7227,8 @@ let ye = class extends Y {
       }
     }}
               .value=${this._config.auto_swipe_interval !== void 0 && this._config.auto_swipe_interval !== null ? this._config.auto_swipe_interval : 0}
-              .label=${l(o, "editor.auto_swipe")}
-              label="${l(o, "editor.auto_swipe")}"
+              .label=${d(o, "editor.auto_swipe")}
+              label="${d(o, "editor.auto_swipe")}"
               @value-changed=${this._autoSwipeIntervalChanged}
             ></ha-selector>
           </div>
@@ -6269,8 +7245,8 @@ let ye = class extends Y {
       }
     }}
               .value=${this._config.new_badge_days !== void 0 && this._config.new_badge_days !== null ? this._config.new_badge_days : 3}
-              .label=${l(o, "editor.new_badge_days")}
-              label="${l(o, "editor.new_badge_days")}"
+              .label=${d(o, "editor.new_badge_days")}
+              label="${d(o, "editor.new_badge_days")}"
               @value-changed=${this._newBadgeDaysChanged}
             ></ha-selector>
           </div>
@@ -6278,18 +7254,10 @@ let ye = class extends Y {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.enable_browser_player !== !1}
-        @change=${this._enableBrowserPlayerChanged}
-      ></ha-switch>
-      <span>${l(o, "editor.enable_browser_player")}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
         .checked=${this._config.show_title !== !1}
         @change=${this._showTitleChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_title")}</span>
+      <span>${d(o, "editor.show_title")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6297,7 +7265,7 @@ let ye = class extends Y {
         .checked=${this._config.show_year !== !1}
         @change=${this._showYearChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_year")}</span>
+      <span>${d(o, "editor.show_year")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6305,7 +7273,7 @@ let ye = class extends Y {
         .checked=${this._config.show_ratings !== !1}
         @change=${this._showRatingsChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_rating")}</span>
+      <span>${d(o, "editor.show_rating")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6313,7 +7281,7 @@ let ye = class extends Y {
         .checked=${this._config.show_runtime !== !1}
         @change=${this._showRuntimeChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_runtime")}</span>
+      <span>${d(o, "editor.show_runtime")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6321,7 +7289,7 @@ let ye = class extends Y {
         .checked=${this._config.show_date_added === !0}
         @change=${this._showDateAddedChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_date_added")}</span>
+      <span>${d(o, "editor.show_date_added")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6329,23 +7297,25 @@ let ye = class extends Y {
         .checked=${this._config.show_genres !== !1}
         @change=${this._showGenresChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_genres")}</span>
+      <span>${d(o, "editor.show_genres")}</span>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_description_on_hover !== !1}
-        @change=${this._showDescriptionOnHoverChanged}
-      ></ha-switch>
-      <span>${l(o, "editor.show_description")}</span>
-    </div>
+    ${this._config.layout !== "featured" ? l`
+          <div class="checkbox-row">
+            <ha-switch
+              .checked=${this._config.show_description_on_hover !== !1}
+              @change=${this._showDescriptionOnHoverChanged}
+            ></ha-switch>
+            <span>${d(o, "editor.show_description")}</span>
+          </div>
+        ` : ""}
 
     <div class="checkbox-row">
       <ha-switch
         .checked=${this._config.show_media_type_badge !== !1}
         @change=${this._showMediaTypeBadgeChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_media_type_badge")}</span>
+      <span>${d(o, "editor.show_media_type_badge")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6353,7 +7323,7 @@ let ye = class extends Y {
         .checked=${this._config.show_watched_status !== !1}
         @change=${this._showWatchedStatusChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_watched_status")}</span>
+      <span>${d(o, "editor.show_watched_status")}</span>
     </div>
 
     <div class="checkbox-row">
@@ -6361,56 +7331,83 @@ let ye = class extends Y {
         .checked=${this._config.show_search === !0}
         @change=${this._showSearchChanged}
       ></ha-switch>
-      <span>${l(o, "editor.show_search")}</span>
+      <span>${d(o, "editor.show_search")}</span>
     </div>
 
-    <div class="side-by-side">
-      <div class="form-row">
-        <ha-selector
-          .hass=${this.hass}
-          .selector=${{
+    ${this._config.layout === "featured" ? this._config.media_type !== "next_up" ? l`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
       select: {
         mode: "dropdown",
         options: [
-          { value: "below", label: l(o, "editor.metadata_below") },
-          { value: "above", label: l(o, "editor.metadata_above") }
+          { value: "date_added_desc", label: d(o, "editor.sort_date_added_desc") },
+          { value: "date_added_asc", label: d(o, "editor.sort_date_added_asc") },
+          { value: "title_asc", label: d(o, "editor.sort_title_asc") },
+          { value: "title_desc", label: d(o, "editor.sort_title_desc") },
+          { value: "year_desc", label: d(o, "editor.sort_year_desc") },
+          { value: "year_asc", label: d(o, "editor.sort_year_asc") },
+          { value: "last_played_desc", label: d(o, "editor.sort_last_played_desc") },
+          { value: "last_played_asc", label: d(o, "editor.sort_last_played_asc") }
         ]
       }
     }}
-          .value=${this._config.metadata_position || "below"}
-          .label=${l(o, "editor.metadata_position")}
-          label="${l(o, "editor.metadata_position")}"
-          @value-changed=${this._metadataPositionChanged}
-        ></ha-selector>
-      </div>
-
-      <div class="form-row">
-        ${this._config.media_type !== "next_up" ? c`
+                .value=${this._config.sort_option || "date_added_desc"}
+                .label=${d(o, "editor.sort_order")}
+                label="${d(o, "editor.sort_order")}"
+                @value-changed=${this._sortOptionChanged}
+              ></ha-selector>
+            </div>
+          ` : "" : l`
+        <div class="side-by-side">
+          <div class="form-row">
             <ha-selector
               .hass=${this.hass}
               .selector=${{
       select: {
         mode: "dropdown",
         options: [
-          { value: "date_added_desc", label: l(o, "editor.sort_date_added_desc") },
-          { value: "date_added_asc", label: l(o, "editor.sort_date_added_asc") },
-          { value: "title_asc", label: l(o, "editor.sort_title_asc") },
-          { value: "title_desc", label: l(o, "editor.sort_title_desc") },
-          { value: "year_desc", label: l(o, "editor.sort_year_desc") },
-          { value: "year_asc", label: l(o, "editor.sort_year_asc") },
-          { value: "last_played_desc", label: l(o, "editor.sort_last_played_desc") },
-          { value: "last_played_asc", label: l(o, "editor.sort_last_played_asc") }
+          { value: "below", label: d(o, "editor.metadata_below") },
+          { value: "above", label: d(o, "editor.metadata_above") }
         ]
       }
     }}
-              .value=${this._config.sort_option || "date_added_desc"}
-              .label=${l(o, "editor.sort_order")}
-              label="${l(o, "editor.sort_order")}"
-              @value-changed=${this._sortOptionChanged}
+              .value=${this._config.metadata_position || "below"}
+              .label=${d(o, "editor.metadata_position")}
+              label="${d(o, "editor.metadata_position")}"
+              @value-changed=${this._metadataPositionChanged}
             ></ha-selector>
-        ` : c`<div></div>`}
-      </div>
-    </div>
+          </div>
+
+          <div class="form-row">
+            ${this._config.media_type !== "next_up" ? l`
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+      select: {
+        mode: "dropdown",
+        options: [
+          { value: "date_added_desc", label: d(o, "editor.sort_date_added_desc") },
+          { value: "date_added_asc", label: d(o, "editor.sort_date_added_asc") },
+          { value: "title_asc", label: d(o, "editor.sort_title_asc") },
+          { value: "title_desc", label: d(o, "editor.sort_title_desc") },
+          { value: "year_desc", label: d(o, "editor.sort_year_desc") },
+          { value: "year_asc", label: d(o, "editor.sort_year_asc") },
+          { value: "last_played_desc", label: d(o, "editor.sort_last_played_desc") },
+          { value: "last_played_asc", label: d(o, "editor.sort_last_played_asc") }
+        ]
+      }
+    }}
+                  .value=${this._config.sort_option || "date_added_desc"}
+                  .label=${d(o, "editor.sort_order")}
+                  label="${d(o, "editor.sort_order")}"
+                  @value-changed=${this._sortOptionChanged}
+                ></ha-selector>
+            ` : l`<div></div>`}
+          </div>
+        </div>
+      `}
 
     <div class="side-by-side">
       <div class="checkbox-row">
@@ -6418,7 +7415,7 @@ let ye = class extends Y {
           .checked=${this._config.enable_pagination !== !1}
           @change=${this._enablePaginationChanged}
         ></ha-switch>
-        <span>${l(o, "editor.enable_pagination")}</span>
+        <span>${d(o, "editor.enable_pagination")}</span>
       </div>
 
       <div class="checkbox-row">
@@ -6426,7 +7423,7 @@ let ye = class extends Y {
           .checked=${this._config.show_pagination_dots !== !1}
           @change=${this._showPaginationDotsChanged}
         ></ha-switch>
-        <span>${l(o, "editor.show_pagination_dots")}</span>
+        <span>${d(o, "editor.show_pagination_dots")}</span>
       </div>
     </div>
 
@@ -6437,15 +7434,15 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "all", label: l(o, "editor.filter_all") },
-          { value: "unwatched", label: l(o, "editor.filter_unwatched") },
-          { value: "watched", label: l(o, "editor.filter_watched") }
+          { value: "all", label: d(o, "editor.filter_all") },
+          { value: "unwatched", label: d(o, "editor.filter_unwatched") },
+          { value: "watched", label: d(o, "editor.filter_watched") }
         ]
       }
     }}
         .value=${this._config.status_filter || "all"}
-        .label=${l(o, "editor.filter_watch_status")}
-        label="${l(o, "editor.filter_watch_status")}"
+        .label=${d(o, "editor.filter_watch_status")}
+        label="${d(o, "editor.filter_watch_status")}"
         @value-changed=${this._statusFilterChanged}
       ></ha-selector>
     </div>
@@ -6456,7 +7453,7 @@ let ye = class extends Y {
           .checked=${this._config.filter_favorites === !0}
           @change=${this._filterFavoritesChanged}
         ></ha-switch>
-        <span>${l(o, "editor.filter_favorites")}</span>
+        <span>${d(o, "editor.filter_favorites")}</span>
       </div>
 
       <div class="checkbox-row">
@@ -6464,7 +7461,7 @@ let ye = class extends Y {
           .checked=${this._config.filter_newly_added === !0}
           @change=${this._filterNewlyAddedChanged}
         ></ha-switch>
-        <span>${l(o, "editor.filter_new_items")}</span>
+        <span>${d(o, "editor.filter_new_items")}</span>
       </div>
     </div>
 
@@ -6476,20 +7473,20 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
-          { value: "play-browser", label: l(o, "editor.action_play_browser") },
-          { value: "play-client", label: l(o, "editor.action_play_client") },
-          { value: "cast", label: l(o, "editor.action_cast") },
-          { value: "more-info", label: l(o, "editor.action_more_info") },
-          { value: "trailer", label: l(o, "editor.action_trailer") },
-          { value: "call-service", label: l(o, "editor.action_call_service") },
-          { value: "none", label: l(o, "editor.action_none") }
+          { value: "jellyfin", label: d(o, "editor.action_jellyfin") },
+          { value: "play-browser", label: d(o, "editor.action_play_browser") },
+          { value: "play-client", label: d(o, "editor.action_play_client") },
+          { value: "cast", label: d(o, "editor.action_cast") },
+          { value: "more-info", label: d(o, "editor.action_more_info") },
+          { value: "trailer", label: d(o, "editor.action_trailer") },
+          { value: "call-service", label: d(o, "editor.action_call_service") },
+          { value: "none", label: d(o, "editor.action_none") }
         ]
       }
     }}
               .value=${e}
-              .label=${l(o, "editor.click_action")}
-              label="${l(o, "editor.click_action")}"
+              .label=${d(o, "editor.click_action")}
+              label="${d(o, "editor.click_action")}"
               @value-changed=${this._clickActionChanged}
             ></ha-selector>
           </div>
@@ -6501,20 +7498,20 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
-          { value: "play-browser", label: l(o, "editor.action_play_browser") },
-          { value: "play-client", label: l(o, "editor.action_play_client") },
-          { value: "cast", label: l(o, "editor.action_cast") },
-          { value: "more-info", label: l(o, "editor.action_more_info") },
-          { value: "trailer", label: l(o, "editor.action_trailer") },
-          { value: "call-service", label: l(o, "editor.action_call_service") },
-          { value: "none", label: l(o, "editor.action_none") }
+          { value: "jellyfin", label: d(o, "editor.action_jellyfin") },
+          { value: "play-browser", label: d(o, "editor.action_play_browser") },
+          { value: "play-client", label: d(o, "editor.action_play_client") },
+          { value: "cast", label: d(o, "editor.action_cast") },
+          { value: "more-info", label: d(o, "editor.action_more_info") },
+          { value: "trailer", label: d(o, "editor.action_trailer") },
+          { value: "call-service", label: d(o, "editor.action_call_service") },
+          { value: "none", label: d(o, "editor.action_none") }
         ]
       }
     }}
               .value=${t}
-              .label=${l(o, "editor.hold_action")}
-              label="${l(o, "editor.hold_action")}"
+              .label=${d(o, "editor.hold_action")}
+              label="${d(o, "editor.hold_action")}"
               @value-changed=${this._holdActionChanged}
             ></ha-selector>
           </div>
@@ -6528,33 +7525,33 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "jellyfin", label: l(o, "editor.action_jellyfin") },
-          { value: "play-browser", label: l(o, "editor.action_play_browser") },
-          { value: "play-client", label: l(o, "editor.action_play_client") },
-          { value: "cast", label: l(o, "editor.action_cast") },
-          { value: "more-info", label: l(o, "editor.action_more_info") },
-          { value: "trailer", label: l(o, "editor.action_trailer") },
-          { value: "call-service", label: l(o, "editor.action_call_service") },
-          { value: "none", label: l(o, "editor.action_none") }
+          { value: "jellyfin", label: d(o, "editor.action_jellyfin") },
+          { value: "play-browser", label: d(o, "editor.action_play_browser") },
+          { value: "play-client", label: d(o, "editor.action_play_client") },
+          { value: "cast", label: d(o, "editor.action_cast") },
+          { value: "more-info", label: d(o, "editor.action_more_info") },
+          { value: "trailer", label: d(o, "editor.action_trailer") },
+          { value: "call-service", label: d(o, "editor.action_call_service") },
+          { value: "none", label: d(o, "editor.action_none") }
         ]
       }
     }}
               .value=${i}
-              .label=${l(o, "editor.double_tap_action")}
-              label="${l(o, "editor.double_tap_action")}"
+              .label=${d(o, "editor.double_tap_action")}
+              label="${d(o, "editor.double_tap_action")}"
               @value-changed=${this._doubleTapActionChanged}
             ></ha-selector>
           </div>
 
-          ${a ? c`
+          ${a ? l`
                 <div class="form-row">
                   <ha-entity-picker
                     .hass=${this.hass}
                     .value=${this._config.default_cast_device}
                     .includeDomains=${["media_player"]}
                     .entityFilter=${this._filterCastDevices}
-                    .label=${l(o, "editor.default_cast_device") || "Default Cast Device"}
-                    label="${l(o, "editor.default_cast_device") || "Default Cast Device"}"
+                    .label=${d(o, "editor.default_cast_device") || "Default Cast Device"}
+                    label="${d(o, "editor.default_cast_device") || "Default Cast Device"}"
                     @value-changed=${this._defaultCastDeviceChanged}
                   ></ha-entity-picker>
                 </div>
@@ -6566,50 +7563,50 @@ let ye = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "auto", label: l(o, "editor.subtitles_auto") || "Auto (Jellyfin User Profile)" },
-          { value: "none", label: l(o, "editor.subtitles_none") || "None (Disabled)" },
-          { value: "forced_only", label: l(o, "editor.subtitles_forced_only") || "Forced Only" },
-          { value: "custom", label: l(o, "editor.subtitles_custom") || "Custom Language List" }
+          { value: "auto", label: d(o, "editor.subtitles_auto") || "Auto (Jellyfin User Profile)" },
+          { value: "none", label: d(o, "editor.subtitles_none") || "None (Disabled)" },
+          { value: "forced_only", label: d(o, "editor.subtitles_forced_only") || "Forced Only" },
+          { value: "custom", label: d(o, "editor.subtitles_custom") || "Custom Language List" }
         ]
       }
     }}
                     .value=${this._config.subtitle_mode || "auto"}
-                    .label=${l(o, "editor.subtitles") || "Cast Subtitles"}
-                    label="${l(o, "editor.subtitles") || "Cast Subtitles"}"
+                    .label=${d(o, "editor.subtitles") || "Cast Subtitles"}
+                    label="${d(o, "editor.subtitles") || "Cast Subtitles"}"
                     @value-changed=${this._subtitleModeChanged}
                   ></ha-selector>
                 </div>
 
-                ${this._config.subtitle_mode === "custom" ? c`
+                ${this._config.subtitle_mode === "custom" ? l`
                     <div class="form-row">
                       <ha-selector
                         .hass=${this.hass}
                         .selector=${{ text: {} }}
                         .value=${this._config.subtitle_language || ""}
-                        .label=${l(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}
-                        label="${l(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}"
+                        .label=${d(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}
+                        label="${d(o, "editor.subtitle_languages") || "Cast Subtitle Priority (e.g. sl, en)"}"
                         @value-changed=${this._subtitleLanguageChanged}
                       ></ha-selector>
                     </div>
                   ` : ""}
-              ` : c`<div></div>`}
+              ` : l`<div></div>`}
         </div>
 
-        ${s ? c`
+        ${s ? l`
             <div class="form-row">
               <ha-entity-picker
                 .hass=${this.hass}
                 .value=${this._config.default_client_device}
                 .includeDomains=${["media_player"]}
                 .entityFilter=${this._filterClientDevices}
-                .label=${l(o, "editor.default_client_device") || "Default Jellyfin Client"}
-                label="${l(o, "editor.default_client_device") || "Default Jellyfin Client"}"
+                .label=${d(o, "editor.default_client_device") || "Default Jellyfin Client"}
+                label="${d(o, "editor.default_client_device") || "Default Jellyfin Client"}"
                 @value-changed=${this._defaultClientDeviceChanged}
               ></ha-entity-picker>
             </div>
           ` : ""}
 
-        ${e === "call-service" ? c`
+        ${e === "call-service" ? l`
             <div class="form-row">
               <ha-selector
                 .hass=${this.hass}
@@ -6619,14 +7616,14 @@ let ye = class extends Y {
       }
     }}
                 .value=${this._config.click_service || this._config.service || ""}
-                .label=${`${l(o, "editor.click_action")}: ${l(o, "editor.service_to_call")}`}
-                label="${l(o, "editor.click_action")}: ${l(o, "editor.service_to_call")}"
+                .label=${`${d(o, "editor.click_action")}: ${d(o, "editor.service_to_call")}`}
+                label="${d(o, "editor.click_action")}: ${d(o, "editor.service_to_call")}"
                 @value-changed=${this._clickServiceChanged}
               ></ha-selector>
             </div>
           ` : ""}
 
-        ${t === "call-service" ? c`
+        ${t === "call-service" ? l`
             <div class="form-row">
               <ha-selector
                 .hass=${this.hass}
@@ -6636,14 +7633,14 @@ let ye = class extends Y {
       }
     }}
                 .value=${this._config.hold_service || this._config.service || ""}
-                .label=${`${l(o, "editor.hold_action")}: ${l(o, "editor.service_to_call")}`}
-                label="${l(o, "editor.hold_action")}: ${l(o, "editor.service_to_call")}"
+                .label=${`${d(o, "editor.hold_action")}: ${d(o, "editor.service_to_call")}`}
+                label="${d(o, "editor.hold_action")}: ${d(o, "editor.service_to_call")}"
                 @value-changed=${this._holdServiceChanged}
               ></ha-selector>
             </div>
           ` : ""}
 
-        ${i === "call-service" ? c`
+        ${i === "call-service" ? l`
             <div class="form-row">
               <ha-selector
                 .hass=${this.hass}
@@ -6653,37 +7650,43 @@ let ye = class extends Y {
       }
     }}
                 .value=${this._config.double_tap_service || this._config.service || ""}
-                .label=${`${l(o, "editor.double_tap_action")}: ${l(o, "editor.service_to_call")}`}
-                label="${l(o, "editor.double_tap_action")}: ${l(o, "editor.service_to_call")}"
+                .label=${`${d(o, "editor.double_tap_action")}: ${d(o, "editor.service_to_call")}`}
+                label="${d(o, "editor.double_tap_action")}: ${d(o, "editor.service_to_call")}"
                 @value-changed=${this._doubleTapServiceChanged}
               ></ha-selector>
             </div>
           ` : ""}
 
-        ${e === "cast" || t === "cast" || i === "cast" ? c`
-              <div class="checkbox-row">
-                <ha-switch
-                  .checked=${this._config.show_now_playing !== !1}
-                  @change=${this._showNowPlayingChanged}
-                ></ha-switch>
-                <span>${l(o, "editor.show_now_playing_overlay")}</span>
-              </div>
-            ` : ""}
+    <div class="checkbox-row" style="margin-top: 16px;">
+      <ha-switch
+        .checked=${this._config.enable_browser_player !== !1}
+        @change=${this._enableBrowserPlayerChanged}
+      ></ha-switch>
+      <span>${d(o, "editor.enable_browser_player")}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_now_playing !== !1}
+        @change=${this._showNowPlayingChanged}
+      ></ha-switch>
+      <span>${d(o, "editor.show_now_playing_overlay")}</span>
+    </div>
 
     <div class="checkbox-row" style="margin-top: 16px; margin-bottom: 4px;">
       <ha-switch
         .checked=${this._config.enable_custom_play_actions === !0}
         @change=${this._enableCustomPlayActionsChanged}
       ></ha-switch>
-      <span>${l(o, "editor.enable_custom_play_actions") || "Custom Play Actions"}</span>
+      <span>${d(o, "editor.enable_custom_play_actions") || "Custom Play Actions"}</span>
     </div>
     <div class="helper-text">
-      ${l(o, "editor.custom_play_actions_helper") || "When enabled, play targets in the More Info dialog are controlled by modal_play_actions in YAML. You can add multiple scripts, cast devices, or custom labels. When disabled, standard card settings are used."}
+      ${d(o, "editor.custom_play_actions_helper") || "When enabled, play targets in the More Info dialog are controlled by modal_play_actions in YAML. You can add multiple scripts, cast devices, or custom labels. When disabled, standard card settings are used."}
     </div>
-    ${this._config.enable_custom_play_actions && (!this._config.modal_play_actions || this._config.modal_play_actions.length === 0) ? c`
+    ${this._config.enable_custom_play_actions && (!this._config.modal_play_actions || this._config.modal_play_actions.length === 0) ? l`
         <div class="warning-banner">
           <ha-icon icon="mdi:alert-outline"></ha-icon>
-          <span>${l(o, "editor.custom_play_actions_none_configured") || "None of the actions have been selected yet. Configure a Cast device or Script above, or define custom play targets in YAML under modal_play_actions."}</span>
+          <span>${d(o, "editor.custom_play_actions_none_configured") || "None of the actions have been selected yet. Configure a Cast device or Script above, or define custom play targets in YAML under modal_play_actions."}</span>
         </div>
       ` : ""}
 
@@ -6705,6 +7708,10 @@ let ye = class extends Y {
   _columnsChanged(e) {
     const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
     this._updateConfig("columns", Number(t));
+  }
+  _rowsChanged(e) {
+    const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
+    this._updateConfig("rows", Number(t));
   }
   _mediaTypeChanged(e) {
     const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
@@ -6794,7 +7801,7 @@ let ye = class extends Y {
         a.modal_play_actions = a.modal_play_actions.filter(
           (s) => s.type !== "browser" && s.type !== "play-browser"
         );
-    this._config = a, Ve(this, "config-changed", { config: a });
+    this._config = a, We(this, "config-changed", { config: a });
   }
   _showTitleChanged(e) {
     const t = e.target;
@@ -6835,6 +7842,10 @@ let ye = class extends Y {
   _metadataPositionChanged(e) {
     const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
     t !== void 0 && this._updateConfig("metadata_position", t);
+  }
+  _showCardBackdropChanged(e) {
+    const t = e.target;
+    this._updateConfig("show_card_backdrop", t.checked), this._updateConfig("featured_queue_backdrop", t.checked);
   }
   _horizontalAlignmentChanged(e) {
     const t = e.detail?.value !== void 0 ? e.detail.value : e.target?.value;
@@ -6914,16 +7925,16 @@ let ye = class extends Y {
         ];
       }
     }
-    this._config = a, Ve(this, "config-changed", { config: a });
+    this._config = a, We(this, "config-changed", { config: a });
   }
   _updateConfig(e, t) {
     if (!this._config)
       return;
     const i = { ...this._config, [e]: t };
-    this._config = i, Ve(this, "config-changed", { config: i });
+    this._config = i, We(this, "config-changed", { config: i });
   }
 };
-ye.styles = we`
+we.styles = $e`
     .form-row {
       margin-bottom: 16px;
     }
@@ -6983,31 +7994,31 @@ ye.styles = we`
     }
   `;
 et([
-  V({ attribute: !1 })
-], ye.prototype, "hass", 2);
+  F({ attribute: !1 })
+], we.prototype, "hass", 2);
 et([
   f()
-], ye.prototype, "_config", 2);
-ye = et([
+], we.prototype, "_config", 2);
+we = et([
   oe("jellyha-library-editor")
-], ye);
-var Ei = Object.defineProperty, ji = Object.getOwnPropertyDescriptor, B = (e, t, i, a) => {
-  for (var s = a > 1 ? void 0 : a ? ji(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+], we);
+var Ii = Object.defineProperty, Ei = Object.getOwnPropertyDescriptor, O = (e, t, i, a) => {
+  for (var s = a > 1 ? void 0 : a ? Ei(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
-  return a && s && Ei(t, i, s), s;
+  return a && s && Ii(t, i, s), s;
 };
-let D = class extends Y {
+let N = class extends J {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1;
   }
   render() {
-    return !this.item || !this.config || !this.hass ? c`` : this.layout === "list" ? this._renderListItem() : this._renderMediaItem();
+    return !this.item || !this.config || !this.hass ? l`` : this.layout === "list" ? this._renderListItem() : this.layout === "featured-hero" ? this._renderFeaturedHero() : this.layout === "featured-queue" ? this._renderFeaturedQueue() : this._renderMediaItem();
   }
   _renderListItem() {
-    const e = this.item, t = We(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e);
-    return c`
+    const e = this.item, t = me(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e);
+    return l`
       <div
-        class="media-item list-item ${s ? "playing" : ""} ${this.config.show_title ? "" : "no-title"} ${this.config.metadata_position === "above" ? "metadata-above" : ""}"
+        class="media-item list-item ${s ? "playing" : ""} ${this.config.show_title === !1 ? "no-title" : ""} ${this.config.metadata_position === "above" ? "metadata-above" : ""}"
         tabindex="0"
         role="button"
         aria-label="${e.name}"
@@ -7021,12 +8032,12 @@ let D = class extends Y {
         @contextmenu="${this._handleContextMenu}"
       >
         <div class="list-poster-wrapper">
-          ${this.config.metadata_position === "above" && this.config.show_date_added && e.date_added ? c`<p class="list-date-added">${Ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
+          ${this.config.metadata_position === "above" && this.config.show_date_added && e.date_added ? l`<p class="list-date-added">${ue(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
           <div class="poster-container" id="poster-${e.id}">
             <div class="poster-inner">
               <img
                 class="poster"
-                src="${R(
+                src="${D(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       160
     )}"
@@ -7040,11 +8051,11 @@ let D = class extends Y {
               />
               <div class="poster-skeleton"></div>
               
-              ${a && !s && !e.series_name ? c`<span class="list-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+              ${a && !s && !e.series_name ? l`<span class="list-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
                     ${e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "Movie" : "Series"}
                   </span>` : p}
 
-              ${e.series_name && !s ? c`
+              ${e.series_name && !s ? l`
             <div class="censor-bar list-bar ${this.isNextUpHighlight ? "highlight" : ""}">
               <span>${e.series_name}</span>
             </div>
@@ -7054,37 +8065,37 @@ let D = class extends Y {
               ${this._renderNowPlayingOverlay(e)}
             </div>
           </div>
-          ${this.config.metadata_position !== "above" && this.config.show_date_added && e.date_added ? c`<p class="list-date-added">${Ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
+          ${this.config.metadata_position !== "above" && this.config.show_date_added && e.date_added ? l`<p class="list-date-added">${ue(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
         </div>
         
         <div class="list-info">
-          ${this.config.show_title ? c`<h3 class="list-title">${e.name}</h3>` : p}
+          ${this.config.show_title !== !1 ? l`<h3 class="list-title">${e.name}</h3>` : p}
           
           <div class="list-metadata">
-            ${a && !s ? c`<span class="list-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+            ${a && !s ? l`<span class="list-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
                   ${e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "Movie" : "Series"}
                 </span>` : p}
-            ${this.config.show_year && e.year ? c`<span class="list-year">${e.year}</span>` : p}
-            ${this.config.show_ratings && i ? c`<span class="list-rating">
+            ${this.config.show_year !== !1 && (e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0)) ? l`<span class="list-year">${e.year ?? new Date(e.date_added).getFullYear()}</span>` : p}
+            ${this.config.show_ratings !== !1 && this.config.show_rating !== !1 && i ? l`<span class="list-rating">
                   <ha-icon icon="mdi:star"></ha-icon>
                   ${i.toFixed(1)}
                 </span>` : p}
-            ${this.config.show_runtime && e.runtime_minutes ? c`<span class="list-runtime">
+            ${this.config.show_runtime !== !1 && e.runtime_minutes ? l`<span class="list-runtime">
                   <ha-icon icon="mdi:clock-outline"></ha-icon>
-                  ${ge(e.runtime_minutes)}
+                  ${de(e.runtime_minutes)}
                 </span>` : p}
           </div>
           
-          ${this.config.show_genres && e.genres && e.genres.length > 0 ? c`<p class="list-genres">${e.genres.slice(0, 3).join(", ")}</p>` : p}
+          ${this.config.show_genres !== !1 && e.genres && e.genres.length > 0 ? l`<p class="list-genres">${e.genres.slice(0, 3).join(", ")}</p>` : p}
           
-          ${this.config.show_description_on_hover !== !1 && e.description ? c`<p class="list-description">${e.description}</p>` : p}
+          ${this.config.show_description_on_hover !== !1 && e.description ? l`<p class="list-description">${e.description}</p>` : p}
         </div>
       </div>
     `;
   }
   _renderMediaItem() {
-    const e = this.item, t = We(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e);
-    return c`
+    const e = this.item, t = me(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e);
+    return l`
       <div
         class="media-item ${s ? "playing" : ""}"
         tabindex="0"
@@ -7099,18 +8110,18 @@ let D = class extends Y {
         @keydown="${this._handleKeydown}"
         @contextmenu="${this._handleContextMenu}"
       >
-        ${this.config.metadata_position === "above" ? c`
+        ${this.config.metadata_position === "above" ? l`
               <div class="media-info-above">
-                ${this.config.show_title ? c`<p class="media-title">${e.name}</p>` : p}
-                ${this.config.show_year && e.year ? c`<p class="media-year">${e.year}</p>` : p}
-                ${this.config.show_date_added && e.date_added ? c`<p class="media-date-added">${Ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
+                ${this.config.show_title !== !1 ? l`<p class="media-title">${e.name}</p>` : p}
+                ${this.config.show_year !== !1 && (e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0)) ? l`<p class="media-year">${e.year ?? new Date(e.date_added).getFullYear()}</p>` : p}
+                ${this.config.show_date_added && e.date_added ? l`<p class="media-date-added">${ue(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
               </div>
             ` : p}
         <div class="poster-container" id="poster-${e.id}">
           <div class="poster-inner">
             <img
               class="poster"
-              src="${R(
+              src="${D(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       300
     )}"
@@ -7124,13 +8135,13 @@ let D = class extends Y {
             />
             <div class="poster-skeleton"></div>
             
-            ${a && !s ? c`
+            ${a && !s ? l`
             <span class="media-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
               ${e.series_name && e.season !== void 0 && e.episode !== void 0 ? `S${String(e.season).padStart(2, "0")}E${String(e.episode).padStart(2, "0")}` : e.type === "Movie" ? "Movie" : "Series"}
             </span>
           ` : p}
 
-            ${e.series_name && !s ? c`
+            ${e.series_name && !s ? l`
             <div class="censor-bar ${this.isNextUpHighlight ? "highlight" : ""}">
               <span>${e.series_name}</span>
             </div>
@@ -7138,59 +8149,59 @@ let D = class extends Y {
             
             ${s ? p : this._renderStatusBadge(e, t)}
             
-            ${this.config.show_ratings && i && !s ? c`
+            ${this.config.show_ratings !== !1 && this.config.show_rating !== !1 && i && !s ? l`
                   <span class="rating">
                     <ha-icon icon="mdi:star"></ha-icon>
                     ${i.toFixed(1)}
                   </span>
                 ` : p}
             
-            ${this.config.show_runtime && e.runtime_minutes && !s ? c`
+            ${this.config.show_runtime !== !1 && e.runtime_minutes && !s ? l`
                   <span class="runtime">
                     <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${ge(e.runtime_minutes)}
+                    ${de(e.runtime_minutes)}
                   </span>
                 ` : p}
             
-            ${s ? p : c`
+            ${s ? p : l`
             <div class="hover-overlay">
-              ${e.year ? c`<span class="overlay-year">${e.year}</span>` : p}
-              <h3 class="overlay-title">${e.name}</h3>
-              ${this.config.show_genres && e.genres && e.genres.length > 0 ? c`<span class="overlay-genres">${e.genres.slice(0, 3).join(", ")}</span>` : p}
-              ${this.config.show_description_on_hover !== !1 && e.description ? c`<p class="overlay-description">${e.description}</p>` : p}
+              ${this.config.show_year !== !1 && (e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0)) ? l`<span class="overlay-year">${e.year ?? new Date(e.date_added).getFullYear()}</span>` : p}
+              ${this.config.show_title !== !1 ? l`<h3 class="overlay-title">${e.name}</h3>` : p}
+              ${this.config.show_genres !== !1 && e.genres && e.genres.length > 0 ? l`<span class="overlay-genres">${e.genres.slice(0, 3).join(", ")}</span>` : p}
+              ${this.config.show_description_on_hover !== !1 && e.description ? l`<p class="overlay-description">${e.description}</p>` : p}
             </div>`}
 
             ${this._renderNowPlayingOverlay(e)}
           </div>
         </div>
         
-        ${this.config.metadata_position === "below" ? c`
+        ${this.config.metadata_position === "below" ? l`
               <div class="media-info-below">
-                ${this.config.show_title ? c`<p class="media-title">${e.name}</p>` : p}
-                ${this.config.show_year && e.year ? c`<p class="media-year">${e.year}</p>` : p}
-                ${this.config.show_date_added && e.date_added ? c`<p class="media-date-added">${Ie(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
+                ${this.config.show_title !== !1 ? l`<p class="media-title">${e.name}</p>` : p}
+                ${this.config.show_year !== !1 && (e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0)) ? l`<p class="media-year">${e.year ?? new Date(e.date_added).getFullYear()}</p>` : p}
+                ${this.config.show_date_added && e.date_added ? l`<p class="media-date-added">${ue(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : p}
               </div>
             ` : p}
       </div>
     `;
   }
-  _renderStatusBadge(e, t) {
-    const i = this.config.show_watched_status !== !1;
-    return i && e.is_played ? c`
-        <div class="status-badge watched">
+  _renderStatusBadge(e, t, i = !1) {
+    const a = this.config.show_watched_status !== !1, s = i ? "inline-badge" : "";
+    return a && e.is_played ? l`
+        <div class="status-badge watched ${s}">
           <ha-icon icon="mdi:check-bold"></ha-icon>
         </div>
-      ` : i && e.type === "Series" && (e.unplayed_count || 0) > 0 ? c`
-        <div class="status-badge unplayed">
+      ` : a && e.type === "Series" && (e.unplayed_count || 0) > 0 ? l`
+        <div class="status-badge unplayed ${s}">
           ${e.unplayed_count}
         </div>
-      ` : t ? c`<span class="new-badge">${l(this.hass.locale?.language || this.hass.language, "new")}</span>` : c``;
+      ` : t ? l`<span class="new-badge ${s}">${d(this.hass.locale?.language || this.hass.language, "new")}</span>` : l``;
   }
   _renderNowPlayingOverlay(e) {
     if (!this.config.show_now_playing)
       return p;
     const t = $t(e, this.hass, this.config);
-    return t ? c`
+    return t ? l`
       <div 
         class="now-playing-overlay" 
         @click="${() => this._handleRewind(t.entityId)}"
@@ -7233,7 +8244,15 @@ let D = class extends Y {
     return !!$t(e, this.hass, this.config);
   }
   _getRating(e) {
-    return this.config.rating_source === "auto", e.rating || null;
+    if (this.config.rating_source === "imdb" && e.rating_imdb) {
+      const t = parseFloat(e.rating_imdb);
+      if (!isNaN(t)) return t;
+    }
+    if (this.config.rating_source === "tmdb" && e.rating_tmdb) {
+      const t = parseFloat(e.rating_tmdb);
+      if (!isNaN(t)) return t;
+    }
+    return e.rating ?? e.community_rating ?? null;
   }
   /* --- Event Handlers --- */
   _fireAction(e) {
@@ -7327,8 +8346,8 @@ let D = class extends Y {
       const i = t.attributes.media_position, a = t.attributes.media_position_updated_at;
       let s = i;
       if (a) {
-        const r = (/* @__PURE__ */ new Date()).getTime(), n = new Date(a).getTime(), d = (r - n) / 1e3;
-        t.state === "playing" && (s += d);
+        const r = (/* @__PURE__ */ new Date()).getTime(), n = new Date(a).getTime(), c = (r - n) / 1e3;
+        t.state === "playing" && (s += c);
       }
       const o = Math.max(0, s - 20);
       this.hass.callService("media_player", "media_seek", {
@@ -7345,48 +8364,264 @@ let D = class extends Y {
     });
     this.dispatchEvent(t);
   }
+  _renderMetaLine(e, t) {
+    const i = this.config.show_year !== !1, a = this.config.show_runtime !== !1, s = this.config.show_date_added === !0, o = this.config.show_ratings !== !1 && this.config.show_rating !== !1, r = this.config.show_genres !== !1;
+    let n = e.year;
+    if (!n && e.date_added) {
+      const w = new Date(e.date_added);
+      isNaN(w.getFullYear()) || (n = w.getFullYear());
+    }
+    const c = i && n ? String(n) : "", h = a && e.runtime_minutes ? de(e.runtime_minutes) : "", _ = s && e.date_added ? ue(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", u = o && t && !this._isItemPlaying(e) ? t.toFixed(1) : "", g = r && e.genres && e.genres.length > 0 ? e.genres.slice(0, 2) : [], m = g.length > 0, b = [];
+    c && b.push({ text: c, className: "meta-year" }), h && b.push({ text: h, className: "meta-runtime" }), _ && b.push({ text: _, className: "meta-date-added" });
+    const v = b.length > 0, y = !!u || m;
+    return !v && !y ? p : l`
+      <div class="meta-line">
+        ${v ? l`
+          <div class="meta-text-row">
+            ${b.map((w, $) => l`
+              ${$ > 0 ? l`<span class="meta-dot">•</span>` : p}
+              <span class="meta-text ${w.className}">${w.text}</span>
+            `)}
+          </div>
+        ` : p}
+        ${y ? l`
+          <div class="meta-pills-row">
+            ${u ? l`
+              <span class="rating-pill">
+                <ha-icon icon="mdi:star"></ha-icon>
+                <span>${u}</span>
+              </span>
+            ` : p}
+            ${m ? g.map((w) => l`<span class="genre-pill">${w}</span>`) : p}
+          </div>
+        ` : p}
+      </div>
+    `;
+  }
+  _renderFeaturedHero() {
+    const e = this.item, t = me(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), o = this.config.show_title !== !1;
+    return l`
+      <div
+        class="media-item featured-hero ${s ? "playing" : ""}"
+        tabindex="0"
+        role="button"
+        aria-label="${e.name}"
+        @mousedown="${this._handleMouseDown}"
+        @mouseup="${this._handleMouseUp}"
+        @touchstart="${this._handleTouchStart}"
+        @touchmove="${this._handleTouchMove}"
+        @touchend="${this._handleTouchEnd}"
+        @touchcancel="${this._handleTouchEnd}"
+        @keydown="${this._handleKeydown}"
+        @contextmenu="${this._handleContextMenu}"
+      >
+        <div class="poster-container featured-hero-poster" id="poster-${e.id}">
+          <div class="poster-inner">
+            <img
+              class="poster"
+              src="${D(
+      this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
+      600
+    )}"
+              alt="${e.name}"
+              width="240"
+              height="360"
+              loading="auto"
+              decoding="async"
+              @load="${this._handleImageLoad}"
+              @error="${this._handleImageError}"
+            />
+            <div class="poster-skeleton"></div>
+
+            ${a && !s ? l`
+                <span class="media-type-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+                  ${e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "MOVIE" : "SERIES"}
+                </span>
+              ` : p}
+
+            ${s ? p : this._renderStatusBadge(e, t)}
+
+            ${e.series_name && !s ? l`
+                <div class="censor-bar ${this.isNextUpHighlight ? "highlight" : ""}">
+                  <span>${e.series_name}</span>
+                </div>
+              ` : p}
+
+            <div class="featured-hero-scrim">
+              ${o ? l`<h3 class="featured-hero-title">${e.name}</h3>` : p}
+              ${o && e.series_name && e.name !== e.series_name ? l`<p class="featured-hero-subtitle">${e.series_name}</p>` : p}
+              ${this._renderMetaLine(e, i)}
+            </div>
+
+            ${this._renderNowPlayingOverlay(e)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  _renderFeaturedQueue() {
+    const e = this.item, t = me(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), o = this.config.show_card_backdrop !== void 0 ? this.config.show_card_backdrop !== !1 : this.config.featured_queue_backdrop !== !1, r = o ? D(
+      e.backdrop_url || (this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url),
+      600
+    ) : "", n = this.isCramped !== void 0 ? this.isCramped : this.classList.contains("cramped") || (this.config.columns || 1) >= 3, c = !!(e.series_name && e.name !== e.series_name), h = a && !s, _ = this.config.show_watched_status !== !1, u = _ && e.is_played, g = _ && e.type === "Series" && (e.unplayed_count || 0) > 0, m = t && !s, v = h || m || !s && (u || g), y = this.config.show_title !== !1;
+    return l`
+      <div
+        class="media-item featured-queue-item ${o ? "has-backdrop" : ""} ${s ? "playing" : ""} ${n ? "cramped" : ""}"
+        tabindex="0"
+        role="button"
+        aria-label="${e.name}"
+        @mousedown="${this._handleMouseDown}"
+        @mouseup="${this._handleMouseUp}"
+        @touchstart="${this._handleTouchStart}"
+        @touchmove="${this._handleTouchMove}"
+        @touchend="${this._handleTouchEnd}"
+        @touchcancel="${this._handleTouchEnd}"
+        @keydown="${this._handleKeydown}"
+        @contextmenu="${this._handleContextMenu}"
+      >
+        ${o ? l`
+          <div class="featured-queue-backdrop-container">
+            <img
+              class="featured-queue-backdrop"
+              src="${r}"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              @load="${this._handleImageLoad}"
+              @error="${this._handleImageError}"
+            />
+            <div class="featured-queue-backdrop-scrim"></div>
+          </div>
+        ` : p}
+
+        <div class="featured-queue-poster-wrapper">
+          <div class="poster-container featured-queue-poster" id="poster-${e.id}">
+            <div class="poster-inner">
+              <img
+                class="poster"
+                src="${D(
+      this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
+      240
+    )}"
+                alt="${e.name}"
+                width="60"
+                height="90"
+                loading="lazy"
+                decoding="async"
+                @load="${this._handleImageLoad}"
+                @error="${this._handleImageError}"
+              />
+              <div class="poster-skeleton"></div>
+
+              ${this._renderNowPlayingOverlay(e)}
+            </div>
+          </div>
+        </div>
+
+        ${n && v ? l`
+          <div class="featured-queue-badges cramped-badges">
+            ${this._renderQueueBadges(e, h, m, u, g, s)}
+          </div>
+        ` : p}
+
+        ${n ? p : l`
+          <div class="featured-queue-info">
+            ${y ? l`
+              <h4 class="featured-queue-title">
+                ${v ? l`
+                  <span class="featured-queue-badges">
+                    ${this._renderQueueBadges(e, h, m, u, g, s)}
+                  </span>
+                ` : p}
+                ${e.name}
+              </h4>
+            ` : v ? l`
+              <div class="featured-queue-badges">
+                ${this._renderQueueBadges(e, h, m, u, g, s)}
+              </div>
+            ` : p}
+            ${y && c && e.series_name ? l`
+              <span class="featured-queue-subtitle">${e.series_name}</span>
+            ` : p}
+            ${this._renderMetaLine(e, i)}
+          </div>
+        `}
+
+        ${s ? l`
+          <div class="featured-queue-action">
+            <ha-icon icon="mdi:volume-high" class="featured-queue-playing-icon"></ha-icon>
+          </div>
+        ` : p}
+      </div>
+    `;
+  }
+  _renderQueueBadges(e, t, i, a, s, o) {
+    return l`
+      ${t ? l`
+        <span class="media-type-badge inline-badge ${e.series_name ? "series" : e.type === "Movie" ? "movie" : "series"}">
+          ${e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "MOVIE" : "SERIES"}
+        </span>
+      ` : p}
+      ${i ? l`
+        <span class="new-badge inline-badge">${d(this.hass?.locale?.language || this.hass?.language, "new")}</span>
+      ` : p}
+      ${a && !o ? l`
+        <div class="status-badge watched inline-badge">
+          <ha-icon icon="mdi:check-bold"></ha-icon>
+        </div>
+      ` : p}
+      ${s && !o ? l`
+        <div class="status-badge unplayed inline-badge">
+          ${e.unplayed_count}
+        </div>
+      ` : p}
+    `;
+  }
 };
-D.styles = zt;
-B([
-  V({ attribute: !1 })
-], D.prototype, "hass", 2);
-B([
-  V({ attribute: !1 })
-], D.prototype, "config", 2);
-B([
-  V({ attribute: !1 })
-], D.prototype, "item", 2);
-B([
-  V({ type: String })
-], D.prototype, "layout", 2);
-B([
-  V({ type: Boolean })
-], D.prototype, "isNextUpHighlight", 2);
-B([
+N.styles = zt;
+O([
+  F({ attribute: !1 })
+], N.prototype, "hass", 2);
+O([
+  F({ attribute: !1 })
+], N.prototype, "config", 2);
+O([
+  F({ attribute: !1 })
+], N.prototype, "item", 2);
+O([
+  F({ type: String })
+], N.prototype, "layout", 2);
+O([
+  F({ type: Boolean })
+], N.prototype, "isNextUpHighlight", 2);
+O([
+  F({ type: Boolean })
+], N.prototype, "isCramped", 2);
+O([
   f()
-], D.prototype, "_pressStartTime", 2);
-B([
+], N.prototype, "_pressStartTime", 2);
+O([
   f()
-], D.prototype, "_holdTimer", 2);
-B([
+], N.prototype, "_holdTimer", 2);
+O([
   f()
-], D.prototype, "_isHoldActive", 2);
-B([
+], N.prototype, "_isHoldActive", 2);
+O([
   f()
-], D.prototype, "_itemTouchStartX", 2);
-B([
+], N.prototype, "_itemTouchStartX", 2);
+O([
   f()
-], D.prototype, "_itemTouchStartY", 2);
-B([
+], N.prototype, "_itemTouchStartY", 2);
+O([
   f()
-], D.prototype, "_clickTimer", 2);
-B([
+], N.prototype, "_clickTimer", 2);
+O([
   f()
-], D.prototype, "_rewindActive", 2);
-D = B([
+], N.prototype, "_rewindActive", 2);
+N = O([
   oe("jellyha-media-item")
-], D);
-var Ti = Object.defineProperty, Ai = Object.getOwnPropertyDescriptor, M = (e, t, i, a) => {
+], N);
+var Ti = Object.defineProperty, Ai = Object.getOwnPropertyDescriptor, E = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? Ai(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && Ti(t, i, s), s;
@@ -7438,6 +8673,8 @@ const St = {
   show_now_playing: !0,
   use_series_image: !1,
   show_search: !1,
+  show_card_backdrop: !0,
+  featured_queue_backdrop: !0,
   filter_favorites: !1,
   status_filter: "all",
   filter_newly_added: !1,
@@ -7451,9 +8688,9 @@ function se(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let I = class extends Y {
+let C = class extends J {
   constructor() {
-    super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this._effectiveListColumns = 1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
+    super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.ITEM_WIDTH = 148, this.LIST_ITEM_MIN_WIDTH = 380, this.FEATURED_QUEUE_ITEM_MIN_WIDTH = 200, this._effectiveListColumns = 1, this._isFeaturedCramped = !1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
     }, this._handleMouseLeave = () => {
       this._autoSwipePaused = !1;
@@ -7474,7 +8711,7 @@ let I = class extends Y {
   _setupAutoSwipe() {
     this._clearAutoSwipe();
     const e = this._config?.auto_swipe_interval;
-    !e || e <= 0 || (this._config.enable_pagination !== !1 ? this._autoSwipeTimer = window.setInterval(() => {
+    !e || e <= 0 || (this._config.enable_pagination !== !1 || this._config.layout === "featured" ? this._autoSwipeTimer = window.setInterval(() => {
       this._autoSwipePaused || this._handleAutoSwipePage();
     }, e * 1e3) : this._startContinuousScroll());
   }
@@ -7487,21 +8724,29 @@ let I = class extends Y {
       this._lastFrameTime || (this._lastFrameTime = t);
       const i = t - this._lastFrameTime;
       if (this._lastFrameTime = t, !this._autoSwipePaused && this._config.auto_swipe_interval) {
-        const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+        const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
         if (a) {
           const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a;
           Math.abs(this._scrollAccumulator - s) > 10 && (this._scrollAccumulator = s);
-          const d = r / (this._config.auto_swipe_interval * 1e3) * i, h = o / 2;
-          this._scrollAccumulator += d, this._scrollAccumulator >= h ? (this._scrollAccumulator = this._scrollAccumulator - h, a.scrollLeft = this._scrollAccumulator) : a.scrollLeft = this._scrollAccumulator;
+          const c = r / (this._config.auto_swipe_interval * 1e3) * i, h = o / 2;
+          this._scrollAccumulator += c, this._scrollAccumulator >= h ? (this._scrollAccumulator = this._scrollAccumulator - h, a.scrollLeft = this._scrollAccumulator) : a.scrollLeft = this._scrollAccumulator;
         }
       }
       this._animationFrameId = requestAnimationFrame(e);
     };
     this._animationFrameId = requestAnimationFrame(e);
   }
+  /* Helper to get items per page based on layout */
+  _getEffectiveItemsPerPage() {
+    if (this._config?.layout === "featured") {
+      const e = Math.max(1, this._config.columns || 1), t = Math.max(2, Math.min(3, this._config.rows || 3));
+      return 1 + e * t;
+    }
+    return this._config?.items_per_page || this._itemsPerPage;
+  }
   /* Pagination Auto Swipe Logic */
   async _handleAutoSwipePage() {
-    const e = this._items || [], t = this._config.items_per_page || this._itemsPerPage, i = this._config.max_pages || 10, a = Math.min(Math.ceil(e.length / t), i);
+    const e = this._items || [], t = this._getEffectiveItemsPerPage(), i = this._config.max_pages || 10, a = Math.min(Math.ceil(e.length / t), i);
     this._currentPage >= a - 1 ? await this._animatePageChange("next", () => {
       this._currentPage = 0;
     }) : this._nextPage();
@@ -7509,7 +8754,7 @@ let I = class extends Y {
   /* Pagination Handlers */
   async _nextPage() {
     if (!this._config?.entity || !this.hass || !this.hass.states[this._config.entity]) return;
-    const t = this._filterItems(this._items || []), i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages || 10, s = Math.min(Math.ceil(t.length / i), a);
+    const t = this._filterItems(this._items || []), i = this._getEffectiveItemsPerPage(), a = this._config.max_pages || 10, s = Math.min(Math.ceil(t.length / i), a);
     this._currentPage < s - 1 && await this._animatePageChange("next", () => {
       this._currentPage++;
     });
@@ -7523,14 +8768,14 @@ let I = class extends Y {
    * Helper to set scroll position after page change
    */
   _setScrollPosition(e) {
-    const t = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    const t = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
     t && (e === "start" ? t.scrollLeft = 0 : t.scrollLeft = t.scrollWidth);
   }
   /**
    * Helper to animate page changes (Slide & Fade)
    **/
   async _animatePageChange(e, t) {
-    const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    const i = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
     if (!i) {
       t();
       return;
@@ -7545,7 +8790,7 @@ let I = class extends Y {
    */
   _getTotalPages() {
     if (!this._config?.entity || !this.hass || !this.hass.states[this._config.entity]) return 1;
-    const t = this._filterItems(this._items || []), i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages || 10;
+    const t = this._filterItems(this._items || []), i = this._getEffectiveItemsPerPage(), a = this._config.max_pages || 10;
     return Math.min(Math.ceil(t.length / i), a);
   }
   // Touch/Swipe handlers
@@ -7556,15 +8801,15 @@ let I = class extends Y {
     if (!this._touchStartX) return;
     const t = e.touches[0].clientX - this._touchStartX, i = e.touches[0].clientY - this._touchStartY;
     if (Math.abs(t) > Math.abs(i)) {
-      const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+      const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
       if (a && Math.abs(t) > 0) {
-        const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a, n = o - r, d = s <= 5, h = s >= n - 5, _ = this._config.show_pagination !== !1;
+        const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a, n = o - r, c = s <= 5, h = s >= n - 5, _ = this._config.show_pagination !== !1;
         let u = !1;
         if (_) {
           const g = this._getTotalPages();
-          d && t > 0 && this._currentPage === 0 && (u = !0), h && t < 0 && this._currentPage >= g - 1 && (u = !0);
+          c && t > 0 && this._currentPage === 0 && (u = !0), h && t < 0 && this._currentPage >= g - 1 && (u = !0);
         } else
-          d && t > 0 && (u = !0), h && t < 0 && (u = !0);
+          c && t > 0 && (u = !0), h && t < 0 && (u = !0);
         if (u) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = t), e.cancelable && e.preventDefault();
           const g = 0.3, m = t - this._elasticAnchorX;
@@ -7577,7 +8822,7 @@ let I = class extends Y {
   }
   _handleTouchEnd(e) {
     if (this._isOverscrolling) {
-      const s = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+      const s = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
       s && (s.style.transition = "transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)", s.style.transform = ""), this._isOverscrolling = !1, this._elasticAnchorX = 0, this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
@@ -7589,7 +8834,7 @@ let I = class extends Y {
       this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
-    const t = e.changedTouches[0].clientX - this._touchStartX, i = 50, a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    const t = e.changedTouches[0].clientX - this._touchStartX, i = 50, a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
     if (t < -i)
       if (a) {
         const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a;
@@ -7608,15 +8853,15 @@ let I = class extends Y {
     if (e.pointerType === "mouse" || !this._touchStartX) return;
     const t = e.clientX - this._touchStartX, i = e.clientY - this._touchStartY;
     if (Math.abs(t) > Math.abs(i)) {
-      const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+      const a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
       if (a && Math.abs(t) > 0) {
-        const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a, n = o - r, d = s <= 5, h = s >= n - 5, _ = this._config.show_pagination !== !1;
+        const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a, n = o - r, c = s <= 5, h = s >= n - 5, _ = this._config.show_pagination !== !1;
         let u = !1;
         if (_) {
           const g = this._getTotalPages();
-          d && t > 0 && this._currentPage === 0 && (u = !0), h && t < 0 && this._currentPage >= g - 1 && (u = !0);
+          c && t > 0 && this._currentPage === 0 && (u = !0), h && t < 0 && this._currentPage >= g - 1 && (u = !0);
         } else
-          d && t > 0 && (u = !0), h && t < 0 && (u = !0);
+          c && t > 0 && (u = !0), h && t < 0 && (u = !0);
         if (u) {
           this._isOverscrolling || (this._isOverscrolling = !0, this._elasticAnchorX = t), e.cancelable && e.preventDefault();
           const g = 0.3, m = t - this._elasticAnchorX;
@@ -7629,7 +8874,7 @@ let I = class extends Y {
   }
   _handlePointerUp(e) {
     if (e.target.releasePointerCapture?.(e.pointerId), this._isOverscrolling) {
-      const s = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+      const s = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
       s && (s.style.transition = "transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)", s.style.transform = ""), this._isOverscrolling = !1, this._elasticAnchorX = 0, this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
@@ -7641,7 +8886,7 @@ let I = class extends Y {
       this._touchStartX = 0, this._isSwiping = !1;
       return;
     }
-    const t = e.clientX - this._touchStartX, i = 50, a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper");
+    const t = e.clientX - this._touchStartX, i = 50, a = this.shadowRoot?.querySelector(".carousel, .grid-wrapper, .list-wrapper, .featured-wrapper");
     if (t < -i)
       if (a) {
         const { scrollLeft: s, scrollWidth: o, clientWidth: r } = a;
@@ -7658,24 +8903,24 @@ let I = class extends Y {
       let r = 0;
       const n = this._config.enable_pagination === !1 && (this._config.auto_swipe_interval || 0) > 0;
       if (n) {
-        const d = i / 2;
-        r = s / d;
+        const c = i / 2;
+        r = s / c;
       } else {
-        const d = i - a;
-        r = s / d;
+        const c = i - a;
+        r = s / c;
       }
       !n && (i - a - s < 10 || r > 0.98) && (r = 1), (s < 10 || r < 0.02) && (r = 0), r = Math.min(1, Math.max(0, r)), this._scrollProgress = r;
     }
   }
   // Render scroll indicator for non-paginated scrollable content
   _renderScrollIndicator() {
-    if (!this._hasScrollableContent || this._config.show_pagination_dots === !1) return c``;
+    if (!this._hasScrollableContent || this._config.show_pagination_dots === !1) return l``;
     const e = this.SCROLL_INDICATOR_DOTS, t = this._scrollProgress, i = Math.round(t * (e - 1));
-    return c`
+    return l`
       <div class="scroll-indicator">
         ${Array.from({ length: e }, (a, s) => {
       const o = s === i, r = s === 0 && t < 0.1 || s === e - 1 && t > 0.9;
-      return c`
+      return l`
         <span 
           class="scroll-dot ${o ? "active" : ""} ${r ? "pill" : ""}"
         ></span>
@@ -7695,9 +8940,17 @@ let I = class extends Y {
         if (s !== this._itemsPerPage && (this._itemsPerPage = s, this.requestUpdate()), this._config) {
           const o = this._config.columns || 1, r = 300;
           if (o > 1) {
-            const n = Math.max(1, Math.floor(i / r)), d = Math.min(o, n);
-            d !== this._effectiveListColumns && (this._effectiveListColumns = d, this.requestUpdate());
+            const n = Math.max(1, Math.floor(i / r)), c = Math.min(o, n);
+            c !== this._effectiveListColumns && (this._effectiveListColumns = c, this.requestUpdate());
           } else this._effectiveListColumns !== 1 && (this._effectiveListColumns = 1, this.requestUpdate());
+          if (this._config.layout === "featured") {
+            const n = Math.max(1, this._config.columns || 1);
+            let c;
+            const h = this.shadowRoot?.querySelector(".featured-side");
+            h && h.clientWidth > 0 ? c = (h.clientWidth - (n - 1) * 10) / n : c = ((i < 500 ? i : Math.max(0, i - 266)) - (n - 1) * 10) / n;
+            const _ = n >= 3 || c < this.FEATURED_QUEUE_ITEM_MIN_WIDTH;
+            _ !== this._isFeaturedCramped && (this._isFeaturedCramped = _, this.requestUpdate());
+          }
         }
       }
     };
@@ -7745,7 +8998,7 @@ let I = class extends Y {
    * Get card size for layout
    */
   getCardSize() {
-    return this._config?.layout === "list" ? 5 : 3;
+    return this._config?.layout === "list" || this._config?.layout === "featured" ? 5 : 3;
   }
   getLayoutOptions() {
     return {
@@ -7767,7 +9020,7 @@ let I = class extends Y {
   shouldUpdate(e) {
     if (!this._config)
       return !1;
-    if (e.has("_currentPage") || e.has("_itemsPerPage") || e.has("_items") || e.has("_error") || e.has("_searchQuery") || e.has("_searchGenre") || e.has("_scrollProgress") || e.has("_hasScrollableContent"))
+    if (e.has("_currentPage") || e.has("_itemsPerPage") || e.has("_items") || e.has("_error") || e.has("_searchQuery") || e.has("_searchGenre") || e.has("_isFeaturedCramped") || e.has("_scrollProgress") || e.has("_hasScrollableContent"))
       return !0;
     if (e.has("hass")) {
       const t = e.get("hass");
@@ -7835,6 +9088,14 @@ let I = class extends Y {
         }
         s && this._fetchItems();
       }
+      if (this._config?.layout === "featured") {
+        const i = Math.max(1, this._config.columns || 1), a = this.shadowRoot?.querySelector(".featured-side");
+        if (a && a.clientWidth > 0) {
+          const s = (a.clientWidth - (i - 1) * 10) / i;
+          this._isFeaturedCramped = i >= 3 || s < this.FEATURED_QUEUE_ITEM_MIN_WIDTH;
+        } else
+          this._isFeaturedCramped = i >= 3;
+      }
     }
     this._config.enable_pagination || requestAnimationFrame(() => {
       const t = this.shadowRoot?.querySelector(".carousel.scrollable, .grid-wrapper, .list-wrapper");
@@ -7849,16 +9110,16 @@ let I = class extends Y {
    */
   render() {
     if (!this._config || !this.hass)
-      return c``;
+      return l``;
     if (!this.hass.states[this._config.entity])
       return this._renderError(`Entity not found: ${this._config.entity}`);
     if (this._error)
       return this._renderError(this._error);
     const t = this._filterItems(this._items || []);
-    return c`
+    return l`
       <ha-card>
         <div class="card-inner">
-            ${this._config.title ? c`
+            ${this._config.title ? l`
                   <div class="card-header">
                     <h2>${this._config.title}</h2>
                   </div>
@@ -7883,10 +9144,10 @@ let I = class extends Y {
     }
     this._searchGenre && (t = t.filter((o) => o.genres && o.genres.includes(this._searchGenre))), this._config.media_type === "movies" ? t = t.filter((o) => o.type === "Movie") : this._config.media_type === "series" ? this._config.tv_content === "episodes" ? t = t.filter((o) => o.type === "Episode") : t = t.filter((o) => o.type === "Series") : this._config.media_type === "both" || !this._config.media_type ? this._config.tv_content === "episodes" ? t = t.filter((o) => o.type === "Movie" || o.type === "Episode") : t = t.filter((o) => o.type !== "Episode") : this._config.media_type, this._config.filter_favorites && (t = t.filter((o) => o.is_favorite === !0));
     const i = this._config.status_filter || "all";
-    if (i === "unwatched" ? t = t.filter((o) => !o.is_played) : i === "watched" && (t = t.filter((o) => o.is_played === !0)), this._config.filter_newly_added && (t = t.filter((o) => We(o, this._config.new_badge_days || 0))), this._config.media_type === "next_up") {
+    if (i === "unwatched" ? t = t.filter((o) => !o.is_played) : i === "watched" && (t = t.filter((o) => o.is_played === !0)), this._config.filter_newly_added && (t = t.filter((o) => me(o, this._config.new_badge_days || 0))), this._config.media_type === "next_up") {
       const o = this._config.max_pages;
       if (o != null && o > 0) {
-        const r = (this._config.items_per_page || 5) * o;
+        const r = this._getEffectiveItemsPerPage() * o;
         t = t.slice(0, r);
       }
       return t;
@@ -7916,7 +9177,7 @@ let I = class extends Y {
     });
     const s = this._config.max_pages;
     if (s != null && s > 0) {
-      const o = (this._config.items_per_page || 5) * s;
+      const o = this._getEffectiveItemsPerPage() * s;
       t = t.slice(0, o);
     }
     return t;
@@ -7933,9 +9194,9 @@ let I = class extends Y {
    */
   _renderLayout(e) {
     const t = this._config.layout || "carousel", i = this._config.enable_pagination !== !1;
-    return t === "carousel" ? this._renderCarousel(e, i) : t === "list" ? this._renderList(e, i) : t === "grid" ? this._renderGrid(e, i) : c`
+    return t === "carousel" ? this._renderCarousel(e, i) : t === "list" ? this._renderList(e, i) : t === "grid" ? this._renderGrid(e, i) : t === "featured" ? this._renderFeatured(e, i) : l`
       <div class="${t}">
-        ${e.map((a) => c`
+        ${e.map((a) => l`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
@@ -7951,8 +9212,8 @@ let I = class extends Y {
    * Render carousel with optional pagination
    */
   _renderCarousel(e, t) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, d = !t && (this._config.auto_swipe_interval || 0) > 0, h = t ? e.slice(n, n + i) : d ? [...e, ...e] : e;
-    return c`
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, c = !t && (this._config.auto_swipe_interval || 0) > 0, h = t ? e.slice(n, n + i) : c ? [...e, ...e] : e;
+    return l`
       <div 
         class="carousel-wrapper ${this._config.horizontal_alignment !== "left" ? "align-center" : ""}"
         @touchstart="${this._handleTouchStart}"
@@ -7966,7 +9227,7 @@ let I = class extends Y {
           class="carousel ${t ? "paginated" : "scrollable"}"
           @scroll="${t ? p : this._handleScroll}"
         >
-          ${h.map((_) => c`
+          ${h.map((_) => l`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
@@ -7986,8 +9247,8 @@ let I = class extends Y {
    * Render list with optional pagination
    */
   _renderList(e, t) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, d = !t && (this._config.auto_swipe_interval || 0) > 0, h = t ? e.slice(n, n + i) : d ? [...e, ...e] : e, _ = this._effectiveListColumns, u = _ === 1;
-    return c`
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, c = !t && (this._config.auto_swipe_interval || 0) > 0, h = t ? e.slice(n, n + i) : c ? [...e, ...e] : e, _ = this._effectiveListColumns, u = _ === 1;
+    return l`
       <div 
         class="list-wrapper"
         @touchstart="${this._handleTouchStart}"
@@ -8001,7 +9262,7 @@ let I = class extends Y {
           class="list ${t ? "paginated" : ""} ${u ? "single-column" : ""}"
           style="--jf-list-columns: ${_}"
         >
-          ${h.map((g) => c`
+          ${h.map((g) => l`
             <jellyha-media-item
                 .hass=${this.hass}
                 .config=${this._config}
@@ -8020,8 +9281,8 @@ let I = class extends Y {
    * Render grid with optional pagination
    */
   _renderGrid(e, t) {
-    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, d = !t && (this._config.auto_swipe_interval || 0) > 0, h = t ? e.slice(n, n + i) : d ? [...e, ...e] : e, _ = this._config.columns || 1, u = _ === 1, g = !t && (this._config.auto_swipe_interval || 0) > 0;
-    return c`
+    const i = this._config.items_per_page || this._itemsPerPage, a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, c = !t && (this._config.auto_swipe_interval || 0) > 0, h = t ? e.slice(n, n + i) : c ? [...e, ...e] : e, _ = this._config.columns || 1, u = _ === 1, g = !t && (this._config.auto_swipe_interval || 0) > 0;
+    return l`
       <div class="grid-outer">
         <div 
           class="grid-wrapper"
@@ -8037,7 +9298,7 @@ let I = class extends Y {
             class="grid ${t ? "paginated" : ""} ${u ? "auto-columns" : ""} ${g ? "horizontal" : ""}"
             style="--jf-columns: ${_}; --jf-grid-rows: ${_}"
           >
-            ${h.map((m) => c`
+            ${h.map((m) => l`
                 <jellyha-media-item
                     .hass=${this.hass}
                     .config=${this._config}
@@ -8055,19 +9316,73 @@ let I = class extends Y {
     `;
   }
   /**
+   * Render featured layout: first item of each page as a large hero poster,
+   * and the remaining items (default 3) as a compact, height-locked queue beside it.
+   */
+  _renderFeatured(e, t) {
+    const i = this._getEffectiveItemsPerPage(), a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, c = e.slice(n, n + i), [h, ..._] = c;
+    if (!h) return l``;
+    const u = Math.max(1, this._config.columns || 1), g = Math.max(2, Math.min(3, this._config.rows || 3)), m = u >= 3 || this._isFeaturedCramped;
+    return l`
+      <div 
+        class="featured-wrapper"
+        @touchstart="${this._handleTouchStart}"
+        @touchmove="${this._handleTouchMove}"
+        @touchend="${this._handleTouchEnd}"
+        @pointerdown="${this._handlePointerDown}"
+        @pointermove="${this._handlePointerMove}"
+        @pointerup="${this._handlePointerUp}"
+      >
+        <div class="featured ${_.length === 0 ? "single" : ""} ${u > 1 ? "multi-column" : ""} rows-${g}">
+            <div class="featured-hero-container">
+              <jellyha-media-item
+                class="featured-main"
+                .hass=${this.hass}
+                .config=${this._config}
+                .item=${h}
+                .layout=${"featured-hero"}
+                .isNextUpHighlight=${this._config.media_type === "next_up" && h.id === this._mostRecentNextUpItemId}
+                @jellyha-action=${this._handleItemAction}
+              ></jellyha-media-item>
+            </div>
+            ${_.length > 0 ? l`
+              <div 
+                class="featured-side columns-${u} rows-${g} ${m ? "cramped" : ""}"
+                style="--jf-featured-columns: ${u}; --jf-featured-rows: ${g};"
+              >
+                ${_.map((b) => l`
+                  <jellyha-media-item
+                    class="${m ? "cramped" : ""}"
+                    .hass=${this.hass}
+                    .config=${this._config}
+                    .item=${b}
+                    .layout=${"featured-queue"}
+                    .isCramped=${m}
+                    .isNextUpHighlight=${this._config.media_type === "next_up" && b.id === this._mostRecentNextUpItemId}
+                    @jellyha-action=${this._handleItemAction}
+                  ></jellyha-media-item>
+                `)}
+              </div>
+            ` : p}
+          </div>
+        ${t && r > 1 ? this._renderPagination(r) : p}
+      </div>
+    `;
+  }
+  /**
    * Main Pagination Render Dispatcher
    * Decides between standard and smart pagination based on page count
    */
   _renderPagination(e) {
-    return this._config.show_pagination_dots === !1 ? c`` : e <= 5 ? this._renderStandardPagination(e) : this._renderSmartPagination(e);
+    return this._config.show_pagination_dots === !1 ? l`` : e <= 5 ? this._renderStandardPagination(e) : this._renderSmartPagination(e);
   }
   /**
    * Render Standard Pagination (Existing Logic preserved)
    */
   _renderStandardPagination(e) {
-    return c`
+    return l`
       <div class="pagination-dots">
-        ${Array.from({ length: e }, (t, i) => c`
+        ${Array.from({ length: e }, (t, i) => l`
           <button
             type="button"
             class="pagination-dot ${i === this._currentPage ? "active" : ""}"
@@ -8085,16 +9400,16 @@ let I = class extends Y {
    */
   _renderSmartPagination(e) {
     const n = -(this._currentPage * 16) + 32;
-    return c`
+    return l`
       <div class="pagination-container smart" style="width: ${72}px">
         <div 
           class="pagination-track" 
           style="transform: translateX(${n}px); width: ${e * 16}px"
         >
-          ${Array.from({ length: e }, (d, h) => {
+          ${Array.from({ length: e }, (c, h) => {
       const _ = Math.abs(h - this._currentPage);
       let u = "smart-dot";
-      return h === this._currentPage ? u += " active" : _ > 2 ? u += " hidden" : _ === 2 && (u += " small"), c`
+      return h === this._currentPage ? u += " active" : _ > 2 ? u += " hidden" : _ === 2 && (u += " small"), l`
               <button
                 type="button"
                 class="${u}"
@@ -8129,7 +9444,7 @@ let I = class extends Y {
         break;
       case "trailer":
         e.trailer_url ? window.open(e.trailer_url, "_blank") : se(this, "hass-notification", {
-          message: l(this.hass.locale?.language || this.hass.language, "no_trailer")
+          message: d(this.hass.locale?.language || this.hass.language, "no_trailer")
         });
         break;
       case "call-service":
@@ -8210,9 +9525,9 @@ let I = class extends Y {
     }
     try {
       await this.hass.callService(r, n, s);
-    } catch (d) {
-      console.error(`JellyHA: Failed to call service ${i}`, d), se(this, "hass-notification", {
-        message: `Failed to call ${i}: ${d?.message || d}`
+    } catch (c) {
+      console.error(`JellyHA: Failed to call service ${i}`, c), se(this, "hass-notification", {
+        message: `Failed to call ${i}: ${c?.message || c}`
       });
     }
   }
@@ -8288,10 +9603,10 @@ let I = class extends Y {
    * Render empty state
    */
   _renderEmpty() {
-    return c`
+    return l`
       <div class="empty">
         <ha-icon icon="mdi:movie-open-outline"></ha-icon>
-        <p>${l(this.hass.locale?.language || this.hass.language, "no_media")}</p>
+        <p>${d(this.hass.locale?.language || this.hass.language, "no_media")}</p>
       </div>
     `;
   }
@@ -8299,7 +9614,7 @@ let I = class extends Y {
    * Render error state
    */
   _renderError(e) {
-    return c`
+    return l`
       <ha-card>
         <div class="error">
           <ha-icon icon="mdi:alert-circle"></ha-icon>
@@ -8321,7 +9636,7 @@ let I = class extends Y {
       const t = this.hass?.locale?.language || this.hass?.language || "en";
       e.push({
         type: "client",
-        name: l(t, "editor.action_play_client") || "Play on Jellyfin Client",
+        name: d(t, "editor.action_play_client") || "Play on Jellyfin Client",
         device: this._config.default_client_device,
         icon: "mdi:television-play"
       });
@@ -8330,7 +9645,7 @@ let I = class extends Y {
       const t = this.hass?.locale?.language || this.hass?.language || "en";
       e.push({
         type: "browser",
-        name: l(t, "modal.play_in_browser") || "Play in Browser",
+        name: d(t, "modal.play_in_browser") || "Play in Browser",
         icon: "mdi:monitor"
       });
     }
@@ -8399,18 +9714,18 @@ let I = class extends Y {
       s.genres && s.genres.forEach((o) => t.add(o));
     });
     const i = Array.from(t).sort(), a = this.hass.locale?.language || this.hass.language;
-    return c`
+    return l`
       <div class="search-container">
         <div class="search-input-wrapper">
           <ha-icon icon="mdi:magnify" class="search-icon"></ha-icon>
           <input 
             type="text" 
             class="search-input" 
-            placeholder="${l(a, "search.placeholder_title")}"
+            placeholder="${d(a, "search.placeholder_title")}"
             .value="${this._searchQuery}"
             @input="${this._handleSearchInput}"
           />
-          ${this._searchQuery ? c`
+          ${this._searchQuery ? l`
             <button class="clear-search" @click="${() => {
       this._searchQuery = "", this._currentPage = 0;
     }}">
@@ -8421,8 +9736,8 @@ let I = class extends Y {
         
         <div class="search-select-wrapper">
           <select class="search-select" @change="${this._handleGenreChange}" .value="${this._searchGenre}">
-             <option value="">${l(a, "search.all_genres")}</option>
-             ${i.map((s) => c`
+             <option value="">${d(a, "search.all_genres")}</option>
+             ${i.map((s) => l`
                <option value="${s}">${s}</option>
              `)}
           </select>
@@ -8432,67 +9747,70 @@ let I = class extends Y {
     `;
   }
 };
-I.styles = zt;
-M([
-  V({ attribute: !1 })
-], I.prototype, "hass", 2);
-M([
+C.styles = zt;
+E([
+  F({ attribute: !1 })
+], C.prototype, "hass", 2);
+E([
   f()
-], I.prototype, "_config", 2);
-M([
+], C.prototype, "_config", 2);
+E([
   f()
-], I.prototype, "_currentPage", 2);
-M([
+], C.prototype, "_currentPage", 2);
+E([
   f()
-], I.prototype, "_itemsPerPage", 2);
-M([
+], C.prototype, "_itemsPerPage", 2);
+E([
   f()
-], I.prototype, "_pressStartTime", 2);
-M([
+], C.prototype, "_pressStartTime", 2);
+E([
   f()
-], I.prototype, "_holdTimer", 2);
-M([
+], C.prototype, "_holdTimer", 2);
+E([
   f()
-], I.prototype, "_isHoldActive", 2);
-M([
+], C.prototype, "_isHoldActive", 2);
+E([
   f()
-], I.prototype, "_rewindActive", 2);
-M([
+], C.prototype, "_rewindActive", 2);
+E([
   f()
-], I.prototype, "_items", 2);
-M([
+], C.prototype, "_items", 2);
+E([
   f()
-], I.prototype, "_error", 2);
-M([
+], C.prototype, "_error", 2);
+E([
   f()
-], I.prototype, "_lastUpdate", 2);
-M([
+], C.prototype, "_lastUpdate", 2);
+E([
   f()
-], I.prototype, "_mostRecentNextUpItemId", 2);
-M([
+], C.prototype, "_mostRecentNextUpItemId", 2);
+E([
   f()
-], I.prototype, "_searchQuery", 2);
-M([
+], C.prototype, "_searchQuery", 2);
+E([
   f()
-], I.prototype, "_searchGenre", 2);
-M([
+], C.prototype, "_searchGenre", 2);
+E([
   pi("jellyha-item-details-modal")
-], I.prototype, "_modal", 2);
-M([
+], C.prototype, "_modal", 2);
+E([
   f()
-], I.prototype, "_scrollProgress", 2);
-M([
+], C.prototype, "_isFeaturedCramped", 2);
+E([
   f()
-], I.prototype, "_hasScrollableContent", 2);
-I = M([
+], C.prototype, "_scrollProgress", 2);
+E([
+  f()
+], C.prototype, "_hasScrollableContent", 2);
+C = E([
   oe("jellyha-library-card")
-], I);
+], C);
 var zi = Object.defineProperty, Di = Object.getOwnPropertyDescriptor, tt = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? Di(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && zi(t, i, s), s;
 };
-function Li(e, t, i) {
+function Ni(e, t, i) {
   const a = new CustomEvent(t, {
     bubbles: !0,
     composed: !0,
@@ -8500,13 +9818,13 @@ function Li(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let ve = class extends Y {
+let xe = class extends J {
   setConfig(e) {
     this._config = e;
   }
   render() {
     if (!this.hass || !this._config)
-      return c``;
+      return l``;
     const e = Object.keys(this.hass.states).filter(
       (o) => o.startsWith("media_player.jellyha_") && !o.includes("_library_browser") && !o.endsWith("_browser")
     ), t = Object.keys(this.hass.states).filter(
@@ -8525,8 +9843,8 @@ let ve = class extends Y {
       entity: this._config.entity,
       label: String(this.hass.states[this._config.entity]?.attributes?.friendly_name || this._config.entity)
     });
-    const a = this.hass.locale?.language || this.hass.language, s = l(a, "editor.media_player") || "Media Player";
-    return c`
+    const a = this.hass.locale?.language || this.hass.language, s = d(a, "editor.media_player") || "Media Player";
+    return l`
       <div class="card-config">
         <div class="form-row">
           <ha-selector
@@ -8553,8 +9871,8 @@ let ve = class extends Y {
             .hass=${this.hass}
             .selector=${{ text: {} }}
             .value=${this._config.title || ""}
-            .label="${l(a, "editor.title")} (Optional)"
-            label="${l(a, "editor.title")} (Optional)"
+            .label="${d(a, "editor.title")} (Optional)"
+            label="${d(a, "editor.title")} (Optional)"
             @value-changed=${this._titleChanged}
           ></ha-selector>
         </div>
@@ -8565,14 +9883,14 @@ let ve = class extends Y {
               .checked=${this._config.show_title !== !1}
               @change=${this._showTitleChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_title")}</span>
+            <span>${d(a, "editor.show_title")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_subtitle !== !1}
               @change=${this._showSubtitleChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_subtitle")}</span>
+            <span>${d(a, "editor.show_subtitle")}</span>
           </div>
         </div>
 
@@ -8581,10 +9899,10 @@ let ve = class extends Y {
             .checked=${this._config.show_media_type_badge !== !1}
             @change=${this._showMediaTypeBadgeChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_media_type_badge")}</span>
+          <span>${d(a, "editor.show_media_type_badge")}</span>
         </div>
 
-        ${this._config.show_media_type_badge !== !1 ? c`
+        ${this._config.show_media_type_badge !== !1 ? l`
           <div class="form-row" style="margin-left: 16px; margin-top: 4px; margin-bottom: 12px;">
             <ha-selector
               .hass=${this.hass}
@@ -8592,16 +9910,16 @@ let ve = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "poster", label: l(a, "editor.badge_style_poster") },
-          { value: "header", label: l(a, "editor.badge_style_header") },
-          { value: "inline", label: l(a, "editor.badge_style_inline") },
-          { value: "none", label: l(a, "editor.badge_style_none") }
+          { value: "poster", label: d(a, "editor.badge_style_poster") },
+          { value: "header", label: d(a, "editor.badge_style_header") },
+          { value: "inline", label: d(a, "editor.badge_style_inline") },
+          { value: "none", label: d(a, "editor.badge_style_none") }
         ]
       }
     }}
               .value=${this._config.badge_style || this._config.media_type_badge_style || "poster"}
-              .label="${l(a, "editor.badge_style")}"
-              label="${l(a, "editor.badge_style")}"
+              .label="${d(a, "editor.badge_style")}"
+              label="${d(a, "editor.badge_style")}"
               @value-changed=${this._badgeStyleChanged}
             ></ha-selector>
           </div>
@@ -8613,14 +9931,14 @@ let ve = class extends Y {
               .checked=${this._config.show_year !== !1}
               @change=${this._showYearChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_year")}</span>
+            <span>${d(a, "editor.show_year")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_genres !== !1}
               @change=${this._showGenresChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_genres")}</span>
+            <span>${d(a, "editor.show_genres")}</span>
           </div>
         </div>
 
@@ -8630,14 +9948,14 @@ let ve = class extends Y {
               .checked=${this._config.show_runtime !== !1}
               @change=${this._showRuntimeChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_runtime")}</span>
+            <span>${d(a, "editor.show_runtime")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_ratings !== !1}
               @change=${this._showRatingsChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_rating")}</span>
+            <span>${d(a, "editor.show_rating")}</span>
           </div>
         </div>
 
@@ -8646,7 +9964,7 @@ let ve = class extends Y {
             .checked=${this._config.show_description !== !1}
             @change=${this._showDescriptionChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_description") || "Show Description"}</span>
+          <span>${d(a, "editor.show_description") || "Show Description"}</span>
         </div>
 
         <div class="checkbox-pair">
@@ -8655,21 +9973,21 @@ let ve = class extends Y {
               .checked=${this._config.show_user !== !1}
               @change=${this._showUserChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_user")}</span>
+            <span>${d(a, "editor.show_user")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_client !== !1}
               @change=${this._showClientChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_client")}</span>
+            <span>${d(a, "editor.show_client")}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.show_device_name === !0}
               @change=${this._showDeviceNameChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_device_name")}</span>
+            <span>${d(a, "editor.show_device_name")}</span>
           </div>
         </div>
 
@@ -8678,7 +9996,7 @@ let ve = class extends Y {
             .checked=${this._config.show_time === !0}
             @change=${this._showTimeChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_time")}</span>
+          <span>${d(a, "editor.show_time")}</span>
         </div>
 
         <div class="checkbox-row">
@@ -8686,7 +10004,7 @@ let ve = class extends Y {
             .checked=${this._config.show_background !== !1}
             @change=${this._showBackgroundChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_background")}</span>
+          <span>${d(a, "editor.show_background")}</span>
         </div>
 
         <div class="checkbox-row">
@@ -8694,7 +10012,7 @@ let ve = class extends Y {
             .checked=${this._config.use_series_image === !0}
             @change=${this._useSeriesImageChanged}
           ></ha-switch>
-          <span>${l(a, "editor.use_series_image")}</span>
+          <span>${d(a, "editor.use_series_image")}</span>
         </div>
 
         <div class="checkbox-row">
@@ -8702,12 +10020,12 @@ let ve = class extends Y {
             .checked=${this._config.show_controls !== !1}
             @change=${this._showControlsChanged}
           ></ha-switch>
-          <span>${l(a, "editor.show_controls") || "Show Playback Controls"}</span>
+          <span>${d(a, "editor.show_controls") || "Show Playback Controls"}</span>
         </div>
 
         <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
         <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
-          ${l(a, "editor.power_section_title") || "TV / Display Power"}
+          ${d(a, "editor.power_section_title") || "TV / Display Power"}
         </div>
 
         <div class="form-row">
@@ -8719,10 +10037,10 @@ let ve = class extends Y {
       }
     }}
             .value=${this._config.power_entity || ""}
-            .label="${l(a, "editor.power_entity") || "Power Entity (TV, Switch, Script, etc.)"}"
-            label="${l(a, "editor.power_entity") || "Power Entity (TV, Switch, Script, etc.)"}"
-            .helper="${l(a, "editor.power_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
-            helper="${l(a, "editor.power_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
+            .label="${d(a, "editor.power_entity") || "Power Entity (TV, Switch, Script, etc.)"}"
+            label="${d(a, "editor.power_entity") || "Power Entity (TV, Switch, Script, etc.)"}"
+            .helper="${d(a, "editor.power_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
+            helper="${d(a, "editor.power_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
             .placeholder=${this._defaultEntityPlaceholder}
             placeholder=${this._defaultEntityPlaceholder}
             .required=${!1}
@@ -8737,8 +10055,8 @@ let ve = class extends Y {
       entity: {}
     }}
             .value=${this._config.power_state_entity || ""}
-            .label="${l(a, "editor.power_state_entity") || "Power State Entity (Optional state sensor)"}"
-            label="${l(a, "editor.power_state_entity") || "Power State Entity (Optional state sensor)"}"
+            .label="${d(a, "editor.power_state_entity") || "Power State Entity (Optional state sensor)"}"
+            label="${d(a, "editor.power_state_entity") || "Power State Entity (Optional state sensor)"}"
             .required=${!1}
             @value-changed=${this._powerStateEntityChanged}
           ></ha-selector>
@@ -8750,20 +10068,20 @@ let ve = class extends Y {
               .checked=${this._config.show_power_button !== !1 && this._config.show_power !== !1}
               @change=${this._showPowerButtonChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_power_button") || "Show Power Button"}</span>
+            <span>${d(a, "editor.show_power_button") || "Show Power Button"}</span>
           </div>
           <div class="checkbox-row">
             <ha-switch
               .checked=${this._config.stop_on_power_off !== !1}
               @change=${this._stopOnPowerOffChanged}
             ></ha-switch>
-            <span>${l(a, "editor.stop_on_power_off") || "Stop Media on Power Off"}</span>
+            <span>${d(a, "editor.stop_on_power_off") || "Stop Media on Power Off"}</span>
           </div>
         </div>
 
         <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
         <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
-          ${l(a, "editor.volume_section_title") || "Volume Controls"}
+          ${d(a, "editor.volume_section_title") || "Volume Controls"}
         </div>
 
         <div class="checkbox-pair">
@@ -8772,7 +10090,7 @@ let ve = class extends Y {
               .checked=${this._config.show_volume === !0 || this._config.show_volume !== !1 && !!this._config.volume_entity}
               @change=${this._showVolumeChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_volume") || "Show Volume Controls"}</span>
+            <span>${d(a, "editor.show_volume") || "Show Volume Controls"}</span>
           </div>
 
           <div class="checkbox-row">
@@ -8780,7 +10098,7 @@ let ve = class extends Y {
               .checked=${this._config.show_volume_step_buttons !== !1}
               @change=${this._showVolumeStepButtonsChanged}
             ></ha-switch>
-            <span>${l(a, "editor.show_volume_step_buttons") || "Show Step Buttons (− / +)"}</span>
+            <span>${d(a, "editor.show_volume_step_buttons") || "Show Step Buttons (− / +)"}</span>
           </div>
         </div>
 
@@ -8793,10 +10111,10 @@ let ve = class extends Y {
       }
     }}
             .value=${this._config.volume_entity || ""}
-            .label="${l(a, "editor.volume_entity") || "Volume Entity (External AVR/Soundbar, Optional)"}"
-            label="${l(a, "editor.volume_entity") || "Volume Entity (External AVR/Soundbar, Optional)"}"
-            .helper="${l(a, "editor.volume_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
-            helper="${l(a, "editor.volume_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
+            .label="${d(a, "editor.volume_entity") || "Volume Entity (External AVR/Soundbar, Optional)"}"
+            label="${d(a, "editor.volume_entity") || "Volume Entity (External AVR/Soundbar, Optional)"}"
+            .helper="${d(a, "editor.volume_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
+            helper="${d(a, "editor.volume_entity_helper") || "Optional. If not set, the default selected Media Player will be used."}"
             .placeholder=${this._defaultEntityPlaceholder}
             placeholder=${this._defaultEntityPlaceholder}
             .required=${!1}
@@ -8816,15 +10134,15 @@ let ve = class extends Y {
       }
     }}
             .value=${this._config.volume_step ?? 5}
-            .label="${l(a, "editor.volume_step") || "Volume Step %"}"
-            label="${l(a, "editor.volume_step") || "Volume Step %"}"
+            .label="${d(a, "editor.volume_step") || "Volume Step %"}"
+            label="${d(a, "editor.volume_step") || "Volume Step %"}"
             @value-changed=${this._volumeStepChanged}
           ></ha-selector>
         </div>
 
         <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
         <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
-          ${l(a, "editor.idle_section_title") || "Ambient Showcase (When Idle)"}
+          ${d(a, "editor.idle_section_title") || "Ambient Showcase (When Idle)"}
         </div>
 
         <div class="checkbox-row">
@@ -8832,10 +10150,10 @@ let ve = class extends Y {
             .checked=${this._config.idle_backdrop_cycle === !0}
             @change=${this._idleBackdropCycleChanged}
           ></ha-switch>
-          <span>${l(a, "editor.idle_backdrop_cycle") || "Cycle Library Media when Idle"}</span>
+          <span>${d(a, "editor.idle_backdrop_cycle") || "Cycle Library Media when Idle"}</span>
         </div>
 
-        ${this._config.idle_backdrop_cycle === !0 ? c`
+        ${this._config.idle_backdrop_cycle === !0 ? l`
           <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
             <ha-selector
               .hass=${this.hass}
@@ -8843,24 +10161,24 @@ let ve = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "random", label: l(a, "editor.idle_source_random") || "Random Library Media" },
-          { value: "movies", label: l(a, "editor.media_type_movies") || "Movies Only" },
-          { value: "series", label: l(a, "editor.media_type_series") || "TV Shows Only" },
-          { value: "recent", label: l(a, "editor.idle_source_recent") || "Recently Added" },
-          { value: "latest_movie", label: l(a, "editor.idle_source_latest_movie") || "Latest Movie Added" },
-          { value: "latest_episode", label: l(a, "editor.idle_source_latest_episode") || "Latest Episode Added" },
-          { value: "latest_both", label: l(a, "editor.idle_source_latest_both") || "Alternating Latest Movie & Episode" }
+          { value: "random", label: d(a, "editor.idle_source_random") || "Random Library Media" },
+          { value: "movies", label: d(a, "editor.media_type_movies") || "Movies Only" },
+          { value: "series", label: d(a, "editor.media_type_series") || "TV Shows Only" },
+          { value: "recent", label: d(a, "editor.idle_source_recent") || "Recently Added" },
+          { value: "latest_movie", label: d(a, "editor.idle_source_latest_movie") || "Latest Movie Added" },
+          { value: "latest_episode", label: d(a, "editor.idle_source_latest_episode") || "Latest Episode Added" },
+          { value: "latest_both", label: d(a, "editor.idle_source_latest_both") || "Alternating Latest Movie & Episode" }
         ]
       }
     }}
               .value=${this._config.idle_content_source === "movies" || !this._config.idle_content_source && this._config.idle_media_type === "movies" ? "movies" : this._config.idle_content_source === "series" || !this._config.idle_content_source && this._config.idle_media_type === "series" ? "series" : this._config.idle_content_source || "random"}
-              .label="${l(a, "editor.idle_content_source") || "Content to Showcase"}"
-              label="${l(a, "editor.idle_content_source") || "Content to Showcase"}"
+              .label="${d(a, "editor.idle_content_source") || "Content to Showcase"}"
+              label="${d(a, "editor.idle_content_source") || "Content to Showcase"}"
               @value-changed=${this._idleContentSourceChanged}
             ></ha-selector>
           </div>
 
-          ${this._config.idle_content_source === "recent" ? c`
+          ${this._config.idle_content_source === "recent" ? l`
             <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
               <ha-selector
                 .hass=${this.hass}
@@ -8873,8 +10191,8 @@ let ve = class extends Y {
       }
     }}
                 .value=${this._config.idle_recent_limit || 15}
-                .label="${l(a, "editor.idle_recent_limit") || "Number of Recent Items"}"
-                label="${l(a, "editor.idle_recent_limit") || "Number of Recent Items"}"
+                .label="${d(a, "editor.idle_recent_limit") || "Number of Recent Items"}"
+                label="${d(a, "editor.idle_recent_limit") || "Number of Recent Items"}"
                 @value-changed=${this._idleRecentLimitChanged}
               ></ha-selector>
             </div>
@@ -8887,19 +10205,19 @@ let ve = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "backdrop", label: l(a, "editor.idle_display_mode_backdrop") || "Full Fanart Backdrop (Screensaver)" },
-          { value: "card", label: l(a, "editor.idle_display_mode_card") || "Card Layout (Poster + Backdrop)" }
+          { value: "backdrop", label: d(a, "editor.idle_display_mode_backdrop") || "Full Fanart Backdrop (Screensaver)" },
+          { value: "card", label: d(a, "editor.idle_display_mode_card") || "Card Layout (Poster + Backdrop)" }
         ]
       }
     }}
               .value=${this._config.idle_display_mode || "backdrop"}
-              .label="${l(a, "editor.idle_display_mode") || "Display Style"}"
-              label="${l(a, "editor.idle_display_mode") || "Display Style"}"
+              .label="${d(a, "editor.idle_display_mode") || "Display Style"}"
+              label="${d(a, "editor.idle_display_mode") || "Display Style"}"
               @value-changed=${this._idleDisplayModeChanged}
             ></ha-selector>
           </div>
 
-          ${this._config.idle_content_source === "recent" ? c`
+          ${this._config.idle_content_source === "recent" ? l`
             <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
               <ha-selector
                 .hass=${this.hass}
@@ -8907,23 +10225,23 @@ let ve = class extends Y {
       select: {
         mode: "dropdown",
         options: [
-          { value: "both", label: l(a, "editor.media_type_both") || "Movies & TV Shows" },
-          { value: "movies_episodes", label: l(a, "editor.media_type_movies_episodes") || "Movies & Episodes" },
-          { value: "movies", label: l(a, "editor.media_type_movies") || "Movies Only" },
-          { value: "series", label: l(a, "editor.media_type_series") || "TV Shows Only" },
-          { value: "episodes", label: l(a, "editor.media_type_episodes") || "Episodes Only" }
+          { value: "both", label: d(a, "editor.media_type_both") || "Movies & TV Shows" },
+          { value: "movies_episodes", label: d(a, "editor.media_type_movies_episodes") || "Movies & Episodes" },
+          { value: "movies", label: d(a, "editor.media_type_movies") || "Movies Only" },
+          { value: "series", label: d(a, "editor.media_type_series") || "TV Shows Only" },
+          { value: "episodes", label: d(a, "editor.media_type_episodes") || "Episodes Only" }
         ]
       }
     }}
                 .value=${this._config.idle_media_type || "both"}
-                .label="${l(a, "editor.idle_media_type") || "Media Types to Showcase"}"
-                label="${l(a, "editor.idle_media_type") || "Media Types to Showcase"}"
+                .label="${d(a, "editor.idle_media_type") || "Media Types to Showcase"}"
+                label="${d(a, "editor.idle_media_type") || "Media Types to Showcase"}"
                 @value-changed=${this._idleMediaTypeChanged}
               ></ha-selector>
             </div>
           ` : ""}
 
-          ${this._config.idle_content_source !== "latest_movie" && this._config.idle_content_source !== "latest_episode" ? c`
+          ${this._config.idle_content_source !== "latest_movie" && this._config.idle_content_source !== "latest_episode" ? l`
             <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
               <ha-selector
                 .hass=${this.hass}
@@ -8936,8 +10254,8 @@ let ve = class extends Y {
       }
     }}
                 .value=${this._config.idle_cycle_interval || 20}
-                .label="${l(a, "editor.idle_cycle_interval") || "Cycle Interval (seconds)"}"
-                label="${l(a, "editor.idle_cycle_interval") || "Cycle Interval (seconds)"}"
+                .label="${d(a, "editor.idle_cycle_interval") || "Cycle Interval (seconds)"}"
+                label="${d(a, "editor.idle_cycle_interval") || "Cycle Interval (seconds)"}"
                 @value-changed=${this._idleCycleIntervalChanged}
               ></ha-selector>
             </div>
@@ -9082,10 +10400,10 @@ let ve = class extends Y {
     if (!this._config)
       return;
     const i = { ...this._config };
-    t === void 0 || t === "" ? delete i[e] : i[e] = t, this._config = i, Li(this, "config-changed", { config: i });
+    t === void 0 || t === "" ? delete i[e] : i[e] = t, this._config = i, Ni(this, "config-changed", { config: i });
   }
 };
-ve.styles = we`
+xe.styles = $e`
     .form-row {
       margin-bottom: 16px;
     }
@@ -9112,18 +10430,18 @@ ve.styles = we`
     }
   `;
 tt([
-  V({ attribute: !1 })
-], ve.prototype, "hass", 2);
+  F({ attribute: !1 })
+], xe.prototype, "hass", 2);
 tt([
   f()
-], ve.prototype, "_config", 2);
-ve = tt([
+], xe.prototype, "_config", 2);
+xe = tt([
   oe("jellyha-now-playing-editor")
-], ve);
-var Ni = Object.defineProperty, Oi = Object.getOwnPropertyDescriptor, j = (e, t, i, a) => {
-  for (var s = a > 1 ? void 0 : a ? Oi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
+], xe);
+var Li = Object.defineProperty, Ri = Object.getOwnPropertyDescriptor, T = (e, t, i, a) => {
+  for (var s = a > 1 ? void 0 : a ? Ri(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
-  return a && s && Ni(t, i, s), s;
+  return a && s && Li(t, i, s), s;
 };
 typeof window < "u" && (window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "jellyha-now-playing-card") || window.customCards.push({
   type: "jellyha-now-playing-card",
@@ -9131,7 +10449,7 @@ typeof window < "u" && (window.customCards = window.customCards || [], window.cu
   description: "Display currently playing media from Jellyfin",
   preview: !0
 }));
-let C = class extends Y {
+let P = class extends J {
   constructor() {
     super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._powerActivating = !1, this._isVolumeDragging = !1, this._dragVolumePercent = null, this._optimisticVolume = {}, this._idleItems = [], this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._lastHapticVolumeTick = 0, this._fetchingIdleItems = !1, this._longPressRaf = null, this._longPressConsumed = !1, this._layoutCheckRaf = null, this._optimisticFavorites = {}, this._resolvedImages = {}, this._fetchingImageKey = null, this._resolvedMetadata = {}, this._fetchingMetadataId = null, this._phrases = [];
   }
@@ -9213,73 +10531,73 @@ let C = class extends Y {
   }
   render() {
     if (!this.hass || !this._config)
-      return c``;
+      return l``;
     const e = this._config.entity;
     if (!e)
       return this._renderError("Please configure a JellyHA Now Playing entity");
     const t = this.hass.states[e];
     if (!t)
-      return this._renderError(l(this.hass.locale?.language || this.hass.language, "entity_not_found") || "Entity not found");
+      return this._renderError(d(this.hass.locale?.language || this.hass.language, "entity_not_found") || "Entity not found");
     const i = t.attributes, a = e.startsWith("media_player.");
     if (!(a && (t.state === "playing" || t.state === "paused") || !!i.item_id))
       return this._config.idle_backdrop_cycle ? this._renderIdleShowcase() : (this._stopIdleTimer(), this._renderEmpty());
     this._stopIdleTimer();
     const o = this._extractItemId(t);
     o && !this._resolvedMetadata[o] && (!i.community_rating || !i.year || !i.genres || !i.media_type) && this._fetchMissingMetadata(o);
-    const r = o ? this._resolvedMetadata[o] : null, n = this._getDurationSeconds(t), d = this._getCurrentPositionSeconds(t);
+    const r = o ? this._resolvedMetadata[o] : null, n = this._getDurationSeconds(t), c = this._getCurrentPositionSeconds(t);
     let h = 0;
-    this._optimisticSeekPercent !== null ? h = this._optimisticSeekPercent : n > 0 ? h = Math.min(100, Math.max(0, d / n * 100)) : typeof i.progress_percent == "number" && (h = i.progress_percent);
-    const _ = this._isDragging && n > 0 ? this._dragPercentage / 100 * n : this._optimisticSeekPercent !== null && n > 0 ? this._optimisticSeekPercent / 100 * n : d, { seriesImageUrl: u, episodeImageUrl: g } = this._resolveImages(t, r), m = this._config.use_series_image && u ? u : g || i.image_url || t.attributes.entity_picture || r?.poster_url, b = m, v = o || i.item_id || t.attributes.media_content_id, y = `${v}_${this._config.use_series_image ? "series" : "item"}`;
+    this._optimisticSeekPercent !== null ? h = this._optimisticSeekPercent : n > 0 ? h = Math.min(100, Math.max(0, c / n * 100)) : typeof i.progress_percent == "number" && (h = i.progress_percent);
+    const _ = this._isDragging && n > 0 ? this._dragPercentage / 100 * n : this._optimisticSeekPercent !== null && n > 0 ? this._optimisticSeekPercent / 100 * n : c, { seriesImageUrl: u, episodeImageUrl: g } = this._resolveImages(t, r), m = this._config.use_series_image && u ? u : g || i.image_url || t.attributes.entity_picture || r?.poster_url, b = m, v = o || i.item_id || t.attributes.media_content_id, y = `${v}_${this._config.use_series_image ? "series" : "item"}`;
     if (y !== this._cachedItemId) {
       this._cachedItemId = y;
-      const Pe = i.backdrop_url || r?.backdrop_url || m;
-      this._cachedBackdropUrl = Pe ? R(Pe, 640) : void 0;
+      const Ie = i.backdrop_url || r?.backdrop_url || m;
+      this._cachedBackdropUrl = Ie ? D(Ie, 640) : void 0;
     }
-    y !== this._cachedColorItemId && b && (this._cachedColorItemId = y, this._extractDominantColor(R(b, 80)));
-    const w = this._cachedBackdropUrl, S = this._config.show_background !== !1 && w, k = a ? t.state === "paused" : i.is_paused, x = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), E = x === "audio" || x === "music";
+    y !== this._cachedColorItemId && b && (this._cachedColorItemId = y, this._extractDominantColor(D(b, 80)));
+    const w = this._cachedBackdropUrl, $ = this._config.show_background !== !1 && w, S = a ? t.state === "paused" : i.is_paused, x = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), I = x === "audio" || x === "music";
     let z = i.title || t.attributes.media_title || r?.name || "";
-    const T = this._config.show_subtitle !== !1, H = i.series_title || t.attributes.media_series_title || r?.series_name || "", L = T && (i.artist_name || t.attributes.media_artist || H || r?.artist_name) || "", O = i.year ?? r?.year, N = this._config.show_year !== !1 && O ? String(O) : "", q = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, F = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, A = Number(q), Q = Number(F), G = q != null && F != null && !isNaN(A) && !isNaN(Q) && A >= 0 && Q >= 0, he = (x === "episode" || x === "tvshow") && G ? `S${String(A).padStart(2, "0")}E${String(Q).padStart(2, "0")}` : x === "movie" ? "MOVIE" : x === "episode" ? "EPISODE" : x === "tvshow" ? "SERIES" : i.media_type || r?.type || "", $e = this._config.badge_style || this._config.media_type_badge_style || "poster", it = this._config.show_media_type_badge !== !1 && !!he, ee = $e === "inline", at = it && ee && !!he;
+    const A = this._config.show_subtitle !== !1, H = i.series_title || t.attributes.media_series_title || r?.series_name || "", L = A && (i.artist_name || t.attributes.media_artist || H || r?.artist_name) || "", U = i.year ?? r?.year, R = this._config.show_year !== !1 && U ? String(U) : "", Y = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, q = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, M = Number(Y), Q = Number(q), G = Y != null && q != null && !isNaN(M) && !isNaN(Q) && M >= 0 && Q >= 0, pe = (x === "episode" || x === "tvshow") && G ? `S${String(M).padStart(2, "0")}E${String(Q).padStart(2, "0")}` : x === "movie" ? "MOVIE" : x === "episode" ? "EPISODE" : x === "tvshow" ? "SERIES" : i.media_type || r?.type || "", Se = this._config.badge_style || this._config.media_type_badge_style || "poster", it = this._config.show_media_type_badge !== !1 && !!pe, ee = Se === "inline", at = it && ee && !!pe;
     let ot = !1, st = !1;
-    it && $e !== "none" && ($e === "poster" ? ot = !0 : $e === "header" && (st = !0));
-    const rt = i.runtime_minutes || (n > 0 ? Math.round(n / 60) : r?.runtime_minutes || 0), nt = x === "audio" && n > 0 ? `${Math.floor(n / 60)}m ${Math.floor(n % 60)}s` : rt > 0 ? ge(rt) : "", ke = this._config.show_runtime !== !1 && nt ? nt : "", Ne = i.community_rating ?? r?.community_rating ?? r?.rating, Oe = Number(Ne), lt = !isNaN(Oe) && Oe > 0 ? Oe.toFixed(1) : Ne ? String(Ne) : "", Se = this._config.show_ratings !== !1 && lt ? lt : "", dt = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], Re = this._config.show_genres !== !1 && dt?.length ? dt.slice(0, 3) : [];
-    ee ? at || N || ke || Se || Re.length > 0 : N || Re.length > 0;
-    const Nt = i.user_name || this.hass?.user?.name || "", Ce = this._config.show_user !== !1 ? Nt : "", Ot = i.client || t.attributes.app_name || t.attributes.friendly_name || "", Rt = this._config.show_client !== !1 ? Ot : "", Ut = this._config.show_device_name === !0 && i.device_name || "", Ue = [...new Set([Ut, Rt].filter(Boolean))].join(" · "), Be = v && this._optimisticFavorites[v] !== void 0 ? this._optimisticFavorites[v] : i.is_favorite || r?.is_favorite || !1, ct = 125.66, Bt = ct * (1 - this._longPressProgress), X = this._supportsRemote(t);
-    return c`
-            <ha-card class="jellyha-now-playing ${S ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
-                ${S ? c`
+    it && Se !== "none" && (Se === "poster" ? ot = !0 : Se === "header" && (st = !0));
+    const rt = i.runtime_minutes || (n > 0 ? Math.round(n / 60) : r?.runtime_minutes || 0), nt = x === "audio" && n > 0 ? `${Math.floor(n / 60)}m ${Math.floor(n % 60)}s` : rt > 0 ? de(rt) : "", Ce = this._config.show_runtime !== !1 && nt ? nt : "", Re = i.community_rating ?? r?.community_rating ?? r?.rating, Oe = Number(Re), lt = !isNaN(Oe) && Oe > 0 ? Oe.toFixed(1) : Re ? String(Re) : "", Pe = this._config.show_ratings !== !1 && lt ? lt : "", dt = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], Ue = this._config.show_genres !== !1 && dt?.length ? dt.slice(0, 3) : [];
+    ee ? at || R || Ce || Pe || Ue.length > 0 : R || Ue.length > 0;
+    const Lt = i.user_name || this.hass?.user?.name || "", je = this._config.show_user !== !1 ? Lt : "", Rt = i.client || t.attributes.app_name || t.attributes.friendly_name || "", Ot = this._config.show_client !== !1 ? Rt : "", Ut = this._config.show_device_name === !0 && i.device_name || "", Be = [...new Set([Ut, Ot].filter(Boolean))].join(" · "), Fe = v && this._optimisticFavorites[v] !== void 0 ? this._optimisticFavorites[v] : i.is_favorite || r?.is_favorite || !1, ct = 125.66, Bt = ct * (1 - this._longPressProgress), X = this._supportsRemote(t);
+    return l`
+            <ha-card class="jellyha-now-playing ${$ ? "has-background" : ""} ${this._config.title ? "has-title" : ""}" style="--card-dominant-color: ${this._dominantColor};">
+                ${$ ? l`
                     <div class="card-background" style="background-image: url('${w}')"></div>
                     <div class="card-overlay"></div>
                 ` : p}
                 
                 <div class="card-content">
-                    ${this._config.title ? c`
+                    ${this._config.title ? l`
                         <div class="card-header">${this._config.title}</div>
                     ` : p}
                     
                     <div class="main-container">
-                        ${b ? c`
+                        ${b ? l`
                             <div class="poster-container ${X ? "" : "no-rewind"}" @click=${X ? this._handlePosterRewind : void 0}>
-                                <img src="${R(b, 160)}" alt="${z}" loading="eager" fetchpriority="high" />
+                                <img src="${D(b, 160)}" alt="${z}" loading="eager" fetchpriority="high" />
                                 
-                                ${ot ? c`
-                                    <span class="poster-badge media-type-badge ${x}">${he}</span>
+                                ${ot ? l`
+                                    <span class="poster-badge media-type-badge ${x}">${pe}</span>
                                 ` : p}
-                                ${!ee && Se ? c`
+                                ${!ee && Pe ? l`
                                     <span class="poster-badge rating-badge">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${Se}
+                                        ${Pe}
                                     </span>
                                 ` : p}
-                                ${!ee && ke ? c`
+                                ${!ee && Ce ? l`
                                     <span class="poster-badge runtime-badge">
                                         <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${ke}
+                                        ${Ce}
                                     </span>
                                 ` : p}
 
-                                ${this._rewindActive ? c`
+                                ${this._rewindActive ? l`
                                     <div class="rewind-overlay">
-                                        <span>${l(this.hass.locale?.language || this.hass.language, "rewinding")}</span>
+                                        <span>${d(this.hass.locale?.language || this.hass.language, "rewinding")}</span>
                                     </div>
                                 ` : p}
                             </div>
@@ -9289,38 +10607,38 @@ let C = class extends Y {
                             <div class="info-top">
                                 <div class="header">
                                     <div class="title-row">
-                                        ${this._config.show_title !== !1 ? c`<div class="title">${z}</div>` : p}
+                                        ${this._config.show_title !== !1 ? l`<div class="title">${z}</div>` : p}
                                         <div class="header-actions">
-                                            ${st ? c`
-                                                <span class="media-type-badge header-badge ${x}">${he}</span>
+                                            ${st ? l`
+                                                <span class="media-type-badge header-badge ${x}">${pe}</span>
                                             ` : p}
                                             ${this._renderPowerButton()}
                                         </div>
                                     </div>
-                                    ${this._overflowState < 3 && L ? c`<div class="subtitle">${L}</div>` : p}
+                                    ${this._overflowState < 3 && L ? l`<div class="subtitle">${L}</div>` : p}
                                     ${this._overflowState < 2 ? this._renderMetaRow({
-      badge: at ? c`<span class="media-type-badge inline-badge ${x}">${he}</span>` : p,
-      year: N,
-      runtime: ee ? ke : void 0,
-      rating: ee ? Se : void 0,
-      genres: Re,
+      badge: at ? l`<span class="media-type-badge inline-badge ${x}">${pe}</span>` : p,
+      year: R,
+      runtime: ee ? Ce : void 0,
+      rating: ee ? Pe : void 0,
+      genres: Ue,
       isInline: ee
     }) : p}
-                                    ${this._overflowState < 1 && (Ce || Ue) ? c`<div class="client-line">${Ce ? c`<strong>${Ce}</strong>` : p}${Ce && Ue ? " · " : ""}${Ue || p}</div>` : p}
+                                    ${this._overflowState < 1 && (je || Be) ? l`<div class="client-line">${je ? l`<strong>${je}</strong>` : p}${je && Be ? " · " : ""}${Be || p}</div>` : p}
                                 </div>
                             </div>
 
                             <div class="info-bottom">
-                                ${X && this._config.show_controls !== !1 ? c`
+                                ${X && this._config.show_controls !== !1 ? l`
                                     <div class="playback-controls">
-                                        ${E ? c`
-                                            <ha-icon-button class="music-subtle-btn ${Be ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(i.item_id, Be)}>
-                                                <ha-icon icon="${Be ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
+                                        ${I ? l`
+                                            <ha-icon-button class="music-subtle-btn ${Fe ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(i.item_id, Fe)}>
+                                                <ha-icon icon="${Fe ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
                                             </ha-icon-button>
-                                            <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "previous") || "Previous"} @click=${() => this._handleControl("PreviousTrack")}>
+                                            <ha-icon-button .label=${d(this.hass.locale?.language || this.hass.language, "previous") || "Previous"} @click=${() => this._handleControl("PreviousTrack")}>
                                                 <ha-icon icon="mdi:skip-previous"></ha-icon>
                                             </ha-icon-button>
-                                        ` : c`
+                                        ` : l`
                                             <ha-icon-button class="seek-btn" .label=${"Rewind 10s"} @click=${() => this._handleSeekRelative(-10)}>
                                                 <ha-icon icon="mdi:rewind-10"></ha-icon>
                                             </ha-icon-button>
@@ -9330,24 +10648,24 @@ let C = class extends Y {
                                             @pointerdown=${this._startLongPress}
                                             @pointerup=${this._endLongPress}
                                             @pointerleave=${this._endLongPress}
-                                            @contextmenu=${(Pe) => Pe.preventDefault()}
+                                            @contextmenu=${(Ie) => Ie.preventDefault()}
                                         >
-                                            ${this._rewindActive ? c`
-                                                <ha-icon-button class="play-pause-btn spinning" .label=${l(this.hass.locale?.language || this.hass.language, "loading")}>
+                                            ${this._rewindActive ? l`
+                                                <ha-icon-button class="play-pause-btn spinning" .label=${d(this.hass.locale?.language || this.hass.language, "loading")}>
                                                     <ha-icon icon="mdi:loading"></ha-icon>
                                                 </ha-icon-button>
-                                            ` : k ? c`
-                                                <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "play")} @click=${() => {
+                                            ` : S ? l`
+                                                <ha-icon-button class="play-pause-btn" .label=${d(this.hass.locale?.language || this.hass.language, "play")} @click=${() => {
       if (this._longPressConsumed) {
         this._longPressConsumed = !1;
         return;
       }
-      this._handleControl(E ? "PlayPause" : "Unpause");
+      this._handleControl(I ? "PlayPause" : "Unpause");
     }}>
                                                     <ha-icon icon="mdi:play"></ha-icon>
                                                 </ha-icon-button>
-                                            ` : c`
-                                                <ha-icon-button class="play-pause-btn" .label=${l(this.hass.locale?.language || this.hass.language, "pause")} @click=${() => {
+                                            ` : l`
+                                                <ha-icon-button class="play-pause-btn" .label=${d(this.hass.locale?.language || this.hass.language, "pause")} @click=${() => {
       if (this._longPressConsumed) {
         this._longPressConsumed = !1;
         return;
@@ -9357,7 +10675,7 @@ let C = class extends Y {
                                                     <ha-icon icon="mdi:pause"></ha-icon>
                                                 </ha-icon-button>
                                             `}
-                                            ${this._longPressProgress > 0 ? c`
+                                            ${this._longPressProgress > 0 ? l`
                                                 <svg class="stop-ring" viewBox="0 0 44 44">
                                                     <circle cx="22" cy="22" r="20"
                                                         stroke="#ef4444" stroke-width="3" fill="none"
@@ -9369,14 +10687,14 @@ let C = class extends Y {
                                             ` : p}
                                         </div>
 
-                                        ${E ? c`
-                                            <ha-icon-button .label=${l(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
+                                        ${I ? l`
+                                            <ha-icon-button .label=${d(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
                                                 <ha-icon icon="mdi:skip-next"></ha-icon>
                                             </ha-icon-button>
                                             <ha-icon-button class="music-subtle-btn ${i.repeat_mode && i.repeat_mode !== "RepeatNone" ? "active" : ""}" .label=${"Repeat"} @click=${() => this._handleRepeatMode(i.session_id, i.repeat_mode || "RepeatNone")}>
                                                 <ha-icon icon="${i.repeat_mode === "RepeatOne" ? "mdi:repeat-once" : "mdi:repeat"}"></ha-icon>
                                             </ha-icon-button>
-                                        ` : c`
+                                        ` : l`
                                             <ha-icon-button class="seek-btn" .label=${"Forward 30s"} @click=${() => this._handleSeekRelative(30)}>
                                                 <ha-icon icon="mdi:fast-forward-30"></ha-icon>
                                             </ha-icon-button>
@@ -9398,7 +10716,7 @@ let C = class extends Y {
                                     </div>
                                 </div>
 
-                                ${this._config.show_time && n > 0 ? c`
+                                ${this._config.show_time && n > 0 ? l`
                                     <div class="timestamps">
                                         <span class="time-elapsed">${this._formatSeconds(_)}</span>
                                         <span class="time-remaining">${this._formatSeconds(-(n - _))}</span>
@@ -9423,17 +10741,17 @@ let C = class extends Y {
   _renderEmpty() {
     this._fetchPhrases();
     const t = this.hass.themes?.darkMode ? "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/dark_logo.png" : "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/logo.png", i = "https://raw.githubusercontent.com/home-assistant/brands/master/custom_integrations/jellyha/icon.png";
-    let a = l(this.hass.locale?.language || this.hass.language, "nothing_playing");
+    let a = d(this.hass.locale?.language || this.hass.language, "nothing_playing");
     if (this._phrases.length > 0) {
       const o = Math.floor(Date.now() / 864e5) % this._phrases.length;
       a = this._phrases[o];
-      const r = this._config?.entity || "", n = $i(r), d = n ? `${n}_unwatched` : "";
-      let h = d && this.hass.states[d] ? d : "";
+      const r = this._config?.entity || "", n = $i(r), c = n ? `${n}_unwatched` : "";
+      let h = c && this.hass.states[c] ? c : "";
       h || (h = Object.keys(this.hass.states).find((u) => u.startsWith("sensor.") && u.endsWith("_unwatched")) || "");
       const _ = h ? this.hass.states[h].state : "0";
       a = a.replace(/\[number\]/g, _);
     }
-    return c`
+    return l`
             <ha-card class="jellyha-now-playing empty-state">
                 <div class="empty-top-actions">
                     ${this._renderPowerButton()}
@@ -9497,27 +10815,27 @@ let C = class extends Y {
     };
   }
   _renderIdleBackdropMode(e, t, i) {
-    const a = R(e.backdrop_url || e.poster_url, 960), s = t ? R(t.backdrop_url || t.poster_url, 960) : "", o = e.community_rating ?? e.rating, r = typeof o == "number" && !isNaN(o) && o > 0 ? o.toFixed(1) : o ? String(o) : "", n = e.runtime_minutes ? ge(e.runtime_minutes) : "", d = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], h = this._config.show_genres !== !1 ? d : [], _ = this._config.show_media_type_badge !== !1 && this._config.badge_style !== "none", u = this._config.badge_style || this._config.media_type_badge_style || "poster", g = _ && u === "inline", m = _ && !g, b = e.type === "Movie", v = e.type === "Episode";
+    const a = D(e.backdrop_url || e.poster_url, 960), s = t ? D(t.backdrop_url || t.poster_url, 960) : "", o = e.community_rating ?? e.rating, r = typeof o == "number" && !isNaN(o) && o > 0 ? o.toFixed(1) : o ? String(o) : "", n = e.runtime_minutes ? de(e.runtime_minutes) : "", c = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], h = this._config.show_genres !== !1 ? c : [], _ = this._config.show_media_type_badge !== !1 && this._config.badge_style !== "none", u = this._config.badge_style || this._config.media_type_badge_style || "poster", g = _ && u === "inline", m = _ && !g, b = e.type === "Movie", v = e.type === "Episode";
     e.type;
-    const y = e.season, w = e.episode, S = Number(y), k = Number(w), J = y != null && w != null && !isNaN(S) && !isNaN(k) && S >= 0 && k >= 0, E = v && J ? `S${String(S).padStart(2, "0")}E${String(k).padStart(2, "0")}` : "";
-    let z = "", T = "";
-    v ? (z = e.name || e.series_name || "", T = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (z = e.name || "", T = this._config.show_subtitle !== !1 && e.tagline || "");
-    const H = this._idleItems.findIndex((A) => b ? A.type === "Movie" : v ? A.type === "Episode" : A.type === "Series" || A.type !== "Movie" && A.type !== "Episode") === this._currentIdleIndex, L = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && H, O = v && !!E, N = L && O ? E : null, q = b ? "movie" : v ? "episode" : "series", F = L ? b ? l(i, "card.latest_movie_badge") || "LATEST MOVIE" : v ? l(i, "card.latest_episode_badge") || "LATEST EPISODE" : l(i, "card.latest_series_badge") || "LATEST SERIES" : b ? l(i, "movie") || "Movie" : O ? E : l(i, "episode") || "Episode";
-    return c`
+    const y = e.season, w = e.episode, $ = Number(y), S = Number(w), V = y != null && w != null && !isNaN($) && !isNaN(S) && $ >= 0 && S >= 0, I = v && V ? `S${String($).padStart(2, "0")}E${String(S).padStart(2, "0")}` : "";
+    let z = "", A = "";
+    v ? (z = e.name || e.series_name || "", A = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (z = e.name || "", A = this._config.show_subtitle !== !1 && e.tagline || "");
+    const H = this._idleItems.findIndex((M) => b ? M.type === "Movie" : v ? M.type === "Episode" : M.type === "Series" || M.type !== "Movie" && M.type !== "Episode") === this._currentIdleIndex, L = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && H, U = v && !!I, R = L && U ? I : null, Y = b ? "movie" : v ? "episode" : "series", q = L ? b ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : v ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : b ? d(i, "movie") || "Movie" : U ? I : d(i, "episode") || "Episode";
+    return l`
             <ha-card class="jellyha-now-playing has-background idle-showcase-card">
                 <div class="idle-backdrop-container">
                     <img class="idle-backdrop-img" src="${a}" alt="${e.name}" />
-                    ${s ? c`
+                    ${s ? l`
                         <img class="idle-backdrop-img prev-backdrop ${this._idleFadeOut ? "fade-out" : ""}" src="${s}" alt="" />
                     ` : p}
                     <div class="idle-backdrop-scrim"></div>
                 </div>
 
                 <div class="idle-backdrop-top-actions">
-                    ${m ? c`
-                        <span class="media-type-badge idle-backdrop-top-badge ${L ? "latest-badge" : ""} ${q}">${F}</span>
-                        ${N ? c`
-                            <span class="media-type-badge idle-backdrop-top-badge ${q}">${N}</span>
+                    ${m ? l`
+                        <span class="media-type-badge idle-backdrop-top-badge ${L ? "latest-badge" : ""} ${Y}">${q}</span>
+                        ${R ? l`
+                            <span class="media-type-badge idle-backdrop-top-badge ${Y}">${R}</span>
                         ` : p}
                     ` : p}
                     ${this._renderPowerButton()}
@@ -9525,20 +10843,20 @@ let C = class extends Y {
 
                 <div class="idle-bottom-content">
                     <div class="title-row">
-                        ${this._config.show_title !== !1 ? c`
+                        ${this._config.show_title !== !1 ? l`
                             <h2 class="idle-title">${z}</h2>
                         ` : p}
                     </div>
-                    ${T ? c`
+                    ${A ? l`
                         <div class="subtitle-row">
-                            <span class="subtitle">${T}</span>
+                            <span class="subtitle">${A}</span>
                         </div>
                     ` : p}
                     ${this._renderMetaRow({
-      badge: g ? c`
-                            <span class="media-type-badge inline-badge ${L ? "latest-badge" : ""} ${q}">${F}</span>
-                            ${N ? c`
-                                <span class="media-type-badge inline-badge ${q}">${N}</span>
+      badge: g ? l`
+                            <span class="media-type-badge inline-badge ${L ? "latest-badge" : ""} ${Y}">${q}</span>
+                            ${R ? l`
+                                <span class="media-type-badge inline-badge ${Y}">${R}</span>
                             ` : p}
                         ` : p,
       year: this._config.show_year !== !1 && e.year ? e.year : void 0,
@@ -9547,7 +10865,7 @@ let C = class extends Y {
       genres: h,
       isInline: !0
     })}
-                    ${this._config.show_description !== !1 && e.description ? c`
+                    ${this._config.show_description !== !1 && e.description ? l`
                         <p class="idle-overview">${e.description}</p>
                     ` : p}
                 </div>
@@ -9555,19 +10873,19 @@ let C = class extends Y {
         `;
   }
   _renderIdleCardMode(e, t, i) {
-    const a = R(e.backdrop_url || e.poster_url, 960), s = t ? R(t.backdrop_url || t.poster_url, 960) : "", o = this._config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url || e.backdrop_url, r = R(o, 320), n = t && this._config.use_series_image && t.series_poster_url ? t.series_poster_url : t?.poster_url || t?.backdrop_url, d = n ? R(n, 320) : "", h = e.community_rating ?? e.rating, _ = typeof h == "number" && !isNaN(h) && h > 0 ? h.toFixed(1) : h ? String(h) : "", u = e.runtime_minutes ? ge(e.runtime_minutes) : "", g = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], m = this._config.show_genres !== !1 ? g : [], b = this._config.badge_style || this._config.media_type_badge_style || "poster", v = this._config.show_media_type_badge !== !1 && b !== "none", y = e.type === "Movie", w = e.type === "Episode";
+    const a = D(e.backdrop_url || e.poster_url, 960), s = t ? D(t.backdrop_url || t.poster_url, 960) : "", o = this._config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url || e.backdrop_url, r = D(o, 320), n = t && this._config.use_series_image && t.series_poster_url ? t.series_poster_url : t?.poster_url || t?.backdrop_url, c = n ? D(n, 320) : "", h = e.community_rating ?? e.rating, _ = typeof h == "number" && !isNaN(h) && h > 0 ? h.toFixed(1) : h ? String(h) : "", u = e.runtime_minutes ? de(e.runtime_minutes) : "", g = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], m = this._config.show_genres !== !1 ? g : [], b = this._config.badge_style || this._config.media_type_badge_style || "poster", v = this._config.show_media_type_badge !== !1 && b !== "none", y = e.type === "Movie", w = e.type === "Episode";
     e.type;
-    const S = e.season, k = e.episode, J = Number(S), x = Number(k), E = S != null && k != null && !isNaN(J) && !isNaN(x) && J >= 0 && x >= 0, T = w && E ? `S${String(J).padStart(2, "0")}E${String(x).padStart(2, "0")}` : "";
+    const $ = e.season, S = e.episode, V = Number($), x = Number(S), I = $ != null && S != null && !isNaN(V) && !isNaN(x) && V >= 0 && x >= 0, A = w && I ? `S${String(V).padStart(2, "0")}E${String(x).padStart(2, "0")}` : "";
     let H = "", L = "";
     w ? (H = e.name || e.series_name || "", L = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (H = e.name || "", L = this._config.show_subtitle !== !1 && e.tagline || "");
-    const O = this._idleItems.findIndex((G) => y ? G.type === "Movie" : w ? G.type === "Episode" : G.type === "Series" || G.type !== "Movie" && G.type !== "Episode") === this._currentIdleIndex, N = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && O, q = w && !!T, F = N && q ? T : null, A = y ? "movie" : w ? "episode" : "series", Q = N ? y ? l(i, "card.latest_movie_badge") || "LATEST MOVIE" : w ? l(i, "card.latest_episode_badge") || "LATEST EPISODE" : l(i, "card.latest_series_badge") || "LATEST SERIES" : y ? l(i, "movie") || "Movie" : q ? T : l(i, "episode") || "Episode";
-    return c`
+    const U = this._idleItems.findIndex((G) => y ? G.type === "Movie" : w ? G.type === "Episode" : G.type === "Series" || G.type !== "Movie" && G.type !== "Episode") === this._currentIdleIndex, R = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && U, Y = w && !!A, q = R && Y ? A : null, M = y ? "movie" : w ? "episode" : "series", Q = R ? y ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : w ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : y ? d(i, "movie") || "Movie" : Y ? A : d(i, "episode") || "Episode";
+    return l`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
                 <div class="idle-card-bg-container">
-                    ${a ? c`
+                    ${a ? l`
                         <img class="idle-card-bg-img" src="${a}" alt="" />
                     ` : p}
-                    ${s ? c`
+                    ${s ? l`
                         <img class="idle-card-bg-img prev-bg ${this._idleFadeOut ? "fade-out" : ""}" src="${s}" alt="" />
                     ` : p}
                     <div class="card-overlay"></div>
@@ -9577,14 +10895,14 @@ let C = class extends Y {
                     <div class="main-container">
                         <div class="poster-container no-rewind">
                             <img class="idle-poster-img" src="${r}" alt="${e.name}" loading="eager" />
-                            ${d ? c`
-                                <img class="idle-poster-img prev-poster ${this._idleFadeOut ? "fade-out" : ""}" src="${d}" alt="" />
+                            ${c ? l`
+                                <img class="idle-poster-img prev-poster ${this._idleFadeOut ? "fade-out" : ""}" src="${c}" alt="" />
                             ` : p}
-                            ${v && b === "poster" ? c`
+                            ${v && b === "poster" ? l`
                                 <div class="poster-badge-group">
-                                    <span class="poster-badge media-type-badge ${N ? "latest-badge" : ""} ${A}">${Q}</span>
-                                    ${F ? c`
-                                        <span class="poster-badge media-type-badge ${A}">${F}</span>
+                                    <span class="poster-badge media-type-badge ${R ? "latest-badge" : ""} ${M}">${Q}</span>
+                                    ${q ? l`
+                                        <span class="poster-badge media-type-badge ${M}">${q}</span>
                                     ` : p}
                                 </div>
                             ` : p}
@@ -9593,29 +10911,29 @@ let C = class extends Y {
                         <div class="info-container">
                             <div class="info-top">
                                 <div class="title-row">
-                                    ${this._config.show_title !== !1 ? c`
+                                    ${this._config.show_title !== !1 ? l`
                                         <span class="title" title="${e.series_name ? `${e.series_name} - ${e.name}` : H}">${H}</span>
                                     ` : p}
                                     <div class="header-actions">
-                                        ${v && b === "header" ? c`
-                                            <span class="media-type-badge header-badge ${N ? "latest-badge" : ""} ${A}">${Q}</span>
-                                            ${F ? c`
-                                                <span class="media-type-badge header-badge ${A}">${F}</span>
+                                        ${v && b === "header" ? l`
+                                            <span class="media-type-badge header-badge ${R ? "latest-badge" : ""} ${M}">${Q}</span>
+                                            ${q ? l`
+                                                <span class="media-type-badge header-badge ${M}">${q}</span>
                                             ` : p}
                                         ` : p}
                                         ${this._renderPowerButton()}
                                     </div>
                                 </div>
-                                ${L ? c`
+                                ${L ? l`
                                     <div class="subtitle-row">
                                         <span class="subtitle">${L}</span>
                                     </div>
                                 ` : p}
                                 ${this._renderMetaRow({
-      badge: v && b === "inline" ? c`
-                                        <span class="media-type-badge inline-badge ${N ? "latest-badge" : ""} ${A}">${Q}</span>
-                                        ${F ? c`
-                                            <span class="media-type-badge inline-badge ${A}">${F}</span>
+      badge: v && b === "inline" ? l`
+                                        <span class="media-type-badge inline-badge ${R ? "latest-badge" : ""} ${M}">${Q}</span>
+                                        ${q ? l`
+                                            <span class="media-type-badge inline-badge ${M}">${q}</span>
                                         ` : p}
                                     ` : p,
       year: this._config.show_year !== !1 && e.year ? e.year : void 0,
@@ -9624,7 +10942,7 @@ let C = class extends Y {
       genres: m,
       isInline: !0
     })}
-                                ${this._config.show_description !== !1 && e.description ? c`
+                                ${this._config.show_description !== !1 && e.description ? l`
                                     <div class="idle-card-desc">${e.description}</div>
                                 ` : p}
                             </div>
@@ -9635,31 +10953,31 @@ let C = class extends Y {
         `;
   }
   _renderMetaRow(e) {
-    const { badge: t, year: i, runtime: a, rating: s, genres: o = [], isInline: r = !0 } = e, n = i ? String(i) : "", d = a ? String(a) : "", h = s ? String(s) : "", _ = o && o.length > 0, u = t && t !== p;
-    if (!(u || !!n || !!d || !!h || _))
+    const { badge: t, year: i, runtime: a, rating: s, genres: o = [], isInline: r = !0 } = e, n = i ? String(i) : "", c = a ? String(a) : "", h = s ? String(s) : "", _ = o && o.length > 0, u = t && t !== p;
+    if (!(u || !!n || !!c || !!h || _))
       return p;
-    const m = !!n || !!d || !!h || _, b = !!d || !!h || _, v = !!h || _;
-    return c`
+    const m = !!n || !!c || !!h || _, b = !!c || !!h || _, v = !!h || _;
+    return l`
             <div class="meta-line ${r ? "idle-meta-row" : ""}">
-                ${u ? c`
+                ${u ? l`
                     ${t}
-                    ${m ? c`<span class="idle-dot meta-dot">•</span>` : p}
+                    ${m ? l`<span class="idle-dot meta-dot">•</span>` : p}
                 ` : p}
-                ${n ? c`
+                ${n ? l`
                     <span class="idle-meta-text meta-text meta-year">${n}</span>
-                    ${b ? c`<span class="idle-dot meta-dot">•</span>` : p}
+                    ${b ? l`<span class="idle-dot meta-dot">•</span>` : p}
                 ` : p}
-                ${d ? c`
-                    <span class="idle-meta-text meta-text meta-runtime">${d}</span>
-                    ${v ? c`<span class="idle-dot meta-dot">•</span>` : p}
+                ${c ? l`
+                    <span class="idle-meta-text meta-text meta-runtime">${c}</span>
+                    ${v ? l`<span class="idle-dot meta-dot">•</span>` : p}
                 ` : p}
-                ${h ? c`
+                ${h ? l`
                     <span class="idle-rating-pill rating-pill">
                         <ha-icon icon="mdi:star"></ha-icon>
                         <span>${h}</span>
                     </span>
                 ` : p}
-                ${_ ? o.map((y) => c`<span class="genre-pill idle-genre-pill">${y}</span>`) : p}
+                ${_ ? o.map((y) => l`<span class="genre-pill idle-genre-pill">${y}</span>`) : p}
             </div>
         `;
   }
@@ -9680,12 +10998,12 @@ let C = class extends Y {
     if (t) {
       if (this._config?.idle_display_mode === "card" && t.poster_url) {
         const s = new Image();
-        s.src = R(t.poster_url, 320);
+        s.src = D(t.poster_url, 320);
       }
       const a = t.backdrop_url || t.poster_url;
       if (a) {
         const s = new Image();
-        s.src = R(a, 960);
+        s.src = D(a, 960);
       }
     }
     setTimeout(() => {
@@ -9700,12 +11018,12 @@ let C = class extends Y {
         if (e === "latest_movie" || e === "latest_episode" || e === "latest_both") {
           const n = [];
           if (e === "latest_movie" || e === "latest_both") {
-            const d = this._getItemFromLatestSensor("movie");
-            d && n.push(d);
+            const c = this._getItemFromLatestSensor("movie");
+            c && n.push(c);
           }
           if (e === "latest_episode" || e === "latest_both") {
-            const d = this._getItemFromLatestSensor("episode");
-            d && n.push(d);
+            const c = this._getItemFromLatestSensor("episode");
+            c && n.push(c);
           }
           if (n.length > 0) {
             this._idleItems = n, this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._startIdleTimer(), this.requestUpdate();
@@ -9726,14 +11044,14 @@ let C = class extends Y {
           let n = ["Movie", "Series"];
           a === "movies" ? n = ["Movie"] : a === "series" ? n = ["Series"] : a === "movies_episodes" ? n = ["Movie", "Episode"] : a === "episodes" && (n = ["Episode"]);
           try {
-            const d = {
+            const c = {
               type: "jellyha/get_latest_items",
               item_types: n,
               limit: Math.max(o * 3, 100)
             };
-            i && (d.server_entity_id = i), t && (d.entity_id = t), r = await this.hass.callWS(d);
-          } catch (d) {
-            console.warn("[JellyHA] get_latest_items failed, falling back to get_items:", d);
+            i && (c.server_entity_id = i), t && (c.entity_id = t), r = await this.hass.callWS(c);
+          } catch (c) {
+            console.warn("[JellyHA] get_latest_items failed, falling back to get_items:", c);
           }
         }
         if (!r || !Array.isArray(r.items) || r.items.length === 0) {
@@ -9743,15 +11061,15 @@ let C = class extends Y {
           i && (n.server_entity_id = i), t && (n.entity_id = t), r = await this.hass.callWS(n);
         }
         if (r && Array.isArray(r.items) && r.items.length > 0) {
-          let n = r.items.filter((d) => s && !!d.poster_url || !!d.backdrop_url);
-          if (a === "movies" ? n = n.filter((d) => d.type === "Movie") : a === "series" ? n = n.filter((d) => d.type === "Series" || d.type === "Episode") : a === "movies_episodes" ? n = n.filter((d) => d.type === "Movie" || d.type === "Episode") : a === "episodes" && (n = n.filter((d) => d.type === "Episode")), n.length > 0) {
+          let n = r.items.filter((c) => s && !!c.poster_url || !!c.backdrop_url);
+          if (a === "movies" ? n = n.filter((c) => c.type === "Movie") : a === "series" ? n = n.filter((c) => c.type === "Series" || c.type === "Episode") : a === "movies_episodes" ? n = n.filter((c) => c.type === "Movie" || c.type === "Episode") : a === "episodes" && (n = n.filter((c) => c.type === "Episode")), n.length > 0) {
             if (e === "recent") {
               n.sort((_, u) => {
                 const g = _.date_added ? new Date(_.date_added).getTime() : 0;
                 return (u.date_added ? new Date(u.date_added).getTime() : 0) - g;
               });
-              const d = Math.max(1, this._config.idle_recent_limit || 15);
-              let h = n.slice(0, d);
+              const c = Math.max(1, this._config.idle_recent_limit || 15);
+              let h = n.slice(0, c);
               if (a === "movies_episodes") {
                 const _ = h.some((g) => g.type === "Movie"), u = h.some((g) => g.type === "Episode");
                 if (!_) {
@@ -9775,11 +11093,11 @@ let C = class extends Y {
               }
               this._idleItems = h;
             } else if (e === "latest_movie") {
-              const d = n.find((h) => h.type === "Movie");
-              this._idleItems = d ? [d] : n.slice(0, 1);
+              const c = n.find((h) => h.type === "Movie");
+              this._idleItems = c ? [c] : n.slice(0, 1);
             } else if (e === "latest_episode") {
-              const d = n.find((h) => h.type === "Episode" || h.type === "Series");
-              this._idleItems = d ? [d] : n.slice(0, 1);
+              const c = n.find((h) => h.type === "Episode" || h.type === "Series");
+              this._idleItems = c ? [c] : n.slice(0, 1);
             } else
               this._idleItems = this._shuffleArray(n);
             this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._startIdleTimer(), this.requestUpdate();
@@ -9801,7 +11119,7 @@ let C = class extends Y {
     return t;
   }
   _renderError(e) {
-    return c`
+    return l`
             <ha-card class="error-state">
                 <div class="card-content">
                     <p>${e}</p>
@@ -9839,20 +11157,20 @@ let C = class extends Y {
   _resolveImages(e, t) {
     const i = e.attributes;
     let a = i.series_image_url || t?.series_poster_url, s = i.image_url || t?.poster_url || t?.image_url;
-    const o = (i.media_type || t?.type || e.attributes.media_content_type || "").toLowerCase(), r = i.series_title || e.attributes.media_series_title || t?.series_name, n = i.title || e.attributes.media_title || t?.name, d = o === "episode" || o === "tvshow" || !!r || e.attributes.media_season !== void 0 || t?.season !== void 0, h = e.attributes.media_content_id || "", _ = e.attributes.entity_picture || "", u = i.item_id || t?.id || h || r || e.entity_id;
-    if (u && this._resolvedImages[u] && (a || (a = this._resolvedImages[u].seriesImageUrl), s || (s = this._resolvedImages[u].episodeImageUrl)), !d || a && s)
+    const o = (i.media_type || t?.type || e.attributes.media_content_type || "").toLowerCase(), r = i.series_title || e.attributes.media_series_title || t?.series_name, n = i.title || e.attributes.media_title || t?.name, c = o === "episode" || o === "tvshow" || !!r || e.attributes.media_season !== void 0 || t?.season !== void 0, h = e.attributes.media_content_id || "", _ = e.attributes.entity_picture || "", u = i.item_id || t?.id || h || r || e.entity_id;
+    if (u && this._resolvedImages[u] && (a || (a = this._resolvedImages[u].seriesImageUrl), s || (s = this._resolvedImages[u].episodeImageUrl)), !c || a && s)
       return { seriesImageUrl: a, episodeImageUrl: s };
     t && (t.series_poster_url && !a && (a = t.series_poster_url), (t.poster_url || t.image_url) && !s && (s = t.poster_url || t.image_url));
-    const g = h.match(/^(https?:\/\/[^\/]+)\/(?:Videos|Items)\/([a-zA-Z0-9_-]+)/i), m = _.match(/^(https?:\/\/[^\/]+)\/Items\/([a-zA-Z0-9_-]+)\/Images\/Primary/i), b = g ? g[1] : m ? m[1] : "", v = g ? g[2] : i.item_id || null, y = m ? m[2] : null, w = h.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i) || _.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i), S = w ? `&api_key=${w[1]}` : "";
+    const g = h.match(/^(https?:\/\/[^\/]+)\/(?:Videos|Items)\/([a-zA-Z0-9_-]+)/i), m = _.match(/^(https?:\/\/[^\/]+)\/Items\/([a-zA-Z0-9_-]+)\/Images\/Primary/i), b = g ? g[1] : m ? m[1] : "", v = g ? g[2] : i.item_id || null, y = m ? m[2] : null, w = h.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i) || _.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i), $ = w ? `&api_key=${w[1]}` : "";
     if (b && v) {
-      const k = `${b}/Items/${v}/Images/Primary?maxHeight=300&quality=90${S}`;
-      s || (y === v ? s = _ : s = k), y && y !== v && !a && (a = _);
+      const S = `${b}/Items/${v}/Images/Primary?maxHeight=300&quality=90${$}`;
+      s || (y === v ? s = _ : s = S), y && y !== v && !a && (a = _);
     } else m && !s && !a && (s = _);
     return u && (a || s) && (this._resolvedImages[u] = {
       ...this._resolvedImages[u],
       ...a ? { seriesImageUrl: a } : {},
       ...s ? { episodeImageUrl: s } : {}
-    }), d && (!a || !s) && this._fetchingImageKey !== u && this._fetchMissingImages(r, n, u), { seriesImageUrl: a, episodeImageUrl: s };
+    }), c && (!a || !s) && this._fetchingImageKey !== u && this._fetchMissingImages(r, n, u), { seriesImageUrl: a, episodeImageUrl: s };
   }
   async _fetchMissingImages(e, t, i) {
     if (i) {
@@ -9965,7 +11283,7 @@ let C = class extends Y {
     e.stopPropagation(), this._haptic("light");
     const t = this._targetPowerEntity;
     if (!t || !this.hass) return;
-    const i = Je(this.hass, t, this._config?.power_state_entity);
+    const i = Ve(this.hass, t, this._config?.power_state_entity);
     if ((i.isOn || !i.isStateless) && this._config.stop_on_power_off !== !1) {
       const a = this._config.entity, s = this.hass.states[a];
       s && (s.state === "playing" || s.state === "paused") && await this._handleControl("Stop");
@@ -9980,8 +11298,8 @@ let C = class extends Y {
   _renderPowerButton() {
     const e = this._targetPowerEntity, t = this._config?.show_power_button !== !1 && this._config?.show_power !== !1;
     if (!e || !t || !this.hass) return p;
-    const i = Je(this.hass, e, this._config?.power_state_entity), a = i.isStateless ? "stateless-ready" : i.isOn ? "is-on" : "is-off", s = this._powerActivating ? "activating" : "", o = i.isOn ? "Power Off" : "Power On";
-    return c`
+    const i = Ve(this.hass, e, this._config?.power_state_entity), a = i.isStateless ? "stateless-ready" : i.isOn ? "is-on" : "is-off", s = this._powerActivating ? "activating" : "", o = i.isOn ? "Power Off" : "Power On";
+    return l`
             <div
                 class="power-btn-hit-area"
                 role="button"
@@ -10010,7 +11328,7 @@ let C = class extends Y {
     this._haptic("light");
     const t = this._config?.volume_entity || this._config?.entity;
     if (!t || !this.hass) return;
-    const i = this._optimisticVolume[t], a = Ye(this.hass, this._config?.volume_entity, this._config?.entity, i), s = this._optimisticVolume[t] ?? a.volumePercent, o = Math.max(0, Math.min(100, Math.round(s + e)));
+    const i = this._optimisticVolume[t], a = Je(this.hass, this._config?.volume_entity, this._config?.entity, i), s = this._optimisticVolume[t] ?? a.volumePercent, o = Math.max(0, Math.min(100, Math.round(s + e)));
     this._optimisticVolume = { ...this._optimisticVolume, [t]: o }, this.requestUpdate(), await wi(this.hass, t, e / 100, s / 100);
   }
   _startVolumeDrag(e) {
@@ -10043,7 +11361,7 @@ let C = class extends Y {
     const i = this._dragVolumePercent ?? 0;
     this._isVolumeDragging = !1, this._dragVolumePercent = null;
     const a = this._config?.volume_entity || this._config?.entity;
-    a && this.hass && (this._optimisticVolume = { ...this._optimisticVolume, [a]: i }, this.requestUpdate(), await Lt(this.hass, a, i / 100));
+    a && this.hass && (this._optimisticVolume = { ...this._optimisticVolume, [a]: i }, this.requestUpdate(), await Nt(this.hass, a, i / 100));
   }
   _cancelVolumeDrag(e) {
     if (!this._isVolumeDragging) return;
@@ -10052,11 +11370,11 @@ let C = class extends Y {
   }
   _renderVolumeControls() {
     if (!(this._config?.show_volume === !0 || this._config?.show_volume !== !1 && !!this._config?.volume_entity) || !this.hass) return p;
-    const t = this._config?.volume_entity || this._config?.entity, i = t ? this._optimisticVolume[t] : void 0, a = Ye(this.hass, this._config?.volume_entity, this._config?.entity, i), s = a.isMuted;
+    const t = this._config?.volume_entity || this._config?.entity, i = t ? this._optimisticVolume[t] : void 0, a = Je(this.hass, this._config?.volume_entity, this._config?.entity, i), s = a.isMuted;
     let o;
     this._isVolumeDragging && this._dragVolumePercent !== null ? o = this._dragVolumePercent : t && this._optimisticVolume[t] !== void 0 ? o = this._optimisticVolume[t] : o = a.volumePercent;
-    const r = this._config?.show_volume_step_buttons !== !1, n = typeof this._config?.volume_step == "number" && this._config.volume_step > 0 ? this._config.volume_step : 5, d = s ? "mdi:volume-mute" : o === 0 ? "mdi:volume-off" : o < 50 ? "mdi:volume-medium" : "mdi:volume-high";
-    return c`
+    const r = this._config?.show_volume_step_buttons !== !1, n = typeof this._config?.volume_step == "number" && this._config.volume_step > 0 ? this._config.volume_step : 5, c = s ? "mdi:volume-mute" : o === 0 ? "mdi:volume-off" : o < 50 ? "mdi:volume-medium" : "mdi:volume-high";
+    return l`
             <div class="volume-capsule ${r ? "" : "no-step-buttons"}">
                 <ha-icon-button
                     class="volume-btn mute-btn ${s ? "muted" : ""}"
@@ -10064,7 +11382,7 @@ let C = class extends Y {
                     title=${s ? "Unmute" : "Mute"}
                     @click=${this._handleToggleMute}
                 >
-                    <ha-icon icon="${d}"></ha-icon>
+                    <ha-icon icon="${c}"></ha-icon>
                 </ha-icon-button>
 
                 <div
@@ -10086,7 +11404,7 @@ let C = class extends Y {
 
                 <span class="volume-pct">${o}%</span>
 
-                ${r ? c`
+                ${r ? l`
                     <ha-icon-button
                         class="volume-btn volume-step-btn"
                         .label=${`Decrease volume by ${n}%`}
@@ -10142,9 +11460,9 @@ let C = class extends Y {
     let a = 0, s;
     const o = e.attributes.media_position;
     if (typeof o == "number" ? (a = o, s = e.attributes.media_position_updated_at || e.last_updated) : typeof t.position_ticks == "number" ? (a = t.position_ticks / 1e7, s = e.last_updated) : typeof t.progress_percent == "number" && i > 0 && (a = t.progress_percent / 100 * i, s = e.last_updated), (e.entity_id.startsWith("media_player.") ? e.state === "playing" : !t.is_paused && !!t.item_id) && s) {
-      const d = new Date(s).getTime();
-      if (!isNaN(d)) {
-        const h = Math.max(0, (Date.now() - d) / 1e3), _ = a + h;
+      const c = new Date(s).getTime();
+      if (!isNaN(c)) {
+        const h = Math.max(0, (Date.now() - c) / 1e3), _ = a + h;
         return i > 0 ? Math.min(i, Math.max(0, _)) : Math.max(0, _);
       }
     }
@@ -10175,11 +11493,11 @@ let C = class extends Y {
       return;
     }
     if (!n) return;
-    const d = Math.round(o * 1e7 * (i / 100));
+    const c = Math.round(o * 1e7 * (i / 100));
     await this.hass.callService("jellyha", "session_seek", {
       entity_id: a,
       session_id: n,
-      position_ticks: d
+      position_ticks: c
     });
   }
   _setOptimisticSeek(e) {
@@ -10244,18 +11562,18 @@ let C = class extends Y {
         if (!a) return;
         a.drawImage(t, 0, 0, 50, 50);
         const s = a.getImageData(0, 0, 50, 50).data;
-        let o = 0, r = 0, n = 0, d = 0;
+        let o = 0, r = 0, n = 0, c = 0;
         for (let h = 0; h < s.length; h += 16) {
           const _ = s[h], u = s[h + 1], g = s[h + 2], m = Math.max(_, u, g), b = Math.min(_, u, g), v = m === 0 ? 0 : (m - b) / m, y = m / 255;
-          v > d && y > 0.15 && y < 0.95 && (d = v, o = _, r = u, n = g);
+          v > c && y > 0.15 && y < 0.95 && (c = v, o = _, r = u, n = g);
         }
-        if (d > 0.1) {
+        if (c > 0.1) {
           const h = o / 255, _ = r / 255, u = n / 255, g = Math.max(h, _, u), m = Math.min(h, _, u);
           let b = 0;
           const v = (g + m) / 2, y = g - m, w = y === 0 ? 0 : y / (1 - Math.abs(2 * v - 1));
           y !== 0 && (g === h ? b = ((_ - u) / y + (_ < u ? 6 : 0)) * 60 : g === _ ? b = ((u - h) / y + 2) * 60 : b = ((h - _) / y + 4) * 60);
-          const S = Math.max(v * 100, 70), k = Math.max(w * 100, 60);
-          this._dominantColor = `hsl(${Math.round(b)}, ${Math.round(k)}%, ${Math.round(S)}%)`;
+          const $ = Math.max(v * 100, 70), S = Math.max(w * 100, 60);
+          this._dominantColor = `hsl(${Math.round(b)}, ${Math.round(S)}%, ${Math.round($)}%)`;
         } else
           this._dominantColor = "var(--primary-color)";
       } catch {
@@ -10325,16 +11643,16 @@ let C = class extends Y {
     t.classList.toggle("tall-narrow", r);
     const n = t.classList.contains("very-tall-narrow") ? i >= 295 && a <= 455 : i >= 305 && a <= 445;
     t.classList.toggle("very-tall-narrow", n);
-    const d = t.classList.contains("compact-width") ? a <= 310 : a <= 300;
-    t.classList.toggle("compact-width", d);
+    const c = t.classList.contains("compact-width") ? a <= 310 : a <= 300;
+    t.classList.toggle("compact-width", c);
     const h = this.shadowRoot?.querySelector(".title"), _ = this.shadowRoot?.querySelector(".info-bottom");
     if (!h || !_) return;
-    const u = h.getBoundingClientRect(), b = _.getBoundingClientRect().top - e.top - 6, v = u.bottom - e.top, y = this._config?.entity ? this.hass?.states[this._config.entity] : null, w = y?.attributes, S = y ? this._extractItemId(y) : null, k = S ? this._resolvedMetadata[S] : null, J = this._config?.show_subtitle !== !1, x = w?.series_title || w?.media_series_title || k?.series_name || "", z = !!(J && (w?.artist_name || w?.media_artist || x || k?.artist_name) || "");
-    let T = v;
-    z && (T += 20);
-    const H = T + 18, L = H + 16;
-    let O = 0;
-    L > b && (O = 1), H > b && (O = 2), z && T > b && (O = 3), this._overflowState !== O && (this._overflowState = O);
+    const u = h.getBoundingClientRect(), b = _.getBoundingClientRect().top - e.top - 6, v = u.bottom - e.top, y = this._config?.entity ? this.hass?.states[this._config.entity] : null, w = y?.attributes, $ = y ? this._extractItemId(y) : null, S = $ ? this._resolvedMetadata[$] : null, V = this._config?.show_subtitle !== !1, x = w?.series_title || w?.media_series_title || S?.series_name || "", z = !!(V && (w?.artist_name || w?.media_artist || x || S?.artist_name) || "");
+    let A = v;
+    z && (A += 20);
+    const H = A + 18, L = H + 16;
+    let U = 0;
+    L > b && (U = 1), H > b && (U = 2), z && A > b && (U = 3), this._overflowState !== U && (this._overflowState = U);
   }
   _formatSeconds(e) {
     const t = e < 0, i = Math.floor(Math.abs(e)), a = Math.floor(i / 3600), s = Math.floor(i % 3600 / 60), o = i % 60, r = t ? "-" : "";
@@ -10344,7 +11662,7 @@ let C = class extends Y {
     return this._formatSeconds(e / 1e7);
   }
 };
-C.styles = we`
+P.styles = $e`
         :host {
             display: block;
             height: 100%;
@@ -12409,63 +13727,63 @@ C.styles = we`
         }
 
     `;
-j([
-  V({ attribute: !1 })
-], C.prototype, "hass", 2);
-j([
+T([
+  F({ attribute: !1 })
+], P.prototype, "hass", 2);
+T([
   f()
-], C.prototype, "_config", 2);
-j([
+], P.prototype, "_config", 2);
+T([
   f()
-], C.prototype, "_rewindActive", 2);
-j([
+], P.prototype, "_rewindActive", 2);
+T([
   f()
-], C.prototype, "_overflowState", 2);
-j([
+], P.prototype, "_overflowState", 2);
+T([
   f()
-], C.prototype, "_dominantColor", 2);
-j([
+], P.prototype, "_dominantColor", 2);
+T([
   f()
-], C.prototype, "_longPressProgress", 2);
-j([
+], P.prototype, "_longPressProgress", 2);
+T([
   f()
-], C.prototype, "_stopPulse", 2);
-j([
+], P.prototype, "_stopPulse", 2);
+T([
   f()
-], C.prototype, "_isDragging", 2);
-j([
+], P.prototype, "_isDragging", 2);
+T([
   f()
-], C.prototype, "_dragPercentage", 2);
-j([
+], P.prototype, "_dragPercentage", 2);
+T([
   f()
-], C.prototype, "_optimisticSeekPercent", 2);
-j([
+], P.prototype, "_optimisticSeekPercent", 2);
+T([
   f()
-], C.prototype, "_powerActivating", 2);
-j([
+], P.prototype, "_powerActivating", 2);
+T([
   f()
-], C.prototype, "_isVolumeDragging", 2);
-j([
+], P.prototype, "_isVolumeDragging", 2);
+T([
   f()
-], C.prototype, "_dragVolumePercent", 2);
-j([
+], P.prototype, "_dragVolumePercent", 2);
+T([
   f()
-], C.prototype, "_optimisticVolume", 2);
-j([
+], P.prototype, "_optimisticVolume", 2);
+T([
   f()
-], C.prototype, "_idleItems", 2);
-j([
+], P.prototype, "_idleItems", 2);
+T([
   f()
-], C.prototype, "_currentIdleIndex", 2);
-j([
+], P.prototype, "_currentIdleIndex", 2);
+T([
   f()
-], C.prototype, "_prevIdleIndex", 2);
-j([
+], P.prototype, "_prevIdleIndex", 2);
+T([
   f()
-], C.prototype, "_idleFadeOut", 2);
-C = j([
+], P.prototype, "_idleFadeOut", 2);
+P = T([
   oe("jellyha-now-playing-card")
-], C);
+], P);
 function ne(e) {
   const t = e.shadowRoot;
   if (!t) return;
@@ -12504,38 +13822,38 @@ function ne(e) {
     }, r = (n) => {
       if (!s) return;
       s = !1;
-      const d = Number(n.detail?.value ?? i.value ?? n.target?.value);
-      Number.isFinite(d) && e._browserPlayer?.player && (e._browserPlayer.player.currentTime = d);
+      const c = Number(n.detail?.value ?? i.value ?? n.target?.value);
+      Number.isFinite(c) && e._browserPlayer?.player && (e._browserPlayer.player.currentTime = c);
     };
     i.addEventListener("pointerdown", o, { passive: !0 }), i.addEventListener("touchstart", o, { passive: !0 }), i.addEventListener("mousedown", o, { passive: !0 }), i.addEventListener("pointerup", r, { passive: !0 }), i.addEventListener("touchend", r, { passive: !0 }), i.addEventListener("mouseup", r, { passive: !0 }), i.addEventListener("change", (n) => {
-      const d = Number(n.detail?.value ?? i.value ?? n.target?.value);
-      Number.isFinite(d) && e._browserPlayer?.player && (e._browserPlayer.player.currentTime = d);
+      const c = Number(n.detail?.value ?? i.value ?? n.target?.value);
+      Number.isFinite(c) && e._browserPlayer?.player && (e._browserPlayer.player.currentTime = c);
     }), i.addEventListener("click", (n) => {
       queueMicrotask(() => {
-        const d = Number(i.value ?? n.detail?.value ?? n.target?.value);
-        Number.isFinite(d) && e._browserPlayer?.player && (e._browserPlayer.player.currentTime = d);
+        const c = Number(i.value ?? n.detail?.value ?? n.target?.value);
+        Number.isFinite(c) && e._browserPlayer?.player && (e._browserPlayer.player.currentTime = c);
       });
     }), i.addEventListener("input", (n) => {
-      const d = Number(n.detail?.value ?? i.value ?? n.target?.value);
-      if (Number.isFinite(d)) {
+      const c = Number(n.detail?.value ?? i.value ?? n.target?.value);
+      if (Number.isFinite(c)) {
         const h = e.shadowRoot?.querySelector("#CurrentProgress");
         if (h) {
-          const _ = Math.floor(d / 60), u = Math.floor(d % 60);
+          const _ = Math.floor(c / 60), u = Math.floor(c % 60);
           h.innerHTML = `${_}:${u < 10 ? "0" : ""}${u}`;
         }
       }
     });
   }
 }
-function je(e) {
+function Te(e) {
   if (!e || e._jellyhaSeekPatched) return;
   e._jellyhaSeekPatched = !0;
   const t = e.prototype._handleMediaSeekChanged;
   e.prototype._handleMediaSeekChanged = function(n) {
     if (this.entityId === "browser" && this._browserPlayer?.player) {
-      const d = Number(n.detail?.value ?? n.target?.value);
-      if (Number.isFinite(d) && (this._browserPlayer.player.currentTime = d, this._currentProgress)) {
-        const h = Math.floor(d / 60), _ = Math.floor(d % 60);
+      const c = Number(n.detail?.value ?? n.target?.value);
+      if (Number.isFinite(c) && (this._browserPlayer.player.currentTime = c, this._currentProgress)) {
+        const h = Math.floor(c / 60), _ = Math.floor(c % 60);
         this._currentProgress.innerHTML = `${h}:${_ < 10 ? "0" : ""}${_}`;
       }
       return;
@@ -12547,8 +13865,8 @@ function je(e) {
     const n = i.get;
     Object.defineProperty(e.prototype, "_stateObj", {
       get() {
-        const d = n.call(this);
-        return this.entityId === "browser" && d && (d.attributes || (d.attributes = {}), d.attributes.supported_features = (d.attributes.supported_features || 0) | 2), d;
+        const c = n.call(this);
+        return this.entityId === "browser" && c && (c.attributes || (c.attributes = {}), c.attributes.supported_features = (c.attributes.supported_features || 0) | 2), c;
       },
       configurable: !0,
       enumerable: !0
@@ -12573,8 +13891,8 @@ function je(e) {
     const n = r.get;
     Object.defineProperty(e.prototype, "_progressBar", {
       get() {
-        const d = n.call(this);
-        return this.entityId === "browser" && d && ne(this), d;
+        const c = n.call(this);
+        return this.entityId === "browser" && c && ne(this), c;
       },
       configurable: !0,
       enumerable: !0
@@ -12584,20 +13902,20 @@ function je(e) {
 }
 const Ct = customElements.get("ha-bar-media-player");
 if (Ct)
-  je(Ct);
+  Te(Ct);
 else if (typeof customElements.whenDefined == "function" && customElements.whenDefined("ha-bar-media-player").then(() => {
   const e = customElements.get("ha-bar-media-player");
-  e && je(e);
+  e && Te(e);
 }).catch(() => {
 }), !customElements.define.__jellyha_bar_patched) {
   const e = customElements, t = e.define.bind(e), i = e.get.bind(e), a = function(s, o, r) {
     if (s !== "ha-bar-media-player")
       return t(s, o, r);
     if (i(s)) {
-      je(o);
+      Te(o);
       return;
     }
-    t(s, o, r), je(o);
+    t(s, o, r), Te(o);
   };
   a.__jellyha_bar_patched = !0, customElements.define = a;
 }

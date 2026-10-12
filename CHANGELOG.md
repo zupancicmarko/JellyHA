@@ -5,6 +5,48 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-10-12
+
+### Added
+- **Multi-Column Side Cards in Featured Layout**:
+  - Added support for the `columns` configuration option (1 to 4) in `layout: 'featured'`, allowing side queue cards to be arranged in multiple columns (e.g. 2 columns showing 6 cards side-by-side with 3 rows per column) beside the hero poster.
+  - Automatically calculates effective items per page as `1 + (columns * rows)` (e.g. 7 items per page for 2 columns / 3 rows, 5 items for 2 columns / 2 rows) with smart pagination dots and swipe gestures.
+  - Hid redundant "Items Per Page" field from the card editor in Featured layout, as item capacity is strictly defined by columns and rows.
+  - Added visual editor slider support (1 to 4 columns) with localized helper text across all 8 languages.
+  - Responsive stacking: gracefully collapses to 1 column on narrower viewports and mobile screens (< 640px).
+- **Configurable Rows in Featured Layout**:
+  - Added `rows` configuration option (2 or 3, default 3) in `layout: 'featured'`.
+  - Visual editor slider with localized helper text across all 8 languages.
+  - Symmetrical height alignment: when set to 2 rows, the hero poster scales proportionally (~240px tall) to match the 2 side card rows.
+
+### Changed
+- **Refined Queue Card Poster Sizing & Spacing**:
+  - Resized side queue card posters from `72×108px` to `60×90px` (2:3 aspect ratio), providing balanced vertical margins.
+  - Tightened card padding from `8px 14px` to `7px 12px`, unlocking an extra 18px of horizontal width for titles, runtime/dates, and genre pills.
+  - Reduced responsive un-cramped threshold to 200px to keep text and metadata visible in multi-column configurations.
+- **Featured Layout Poster & Backdrop Refinements**:
+  - Removed redundant central "Play" button overlay on the main hero poster in Featured layout.
+  - Renamed configuration toggle from "Queue Card Backdrop" to "Show Card Backdrop" (`show_card_backdrop`) with full backwards compatibility for `featured_queue_backdrop` across all 8 supported languages.
+  - Aligned card hover border styles and transitions with standard library cards for a smooth, unified aesthetic.
+  - Added support for `show_date_added` in Featured layout cards, rendering the addition date cleanly in the metadata row right after runtime (`Year • Runtime • Date Added`).
+  - Smart responsive compact mode for Featured queue cards: keeps full title and metadata visible when card width is wide enough (>= 220px, such as 2 columns on desktop), and cleanly transitions to compact mode (centered poster, top badges, no text) when cards are too small (e.g. 3+ columns, or narrow containers < 220px).
+  - Hid redundant "Show Description" and "Metadata Position" fields from the card editor when Featured layout is selected.
+  - Reorganized visual card editor controls by relocating **Enable "Play in Browser"** out of the general display checkboxes to sit directly above **Show "Now Playing" Overlay on Posters** in the Playback section.
+  - Refined Featured hero poster hover to use a subtle elevation lift without harsh white halos, while preserving full standard hover behavior on Carousel, Grid, and List layouts.
+
+### Fixed
+- **Carousel and Grid Layout Stability**:
+  - Restored full intrinsic sizing to Carousel items (resolving Next Up overlapping sliver collapse) and Grid items by removing premature host inline containment.
+  - Locked Featured layout hero poster and queue cards to the intended 3-row height proportions, preventing vertical blowout and oversized posters when multiple columns are configured.
+- **Featured Layout Queue Card Title Wrapping**:
+  - Allowed queue card titles to wrap up to 2 lines and floated queue badges to the top right of the title block.
+  - Eliminated premature single-line ellipsis truncation (`white-space: nowrap` and `padding-right: 76px`), allowing the title to flow across the full card width underneath the badges.
+- **Display Configuration Toggles Robustness**:
+  - Fixed `show_title` configuration being ignored on queue cards in Featured layout.
+  - Fixed `show_title`, `show_year`, `show_ratings`/`show_rating`, `show_runtime`, and `show_genres` toggles across all card views by using strict `!== false` checks so defaults and falsy values evaluate reliably.
+  - Added fallback to `date_added` year when `year` is omitted on Jellyfin media items.
+  - Added community rating fallback (`community_rating`) when standard rating field is missing.
+
 ## [1.6.0] - 2026-10-11
 
 ### Added
