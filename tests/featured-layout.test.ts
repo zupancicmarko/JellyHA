@@ -72,7 +72,7 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         const getEffectiveItemsPerPage = (config: JellyHALibraryCardConfig, fallback: number = 3): number => {
             if (config.layout === 'featured') {
                 const sideColumns = Math.max(1, config.columns || 1);
-                const sideRows = Math.max(2, Math.min(3, config.rows || 3));
+                const sideRows = Math.max(2, Math.min(4, config.rows || 3));
                 return 1 + (sideColumns * sideRows);
             }
             return config.items_per_page || fallback;
@@ -99,9 +99,18 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         // columns: 3, rows: 2 -> 1 hero + 6 side = 7
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 3, rows: 2 })).toBe(7);
 
+        // Configurable rows: 4
+        // columns: 1, rows: 4 -> 1 hero + 4 side = 5
+        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 1, rows: 4 })).toBe(5);
+        // columns: 2, rows: 4 -> 1 hero + 8 side = 9
+        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, rows: 4 })).toBe(9);
+        // columns: 3, rows: 4 -> 1 hero + 12 side = 13
+        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 3, rows: 4 })).toBe(13);
+
         // items_per_page in config is completely ignored in featured layout
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, items_per_page: 9 })).toBe(7);
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, rows: 2, items_per_page: 9 })).toBe(5);
+        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, rows: 4, items_per_page: 9 })).toBe(9);
 
         // Grid layout untouched
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'grid', items_per_page: 10 })).toBe(10);
@@ -315,6 +324,10 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         // Rows 2 hero container constraint
         expect(cssText).toContain('.featured.rows-2 .featured-hero-container');
         expect(cssText).toContain('.featured.rows-2 .poster-container.featured-hero-poster');
+
+        // Rows 4 hero container constraint
+        expect(cssText).toContain('.featured.rows-4 .featured-hero-container');
+        expect(cssText).toContain('.featured.rows-4 .poster-container.featured-hero-poster');
     });
 });
 

@@ -15,9 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added visual editor slider support (1 to 4 columns) with localized helper text across all 8 languages.
   - Responsive stacking: gracefully collapses to 1 column on narrower viewports and mobile screens (< 640px).
 - **Configurable Rows in Featured Layout**:
-  - Added `rows` configuration option (2 or 3, default 3) in `layout: 'featured'`.
-  - Visual editor slider with localized helper text across all 8 languages.
-  - Symmetrical height alignment: when set to 2 rows, the hero poster scales proportionally (~240px tall) to match the 2 side card rows.
+  - Added `rows` configuration option (2 to 4, default 3) in `layout: 'featured'`.
+  - Visual editor slider (2 to 4 rows) with localized helper text across all 8 languages.
+  - Symmetrical height alignment: when set to 2 rows, the hero poster scales proportionally (~240px tall) to match the 2 side card rows; when set to 4 rows, it expands up to ~460px tall to balance the 4 side card rows.
 
 ### Changed
 - **Refined Queue Card Poster Sizing & Spacing**:

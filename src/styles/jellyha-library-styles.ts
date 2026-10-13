@@ -451,6 +451,16 @@ export const cardStyles = css`
     max-height: 250px;
   }
 
+  .featured.rows-4 .featured-hero-container {
+    max-height: 460px;
+    max-width: 310px;
+    width: clamp(220px, 32%, 310px);
+  }
+
+  .featured.rows-4 .poster-container.featured-hero-poster {
+    max-height: 460px;
+  }
+
   .featured-hero-container .featured-main {
     width: 100%;
     height: 100%;

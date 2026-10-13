@@ -1785,6 +1785,16 @@ const zt = $e`
     max-height: 250px;
   }
 
+  .featured.rows-4 .featured-hero-container {
+    max-height: 460px;
+    max-width: 310px;
+    width: clamp(220px, 32%, 310px);
+  }
+
+  .featured.rows-4 .poster-container.featured-hero-poster {
+    max-height: 460px;
+  }
+
   .featured-hero-container .featured-main {
     width: 100%;
     height: 100%;
@@ -3568,7 +3578,7 @@ const zt = $e`
     "editor.layout_featured": "Featured",
     "editor.featured_columns_helper": "Number of side card columns beside the hero poster (1 to 4)",
     "editor.featured_rows": "Rows",
-    "editor.featured_rows_helper": "Number of side card rows beside the hero poster (2 or 3)",
+    "editor.featured_rows_helper": "Number of side card rows beside the hero poster (2 to 4)",
     "editor.featured_queue_backdrop": "Show Card Backdrop",
     "editor.featured_queue_backdrop_helper": "Show backdrop fanart in the background of cards",
     "editor.show_card_backdrop": "Show Card Backdrop",
@@ -3728,7 +3738,7 @@ const zt = $e`
     "editor.layout_featured": "Hervorgehoben",
     "editor.featured_columns_helper": "Anzahl der Spalten für Seitenkarten neben dem Hauptposter (1 bis 4)",
     "editor.featured_rows": "Zeilen",
-    "editor.featured_rows_helper": "Anzahl der Zeilen für Seitenkarten neben dem Hauptposter (2 oder 3)",
+    "editor.featured_rows_helper": "Anzahl der Zeilen für Seitenkarten neben dem Hauptposter (2 bis 4)",
     "editor.featured_queue_backdrop": "Karten-Hintergrundbild anzeigen",
     "editor.featured_queue_backdrop_helper": "Fanart-Hintergrundbild in den Karten anzeigen",
     "editor.show_card_backdrop": "Karten-Hintergrundbild anzeigen",
@@ -3876,7 +3886,7 @@ const zt = $e`
     "editor.layout_featured": "En vedette",
     "editor.featured_columns_helper": "Nombre de colonnes de cartes latérales à côté de l'affiche principale (1 à 4)",
     "editor.featured_rows": "Lignes",
-    "editor.featured_rows_helper": "Nombre de lignes de cartes latérales à côté de l'affiche principale (2 ou 3)",
+    "editor.featured_rows_helper": "Nombre de lignes de cartes latérales à côté de l'affiche principale (2 à 4)",
     "editor.featured_queue_backdrop": "Afficher l'arrière-plan des cartes",
     "editor.featured_queue_backdrop_helper": "Afficher l'arrière-plan fanart dans les cartes",
     "editor.show_card_backdrop": "Afficher l'arrière-plan des cartes",
@@ -4024,7 +4034,7 @@ const zt = $e`
     "editor.layout_featured": "Destacado",
     "editor.featured_columns_helper": "Número de columnas de tarjetas laterales junto al póster principal (1 a 4)",
     "editor.featured_rows": "Filas",
-    "editor.featured_rows_helper": "Número de filas de tarjetas laterales junto al póster principal (2 o 3)",
+    "editor.featured_rows_helper": "Número de filas de tarjetas laterales junto al póster principal (2 a 4)",
     "editor.featured_queue_backdrop": "Mostrar fondo de tarjetas",
     "editor.featured_queue_backdrop_helper": "Mostrar imagen de fondo fanart en las tarjetas",
     "editor.show_card_backdrop": "Mostrar fondo de tarjetas",
@@ -4172,7 +4182,7 @@ const zt = $e`
     "editor.layout_featured": "In evidenza",
     "editor.featured_columns_helper": "Numero di colonne di schede laterali accanto al poster principale (da 1 a 4)",
     "editor.featured_rows": "Righe",
-    "editor.featured_rows_helper": "Numero di righe di schede laterali accanto al poster principale (2 o 3)",
+    "editor.featured_rows_helper": "Numero di righe di schede laterali accanto al poster principale (da 2 a 4)",
     "editor.featured_queue_backdrop": "Mostra sfondo schede",
     "editor.featured_queue_backdrop_helper": "Mostra lo sfondo fanart nelle schede",
     "editor.show_card_backdrop": "Mostra sfondo schede",
@@ -4320,7 +4330,7 @@ const zt = $e`
     "editor.layout_featured": "Uitgelicht",
     "editor.featured_columns_helper": "Aantal kolommen voor zijkaarten naast de hoofdposter (1 tot 4)",
     "editor.featured_rows": "Rijen",
-    "editor.featured_rows_helper": "Aantal rijen zijkarten naast de hoofdposter (2 of 3)",
+    "editor.featured_rows_helper": "Aantal rijen zijkarten naast de hoofdposter (2 tot 4)",
     "editor.featured_queue_backdrop": "Kaartachtergrond tonen",
     "editor.featured_queue_backdrop_helper": "Toon fanart-achtergrond in de kaarten",
     "editor.show_card_backdrop": "Kaartachtergrond tonen",
@@ -4468,7 +4478,7 @@ const zt = $e`
     "editor.layout_featured": "Izpostavljeno",
     "editor.featured_columns_helper": "Število stolpcev stranskih kartic poleg glavnega plakata (1 do 4)",
     "editor.featured_rows": "Vrstice",
-    "editor.featured_rows_helper": "Število vrstic stranskih kartic poleg glavnega plakata (2 ali 3)",
+    "editor.featured_rows_helper": "Število vrstic stranskih kartic poleg glavnega plakata (2 do 4)",
     "editor.featured_queue_backdrop": "Prikaži ozadje kartic",
     "editor.featured_queue_backdrop_helper": "Prikaži sliko v ozadju kartic",
     "editor.show_card_backdrop": "Prikaži ozadje kartic",
@@ -4616,7 +4626,7 @@ const zt = $e`
     "editor.layout_featured": "Витрина",
     "editor.featured_columns_helper": "Количество столбцов боковых карточек рядом с главным постером (от 1 до 4)",
     "editor.featured_rows": "Строки",
-    "editor.featured_rows_helper": "Количество строк боковых карточек рядом с главным постером (2 или 3)",
+    "editor.featured_rows_helper": "Количество строк боковых карточек рядом с главным постером (от 2 до 4)",
     "editor.featured_queue_backdrop": "Показывать фон карточек",
     "editor.featured_queue_backdrop_helper": "Показывать арт-фон позади карточек",
     "editor.show_card_backdrop": "Показывать фон карточек",
@@ -7130,7 +7140,7 @@ let we = class extends J {
                     .selector=${{
       number: {
         min: 2,
-        max: 3,
+        max: 4,
         mode: "slider"
       }
     }}
@@ -8739,7 +8749,7 @@ let C = class extends J {
   /* Helper to get items per page based on layout */
   _getEffectiveItemsPerPage() {
     if (this._config?.layout === "featured") {
-      const e = Math.max(1, this._config.columns || 1), t = Math.max(2, Math.min(3, this._config.rows || 3));
+      const e = Math.max(1, this._config.columns || 1), t = Math.max(2, Math.min(4, this._config.rows || 3));
       return 1 + e * t;
     }
     return this._config?.items_per_page || this._itemsPerPage;
@@ -9322,7 +9332,7 @@ let C = class extends J {
   _renderFeatured(e, t) {
     const i = this._getEffectiveItemsPerPage(), a = this._config.max_pages, s = a ? Number(a) : 0, o = s > 0 ? s : 1 / 0, r = Math.min(Math.ceil(e.length / i), o), n = this._currentPage * i, c = e.slice(n, n + i), [h, ..._] = c;
     if (!h) return l``;
-    const u = Math.max(1, this._config.columns || 1), g = Math.max(2, Math.min(3, this._config.rows || 3)), m = u >= 3 || this._isFeaturedCramped;
+    const u = Math.max(1, this._config.columns || 1), g = Math.max(2, Math.min(4, this._config.rows || 3)), m = u >= 3 || this._isFeaturedCramped;
     return l`
       <div 
         class="featured-wrapper"

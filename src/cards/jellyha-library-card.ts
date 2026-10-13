@@ -277,7 +277,7 @@ export class JellyHALibraryCard extends LitElement {
   private _getEffectiveItemsPerPage(): number {
     if (this._config?.layout === 'featured') {
       const sideColumns = Math.max(1, this._config.columns || 1);
-      const sideRows = Math.max(2, Math.min(3, this._config.rows || 3));
+      const sideRows = Math.max(2, Math.min(4, this._config.rows || 3));
       return 1 + (sideColumns * sideRows);
     }
     return this._config?.items_per_page || this._itemsPerPage;
@@ -1407,7 +1407,7 @@ export class JellyHALibraryCard extends LitElement {
     if (!heroItem) return html``;
 
     const sideColumns = Math.max(1, this._config.columns || 1);
-    const sideRows = Math.max(2, Math.min(3, this._config.rows || 3));
+    const sideRows = Math.max(2, Math.min(4, this._config.rows || 3));
     const isCramped = sideColumns >= 3 || this._isFeaturedCramped;
 
     return html`

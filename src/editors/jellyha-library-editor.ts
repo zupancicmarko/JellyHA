@@ -292,7 +292,7 @@ export class JellyHALibraryEditor extends LitElement {
                     .selector=${{
                       number: {
                         min: 2,
-                        max: 3,
+                        max: 4,
                         mode: 'slider',
                       },
                     }}
