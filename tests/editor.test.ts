@@ -114,4 +114,32 @@ describe('Editor Config Mapping for Power & Volume', () => {
         expect('power_entity' in config).toBe(false);
         expect(config.power_entity).toBeUndefined();
     });
+
+    it('only shows use_series_image when episodes is selected from tv_content or media_type is next_up', () => {
+        const isUseSeriesImageVisible = (mediaType?: string, tvContent?: string) => {
+            if (mediaType === 'next_up') {
+                return true;
+            }
+            if (mediaType === 'series' || mediaType === 'both' || !mediaType) {
+                return tvContent === 'episodes';
+            }
+            return false;
+        };
+
+        // When tv_content is 'series' (Shows / Series), use_series_image should NOT be visible
+        expect(isUseSeriesImageVisible('both', 'series')).toBe(false);
+        expect(isUseSeriesImageVisible('series', 'series')).toBe(false);
+        expect(isUseSeriesImageVisible(undefined, 'series')).toBe(false);
+
+        // When tv_content is 'episodes', use_series_image SHOULD be visible
+        expect(isUseSeriesImageVisible('both', 'episodes')).toBe(true);
+        expect(isUseSeriesImageVisible('series', 'episodes')).toBe(true);
+        expect(isUseSeriesImageVisible(undefined, 'episodes')).toBe(true);
+
+        // For next_up, use_series_image is always visible
+        expect(isUseSeriesImageVisible('next_up')).toBe(true);
+
+        // For movies only, it should not be visible
+        expect(isUseSeriesImageVisible('movies', 'episodes')).toBe(false);
+    });
 });

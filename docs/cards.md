@@ -34,7 +34,7 @@ max_pages: 5
 | `media_type` | string | `both` | Media filter: `movies`, `series`, `next_up`, or `both` |
 | `tv_content` | string | `series` | Content type when TV shows are active: `series` (Shows / Series) or `episodes` (Individual Episodes) |
 | `columns` | number | `4` | Number of columns for grid, list, and featured layout (in Featured layout, controls the number of side card columns beside the hero poster, 1 to 4). Changes to number of rows when Grid layout has Auto-Swipe enabled. |
-| `rows` | number | `3` | Number of side card rows in Featured layout (`2` to `4`, default `3`). In 2-row mode, the hero poster scales proportionally (~240px tall); in 4-row mode, it expands up to ~460px tall to match the side card rows. |
+| `rows` | number | `3` | Number of side card rows in Featured layout (`2` or `3`). In 2-row mode, the hero poster scales proportionally (~240px tall) to match the 2 side card rows. |
 | `items_per_page` | number | `3` | Items visible per page for Carousel, Grid, and List layouts. In Featured layout, items per page is hidden and strictly calculated from columns and rows (`1 + columns * rows`). For more than 8 rows in Grid view, set this via the YAML code editor. |
 | `max_pages` | number | `5` | Maximum number of pages to display (set to `0` for infinite pagination) |
 | `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (`0` = disabled) |

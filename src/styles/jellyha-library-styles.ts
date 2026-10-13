@@ -1,5 +1,5 @@
 import { css } from 'lit';
-
+import { sharedMetaRowStyles } from './jellyha-shared-styles';
 
 export const cardStyles = css`
   :host {
@@ -242,8 +242,10 @@ export const cardStyles = css`
     display: none;
   }
 
+  .carousel jellyha-media-item,
   .carousel .media-item {
     flex: 0 0 auto;
+    width: auto;
   }
 
   /* Pagination Dots */
@@ -325,6 +327,11 @@ export const cardStyles = css`
     min-width: fit-content;
   }
 
+  .grid jellyha-media-item {
+    width: auto;
+    justify-self: center;
+  }
+
   /* Auto-fill responsive grid when columns = 1 (Auto) */
   .grid.auto-columns {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -343,10 +350,20 @@ export const cardStyles = css`
     padding: 8px 16px 16px 16px;
   }
 
+  .grid.horizontal jellyha-media-item,
+  .grid.horizontal .media-item {
+    min-width: 140px;
+    width: auto;
+    flex: 0 0 auto;
+  }
+
   /* List Wrapper for pagination */
   .list-wrapper {
     position: relative;
     overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    width: 100%;
+    box-sizing: border-box;
     height: 100%; /* Fill available space */
     touch-action: pan-y;
   }
@@ -370,10 +387,19 @@ export const cardStyles = css`
   /* List Layout - supports 1-8 columns, responsive collapse when cramped */
   .list {
     display: grid;
-    /* Uses exact column count, each item has min-width so they wrap naturally */
-    grid-template-columns: repeat(var(--jf-list-columns, 1), 1fr);
-    gap: 16px;
+    /* Uses exact column count with minmax(0, 1fr) so columns can shrink fluidly */
+    grid-template-columns: repeat(var(--jf-list-columns, 1), minmax(0, 1fr));
+    gap: 12px 16px;
     padding: 8px 16px 20px 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .list jellyha-media-item {
+    min-width: 0;
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
   }
 
   /* List item min-width handled via JavaScript ResizeObserver */
@@ -384,8 +410,10 @@ export const cardStyles = css`
     flex-direction: column;
   }
   
+  .list.single-column jellyha-media-item,
   .list.single-column .media-item {
     min-width: 0;
+    width: 100%;
   }
 
   /* Extra bottom padding when pagination is enabled */
@@ -449,16 +477,6 @@ export const cardStyles = css`
 
   .featured.rows-2 .poster-container.featured-hero-poster {
     max-height: 250px;
-  }
-
-  .featured.rows-4 .featured-hero-container {
-    max-height: 460px;
-    max-width: 310px;
-    width: clamp(220px, 32%, 310px);
-  }
-
-  .featured.rows-4 .poster-container.featured-hero-poster {
-    max-height: 460px;
   }
 
   .featured-hero-container .featured-main {
@@ -605,22 +623,25 @@ export const cardStyles = css`
   .meta-text {
     display: inline-flex;
     align-items: center;
-    height: 20px;
+    height: 22px;
     line-height: 1;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--jf-text-secondary);
     white-space: nowrap;
+    transform: translateY(1px);
   }
 
   .meta-dot {
-    opacity: 0.5;
-    font-size: 0.7rem;
+    opacity: 0.6;
+    font-size: 0.72rem;
     color: var(--jf-text-secondary);
     display: inline-flex;
     align-items: center;
-    height: 20px;
+    justify-content: center;
+    height: 22px;
     line-height: 1;
+    transform: translateY(0.5px);
   }
 
   .rating-pill {
@@ -628,13 +649,13 @@ export const cardStyles = css`
     align-items: center;
     justify-content: center;
     gap: 3px;
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba(245, 158, 11, 0.25);
     border: 1px solid rgba(245, 158, 11, 0.45);
     color: #fbbf24;
-    height: 20px;
-    padding: 0 5px;
+    height: 22px;
+    padding: 1px 6px 0 6px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 700;
     line-height: 1;
     box-sizing: border-box;
@@ -642,13 +663,13 @@ export const cardStyles = css`
   }
 
   .rating-pill ha-icon {
-    --mdc-icon-size: 11px;
-    width: 11px;
-    height: 11px;
+    --mdc-icon-size: 12px;
+    width: 12px;
+    height: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-0.5px);
+    transform: translateY(0.5px);
     margin: 0;
     padding: 0;
     flex-shrink: 0;
@@ -658,24 +679,7 @@ export const cardStyles = css`
     display: inline-flex;
     align-items: center;
     line-height: 1;
-  }
-
-  .genre-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: color-mix(in srgb, var(--jf-text), transparent 90%);
-    border: 1px solid color-mix(in srgb, var(--jf-text), transparent 80%);
-    height: 20px;
-    padding: 0 6px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    color: var(--jf-text);
-    font-weight: 500;
-    line-height: 1;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    white-space: nowrap;
+    transform: translateY(0.5px);
   }
 
   /* Scrim overrides for hero poster metadata */
@@ -990,6 +994,89 @@ export const cardStyles = css`
       0 6px 18px rgba(0, 0, 0, 0.4) !important;
   }
 
+  /* Backdrop Fanart Background for Grid Cards */
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop {
+    background: #111;
+    border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18));
+    border-radius: var(--jf-poster-radius, 12px);
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    align-items: center;
+    transition: border-color var(--jf-transition), box-shadow var(--jf-transition);
+  }
+
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop:hover,
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop:focus-visible {
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  }
+
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop.playing {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 16px rgba(24, 188, 242, 0.3);
+  }
+
+  .grid-card-backdrop-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .grid-card-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: brightness(1.05) saturate(1.05);
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease;
+  }
+
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop:hover .grid-card-backdrop {
+    transform: scale(1.05);
+    filter: brightness(1.1) saturate(1.1);
+  }
+
+  .media-item.list-item.has-backdrop:hover .grid-card-backdrop {
+    transform: none;
+    filter: brightness(1.08);
+  }
+
+  .grid-card-backdrop-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0.6) 55%,
+      rgba(0, 0, 0, 0.94) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop .poster-container {
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+  }
+
+  .media-item:not(.featured-queue-item):not(.list-item).has-backdrop .media-info-below {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
   /* Backdrop Fanart Background for Featured Queue Cards */
   .media-item.featured-queue-item.has-backdrop {
     background: #111;
@@ -1156,6 +1243,13 @@ export const cardStyles = css`
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
   }
 
+  .media-item.featured-queue-item:hover .featured-queue-title,
+  .media-item.featured-queue-item.has-backdrop:hover .featured-queue-title,
+  .media-item.featured-queue-item:focus-visible .featured-queue-title,
+  .media-item.featured-queue-item.has-backdrop:focus-visible .featured-queue-title {
+    color: var(--jf-primary) !important;
+  }
+
   .media-item.featured-queue-item.has-backdrop .meta-text {
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
@@ -1261,146 +1355,345 @@ export const cardStyles = css`
   .media-item.list-item {
     flex-direction: row;
     align-items: flex-start;
-    gap: 16px;
+    gap: 14px;
+    height: 155px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+    background: color-mix(in srgb, var(--jf-text), transparent 96%);
+    border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18));
+    border-radius: var(--jf-poster-radius, 12px);
+    padding: 10px 14px 10px 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
+  }
+
+  .media-item.list-item:hover,
+  .media-item.list-item:focus-visible {
+    background: color-mix(in srgb, var(--jf-text), transparent 90%);
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 
+      0 0 4px rgba(255, 255, 255, 0.04),
+      0 6px 18px rgba(0, 0, 0, 0.4);
+    transform: translateX(4px);
+  }
+
+  .media-item.list-item.playing {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 16px rgba(24, 188, 242, 0.3);
   }
 
   /* Specific override for List view */
   .media-item.list-item .poster-container {
-    width: 100px !important;
+    width: 90px !important;
     flex-shrink: 0;
   }
 
-  /* List poster wrapper for date */
+  /* Do not enhance poster border, zoom, or box-shadow on hover in list layout */
+  .media-item.list-item:hover .poster-container,
+  .media-item.list-item.has-backdrop:hover .poster-container {
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7) !important;
+    transform: none !important;
+  }
+
+  .media-item.list-item:hover .poster-inner,
+  .media-item.list-item.has-backdrop:hover .poster-inner {
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Backdrop Fanart Background for List Cards */
+  .media-item.list-item.has-backdrop {
+    background: #111;
+    border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18));
+    border-radius: var(--jf-poster-radius, 12px);
+    padding: 10px 14px 10px 10px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    height: 155px;
+    width: 100%;
+    min-width: 0;
+    transition: border-color 0.24s ease, box-shadow 0.24s ease, transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .media-item.list-item.has-backdrop:hover,
+  .media-item.list-item.has-backdrop:focus-visible {
+    background: #111;
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 
+      0 0 4px rgba(255, 255, 255, 0.04),
+      0 6px 18px rgba(0, 0, 0, 0.4);
+    transform: translateX(4px);
+  }
+
+  .media-item.list-item.has-backdrop.playing {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 16px rgba(24, 188, 242, 0.3);
+  }
+
+  .media-item.list-item .list-poster-wrapper,
+  .media-item.list-item.has-backdrop .list-poster-wrapper {
+    position: relative;
+    z-index: 3;
+  }
+
+  .media-item.list-item .poster-container,
+  .media-item.list-item.has-backdrop .poster-container {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+  }
+
+  .media-item.list-item .list-info,
+  .media-item.list-item.has-backdrop .list-info {
+    position: relative;
+    z-index: 3;
+  }
+
+  .media-item.list-item.has-backdrop .list-info {
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  .media-item.list-item.has-backdrop .list-title {
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  }
+
+  .media-item.list-item.has-backdrop .list-subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  .media-item.list-item.has-backdrop .list-description {
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  }
+
+  .list-card-backdrop-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.88) 0%,
+      rgba(0, 0, 0, 0.75) 45%,
+      rgba(0, 0, 0, 0.4) 80%,
+      rgba(0, 0, 0, 0.2) 100%
+    );
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* List poster wrapper */
   .list-poster-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-  }
-
-  .list-date-added {
-    margin: 0 0 -1px 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--jf-text-secondary);
-    text-align: center;
-    opacity: 0.8;
-    transition: transform 0.2s ease, font-weight 0.2s ease;
+    flex-shrink: 0;
   }
 
   /* Vertical alignment when title is hidden - align with poster top */
   .list-item.no-title .list-info {
-    padding-top: 7px;
+    padding-top: 4px;
   }
 
   /* List info container */
   .list-info {
-    flex: 1;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 3px;
     min-width: 0;
-    padding-top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    padding-top: 1px;
     justify-content: flex-start;
   }
 
-  /* When metadata is BELOW poster (default), align info with poster top */
-  .list-item:not(.metadata-above) .list-info {
-    padding-top: 7px;
+  .list-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
   }
 
-  /* When metadata is ABOVE poster, align info with the date text above poster */
-  .list-item.metadata-above .list-info {
-    padding-top: 31px;
+  .list-title-container {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .list-title {
-    margin: 0 0 3px 0;
+    margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--jf-text);
     line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
-  .list-metadata {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .list-year {
-    font-size: 0.9rem;
-    color: var(--jf-text-secondary);
+  .list-subtitle {
+    margin: 1px 0 0 0;
+    font-size: 0.88rem;
     font-weight: 500;
+    color: var(--jf-text-secondary);
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    transition: color 0.2s ease;
   }
 
-  .list-type-badge {
-    padding: 2px 8px;
+  .media-item.list-item:hover .list-subtitle {
+    color: var(--jf-text);
+  }
+
+  .list-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .list-header .media-type-badge.list-type-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    box-sizing: border-box;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 800;
-    text-transform: uppercase;
     letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 1.5px 8px 0.5px 8px;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .list-badges .new-badge.inline-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 1.5px 8px 0.5px 8px;
+    line-height: 1;
+    background: #009ac7;
     color: #fff;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .list-badges .status-badge.inline-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .list-badges .status-badge.inline-badge ha-icon {
+    --mdc-icon-size: 14px;
+    margin: 0;
+  }
+
+  ${sharedMetaRowStyles}
+
+  .media-item.list-item .list-meta-pills {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+    gap: 5px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .media-item.list-item .list-genre-pill {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    max-width: 95px;
+    min-width: 0;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    flex-shrink: 1 !important;
+    padding: 0 6px !important;
+    box-sizing: border-box;
+  }
+
+  .media-item.list-item .list-genre-pill span {
+    display: inline-block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .list-type-badge.movie {
     background: var(--jf-movie-badge);
   }
 
-  .list-type-badge.series {
+  .list-type-badge.series,
+  .list-type-badge.episode {
     background: var(--jf-series-badge);
-  }
-
-  .list-runtime {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--jf-text-secondary);
-  }
-
-  .list-runtime ha-icon {
-    --mdc-icon-size: 14px;
-    margin-top: -2px;
-  }
-
-  .list-rating {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    font-size: 0.85rem;
-    color: var(--jf-series-badge);
-    font-weight: 600;
-  }
-
-  .list-rating ha-icon {
-    --mdc-icon-size: 14px;
-    color: var(--jf-series-badge);
-    margin-top: -2px;
-  }
-
-
-
-  .list-genres {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--jf-text-secondary);
-    line-height: 1.4;
   }
 
   .list-description {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--jf-text-secondary);
-    line-height: 1.5;
+    line-height: 1.32;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-height: calc(1.32em * 3);
+    box-sizing: border-box;
+  }
+
+  .media-item.list-item.has-subtitle .list-description,
+  .media-item.list-item:has(.list-subtitle) .list-description {
+    -webkit-line-clamp: 2;
+    max-height: calc(1.32em * 2);
   }
 
   /* Remove hover overlay for list layout */
@@ -1420,28 +1713,14 @@ export const cardStyles = css`
   }
 
   .media-item.list-item:hover .list-info {
-    transform: translateX(2px);
-    transition: transform 0.2s ease;
-  }
-
-  .media-item.list-item:hover .list-date-added {
-    font-weight: 600;
-  }
-
-  /* Move date up when it's above poster */
-  .media-item.list-item:hover .list-poster-wrapper .list-date-added:first-child {
-    transform: translateY(-2px);
-  }
-
-  /* Move date down when it's below poster */
-  .media-item.list-item:hover .list-poster-wrapper .list-date-added:last-child {
-    transform: translateY(2px);
+    transform: none;
+    transition: none;
   }
 
   .media-item.list-item:hover .list-year,
   .media-item.list-item:hover .list-runtime,
-  .media-item.list-item:hover .list-rating {
-    font-weight: 700;
+  .media-item.list-item:hover .list-date-added {
+    color: var(--jf-text);
   }
 
   /* Media Item Container - NO MOVEMENT on hover */
@@ -1455,6 +1734,7 @@ export const cardStyles = css`
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    transition: transform 0.15s ease-out;
   }
 
   .media-item:hover {
@@ -1533,30 +1813,31 @@ export const cardStyles = css`
   .poster-container.hold-pulse {
     animation: holdPulse 0.3s ease-in-out;
   }
-  .media-item.active-press .poster-container,
-  .media-item:active .poster-container {
-    transform: scale(0.96);
-    transition: transform 0.1s ease-out;
+
+  /* Card click and press effect on the whole card (not poster) */
+  .media-item:active,
+  .media-item.active-press {
+    transform: scale(0.98);
+    transition: transform 0.08s ease-out;
   }
 
-  /* Vignette overlay for list items on hover */
-  .media-item.list-item .poster-inner::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--jf-poster-radius);
-    background: radial-gradient(
-      ellipse at center,
-      transparent 50%,
-      rgba(0, 0, 0, 0.15) 100%
-    );
-    opacity: 0;
-    transition: opacity var(--jf-transition);
-    pointer-events: none;
+  .media-item.list-item:active,
+  .media-item.list-item.active-press,
+  .media-item.featured-queue-item:active,
+  .media-item.featured-queue-item.active-press {
+    transform: translateX(2px) scale(0.98) !important;
+    transition: transform 0.08s ease-out !important;
   }
 
+  .media-item:active .poster-container,
+  .media-item.active-press .poster-container {
+    transform: none !important;
+  }
+
+  /* Disable vignette overlay for list items on hover */
+  .media-item.list-item .poster-inner::after,
   .media-item.list-item:hover .poster-inner::after {
-    opacity: 1;
+    display: none !important;
   }
 
   .poster {

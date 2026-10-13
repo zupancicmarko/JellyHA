@@ -19,6 +19,7 @@ import {
     toggleMute,
     resolveInstanceSensorBase
 } from '../shared/power-volume-helpers';
+import { sharedMetaRowStyles } from '../styles/jellyha-shared-styles';
 
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
@@ -3982,102 +3983,7 @@ export class JellyHANowPlayingCard extends LitElement {
             overflow: hidden;
         }
 
-        .idle-meta-row,
-        .meta-line.idle-meta-row {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px 8px;
-            font-size: 0.85rem;
-            color: #ffffff;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
-            margin: 4px 0 7px 0 !important;
-            line-height: 1;
-        }
-
-        .idle-meta-text,
-        .meta-text {
-            display: inline-flex;
-            align-items: center;
-            height: 22px;
-            line-height: 1;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ffffff;
-            transform: translateY(1px);
-        }
-
-        .idle-dot,
-        .meta-dot {
-            opacity: 0.6;
-            font-size: 0.72rem;
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            height: 22px;
-            line-height: 1;
-            transform: translateY(0.5px);
-        }
-
-        .idle-rating-pill,
-        .rating-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            background: rgba(245, 158, 11, 0.25);
-            border: 1px solid rgba(245, 158, 11, 0.45);
-            color: #fbbf24;
-            height: 22px;
-            padding: 0 6px;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            line-height: 1;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-
-        .idle-rating-pill ha-icon,
-        .rating-pill ha-icon {
-            --mdc-icon-size: 12px;
-            width: 12px;
-            height: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: translateY(-1px);
-            margin: 0;
-            padding: 0;
-            flex-shrink: 0;
-        }
-
-        .idle-rating-pill span,
-        .rating-pill span {
-            display: inline-flex;
-            align-items: center;
-            line-height: 1;
-        }
-
-        .idle-genre-pill,
-        .genre-pill.idle-genre-pill,
-        .genre-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            height: 22px;
-            padding: 0 7px !important;
-            border-radius: 4px;
-            font-size: 0.80rem;
-            color: #ffffff;
-            font-weight: 500;
-            line-height: 1 !important;
-            box-sizing: border-box;
-            flex-shrink: 0;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-        }
+        ${sharedMetaRowStyles}
 
         .idle-overview {
             margin: 2px 0 0 0 !important;

@@ -2,7 +2,7 @@
  * Graphical editor for JellyHA Library Card
  */
 
-import { LitElement, html, TemplateResult, css } from 'lit';
+import { LitElement, html, TemplateResult, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { JellyHALibraryCardConfig, HomeAssistant, PlayTarget } from '../shared/types';
 import { getScriptDefaultName } from '../shared/utils';
@@ -237,13 +237,17 @@ export class JellyHALibraryEditor extends LitElement {
                 @value-changed=${this._tvContentChanged}
               ></ha-selector>
             </div>
-            <div class="checkbox-row">
-              <ha-switch
-                .checked=${this._config.use_series_image === true}
-                @change=${this._useSeriesImageChanged}
-              ></ha-switch>
-              <span>${localize(lang, 'editor.use_series_image')}</span>
-            </div>
+            ${this._config.tv_content === 'episodes'
+            ? html`
+              <div class="checkbox-row">
+                <ha-switch
+                  .checked=${this._config.use_series_image === true}
+                  @change=${this._useSeriesImageChanged}
+                ></ha-switch>
+                <span>${localize(lang, 'editor.use_series_image')}</span>
+              </div>
+            `
+            : nothing}
           </div>
         `
         : ''}
@@ -292,7 +296,7 @@ export class JellyHALibraryEditor extends LitElement {
                     .selector=${{
                       number: {
                         min: 2,
-                        max: 4,
+                        max: 3,
                         mode: 'slider',
                       },
                     }}
@@ -309,20 +313,6 @@ export class JellyHALibraryEditor extends LitElement {
             `
           : ''}
 
-        ${this._config.layout === 'featured'
-        ? html`
-            <div class="checkbox-row" style="margin-bottom: 4px;">
-              <ha-switch
-                .checked=${this._config.show_card_backdrop !== undefined ? this._config.show_card_backdrop !== false : this._config.featured_queue_backdrop !== false}
-                @change=${this._showCardBackdropChanged}
-              ></ha-switch>
-              <span>${localize(lang, 'editor.show_card_backdrop')}</span>
-            </div>
-            <div class="helper-text" style="margin-bottom: 16px;">
-              ${localize(lang, 'editor.show_card_backdrop_helper')}
-            </div>
-          `
-        : ''}
 
         ${this._config.layout === 'featured'
         ? html`
@@ -503,86 +493,51 @@ export class JellyHALibraryEditor extends LitElement {
       <span>${localize(lang, 'editor.show_search')}</span>
     </div>
 
-    ${this._config.layout === 'featured'
-    ? (this._config.media_type !== 'next_up'
-        ? html`
-            <div class="form-row">
-              <ha-selector
-                .hass=${this.hass}
-                .selector=${{
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
-                      { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
-                      { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
-                      { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
-                      { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
-                      { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
-                      { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
-                      { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
-                    ],
-                  },
-                }}
-                .value=${this._config.sort_option || 'date_added_desc'}
-                .label=${localize(lang, 'editor.sort_order')}
-                label="${localize(lang, 'editor.sort_order')}"
-                @value-changed=${this._sortOptionChanged}
-              ></ha-selector>
-            </div>
-          `
-        : '')
-    : html`
-        <div class="side-by-side">
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                select: {
-                  mode: 'dropdown',
-                  options: [
-                    { value: 'below', label: localize(lang, 'editor.metadata_below') },
-                    { value: 'above', label: localize(lang, 'editor.metadata_above') },
-                  ],
-                },
-              }}
-              .value=${this._config.metadata_position || 'below'}
-              .label=${localize(lang, 'editor.metadata_position')}
-              label="${localize(lang, 'editor.metadata_position')}"
-              @value-changed=${this._metadataPositionChanged}
-            ></ha-selector>
-          </div>
-
-          <div class="form-row">
-            ${this._config.media_type !== 'next_up'
-            ? html`
-                <ha-selector
-                  .hass=${this.hass}
-                  .selector=${{
-                    select: {
-                      mode: 'dropdown',
-                      options: [
-                        { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
-                        { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
-                        { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
-                        { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
-                        { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
-                        { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
-                        { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
-                        { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
-                      ],
-                    },
-                  }}
-                  .value=${this._config.sort_option || 'date_added_desc'}
-                  .label=${localize(lang, 'editor.sort_order')}
-                  label="${localize(lang, 'editor.sort_order')}"
-                  @value-changed=${this._sortOptionChanged}
-                ></ha-selector>
-            `
-            : html`<div></div>`}
-          </div>
+    ${(this._config.layout === 'list' || this._config.layout === 'featured')
+    ? html`
+        <div class="checkbox-row" style="margin-bottom: 4px;">
+          <ha-switch
+            .checked=${this._config.show_card_backdrop !== undefined
+              ? this._config.show_card_backdrop !== false
+              : (this._config.layout === 'featured' ? this._config.featured_queue_backdrop !== false : true)}
+            @change=${this._showCardBackdropChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_card_backdrop')}</span>
         </div>
-      `}
+        <div class="helper-text" style="margin-bottom: 12px;">
+          ${localize(lang, 'editor.show_card_backdrop_helper')}
+        </div>
+      `
+    : ''}
+
+    ${this._config.media_type !== 'next_up'
+    ? html`
+        <div class="form-row">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              select: {
+                mode: 'dropdown',
+                options: [
+                  { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
+                  { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
+                  { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
+                  { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
+                  { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
+                  { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
+                  { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
+                  { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
+                ],
+              },
+            }}
+            .value=${this._config.sort_option || 'date_added_desc'}
+            .label=${localize(lang, 'editor.sort_order')}
+            label="${localize(lang, 'editor.sort_order')}"
+            @value-changed=${this._sortOptionChanged}
+          ></ha-selector>
+        </div>
+      `
+    : ''}
 
     <div class="side-by-side">
       <div class="checkbox-row">
@@ -1134,12 +1089,6 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('show_description_on_hover', target.checked);
   }
 
-  private _metadataPositionChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
-    if (value !== undefined) {
-      this._updateConfig('metadata_position', value);
-    }
-  }
 
   private _showCardBackdropChanged(e: Event): void {
     const target = e.target as HTMLInputElement;

@@ -122,6 +122,7 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     columns?: number;
     rows?: number;
     show_title?: boolean;
+    show_subtitle?: boolean;
     show_year?: boolean;
     show_runtime?: boolean;
     show_ratings?: boolean;

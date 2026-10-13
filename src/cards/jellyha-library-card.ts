@@ -35,14 +35,16 @@ console.info(
 );
 
 // Register card for picker
-window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === 'jellyha-library-card')) {
-  window.customCards.push({
-    type: 'jellyha-library-card',
-    name: 'JellyHA Library',
-    description: 'Display media from Jellyfin',
-    preview: true,
-  });
+if (typeof window !== 'undefined') {
+  window.customCards = window.customCards || [];
+  if (!window.customCards.some(card => card.type === 'jellyha-library-card')) {
+    window.customCards.push({
+      type: 'jellyha-library-card',
+      name: 'JellyHA Library',
+      description: 'Display media from Jellyfin',
+      preview: true,
+    });
+  }
 }
 
 const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
@@ -63,7 +65,6 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   show_description_on_hover: true,
   enable_pagination: true,
   show_pagination_dots: true,
-  metadata_position: 'below',
   horizontal_alignment: 'center',
   show_date_added: false,
   rating_source: 'auto',
@@ -128,11 +129,10 @@ export class JellyHALibraryCard extends LitElement {
   private _resizeObserver?: ResizeObserver;
   private _resizeHandler?: () => void;
   private _containerWidth = 0;
-  private readonly ITEM_WIDTH = 148; // 140px poster + 8px gap - tighter packing
-  private readonly LIST_ITEM_MIN_WIDTH = 380; // Minimum width per list column
+  private readonly LIST_ITEM_MIN_WIDTH = 300; // Minimum width per list column
   private readonly FEATURED_QUEUE_ITEM_MIN_WIDTH = 200; // Minimum card width to show horizontal info in featured layout
   private _autoSwipeTimer?: number;
-  private _effectiveListColumns = 1; // Calculated based on container width
+  @state() private _effectiveListColumns = 1; // Calculated based on container width
   @state() private _isFeaturedCramped = false;
 
   private _isSwiping = false;
@@ -277,7 +277,7 @@ export class JellyHALibraryCard extends LitElement {
   private _getEffectiveItemsPerPage(): number {
     if (this._config?.layout === 'featured') {
       const sideColumns = Math.max(1, this._config.columns || 1);
-      const sideRows = Math.max(2, Math.min(4, this._config.rows || 3));
+      const sideRows = Math.max(2, Math.min(3, this._config.rows || 3));
       return 1 + (sideColumns * sideRows);
     }
     return this._config?.items_per_page || this._itemsPerPage;
@@ -747,38 +747,24 @@ export class JellyHALibraryCard extends LitElement {
         }
 
         // Calculate effective list columns
-        if (this._config) {
-          const configColumns = this._config.columns || 1;
-          const LIST_ITEM_MIN_WIDTH = 300;
-          if (configColumns > 1) {
-            const maxFitColumns = Math.max(1, Math.floor(contentWidth / LIST_ITEM_MIN_WIDTH));
-            const newEffectiveColumns = Math.min(configColumns, maxFitColumns);
-            if (newEffectiveColumns !== this._effectiveListColumns) {
-              this._effectiveListColumns = newEffectiveColumns;
-              this.requestUpdate();
-            }
-          } else if (this._effectiveListColumns !== 1) {
-            this._effectiveListColumns = 1;
-            this.requestUpdate();
-          }
+        this._updateEffectiveListColumns(contentWidth);
 
-          // Calculate cramped mode for featured layout queue cards
-          if (this._config.layout === 'featured') {
-            const sideColumns = Math.max(1, this._config.columns || 1);
-            let cardWidth: number;
-            const sideElem = this.shadowRoot?.querySelector('.featured-side') as HTMLElement;
-            if (sideElem && sideElem.clientWidth > 0) {
-              cardWidth = (sideElem.clientWidth - (sideColumns - 1) * 10) / sideColumns;
-            } else {
-              const isStacked = contentWidth < 500;
-              const sideWidth = isStacked ? contentWidth : Math.max(0, contentWidth - 266);
-              cardWidth = (sideWidth - (sideColumns - 1) * 10) / sideColumns;
-            }
-            const isCramped = sideColumns >= 3 || cardWidth < this.FEATURED_QUEUE_ITEM_MIN_WIDTH;
-            if (isCramped !== this._isFeaturedCramped) {
-              this._isFeaturedCramped = isCramped;
-              this.requestUpdate();
-            }
+        // Calculate cramped mode for featured layout queue cards
+        if (this._config && this._config.layout === 'featured') {
+          const sideColumns = Math.max(1, this._config.columns || 1);
+          let cardWidth: number;
+          const sideElem = this.shadowRoot?.querySelector('.featured-side') as HTMLElement;
+          if (sideElem && sideElem.clientWidth > 0) {
+            cardWidth = (sideElem.clientWidth - (sideColumns - 1) * 10) / sideColumns;
+          } else {
+            const isStacked = contentWidth < 500;
+            const sideWidth = isStacked ? contentWidth : Math.max(0, contentWidth - 266);
+            cardWidth = (sideWidth - (sideColumns - 1) * 10) / sideColumns;
+          }
+          const isCramped = sideColumns >= 3 || cardWidth < this.FEATURED_QUEUE_ITEM_MIN_WIDTH;
+          if (isCramped !== this._isFeaturedCramped) {
+            this._isFeaturedCramped = isCramped;
+            this.requestUpdate();
           }
         }
       }
@@ -796,14 +782,30 @@ export class JellyHALibraryCard extends LitElement {
     } catch (e) {
       // Fallback for very old browsers (unlikely in HA)
       console.warn('ResizeObserver not supported, falling back to window resize', e);
-      window.addEventListener('resize', this._resizeHandler);
     }
+
+    // Always listen to window resize as safety net
+    window.addEventListener('resize', this._resizeHandler);
 
     // Call once initially
     this._resizeHandler();
   }
 
-
+  private _updateEffectiveListColumns(contentWidth: number): void {
+    if (!this._config) return;
+    const configColumns = this._config.columns || 1;
+    if (configColumns > 1) {
+      const maxFitColumns = Math.max(1, Math.floor(contentWidth / this.LIST_ITEM_MIN_WIDTH));
+      const newEffectiveColumns = Math.min(configColumns, maxFitColumns);
+      if (newEffectiveColumns !== this._effectiveListColumns) {
+        this._effectiveListColumns = newEffectiveColumns;
+        this.requestUpdate();
+      }
+    } else if (this._effectiveListColumns !== 1) {
+      this._effectiveListColumns = 1;
+      this.requestUpdate();
+    }
+  }
 
   private _handleDotClick(page: number): void {
     if (page !== this._currentPage) {
@@ -829,8 +831,12 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     this._config = { ...DEFAULT_CONFIG, ...config };
-    // Initialize effective list columns from config
-    this._effectiveListColumns = this._config.columns || 1;
+    // Initialize or recalculate effective list columns from config
+    if (this._containerWidth > 0) {
+      this._updateEffectiveListColumns(this._containerWidth);
+    } else {
+      this._effectiveListColumns = this._config.columns || 1;
+    }
   }
 
   /**
@@ -1407,7 +1413,7 @@ export class JellyHALibraryCard extends LitElement {
     if (!heroItem) return html``;
 
     const sideColumns = Math.max(1, this._config.columns || 1);
-    const sideRows = Math.max(2, Math.min(4, this._config.rows || 3));
+    const sideRows = Math.max(2, Math.min(3, this._config.rows || 3));
     const isCramped = sideColumns >= 3 || this._isFeaturedCramped;
 
     return html`

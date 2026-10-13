@@ -72,7 +72,7 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         const getEffectiveItemsPerPage = (config: JellyHALibraryCardConfig, fallback: number = 3): number => {
             if (config.layout === 'featured') {
                 const sideColumns = Math.max(1, config.columns || 1);
-                const sideRows = Math.max(2, Math.min(4, config.rows || 3));
+                const sideRows = Math.max(2, Math.min(3, config.rows || 3));
                 return 1 + (sideColumns * sideRows);
             }
             return config.items_per_page || fallback;
@@ -99,18 +99,9 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         // columns: 3, rows: 2 -> 1 hero + 6 side = 7
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 3, rows: 2 })).toBe(7);
 
-        // Configurable rows: 4
-        // columns: 1, rows: 4 -> 1 hero + 4 side = 5
-        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 1, rows: 4 })).toBe(5);
-        // columns: 2, rows: 4 -> 1 hero + 8 side = 9
-        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, rows: 4 })).toBe(9);
-        // columns: 3, rows: 4 -> 1 hero + 12 side = 13
-        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 3, rows: 4 })).toBe(13);
-
         // items_per_page in config is completely ignored in featured layout
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, items_per_page: 9 })).toBe(7);
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, rows: 2, items_per_page: 9 })).toBe(5);
-        expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'featured', columns: 2, rows: 4, items_per_page: 9 })).toBe(9);
 
         // Grid layout untouched
         expect(getEffectiveItemsPerPage({ type: 'custom:jellyha-library-card', entity: 'x', layout: 'grid', items_per_page: 10 })).toBe(10);
@@ -324,10 +315,461 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         // Rows 2 hero container constraint
         expect(cssText).toContain('.featured.rows-2 .featured-hero-container');
         expect(cssText).toContain('.featured.rows-2 .poster-container.featured-hero-poster');
+    });
 
-        // Rows 4 hero container constraint
-        expect(cssText).toContain('.featured.rows-4 .featured-hero-container');
-        expect(cssText).toContain('.featured.rows-4 .poster-container.featured-hero-poster');
+    it('ensures list metadata matches Featured layout styling with inline badges, dot, and rating pill', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // .list-metadata flex with 6px 8px gap
+        expect(cssText).toContain('.list-metadata');
+        expect(cssText).toContain('gap: 6px 8px');
+
+        // .meta-text, .list-year, .list-runtime unified styling
+        expect(cssText).toContain('.list-metadata .meta-text');
+        expect(cssText).toContain('.list-metadata .meta-dot');
+
+        // Static positioning and height for inline media badge
+        expect(cssText).toContain('.list-metadata .media-type-badge.inline-badge');
+        expect(cssText).toContain('position: static !important');
+
+        // Genre pill support in list metadata
+        expect(cssText).toContain('.list-metadata .genre-pill');
+
+        // Text color transition on hover instead of font-weight jump
+        expect(cssText).toContain('.media-item.list-item:hover .list-year');
+        expect(cssText).toContain('color: var(--jf-text)');
+    });
+
+    it('ensures sharedMetaRowStyles provides centralized 22px height, optical alignment, and vertical centering for rating and genre pills', async () => {
+        const { sharedMetaRowStyles } = await import('../src/styles/jellyha-shared-styles');
+        const cssText = sharedMetaRowStyles.cssText;
+
+        // Container styles
+        expect(cssText).toContain('.list-metadata');
+        expect(cssText).toContain('.idle-meta-row');
+        expect(cssText).toContain('gap: 6px 8px');
+
+        // Rating pill vertical centering with star transform and span line-height
+        expect(cssText).toContain('.rating-pill ha-icon');
+        expect(cssText).toContain('transform: translateY(0.5px)');
+        expect(cssText).toContain('.rating-pill span');
+        expect(cssText).toContain('display: inline-flex');
+
+        // Genre pill glassmorphic styling and line-height centering
+        expect(cssText).toContain('.genre-pill');
+        expect(cssText).toContain('background: rgba(255, 255, 255, 0.12)');
+        expect(cssText).toContain('border: 1px solid rgba(255, 255, 255, 0.22)');
+        expect(cssText).toContain('padding: 0 7px !important');
+        expect(cssText).toContain('line-height: 1 !important');
+
+        // Plain text and separator dot optical baseline adjustments
+        expect(cssText).toContain('.meta-text');
+        expect(cssText).toContain('transform: translateY(1px)');
+        expect(cssText).toContain('.meta-dot');
+        expect(cssText).toContain('transform: translateY(0.5px)');
+    });
+
+    it('ensures _renderListItem renders two rows with date added after runtime and rating followed by genres', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_media_type_badge: true,
+            show_year: true,
+            show_runtime: true,
+            show_date_added: true,
+            show_ratings: true,
+            show_genres: true,
+        } as any;
+        mediaElem.item = {
+            id: 'hook-1',
+            name: 'Captain Hook: The Cursed Tides',
+            type: 'Movie',
+            year: 2025,
+            runtime_minutes: 90,
+            date_added: '2025-05-10T12:00:00Z',
+            community_rating: 4.9,
+            genres: ['Adventure', 'Action', 'Horror'],
+        } as any;
+        mediaElem.layout = 'list';
+
+        const template = (mediaElem as any)._renderListItem();
+        const templateStr = JSON.stringify(template);
+
+        // Header with title and media badge at top right
+        expect(templateStr).toContain('list-header');
+        expect(templateStr).toContain('list-title-container');
+        expect(templateStr).toContain('list-title');
+        expect(templateStr).toContain('media-type-badge list-type-badge');
+        expect(templateStr).toContain('movie');
+
+        // Contains container and two distinct rows
+        expect(templateStr).toContain('list-metadata');
+        expect(templateStr).toContain('idle-meta-row list-meta-row');
+        expect(templateStr).toContain('idle-meta-row list-meta-pills');
+
+        // Row 1: Year, Runtime, Date added
+        expect(templateStr).toContain('idle-meta-text meta-text meta-year list-year');
+        expect(templateStr).toContain('2025');
+        expect(templateStr).toContain('idle-dot meta-dot');
+        expect(templateStr).toContain('1h 30m');
+        expect(templateStr).toContain('idle-meta-text meta-text meta-date-added list-date-added');
+
+        // Row 2: Rating pill and Genre pills
+        expect(templateStr).toContain('idle-rating-pill rating-pill list-rating');
+        expect(templateStr).toContain('4.9');
+        expect(templateStr).toContain('genre-pill idle-genre-pill list-genre-pill');
+        expect(templateStr).toContain('Adventure');
+        expect(templateStr).toContain('Action');
+        expect(templateStr).toContain('Horror');
+    });
+
+    it('ensures _renderListItem renders subtitle and episode badge for TV episodes', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_media_type_badge: true,
+            show_title: true,
+            show_subtitle: true,
+        } as any;
+        mediaElem.item = {
+            id: 'ep-1',
+            name: 'The Pilot',
+            series_name: 'Lanterns',
+            type: 'Episode',
+            season: 1,
+            episode: 1,
+            year: 2026,
+            date_added: '2026-09-12T10:00:00Z',
+        } as any;
+        mediaElem.layout = 'list';
+
+        const template = (mediaElem as any)._renderListItem();
+        const templateStr = JSON.stringify(template);
+
+        expect(templateStr).toContain('list-title');
+        expect(templateStr).toContain('The Pilot');
+        expect(templateStr).toContain('list-subtitle');
+        expect(templateStr).toContain('Lanterns');
+        expect(templateStr).toContain('S01E01');
+    });
+
+    it('ensures Grid layout supports Show Card Backdrop styling', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item:not(.featured-queue-item):not(.list-item).has-backdrop');
+        expect(cssText).toContain('.grid-card-backdrop-container');
+        expect(cssText).toContain('.grid-card-backdrop');
+        expect(cssText).toContain('.grid-card-backdrop-scrim');
+    });
+
+    it('ensures List layout supports Show Card Backdrop styling and 90px poster', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item.list-item.has-backdrop');
+        expect(cssText).toContain('.list-card-backdrop-scrim');
+        expect(cssText).toContain('width: 90px !important');
+        expect(cssText).toContain('padding: 10px 14px 10px 10px');
+    });
+
+    it('ensures _renderListItem renders backdrop when show_card_backdrop is enabled', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_card_backdrop: true,
+            show_title: true,
+        } as any;
+        mediaElem.item = {
+            id: 'item-1',
+            name: 'Inception',
+            type: 'Movie',
+            poster_url: '/image/1',
+            backdrop_url: '/backdrop/1',
+        } as any;
+        mediaElem.layout = 'list';
+
+        const template = (mediaElem as any)._renderListItem();
+        const templateStr = JSON.stringify(template);
+
+        expect(templateStr).toContain('has-backdrop');
+        expect(templateStr).toContain('grid-card-backdrop-container');
+        expect(templateStr).toContain('list-card-backdrop-scrim');
+        expect(templateStr).toContain('width=\\"90\\"');
+        expect(templateStr).toContain('height=\\"135\\"');
+    });
+
+    it('ensures _renderMediaItem for carousel and grid does not render backdrops', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_card_backdrop: true,
+            show_title: true,
+        } as any;
+        mediaElem.item = {
+            id: 'item-1',
+            name: 'Inception',
+            type: 'Movie',
+            poster_url: '/image/1',
+            backdrop_url: '/backdrop/1',
+        } as any;
+        mediaElem.layout = 'grid';
+
+        const template = (mediaElem as any)._renderMediaItem();
+        const templateStr = JSON.stringify(template);
+
+        expect(templateStr).not.toContain('has-backdrop');
+        expect(templateStr).not.toContain('grid-card-backdrop-container');
+    });
+
+    it('ensures featured queue title turns primary color on hover even with backdrop', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item.featured-queue-item.has-backdrop:hover .featured-queue-title');
+        expect(cssText).toContain('color: var(--jf-primary) !important');
+    });
+
+    it('ensures list card moves right on hover and suppresses poster border enhancement', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item.list-item.has-backdrop:hover');
+        expect(cssText).toContain('transform: translateX(4px)');
+        expect(cssText).toContain('.media-item.list-item:hover .poster-inner');
+        expect(cssText).toContain('transform: none !important');
+    });
+
+    it('ensures list card has fixed 155px height and description line clamp with three dots', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item.list-item');
+        expect(cssText).toContain('height: 155px');
+        expect(cssText).toContain('box-sizing: border-box');
+        expect(cssText).toContain('text-overflow: ellipsis');
+        expect(cssText).toContain('-webkit-line-clamp: 3');
+        expect(cssText).toContain('.media-item.list-item.has-subtitle .list-description');
+        expect(cssText).toContain('-webkit-line-clamp: 2');
+    });
+
+    it('ensures list card retains border, border-radius, and padding even without backdrop', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item.list-item');
+        expect(cssText).toContain('border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18))');
+        expect(cssText).toContain('border-radius: var(--jf-poster-radius, 12px)');
+        expect(cssText).toContain('padding: 10px 14px 10px 10px');
+    });
+
+    it('ensures _renderListItem adds has-subtitle class when subtitle is present', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_card_backdrop: true,
+            show_title: true,
+            show_subtitle: true,
+        } as any;
+        mediaElem.item = {
+            id: 'item-2',
+            name: 'Bad Optics',
+            series_name: 'Lanterns',
+            type: 'Episode',
+            season: 1,
+            episode: 6,
+            description: 'Now in business with his brother Marcus...',
+            poster_url: '/image/2',
+        } as any;
+        mediaElem.layout = 'list';
+
+        const template = (mediaElem as any)._renderListItem();
+        const templateStr = JSON.stringify(template);
+
+        expect(templateStr).toContain('has-subtitle');
+        expect(templateStr).toContain('list-subtitle');
+        expect(templateStr).toContain('Lanterns');
+    });
+
+    it('ensures whole card has click effect on active/press and poster does not scale', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item:active');
+        expect(cssText).toContain('transform: scale(0.98)');
+        expect(cssText).toContain('.media-item.list-item:active');
+        expect(cssText).toContain('transform: translateX(2px) scale(0.98) !important');
+        expect(cssText).toContain('.media-item:active .poster-container');
+        expect(cssText).toContain('transform: none !important');
+    });
+
+    it('ensures mouse press handlers add and remove active-press class', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = { show_title: true } as any;
+        mediaElem.item = { id: 'item-1', name: 'Movie' } as any;
+
+        const classes = new Set<string>();
+        const fakeElement = {
+            classList: {
+                add: (c: string) => classes.add(c),
+                remove: (c: string) => classes.delete(c),
+                contains: (c: string) => classes.has(c),
+            }
+        };
+        const mousedownEvent = { button: 0, currentTarget: fakeElement } as any;
+        (mediaElem as any)._handleMouseDown(mousedownEvent);
+        expect(fakeElement.classList.contains('active-press')).toBe(true);
+
+        const mouseupEvent = { currentTarget: fakeElement, preventDefault: () => {}, stopPropagation: () => {} } as any;
+        (mediaElem as any)._handleMouseUp(mouseupEvent);
+        expect(fakeElement.classList.contains('active-press')).toBe(false);
+
+        fakeElement.classList.add('active-press');
+        const mouseleaveEvent = { currentTarget: fakeElement } as any;
+        (mediaElem as any)._handleMouseLeave(mouseleaveEvent);
+        expect(fakeElement.classList.contains('active-press')).toBe(false);
+    });
+
+    it('ensures list layout places new and watched badges in list-badges after media badge', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_media_type_badge: true,
+            show_watched_status: true,
+            new_badge_days: 7,
+        } as any;
+        const recentDate = new Date().toISOString();
+        mediaElem.item = {
+            id: 'item-new',
+            name: 'Fall 2: Deadpoint',
+            type: 'Movie',
+            date_added: recentDate,
+            poster_url: '/image/1',
+        } as any;
+        mediaElem.layout = 'list';
+
+        const template = (mediaElem as any)._renderListItem();
+        const templateStr = JSON.stringify(template);
+
+        // Header contains list-badges
+        expect(templateStr).toContain('list-badges');
+        expect(templateStr).toContain('media-type-badge list-type-badge');
+        expect(templateStr).toContain('new-badge');
+        expect(templateStr).toContain('inline-badge');
+
+        // Verify media badge appears before new badge in list-badges
+        const mediaBadgeIdx = templateStr.indexOf('media-type-badge list-type-badge');
+        const newBadgeIdx = templateStr.indexOf('new-badge');
+        expect(mediaBadgeIdx).toBeGreaterThan(0);
+        expect(newBadgeIdx).toBeGreaterThan(mediaBadgeIdx);
+
+        // Poster does not contain status/new badge
+        const posterContainerIdx = templateStr.indexOf('list-poster-wrapper');
+        const listInfoIdx = templateStr.indexOf('list-info');
+        const posterPart = templateStr.slice(posterContainerIdx, listInfoIdx);
+        expect(posterPart).not.toContain('new-badge');
+        expect(posterPart).not.toContain('status-badge');
+    });
+
+    it('ensures list layout places watched checkmark after media badge', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            show_media_type_badge: true,
+            show_watched_status: true,
+            new_badge_days: 0,
+        } as any;
+        mediaElem.item = {
+            id: 'item-watched',
+            name: 'Captain Hook',
+            type: 'Movie',
+            is_played: true,
+            poster_url: '/image/2',
+        } as any;
+        mediaElem.layout = 'list';
+
+        const template = (mediaElem as any)._renderListItem();
+        const templateStr = JSON.stringify(template);
+
+        expect(templateStr).toContain('list-badges');
+        expect(templateStr).toContain('media-type-badge list-type-badge');
+        expect(templateStr).toContain('status-badge watched');
+        expect(templateStr).toContain('inline-badge');
+
+        const mediaBadgeIdx = templateStr.indexOf('media-type-badge list-type-badge');
+        const watchedBadgeIdx = templateStr.indexOf('status-badge watched');
+        expect(mediaBadgeIdx).toBeGreaterThan(0);
+        expect(watchedBadgeIdx).toBeGreaterThan(mediaBadgeIdx);
+    });
+
+    it('ensures cardStyles defines list-badges and inline badges styling', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.list-badges');
+        expect(cssText).toContain('.list-badges .new-badge.inline-badge');
+        expect(cssText).toContain('.list-badges .status-badge.inline-badge');
+    });
+
+    it('ensures list layout styles prevent horizontal overflow and allow dynamic shrinking', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('overflow-x: hidden');
+        expect(cssText).toContain('grid-template-columns: repeat(var(--jf-list-columns, 1), minmax(0, 1fr))');
+        expect(cssText).toContain('.list jellyha-media-item');
+        expect(cssText).toContain('.media-item.list-item');
+        expect(cssText).toContain('min-width: 0');
+    });
+
+    it('ensures dynamic list column calculation wraps down when container is narrow', async () => {
+        const { JellyHALibraryCard } = await import('../src/cards/jellyha-library-card');
+        const card = new JellyHALibraryCard();
+        card.setConfig({
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            layout: 'list',
+            columns: 2,
+        });
+
+        // Wide container (e.g. 700px content width) -> 2 columns
+        (card as any)._updateEffectiveListColumns(700);
+        expect((card as any)._effectiveListColumns).toBe(2);
+
+        // Narrow container (e.g. 450px content width) -> collapses to 1 column
+        (card as any)._updateEffectiveListColumns(450);
+        expect((card as any)._effectiveListColumns).toBe(1);
+
+        // Re-expanded container -> expands back to 2 columns
+        (card as any)._updateEffectiveListColumns(650);
+        expect((card as any)._effectiveListColumns).toBe(2);
+    });
+
+    it('ensures carousel and grid items do not shrink into thin slivers and list pills do not wrap', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // Carousel items must be flex: 0 0 auto
+        expect(cssText).toContain('.carousel jellyha-media-item');
+        expect(cssText).toContain('flex: 0 0 auto');
+
+        // Grid items must have width: auto / min-width: 140px in horizontal
+        expect(cssText).toContain('.grid jellyha-media-item');
+        expect(cssText).toContain('.grid.horizontal jellyha-media-item');
+        expect(cssText).toContain('min-width: 140px');
+
+        // List pills must be nowrap to avoid 3rd row pushing description into border
+        expect(cssText).toContain('.media-item.list-item .list-meta-pills');
+        expect(cssText).toContain('flex-wrap: nowrap !important');
+
+        // List description must have max-height matching clamp
+        expect(cssText).toContain('max-height: calc(1.32em * 3)');
+
+        // Genre pills must have ellipsis styling
+        expect(cssText).toContain('.media-item.list-item .list-genre-pill');
+        expect(cssText).toContain('text-overflow: ellipsis');
     });
 });
 

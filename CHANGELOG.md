@@ -15,9 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added visual editor slider support (1 to 4 columns) with localized helper text across all 8 languages.
   - Responsive stacking: gracefully collapses to 1 column on narrower viewports and mobile screens (< 640px).
 - **Configurable Rows in Featured Layout**:
-  - Added `rows` configuration option (2 to 4, default 3) in `layout: 'featured'`.
-  - Visual editor slider (2 to 4 rows) with localized helper text across all 8 languages.
-  - Symmetrical height alignment: when set to 2 rows, the hero poster scales proportionally (~240px tall) to match the 2 side card rows; when set to 4 rows, it expands up to ~460px tall to balance the 4 side card rows.
+  - Added `rows` configuration option (2 or 3, default 3) in `layout: 'featured'`.
+  - Visual editor slider with localized helper text across all 8 languages.
+  - Symmetrical height alignment: when set to 2 rows, the hero poster scales proportionally (~240px tall) to match the 2 side card rows.
 
 ### Changed
 - **Refined Queue Card Poster Sizing & Spacing**:
@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Refined Featured hero poster hover to use a subtle elevation lift without harsh white halos, while preserving full standard hover behavior on Carousel, Grid, and List layouts.
 
 ### Fixed
+- **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:
+  - Capped H.264 level parameter to `42` (`h264-level=42`) for modern Chromecast devices. Google Cast specifications cap Chromecast Ultra H.264 hardware decoding at Level 4.2 (`1080p@60fps`), resolving playback stalls where streams marked with Level 5.1 were rejected by Google Cast's Default Media Receiver.
+  - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.
 - **Carousel and Grid Layout Stability**:
   - Restored full intrinsic sizing to Carousel items (resolving Next Up overlapping sliver collapse) and Grid items by removing premature host inline containment.
   - Locked Featured layout hero poster and queue cards to the intended 3-row height proportions, preventing vertical blowout and oversized posters when multiple columns are configured.
