@@ -281,33 +281,36 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(buildQueueBadges({}, { type: 'Movie', is_played: true }, false)).toEqual(['MOVIE', 'WATCHED']);
     });
 
-    it('ensures featured-queue-title does not cut prematurely and wraps with floated badges', async () => {
+    it('ensures featured-queue badges are pinned to top right and title/subtitle are tightly grouped', async () => {
         const { cardStyles } = await import('../src/styles/jellyha-library-styles');
         const cssText = cardStyles.cssText;
 
-        // featured-queue-title should wrap up to 2 lines and not have white-space: nowrap or padding-right: 76px
+        // featured-queue-title should wrap and not have white-space: nowrap or padding-right: 76px
         expect(cssText).toContain('.featured-queue-title');
-        expect(cssText).toContain('max-height: 2.55em');
+        expect(cssText).toContain('max-height: 2.5em');
         expect(cssText).toContain('word-break: break-word');
         expect(cssText).not.toMatch(/\.featured-queue-title\s*\{[^}]*white-space:\s*nowrap/);
         expect(cssText).not.toMatch(/\.featured-queue-title\s*\{[^}]*padding-right:\s*76px/);
 
-        // queue badges in normal mode float right to let title fill space below them
-        expect(cssText).toContain('.media-item.featured-queue-item:not(.cramped) .featured-queue-badges');
-        expect(cssText).toContain('float: right');
+        // queue badges are pinned to the top right in the same location and share 22px height
+        expect(cssText).toContain('.featured-queue-badges');
+        expect(cssText).toContain('top: 8px');
+        expect(cssText).toContain('right: 12px');
+        expect(cssText).toContain('.featured-queue-badges .status-badge');
+        expect(cssText).toContain('height: 22px');
 
-        // cramped mode retains absolute positioning and resets float
-        expect(cssText).toContain('.media-item.featured-queue-item.cramped .featured-queue-badges');
-        expect(cssText).toContain('float: none !important');
+        // title and subtitle are grouped in a container with tight gap
+        expect(cssText).toContain('.featured-queue-title-container');
+        expect(cssText).toContain('gap: 1px');
     });
 
-    it('ensures featured queue poster is refined to 60x90px and supports configurable rows styles', async () => {
+    it('ensures featured queue poster is refined to 68x102px and supports configurable rows styles', async () => {
         const { cardStyles } = await import('../src/styles/jellyha-library-styles');
         const cssText = cardStyles.cssText;
 
-        // Poster 60x90px sizing
-        expect(cssText).toContain('width: 60px !important');
-        expect(cssText).toContain('height: 90px !important');
+        // Poster 68x102px sizing
+        expect(cssText).toContain('width: 68px !important');
+        expect(cssText).toContain('height: 102px !important');
 
         // Dynamic featured-rows variable
         expect(cssText).toContain('grid-template-rows: repeat(var(--jf-featured-rows, 3), 1fr)');
@@ -352,14 +355,14 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
 
         // Rating pill vertical centering with star transform and span line-height
         expect(cssText).toContain('.rating-pill ha-icon');
-        expect(cssText).toContain('transform: translateY(0.5px)');
+        expect(cssText).toContain('transform: translateY(-1px)');
         expect(cssText).toContain('.rating-pill span');
         expect(cssText).toContain('display: inline-flex');
 
         // Genre pill glassmorphic styling and line-height centering
         expect(cssText).toContain('.genre-pill');
-        expect(cssText).toContain('background: rgba(255, 255, 255, 0.12)');
-        expect(cssText).toContain('border: 1px solid rgba(255, 255, 255, 0.22)');
+        expect(cssText).toContain('background: rgba(255, 255, 255, 0.14)');
+        expect(cssText).toContain('border: 1px solid rgba(255, 255, 255, 0.24)');
         expect(cssText).toContain('padding: 0 7px !important');
         expect(cssText).toContain('line-height: 1 !important');
 
@@ -464,14 +467,14 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(cssText).toContain('.grid-card-backdrop-scrim');
     });
 
-    it('ensures List layout supports Show Card Backdrop styling and 90px poster', async () => {
+    it('ensures List layout supports Show Card Backdrop styling and 76px poster', async () => {
         const { cardStyles } = await import('../src/styles/jellyha-library-styles');
         const cssText = cardStyles.cssText;
 
         expect(cssText).toContain('.media-item.list-item.has-backdrop');
         expect(cssText).toContain('.list-card-backdrop-scrim');
-        expect(cssText).toContain('width: 90px !important');
-        expect(cssText).toContain('padding: 10px 14px 10px 10px');
+        expect(cssText).toContain('width: 76px !important');
+        expect(cssText).toContain('padding: 10px');
     });
 
     it('ensures _renderListItem renders backdrop when show_card_backdrop is enabled', async () => {
@@ -496,8 +499,8 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(templateStr).toContain('has-backdrop');
         expect(templateStr).toContain('grid-card-backdrop-container');
         expect(templateStr).toContain('list-card-backdrop-scrim');
-        expect(templateStr).toContain('width=\\"90\\"');
-        expect(templateStr).toContain('height=\\"135\\"');
+        expect(templateStr).toContain('width=\\"76\\"');
+        expect(templateStr).toContain('height=\\"114\\"');
     });
 
     it('ensures _renderMediaItem for carousel and grid does not render backdrops', async () => {
@@ -541,17 +544,17 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(cssText).toContain('transform: none !important');
     });
 
-    it('ensures list card has fixed 155px height and description line clamp with three dots', async () => {
+    it('ensures list card has fixed 136px height and description line clamp with three dots', async () => {
         const { cardStyles } = await import('../src/styles/jellyha-library-styles');
         const cssText = cardStyles.cssText;
 
         expect(cssText).toContain('.media-item.list-item');
-        expect(cssText).toContain('height: 155px');
+        expect(cssText).toContain('height: 136px');
         expect(cssText).toContain('box-sizing: border-box');
         expect(cssText).toContain('text-overflow: ellipsis');
-        expect(cssText).toContain('-webkit-line-clamp: 3');
-        expect(cssText).toContain('.media-item.list-item.has-subtitle .list-description');
         expect(cssText).toContain('-webkit-line-clamp: 2');
+        expect(cssText).toContain('-webkit-line-clamp: 1');
+        expect(cssText).toContain('.media-item.list-item.meta-wrapped .list-description');
     });
 
     it('ensures list card retains border, border-radius, and padding even without backdrop', async () => {
@@ -561,7 +564,7 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(cssText).toContain('.media-item.list-item');
         expect(cssText).toContain('border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18))');
         expect(cssText).toContain('border-radius: var(--jf-poster-radius, 12px)');
-        expect(cssText).toContain('padding: 10px 14px 10px 10px');
+        expect(cssText).toContain('padding: 10px');
     });
 
     it('ensures _renderListItem adds has-subtitle class when subtitle is present', async () => {
@@ -765,11 +768,149 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(cssText).toContain('flex-wrap: nowrap !important');
 
         // List description must have max-height matching clamp
-        expect(cssText).toContain('max-height: calc(1.32em * 3)');
+        expect(cssText).toContain('max-height: calc(1.3em * 2)');
 
         // Genre pills must have ellipsis styling
         expect(cssText).toContain('.media-item.list-item .list-genre-pill');
         expect(cssText).toContain('text-overflow: ellipsis');
+    });
+
+    it('renders description on list and featured-queue items when enabled and hides when disabled', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            entity: 'sensor.jellyha_library',
+            show_description_on_hover: true,
+        };
+        mediaElem.item = {
+            name: 'Inception',
+            type: 'Movie',
+            overview: 'A thief who steals corporate secrets through dream-sharing technology.',
+            poster_url: '/image/1',
+        } as any;
+        mediaElem.layout = 'featured-queue';
+
+        // When enabled, list-description is rendered
+        let template = (mediaElem as any)._renderListItem();
+        let templateStr = JSON.stringify(template);
+        expect(templateStr).toContain('list-description');
+        expect(templateStr).toContain('A thief who steals corporate secrets through dream-sharing technology.');
+
+        // When show_description_on_hover is false, list-description is not rendered
+        mediaElem.config = {
+            entity: 'sensor.jellyha_library',
+            show_description_on_hover: false,
+        };
+        template = (mediaElem as any)._renderListItem();
+        templateStr = JSON.stringify(template);
+        expect(templateStr).not.toContain('list-description');
+    });
+
+    it('ensures list and featured-queue card hover and active click effects are configured on card not poster', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // Whole card active click effect
+        expect(cssText).toContain('.media-item.list-item:active');
+        expect(cssText).toContain('scale(0.98)');
+
+        // Poster container hover effect suppressed (no border on smaller posters)
+        expect(cssText).toContain('.media-item.list-item:hover .poster-container');
+        expect(cssText).toContain('border: none !important');
+    });
+
+    it('renders rating with rating-pill style and runtime with genre-pill style without clock icon on poster', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            entity: 'sensor.jellyha_library',
+            show_ratings: true,
+            show_runtime: true,
+        };
+        mediaElem.item = {
+            name: 'Inception',
+            type: 'Movie',
+            community_rating: 8.8,
+            runtime_minutes: 148,
+            poster_url: '/image/1',
+        } as any;
+        mediaElem.layout = 'grid';
+
+        const template = (mediaElem as any)._renderMediaItem();
+        const templateStr = JSON.stringify(template);
+
+        // Rating badge on poster should have rating-pill class and star icon
+        expect(templateStr).toContain('rating rating-pill');
+        expect(templateStr).toContain('mdi:star');
+        expect(templateStr).toContain('8.8');
+
+        // Runtime badge on poster should have genre-pill class, formatted runtime, and NO clock icon
+        expect(templateStr).toContain('runtime genre-pill');
+        expect(templateStr).toContain('2h 28m');
+        expect(templateStr).not.toContain('mdi:clock-outline');
+    });
+
+    it('ensures poster rating and runtime badge styles are centralized in sharedMetaRowStyles', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // .rating and .runtime on poster should define position and transition only
+        expect(cssText).toContain('.rating');
+        expect(cssText).toContain('bottom: 6px');
+        expect(cssText).toContain('right: 6px');
+        expect(cssText).toContain('.runtime');
+        expect(cssText).toContain('left: 6px');
+
+        // Redundant duplicate .rating-pill in jellyha-library-styles should be removed (only sharedMetaRowStyles defines it)
+        const ratingPillOccurrences = (cssText.match(/\.rating-pill\s*\{/g) || []).length;
+        expect(ratingPillOccurrences).toBe(1);
+    });
+
+    it('ensures smaller posters in list and featured side cards have no border while hero poster retains border', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // Big hero poster retains its border
+        expect(cssText).toContain('.poster-container.featured-hero-poster .poster-inner');
+        expect(cssText).toContain('border: 1px solid var(--ha-card-border-color, var(--jf-border-color))');
+
+        // Smaller posters in list and featured side items have border removed
+        expect(cssText).toContain('.media-item.list-item .poster-container');
+        expect(cssText).toContain('.poster-container.featured-queue-poster');
+        expect(cssText).toContain('.featured-side .poster-container');
+    });
+
+    it('ensures smaller cards backdrop scrim matches now playing screensaver blackness and has subtle blur', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // Scrim blackness starts at 0.35 instead of opaque 0.88
+        expect(cssText).toContain('.list-card-backdrop-scrim');
+        expect(cssText).toContain('rgba(0, 0, 0, 0.35) 0%');
+        expect(cssText).toContain('rgba(0, 0, 0, 0.42) 35%');
+
+        // Subtle 2px blur on backdrop image
+        expect(cssText).toContain('.media-item.list-item .grid-card-backdrop');
+        expect(cssText).toContain('filter: blur(2px) brightness(0.92)');
+        expect(cssText).toContain('transform: scale(1.03)');
+    });
+
+    it('ensures metadata and description font size is 11px for Featured and List layout', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        // Metadata text (year, runtime, created date, separator dot) must be 11px
+        expect(cssText).toContain('.list-metadata .meta-text');
+        expect(cssText).toMatch(/\.list-metadata\s+\.meta-text[^{]*\{[^}]*font-size:\s*11px/);
+
+        // Description must be 11px
+        expect(cssText).toContain('.list-description');
+        expect(cssText).toMatch(/\.list-description\s*\{[^}]*font-size:\s*11px/);
+
+        // Featured Hero metadata and pills must be 11px
+        expect(cssText).toContain('.featured-hero-scrim .meta-text');
+        expect(cssText).toMatch(/\.featured-hero-scrim\s+\.meta-text[^{]*\{[^}]*font-size:\s*11px/);
+        expect(cssText).toMatch(/\.featured-hero-scrim\s+\.rating-pill[^{]*\{[^}]*font-size:\s*11px/);
     });
 });
 

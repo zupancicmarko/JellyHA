@@ -347,15 +347,14 @@ export class JellyHANowPlayingCard extends LitElement {
                                     <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
                                 ` : nothing}
                                 ${!isInlineBadge && ratingStr ? html`
-                                    <span class="poster-badge rating-badge">
+                                    <span class="poster-badge rating-badge rating-pill">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${ratingStr}
+                                        <span>${ratingStr}</span>
                                     </span>
                                 ` : nothing}
                                 ${!isInlineBadge && runtimeStr ? html`
-                                    <span class="poster-badge runtime-badge">
-                                        <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${runtimeStr}
+                                    <span class="poster-badge runtime-badge genre-pill">
+                                        <span>${runtimeStr}</span>
                                     </span>
                                 ` : nothing}
 
@@ -741,6 +740,8 @@ export class JellyHANowPlayingCard extends LitElement {
         const rawRating = item.community_rating ?? item.rating;
         const communityRating = (typeof rawRating === 'number' && !isNaN(rawRating) && rawRating > 0) ? rawRating.toFixed(1) : (rawRating ? String(rawRating) : '');
         const runtime = item.runtime_minutes ? formatRuntime(item.runtime_minutes) : '';
+        const runtimeStr = (this._config.show_runtime !== false && runtime) ? runtime : '';
+        const ratingStr = (this._config.show_ratings !== false && communityRating) ? communityRating : '';
         const rawGenres = item.genres && item.genres.length > 0 ? item.genres.slice(0, 3) : [];
         const genres = this._config.show_genres !== false ? rawGenres : [];
 
@@ -820,6 +821,17 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ` : nothing}
                                 </div>
                             ` : nothing}
+                            ${!isInlineBadge && ratingStr ? html`
+                                <span class="poster-badge rating-badge rating-pill">
+                                    <ha-icon icon="mdi:star"></ha-icon>
+                                    <span>${ratingStr}</span>
+                                </span>
+                            ` : nothing}
+                            ${!isInlineBadge && runtimeStr ? html`
+                                <span class="poster-badge runtime-badge genre-pill">
+                                    <span>${runtimeStr}</span>
+                                </span>
+                            ` : nothing}
                         </div>
 
                         <div class="info-container">
@@ -844,17 +856,17 @@ export class JellyHANowPlayingCard extends LitElement {
                                     </div>
                                 ` : nothing}
                                 ${this._renderMetaRow({
-                                    badge: (showBadge && badgeStyle === 'inline') ? html`
+                                    badge: (showBadge && isInlineBadge) ? html`
                                         <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
                                         ${episodeBadgeText ? html`
                                             <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
                                         ` : nothing}
                                     ` : nothing,
                                     year: this._config.show_year !== false && item.year ? item.year : undefined,
-                                    runtime: this._config.show_runtime !== false && runtime ? runtime : undefined,
-                                    rating: this._config.show_ratings !== false && communityRating ? communityRating : undefined,
+                                    runtime: isInlineBadge ? runtimeStr : undefined,
+                                    rating: isInlineBadge ? ratingStr : undefined,
                                     genres,
-                                    isInline: true,
+                                    isInline: isInlineBadge,
                                 })}
                                 ${this._config.show_description !== false && item.description ? html`
                                     <div class="idle-card-desc">${item.description}</div>
@@ -2414,38 +2426,14 @@ export class JellyHANowPlayingCard extends LitElement {
         .rating-badge {
             bottom: 6px;
             right: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #F59E0B;
-            padding: var(--short-badge-padding, 3px 6px);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        .rating-badge ha-icon {
-            --mdc-icon-size: 13px;
-            color: #F59E0B;
-            margin-top: -1px;
+            position: absolute;
+            z-index: 5;
         }
         .runtime-badge {
             bottom: 6px;
             left: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            background: rgba(0, 0, 0, 0.6);
-            color: rgba(255, 255, 255, 0.85);
-            padding: var(--short-badge-padding, 3px 6px);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        .runtime-badge ha-icon {
-            --mdc-icon-size: 12px;
-            color: rgba(255, 255, 255, 0.85);
-            margin-top: -1px;
+            position: absolute;
+            z-index: 5;
         }
 
         /* Rewind overlay */
@@ -3987,7 +3975,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         .idle-overview {
             margin: 2px 0 0 0 !important;
-            font-size: 0.8rem;
+            font-size: 12px !important;
             line-height: 1.35;
             color: rgba(255, 255, 255, 0.72);
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
@@ -4102,6 +4090,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Movie / no subtitle: Title followed directly by meta row */
+        .idle-card-mode .title-row + .meta-line,
         .idle-card-mode .title-row + .idle-meta-row,
         .idle-showcase-card .title-row + .idle-meta-row {
             margin-top: 8px !important;
@@ -4109,6 +4098,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Episode / with subtitle: Subtitle row followed by meta row */
+        .idle-card-mode .subtitle-row + .meta-line,
         .idle-card-mode .subtitle-row + .idle-meta-row,
         .idle-showcase-card .subtitle-row + .idle-meta-row {
             margin-top: 5px !important;
@@ -4116,7 +4106,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         .idle-card-desc {
-            font-size: 0.82rem;
+            font-size: 12px !important;
             color: rgba(255, 255, 255, 0.72);
             line-height: 1.35;
             margin-top: 2px;
@@ -4125,6 +4115,20 @@ export class JellyHANowPlayingCard extends LitElement {
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .idle-showcase-card .idle-meta-row,
+        .idle-card-mode .idle-meta-row,
+        .idle-card-mode .meta-line,
+        .idle-showcase-card .meta-text,
+        .idle-card-mode .meta-text,
+        .idle-showcase-card .meta-dot,
+        .idle-card-mode .meta-dot,
+        .idle-showcase-card .rating-pill,
+        .idle-card-mode .rating-pill,
+        .idle-showcase-card .genre-pill,
+        .idle-card-mode .genre-pill {
+            font-size: 12px !important;
         }
 
         @container now-playing (max-width: 320px) {

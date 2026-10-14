@@ -1,4 +1,4 @@
-import { LitElement, html, nothing, TemplateResult } from 'lit';
+import { LitElement, html, nothing, TemplateResult, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, MediaItem, JellyHALibraryCardConfig } from '../shared/types';
 import { isNewItem, formatDate, formatRuntime, addImageParams } from '../shared/utils';
@@ -24,20 +24,54 @@ export class JellyHAMediaItem extends LitElement {
 
   // Local state for rewind animation
   @state() private _rewindActive: boolean = false;
+  private _metaResizeObserver?: ResizeObserver;
 
   static styles = cardStyles;
+
+  firstUpdated(changedProps: PropertyValues): void {
+    super.firstUpdated(changedProps);
+    if (typeof ResizeObserver !== 'undefined') {
+      this._metaResizeObserver = new ResizeObserver(() => {
+        this._checkMetaWrap();
+      });
+      const metaRow = this.shadowRoot?.querySelector('.list-meta-row');
+      if (metaRow) {
+        this._metaResizeObserver.observe(metaRow);
+      }
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._metaResizeObserver?.disconnect();
+  }
+
+  updated(changedProps: PropertyValues): void {
+    super.updated(changedProps);
+    this._checkMetaWrap();
+    const metaRow = this.shadowRoot?.querySelector('.list-meta-row');
+    if (metaRow && this._metaResizeObserver) {
+      this._metaResizeObserver.observe(metaRow);
+    }
+  }
+
+  private _checkMetaWrap(): void {
+    const metaRow = this.shadowRoot?.querySelector('.list-meta-row') as HTMLElement | null;
+    const card = this.shadowRoot?.querySelector('.media-item.list-item') as HTMLElement | null;
+    if (metaRow && card) {
+      const isWrapped = metaRow.offsetHeight > 22;
+      card.classList.toggle('meta-wrapped', isWrapped);
+    }
+  }
 
   protected render(): TemplateResult {
     if (!this.item || !this.config || !this.hass) return html``;
 
-    if (this.layout === 'list') {
+    if (this.layout === 'list' || this.layout === 'featured-queue') {
       return this._renderListItem();
     }
     if (this.layout === 'featured-hero') {
       return this._renderFeaturedHero();
-    }
-    if (this.layout === 'featured-queue') {
-      return this._renderFeaturedQueue();
     }
     return this._renderMediaItem();
   }
@@ -74,7 +108,9 @@ export class JellyHAMediaItem extends LitElement {
       ? item.genres.slice(0, 3)
       : [];
     const hasGenres = genres.length > 0;
-    const showBackdrop = Boolean(this.config.show_card_backdrop);
+    const showBackdrop = this.config.show_card_backdrop !== undefined
+      ? Boolean(this.config.show_card_backdrop)
+      : (this.config.featured_queue_backdrop !== false);
     const backdropSrc = showBackdrop
       ? addImageParams(
           item.backdrop_url || (this.config.use_series_image && item.series_poster_url ? item.series_poster_url : item.poster_url),
@@ -88,9 +124,13 @@ export class JellyHAMediaItem extends LitElement {
     const hasStatusBadge = isNew || isWatched || isUnplayedSeries;
     const hasBadges = (showMediaTypeBadge || hasStatusBadge) && !isPlaying;
 
+    const isCramped = this.layout === 'featured-queue' && (this.isCramped !== undefined
+      ? this.isCramped
+      : (Boolean(this.classList?.contains('cramped')) || (this.config.columns || 1) >= 3));
+
     return html`
       <div
-        class="media-item list-item ${showBackdrop ? 'has-backdrop' : ''} ${isPlaying ? 'playing' : ''} ${this.config.show_title === false ? 'no-title' : ''} ${subtitle ? 'has-subtitle' : ''}"
+        class="media-item list-item ${this.layout === 'featured-queue' ? 'featured-queue-item' : ''} ${showBackdrop ? 'has-backdrop' : ''} ${isPlaying ? 'playing' : ''} ${this.config.show_title === false ? 'no-title' : ''} ${subtitle ? 'has-subtitle' : ''} ${isCramped ? 'cramped' : ''}"
         tabindex="0"
         role="button"
         aria-label="${item.name}"
@@ -130,8 +170,8 @@ export class JellyHAMediaItem extends LitElement {
           240
         )}"
                 alt="${item.name}"
-                width="90"
-                height="135"
+                width="76"
+                height="114"
                 loading="lazy"
                 decoding="async"
                 @load="${this._handleImageLoad}"
@@ -156,18 +196,26 @@ export class JellyHAMediaItem extends LitElement {
           <div class="list-header">
             <div class="list-title-container">
               ${this.config.show_title !== false
-            ? html`<h3 class="list-title">${item.name}</h3>`
+            ? html`<h3 class="list-title" title="${item.name}">${item.name}</h3>`
             : nothing}
               ${subtitle
-            ? html`<p class="list-subtitle">${subtitle}</p>`
+            ? html`<p class="list-subtitle" title="${subtitle}">${subtitle}</p>`
             : nothing}
             </div>
             ${hasBadges ? html`
-              <div class="list-badges">
+              <div class="list-badges ${isCramped ? 'cramped-badges' : ''}">
                 ${showMediaTypeBadge
-            ? html`<span class="media-type-badge list-type-badge ${badgeTypeClass}">${badgeText}</span>`
-            : nothing}
-                ${this._renderStatusBadge(item, isNew, true)}
+                  ? html`<span class="media-type-badge list-type-badge ${badgeTypeClass}">${badgeText}</span>`
+                  : nothing}
+                ${isNew
+                  ? html`<span class="new-badge inline-badge">${localize(this.hass?.locale?.language || this.hass?.language, 'new')}</span>`
+                  : nothing}
+                ${showWatched && item.is_played
+                  ? html`<div class="status-badge watched inline-badge"><ha-icon icon="mdi:check-bold"></ha-icon></div>`
+                  : nothing}
+                ${showWatched && item.type === 'Series' && (item.unplayed_count || 0) > 0
+                  ? html`<div class="status-badge unplayed inline-badge">${item.unplayed_count}</div>`
+                  : nothing}
               </div>
             ` : nothing}
           </div>
@@ -206,9 +254,14 @@ export class JellyHAMediaItem extends LitElement {
             ` : nothing}
           </div>
           
-          ${this.config.show_description_on_hover !== false && item.description
-        ? html`<p class="list-description">${item.description}</p>`
-        : nothing}
+          ${this.config.show_description_on_hover !== false && (item.description || (item as any).overview) && !isCramped
+            ? html`<p class="list-description" title="${item.description || (item as any).overview}">${item.description || (item as any).overview}</p>`
+            : nothing}
+          ${isPlaying ? html`
+            <div class="list-action">
+              <ha-icon icon="mdi:volume-high" class="list-playing-icon"></ha-icon>
+            </div>
+          ` : nothing}
         </div>
       </div>
     `;
@@ -283,18 +336,17 @@ export class JellyHAMediaItem extends LitElement {
             
             ${((this.config as any).show_ratings !== false && (this.config as any).show_rating !== false) && rating && !isPlaying
         ? html`
-                  <span class="rating">
+                  <span class="rating rating-pill">
                     <ha-icon icon="mdi:star"></ha-icon>
-                    ${rating.toFixed(1)}
+                    <span>${rating.toFixed(1)}</span>
                   </span>
                 `
         : nothing}
             
             ${this.config.show_runtime !== false && item.runtime_minutes && !isPlaying
         ? html`
-                  <span class="runtime">
-                    <ha-icon icon="mdi:clock-outline"></ha-icon>
-                    ${formatRuntime(item.runtime_minutes)}
+                  <span class="runtime genre-pill">
+                    <span>${formatRuntime(item.runtime_minutes)}</span>
                   </span>
                 `
         : nothing}
@@ -305,13 +357,13 @@ export class JellyHAMediaItem extends LitElement {
             ? html`<span class="overlay-year">${item.year ?? new Date(item.date_added).getFullYear()}</span>`
             : nothing}
               ${this.config.show_title !== false
-            ? html`<h3 class="overlay-title">${item.name}</h3>`
+            ? html`<h3 class="overlay-title" title="${item.name}">${item.name}</h3>`
             : nothing}
               ${this.config.show_genres !== false && item.genres && item.genres.length > 0
             ? html`<span class="overlay-genres">${item.genres.slice(0, 3).join(', ')}</span>`
             : nothing}
               ${this.config.show_description_on_hover !== false && item.description
-            ? html`<p class="overlay-description">${item.description}</p>`
+            ? html`<p class="overlay-description" title="${item.description}">${item.description}</p>`
             : nothing}
             </div>` : nothing}
 
@@ -321,7 +373,7 @@ export class JellyHAMediaItem extends LitElement {
         
         ${hasInfoBelow ? html`
           <div class="media-info-below">
-            ${hasTitle ? html`<p class="media-title">${item.name}</p>` : nothing}
+            ${hasTitle ? html`<p class="media-title" title="${item.name}">${item.name}</p>` : nothing}
             ${hasYear ? html`<p class="media-year">${item.year ?? new Date(item.date_added!).getFullYear()}</p>` : nothing}
             ${hasDateAdded ? html`<p class="media-date-added">${formatDate(item.date_added!, this.hass?.locale?.language || this.hass?.language)}</p>` : nothing}
           </div>
@@ -778,10 +830,10 @@ export class JellyHAMediaItem extends LitElement {
 
             <div class="featured-hero-scrim">
               ${showTitle
-                ? html`<h3 class="featured-hero-title">${item.name}</h3>`
+                ? html`<h3 class="featured-hero-title" title="${item.name}">${item.name}</h3>`
                 : nothing}
               ${showTitle && item.series_name && item.name !== item.series_name
-                ? html`<p class="featured-hero-subtitle">${item.series_name}</p>`
+                ? html`<p class="featured-hero-subtitle" title="${item.series_name}">${item.series_name}</p>`
                 : nothing}
               ${this._renderMetaLine(item, rating)}
             </div>
@@ -794,158 +846,7 @@ export class JellyHAMediaItem extends LitElement {
   }
 
   private _renderFeaturedQueue(): TemplateResult {
-    const item = this.item;
-    const isNew = isNewItem(item, this.config.new_badge_days || 0);
-    const rating = this._getRating(item);
-    const showMediaTypeBadge = this.config.show_media_type_badge !== false;
-    const isPlaying = this._isItemPlaying(item);
-    const showBackdrop = this.config.show_card_backdrop !== undefined
-      ? this.config.show_card_backdrop !== false
-      : this.config.featured_queue_backdrop !== false;
-    const backdropSrc = showBackdrop
-      ? addImageParams(
-          item.backdrop_url || (this.config.use_series_image && item.series_poster_url ? item.series_poster_url : item.poster_url),
-          600
-        )
-      : '';
-    const isCramped = this.isCramped !== undefined
-      ? this.isCramped
-      : (this.classList.contains('cramped') || (this.config.columns || 1) >= 3);
-    const isEpisode = Boolean(item.series_name && item.name !== item.series_name);
-    const hasMediaBadge = showMediaTypeBadge && !isPlaying;
-    const showWatched = this.config.show_watched_status !== false;
-    const isWatched = showWatched && item.is_played;
-    const isUnplayedSeries = showWatched && item.type === 'Series' && (item.unplayed_count || 0) > 0;
-    const showNewBadge = isNew && !isPlaying;
-    const hasStatusBadge = !isPlaying && (isWatched || isUnplayedSeries);
-    const hasBadges = hasMediaBadge || showNewBadge || hasStatusBadge;
-    const showTitle = this.config.show_title !== false;
-
-    return html`
-      <div
-        class="media-item featured-queue-item ${showBackdrop ? 'has-backdrop' : ''} ${isPlaying ? 'playing' : ''} ${isCramped ? 'cramped' : ''}"
-        tabindex="0"
-        role="button"
-        aria-label="${item.name}"
-        @mousedown="${this._handleMouseDown}"
-        @mouseup="${this._handleMouseUp}"
-        @mouseleave="${this._handleMouseLeave}"
-        @touchstart="${this._handleTouchStart}"
-        @touchmove="${this._handleTouchMove}"
-        @touchend="${this._handleTouchEnd}"
-        @touchcancel="${this._handleTouchEnd}"
-        @keydown="${this._handleKeydown}"
-        @contextmenu="${this._handleContextMenu}"
-      >
-        ${showBackdrop ? html`
-          <div class="featured-queue-backdrop-container">
-            <img
-              class="featured-queue-backdrop"
-              src="${backdropSrc}"
-              alt=""
-              loading="lazy"
-              decoding="async"
-              @load="${this._handleImageLoad}"
-              @error="${this._handleImageError}"
-            />
-            <div class="featured-queue-backdrop-scrim"></div>
-          </div>
-        ` : nothing}
-
-        <div class="featured-queue-poster-wrapper">
-          <div class="poster-container featured-queue-poster" id="poster-${item.id}">
-            <div class="poster-inner">
-              <img
-                class="poster"
-                src="${addImageParams(
-                  this.config.use_series_image && item.series_poster_url
-                    ? item.series_poster_url
-                    : item.poster_url,
-                  240
-                )}"
-                alt="${item.name}"
-                width="60"
-                height="90"
-                loading="lazy"
-                decoding="async"
-                @load="${this._handleImageLoad}"
-                @error="${this._handleImageError}"
-              />
-              <div class="poster-skeleton"></div>
-
-              ${this._renderNowPlayingOverlay(item)}
-            </div>
-          </div>
-        </div>
-
-        ${isCramped && hasBadges ? html`
-          <div class="featured-queue-badges cramped-badges">
-            ${this._renderQueueBadges(item, hasMediaBadge, showNewBadge, isWatched, isUnplayedSeries, isPlaying)}
-          </div>
-        ` : nothing}
-
-        ${!isCramped ? html`
-          <div class="featured-queue-info">
-            ${showTitle ? html`
-              <h4 class="featured-queue-title">
-                ${hasBadges ? html`
-                  <span class="featured-queue-badges">
-                    ${this._renderQueueBadges(item, hasMediaBadge, showNewBadge, isWatched, isUnplayedSeries, isPlaying)}
-                  </span>
-                ` : nothing}
-                ${item.name}
-              </h4>
-            ` : (hasBadges ? html`
-              <div class="featured-queue-badges">
-                ${this._renderQueueBadges(item, hasMediaBadge, showNewBadge, isWatched, isUnplayedSeries, isPlaying)}
-              </div>
-            ` : nothing)}
-            ${showTitle && isEpisode && item.series_name ? html`
-              <span class="featured-queue-subtitle">${item.series_name}</span>
-            ` : nothing}
-            ${this._renderMetaLine(item, rating)}
-          </div>
-        ` : nothing}
-
-        ${isPlaying ? html`
-          <div class="featured-queue-action">
-            <ha-icon icon="mdi:volume-high" class="featured-queue-playing-icon"></ha-icon>
-          </div>
-        ` : nothing}
-      </div>
-    `;
-  }
-
-  private _renderQueueBadges(
-    item: MediaItem,
-    hasMediaBadge: boolean,
-    showNewBadge: boolean,
-    isWatched: boolean,
-    isUnplayedSeries: boolean,
-    isPlaying: boolean
-  ): TemplateResult {
-    return html`
-      ${hasMediaBadge ? html`
-        <span class="media-type-badge inline-badge ${item.series_name ? 'series' : (item.type === 'Movie' ? 'movie' : 'series')}">
-          ${item.series_name && item.season != null && item.episode != null && !isNaN(Number(item.season)) && !isNaN(Number(item.episode))
-            ? `S${String(Number(item.season)).padStart(2, '0')}E${String(Number(item.episode)).padStart(2, '0')}`
-            : (item.type === 'Movie' ? 'MOVIE' : 'SERIES')}
-        </span>
-      ` : nothing}
-      ${showNewBadge ? html`
-        <span class="new-badge inline-badge">${localize(this.hass?.locale?.language || this.hass?.language, 'new')}</span>
-      ` : nothing}
-      ${isWatched && !isPlaying ? html`
-        <div class="status-badge watched inline-badge">
-          <ha-icon icon="mdi:check-bold"></ha-icon>
-        </div>
-      ` : nothing}
-      ${isUnplayedSeries && !isPlaying ? html`
-        <div class="status-badge unplayed inline-badge">
-          ${item.unplayed_count}
-        </div>
-      ` : nothing}
-    `;
+    return this._renderListItem();
   }
 }
 

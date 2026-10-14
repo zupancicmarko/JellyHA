@@ -279,4 +279,102 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
         expect(resStr).toContain('Comedy');
         expect(resStr).toContain('meta-dot');
     });
+
+    it('ensures screensaver metadata and description (both poster and fanart) font size is 12px', async () => {
+        const { JellyHANowPlayingCard } = await import('../src/cards/jellyha-now-playing-card');
+        const styles = (JellyHANowPlayingCard as any).styles;
+        const cssText = Array.isArray(styles) ? styles.map((s: any) => s.cssText).join(' ') : (styles?.cssText || '');
+
+        // Screensaver descriptions: both poster (.idle-card-desc) and fanart (.idle-overview) must be 12px
+        expect(cssText).toMatch(/\.idle-overview\s*\{[^}]*font-size:\s*12px/);
+        expect(cssText).toMatch(/\.idle-card-desc\s*\{[^}]*font-size:\s*12px/);
+
+        // Screensaver metadata items must be 12px
+        expect(cssText).toMatch(/\.idle-meta-row[^{]*\{[^}]*font-size:\s*12px/);
+    });
+
+    it('places runtime and rating on the poster in poster screensaver when badge_style is poster', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            badge_style: 'poster',
+            show_media_type_badge: true,
+            show_year: true,
+            show_runtime: true,
+            show_ratings: true,
+            show_genres: true,
+        } as JellyHANowPlayingCardConfig);
+
+        const idleMovie = {
+            id: 'mov_1',
+            name: 'Captain Hook: The Cursed Tides',
+            type: 'Movie',
+            year: 2025,
+            runtime_minutes: 90,
+            community_rating: 4.9,
+            genres: ['Adventure', 'Action', 'Horror'],
+            poster_url: '/api/hook.jpg',
+            backdrop_url: '/api/hook_bg.jpg',
+        };
+
+        const template = (card as any)._renderIdleCardMode(idleMovie, null, 'en');
+        const templateStr = JSON.stringify(template);
+
+        // Poster badges for media type, rating, and runtime should appear on poster
+        expect(templateStr).toContain('poster-badge media-type-badge');
+        expect(templateStr).toContain('poster-badge rating-badge rating-pill');
+        expect(templateStr).toContain('poster-badge runtime-badge genre-pill');
+        expect(templateStr).toContain('4.9');
+        expect(templateStr).toContain('1h 30m');
+
+        // Runtime and rating should NOT appear inline in the metadata row next to the title
+        expect(templateStr).not.toContain('idle-rating-pill rating-pill');
+    });
+
+    it('places media badge, runtime, and rating inline in poster screensaver when badge_style is inline', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            badge_style: 'inline',
+            show_media_type_badge: true,
+            show_year: true,
+            show_runtime: true,
+            show_ratings: true,
+            show_genres: true,
+        } as JellyHANowPlayingCardConfig);
+
+        const idleMovie = {
+            id: 'mov_1',
+            name: 'Captain Hook: The Cursed Tides',
+            type: 'Movie',
+            year: 2025,
+            runtime_minutes: 90,
+            community_rating: 4.9,
+            genres: ['Adventure', 'Action', 'Horror'],
+            poster_url: '/api/hook.jpg',
+            backdrop_url: '/api/hook_bg.jpg',
+        };
+
+        const template = (card as any)._renderIdleCardMode(idleMovie, null, 'en');
+        const templateStr = JSON.stringify(template);
+
+        // Poster badges for rating and runtime should NOT appear on poster
+        expect(templateStr).not.toContain('poster-badge rating-badge');
+        expect(templateStr).not.toContain('poster-badge runtime-badge');
+
+        // Media type, rating, and runtime should appear inline
+        expect(templateStr).toContain('media-type-badge inline-badge');
+        expect(templateStr).toContain('idle-rating-pill rating-pill');
+        expect(templateStr).toContain('1h 30m');
+    });
+
+    it('ensures rating number span is lifted by 1px with translateY(-0.5px)', async () => {
+        const { sharedMetaRowStyles } = await import('../src/styles/jellyha-shared-styles');
+        const cssText = sharedMetaRowStyles.cssText;
+
+        expect(cssText).toContain('.rating-pill span');
+        expect(cssText).toContain('transform: translateY(-0.5px)');
+    });
 });

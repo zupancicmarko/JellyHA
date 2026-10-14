@@ -389,8 +389,8 @@ export const cardStyles = css`
     display: grid;
     /* Uses exact column count with minmax(0, 1fr) so columns can shrink fluidly */
     grid-template-columns: repeat(var(--jf-list-columns, 1), minmax(0, 1fr));
-    gap: 12px 16px;
-    padding: 8px 16px 20px 16px;
+    gap: 10px 14px;
+    padding: 8px 14px 12px 14px;
     width: 100%;
     box-sizing: border-box;
   }
@@ -434,11 +434,11 @@ export const cardStyles = css`
   .featured {
     display: flex;
     align-items: stretch;
-    gap: 16px;
-    padding: 8px 16px 16px 16px;
+    gap: 10px;
+    padding: 8px 14px 14px 14px;
     box-sizing: border-box;
     width: 100%;
-    max-height: 400px;
+    max-height: 460px;
   }
 
   .featured.single {
@@ -447,26 +447,26 @@ export const cardStyles = css`
 
   .featured.single .featured-hero-container {
     flex: 0 0 auto;
-    max-width: 250px;
+    max-width: 290px;
     width: 100%;
-    max-height: 380px;
+    max-height: 435px;
     margin: 0 auto;
   }
 
   .featured-hero-container {
     flex: 0 0 42%;
-    max-width: 260px;
+    max-width: 290px;
     min-width: 180px;
-    max-height: 380px;
+    max-height: 435px;
     display: flex;
     flex-direction: column;
   }
 
   .featured.multi-column .featured-hero-container {
     flex: 0 0 auto;
-    width: clamp(200px, 30%, 250px);
-    max-width: 250px;
-    max-height: 380px;
+    width: clamp(200px, 30%, 290px);
+    max-width: 290px;
+    max-height: 435px;
   }
 
   .featured.rows-2 .featured-hero-container {
@@ -505,7 +505,7 @@ export const cardStyles = css`
   .poster-container.featured-hero-poster {
     width: 100% !important;
     height: 100% !important;
-    max-height: 380px;
+    max-height: 435px;
     flex: 1;
     aspect-ratio: 2/3;
     border-radius: var(--jf-poster-radius, 12px);
@@ -583,13 +583,14 @@ export const cardStyles = css`
   }
 
   .featured-hero-subtitle {
-    margin: 0;
+    margin: -1px 0 0 0;
     font-size: 0.85rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.15;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
   }
 
@@ -606,7 +607,7 @@ export const cardStyles = css`
   .meta-text-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 2px 6px;
     row-gap: 2px;
     flex-wrap: wrap;
     line-height: 1;
@@ -623,87 +624,37 @@ export const cardStyles = css`
   .meta-text {
     display: inline-flex;
     align-items: center;
-    height: 22px;
+    height: 16px;
     line-height: 1;
-    font-size: 0.82rem;
+    font-size: 11px;
     font-weight: 500;
     color: var(--jf-text-secondary);
     white-space: nowrap;
-    transform: translateY(1px);
+    transform: translateY(0.5px);
   }
 
   .meta-dot {
     opacity: 0.6;
-    font-size: 0.72rem;
+    font-size: 11px;
     color: var(--jf-text-secondary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 22px;
-    line-height: 1;
-    transform: translateY(0.5px);
-  }
-
-  .rating-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    background: rgba(245, 158, 11, 0.25);
-    border: 1px solid rgba(245, 158, 11, 0.45);
-    color: #fbbf24;
-    height: 22px;
-    padding: 1px 6px 0 6px;
-    border-radius: 4px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    line-height: 1;
-    box-sizing: border-box;
-    flex-shrink: 0;
-  }
-
-  .rating-pill ha-icon {
-    --mdc-icon-size: 12px;
-    width: 12px;
-    height: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(0.5px);
-    margin: 0;
-    padding: 0;
-    flex-shrink: 0;
-  }
-
-  .rating-pill span {
-    display: inline-flex;
-    align-items: center;
+    height: 16px;
     line-height: 1;
     transform: translateY(0.5px);
   }
 
   /* Scrim overrides for hero poster metadata */
   .featured-hero-scrim .meta-text {
+    font-size: 11px !important;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
   }
 
   .featured-hero-scrim .meta-dot {
+    font-size: 11px !important;
     color: rgba(255, 255, 255, 0.6);
-  }
-
-  .featured-hero-scrim .rating-pill {
-    background: rgba(245, 158, 11, 0.25);
-    border: 1px solid rgba(245, 158, 11, 0.5);
-    color: #fbbf24;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  }
-
-  .featured-hero-scrim .genre-pill {
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   }
 
   /* Featured Queue (Side items) */
@@ -725,16 +676,23 @@ export const cardStyles = css`
     height: 100%;
   }
 
+  .featured-side .media-item.list-item,
+  .featured-side .media-item.featured-queue-item {
+    height: 100%;
+    min-height: 120px;
+    width: 100%;
+  }
+
   .media-item.featured-queue-item {
     flex: 1;
     width: 100%;
     height: 100%;
-    min-height: 104px;
+    min-height: 123px;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 12px;
-    padding: 7px 12px;
+    padding: 8px 12px;
     background: color-mix(in srgb, var(--jf-text), transparent 96%);
     border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.16));
     border-radius: var(--jf-poster-radius, 12px) !important;
@@ -772,12 +730,12 @@ export const cardStyles = css`
   }
 
   .poster-container.featured-queue-poster {
-    width: 60px !important;
-    height: 90px !important;
+    width: 68px !important;
+    height: 102px !important;
     aspect-ratio: 2/3;
     border-radius: 6px;
     overflow: hidden;
-    border: 1px solid var(--jf-border-color);
+    border: none !important;
     position: relative;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
@@ -844,6 +802,7 @@ export const cardStyles = css`
     justify-content: center;
     gap: 3px;
     overflow: hidden;
+    padding-top: 14px;
   }
 
   .featured-queue-info .meta-text-row {
@@ -860,25 +819,45 @@ export const cardStyles = css`
   .featured-queue-badges {
     position: absolute;
     top: 8px;
-    right: 10px;
+    right: 12px;
     z-index: 4;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     pointer-events: none;
   }
 
-  .media-item.featured-queue-item:not(.cramped) .featured-queue-badges {
-    position: static;
-    float: right;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 8px;
-    margin-bottom: 2px;
+  .featured-queue-badges .media-type-badge,
+  .featured-queue-badges .new-badge,
+  .featured-queue-badges .status-badge {
+    height: 22px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
     line-height: 1;
-    z-index: 4;
-    pointer-events: none;
+  }
+
+  .featured-queue-badges .media-type-badge,
+  .featured-queue-badges .new-badge {
+    padding: 1.5px 8px 0.5px 8px;
+  }
+
+  .featured-queue-badges .status-badge {
+    padding: 0 6px;
+  }
+
+  .featured-queue-badges .status-badge ha-icon {
+    --mdc-icon-size: 14px;
+    margin: 0;
+  }
+
+  .featured-queue-title-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    width: 100%;
   }
 
   .featured-queue-subtitle,
@@ -890,7 +869,7 @@ export const cardStyles = css`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.2;
+    line-height: 1.15;
     box-sizing: border-box;
   }
 
@@ -899,8 +878,8 @@ export const cardStyles = css`
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--jf-text);
-    line-height: 1.25;
-    max-height: 2.55em;
+    line-height: 1.2;
+    max-height: 2.5em;
     overflow: hidden;
     word-break: break-word;
     transition: color 0.2s;
@@ -912,6 +891,7 @@ export const cardStyles = css`
   }
 
   /* Cramped / Compact queue card layout (for 2+ columns) */
+  .media-item.list-item.cramped,
   .media-item.featured-queue-item.cramped {
     flex-direction: column !important;
     justify-content: center !important;
@@ -923,10 +903,12 @@ export const cardStyles = css`
     box-sizing: border-box !important;
   }
 
+  .media-item.list-item.cramped .list-info,
   .media-item.featured-queue-item.cramped .featured-queue-info {
     display: none !important;
   }
 
+  .media-item.list-item.cramped .list-poster-wrapper,
   .media-item.featured-queue-item.cramped .featured-queue-poster-wrapper {
     margin: 0 auto !important;
     display: flex !important;
@@ -937,6 +919,7 @@ export const cardStyles = css`
     z-index: 3 !important;
   }
 
+  .media-item.list-item.cramped .poster-container,
   .media-item.featured-queue-item.cramped .poster-container.featured-queue-poster {
     width: auto !important;
     max-width: 72px !important;
@@ -945,11 +928,12 @@ export const cardStyles = css`
     aspect-ratio: 2/3 !important;
     border-radius: var(--jf-poster-radius, 8px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border: none !important;
     margin: 0 auto !important;
     flex-shrink: 0 !important;
   }
 
+  .media-item.list-item.cramped .poster-container .poster,
   .media-item.featured-queue-item.cramped .poster-container.featured-queue-poster .poster {
     width: 100%;
     height: 100%;
@@ -957,6 +941,7 @@ export const cardStyles = css`
     border-radius: inherit;
   }
 
+  .media-item.list-item.cramped .list-badges,
   .media-item.featured-queue-item.cramped .featured-queue-badges {
     position: absolute !important;
     top: 6px !important;
@@ -969,6 +954,7 @@ export const cardStyles = css`
     z-index: 4 !important;
   }
 
+  .media-item.list-item.cramped .list-action,
   .media-item.featured-queue-item.cramped .featured-queue-action {
     position: absolute !important;
     bottom: 6px !important;
@@ -976,6 +962,7 @@ export const cardStyles = css`
     z-index: 4 !important;
   }
 
+  .media-item.list-item.cramped .list-card-backdrop-scrim,
   .media-item.featured-queue-item.cramped .featured-queue-backdrop-scrim {
     background: linear-gradient(
       180deg,
@@ -985,13 +972,15 @@ export const cardStyles = css`
     ) !important;
   }
 
+  .media-item.list-item.cramped:hover,
+  .media-item.list-item.cramped:focus-visible,
   .media-item.featured-queue-item.cramped:hover,
   .media-item.featured-queue-item.cramped:focus-visible {
     transform: translateY(-2px) !important;
     border-color: rgba(255, 255, 255, 0.4) !important;
     box-shadow: 
       0 0 6px rgba(255, 255, 255, 0.08),
-      0 6px 18px rgba(0, 0, 0, 0.4) !important;
+      0 6px 18px rgba(0, 0, 0, 0.45) !important;
   }
 
   /* Backdrop Fanart Background for Grid Cards */
@@ -1040,14 +1029,22 @@ export const cardStyles = css`
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease;
   }
 
+  .media-item.list-item .grid-card-backdrop {
+    filter: blur(2px) brightness(0.92);
+    -webkit-filter: blur(2px) brightness(0.92);
+    transform: scale(1.03);
+    transform-origin: center;
+  }
+
   .media-item:not(.featured-queue-item):not(.list-item).has-backdrop:hover .grid-card-backdrop {
     transform: scale(1.05);
     filter: brightness(1.1) saturate(1.1);
   }
 
   .media-item.list-item.has-backdrop:hover .grid-card-backdrop {
-    transform: none;
-    filter: brightness(1.08);
+    transform: scale(1.05);
+    filter: blur(2px) brightness(0.98);
+    -webkit-filter: blur(2px) brightness(0.98);
   }
 
   .grid-card-backdrop-scrim {
@@ -1101,13 +1098,17 @@ export const cardStyles = css`
     height: 100%;
     object-fit: cover;
     object-position: center 25%;
-    filter: brightness(1.05) saturate(1.05);
+    filter: blur(2px) brightness(0.92);
+    -webkit-filter: blur(2px) brightness(0.92);
+    transform: scale(1.03);
+    transform-origin: center;
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease;
   }
 
   .media-item.featured-queue-item:hover .featured-queue-backdrop {
-    transform: scale(1.008);
-    filter: brightness(1.08) saturate(1.04);
+    transform: scale(1.05);
+    filter: blur(2px) brightness(0.98);
+    -webkit-filter: blur(2px) brightness(0.98);
   }
 
   .media-item.featured-queue-item:hover .featured-queue-poster .poster-inner {
@@ -1121,10 +1122,10 @@ export const cardStyles = css`
     inset: 0;
     background: linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.88) 0%,
-      rgba(0, 0, 0, 0.72) 38%,
-      rgba(0, 0, 0, 0.32) 75%,
-      rgba(0, 0, 0, 0.1) 100%
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0.42) 35%,
+      rgba(0, 0, 0, 0.58) 70%,
+      rgba(0, 0, 0, 0.45) 100%
     );
     z-index: 2;
     pointer-events: none;
@@ -1137,7 +1138,7 @@ export const cardStyles = css`
 
   .media-item.featured-queue-item.has-backdrop .poster-container.featured-queue-poster {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: none !important;
   }
 
   .media-item.featured-queue-item .featured-queue-info {
@@ -1165,16 +1166,16 @@ export const cardStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 19px;
-    padding: 0 6px;
+    height: 22px;
+    padding: 1.5px 8px 0.5px 8px;
     border-radius: 4px;
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.3px;
     line-height: 1;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
     box-sizing: border-box;
   }
@@ -1184,10 +1185,10 @@ export const cardStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 19px;
-    padding: 0 6px;
+    height: 22px;
+    padding: 1.5px 8px 0.5px 8px;
     border-radius: 4px;
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -1195,7 +1196,7 @@ export const cardStyles = css`
     background: #009ac7;
     color: #fff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
     box-sizing: border-box;
   }
@@ -1205,10 +1206,10 @@ export const cardStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 19px;
-    padding: 0 5px;
+    height: 22px;
+    padding: 0 6px;
     border-radius: 4px;
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     font-weight: 800;
     line-height: 1;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -1217,7 +1218,7 @@ export const cardStyles = css`
   }
 
   .status-badge.inline-badge ha-icon {
-    --mdc-icon-size: 13px;
+    --mdc-icon-size: 14px;
     margin: 0;
   }
 
@@ -1259,19 +1260,6 @@ export const cardStyles = css`
     color: rgba(255, 255, 255, 0.6);
   }
 
-  .media-item.featured-queue-item.has-backdrop .rating-pill {
-    background: rgba(245, 158, 11, 0.25);
-    border: 1px solid rgba(245, 158, 11, 0.5);
-    color: #fbbf24;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  }
-
-  .media-item.featured-queue-item.has-backdrop .genre-pill {
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  }
 
   .media-item.featured-queue-item.has-backdrop .featured-queue-action {
     position: relative;
@@ -1292,6 +1280,7 @@ export const cardStyles = css`
     box-shadow: 0 0 14px color-mix(in srgb, var(--jf-primary), transparent 60%);
   }
 
+  .list-action,
   .featured-queue-action {
     flex-shrink: 0;
     display: flex;
@@ -1300,6 +1289,7 @@ export const cardStyles = css`
     padding-right: 4px;
   }
 
+  .list-playing-icon,
   .featured-queue-playing-icon {
     --mdc-icon-size: 20px;
     color: var(--jf-primary);
@@ -1345,6 +1335,7 @@ export const cardStyles = css`
       width: 100%;
     }
 
+    .featured-side .media-item.list-item,
     .media-item.featured-queue-item {
       flex: 0 0 auto;
       min-height: 110px;
@@ -1355,8 +1346,8 @@ export const cardStyles = css`
   .media-item.list-item {
     flex-direction: row;
     align-items: flex-start;
-    gap: 14px;
-    height: 155px;
+    gap: 10px;
+    height: 136px;
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
@@ -1365,7 +1356,7 @@ export const cardStyles = css`
     background: color-mix(in srgb, var(--jf-text), transparent 96%);
     border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18));
     border-radius: var(--jf-poster-radius, 12px);
-    padding: 10px 14px 10px 10px;
+    padding: 10px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
     transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
   }
@@ -1387,14 +1378,15 @@ export const cardStyles = css`
 
   /* Specific override for List view */
   .media-item.list-item .poster-container {
-    width: 90px !important;
+    width: 76px !important;
     flex-shrink: 0;
+    border: none !important;
   }
 
   /* Do not enhance poster border, zoom, or box-shadow on hover in list layout */
   .media-item.list-item:hover .poster-container,
   .media-item.list-item.has-backdrop:hover .poster-container {
-    border-color: rgba(255, 255, 255, 0.22) !important;
+    border: none !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7) !important;
     transform: none !important;
   }
@@ -1411,11 +1403,11 @@ export const cardStyles = css`
     background: #111;
     border: 1px solid var(--ha-card-border-color, rgba(255, 255, 255, 0.18));
     border-radius: var(--jf-poster-radius, 12px);
-    padding: 10px 14px 10px 10px;
+    padding: 10px;
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    height: 155px;
+    height: 136px;
     width: 100%;
     min-width: 0;
     transition: border-color 0.24s ease, box-shadow 0.24s ease, transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -1442,10 +1434,11 @@ export const cardStyles = css`
     z-index: 3;
   }
 
+  .featured-side .poster-container,
   .media-item.list-item .poster-container,
   .media-item.list-item.has-backdrop .poster-container {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    border: none !important;
   }
 
   .media-item.list-item .list-info,
@@ -1478,10 +1471,10 @@ export const cardStyles = css`
     inset: 0;
     background: linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.88) 0%,
-      rgba(0, 0, 0, 0.75) 45%,
-      rgba(0, 0, 0, 0.4) 80%,
-      rgba(0, 0, 0, 0.2) 100%
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0.42) 35%,
+      rgba(0, 0, 0, 0.58) 70%,
+      rgba(0, 0, 0, 0.45) 100%
     );
     z-index: 2;
     pointer-events: none;
@@ -1491,6 +1484,8 @@ export const cardStyles = css`
   .list-poster-wrapper {
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
+    align-self: flex-start;
     flex-shrink: 0;
   }
 
@@ -1509,8 +1504,9 @@ export const cardStyles = css`
     width: 100%;
     height: 100%;
     overflow: hidden;
-    padding-top: 1px;
     justify-content: flex-start;
+    padding-top: 5px;
+    box-sizing: border-box;
   }
 
   .list-header {
@@ -1531,11 +1527,11 @@ export const cardStyles = css`
   }
 
   .list-title {
-    margin: 0;
-    font-size: 1.1rem;
+    margin: 3px 0 0 0;
+    font-size: 1.0rem;
     font-weight: 600;
     color: var(--jf-text);
-    line-height: 1.3;
+    line-height: 1.25;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1544,10 +1540,10 @@ export const cardStyles = css`
 
   .list-subtitle {
     margin: 1px 0 0 0;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     font-weight: 500;
     color: var(--jf-text-secondary);
-    line-height: 1.25;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1565,6 +1561,7 @@ export const cardStyles = css`
     gap: 5px;
     flex-shrink: 0;
     margin-left: auto;
+    margin-top: -5px;
   }
 
   .list-header .media-type-badge.list-type-badge {
@@ -1678,22 +1675,23 @@ export const cardStyles = css`
 
   .list-description {
     margin: 0;
-    font-size: 0.82rem;
+    font-size: 11px !important;
     color: var(--jf-text-secondary);
-    line-height: 1.32;
+    line-height: 1.3;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-height: calc(1.32em * 3);
+    max-height: calc(1.3em * 2);
     box-sizing: border-box;
   }
 
   .media-item.list-item.has-subtitle .list-description,
-  .media-item.list-item:has(.list-subtitle) .list-description {
-    -webkit-line-clamp: 2;
-    max-height: calc(1.32em * 2);
+  .media-item.list-item:has(.list-subtitle) .list-description,
+  .media-item.list-item.meta-wrapped .list-description {
+    -webkit-line-clamp: 1;
+    max-height: calc(1.3em * 1);
   }
 
   /* Remove hover overlay for list layout */
@@ -1972,58 +1970,25 @@ export const cardStyles = css`
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
-  /* Rating Badge - Bottom Right */
+  /* Poster Overlay Badges - Bottom corners (aesthetics centralized in sharedMetaRowStyles) */
   .rating {
     position: absolute;
     bottom: 6px;
     right: 6px;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    background: rgba(0, 0, 0, 0.6);
-    color: #F59E0B;
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.8rem;
     z-index: 5;
     transition: opacity var(--jf-transition);
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .rating ha-icon {
-    --mdc-icon-size: 13px;
-    color: #F59E0B;
-    margin-top: -1px;
   }
 
   .media-item:hover .rating {
     opacity: 0;
   }
 
-  /* Runtime Badge (bottom-left, gray) */
   .runtime {
     position: absolute;
     bottom: 6px;
     left: 6px;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    background: rgba(0, 0, 0, 0.6);
-    color: rgba(255, 255, 255, 0.85);
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.8rem;
     z-index: 5;
     transition: opacity var(--jf-transition);
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .runtime ha-icon {
-    --mdc-icon-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
-    margin-top: -1px;
   }
 
   .media-item:hover .runtime {

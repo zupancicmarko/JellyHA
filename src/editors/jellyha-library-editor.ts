@@ -457,17 +457,13 @@ export class JellyHALibraryEditor extends LitElement {
       <span>${localize(lang, 'editor.show_genres')}</span>
     </div>
 
-    ${this._config.layout !== 'featured'
-      ? html`
-          <div class="checkbox-row">
-            <ha-switch
-              .checked=${this._config.show_description_on_hover !== false}
-              @change=${this._showDescriptionOnHoverChanged}
-            ></ha-switch>
-            <span>${localize(lang, 'editor.show_description')}</span>
-          </div>
-        `
-      : ''}
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_description_on_hover !== false}
+        @change=${this._showDescriptionOnHoverChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_description')}</span>
+    </div>
 
     <div class="checkbox-row">
       <ha-switch

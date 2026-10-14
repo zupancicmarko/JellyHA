@@ -5,34 +5,51 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.1] - 2026-10-12
+## [1.7.0] - 2026-10-14
 
 ### Added
-- **Multi-Column Side Cards in Featured Layout**:
+- **Featured Layout Multi-Column & Configurable Rows (2, 3, or 4 rows)**:
   - Added support for the `columns` configuration option (1 to 4) in `layout: 'featured'`, allowing side queue cards to be arranged in multiple columns (e.g. 2 columns showing 6 cards side-by-side with 3 rows per column) beside the hero poster.
   - Automatically calculates effective items per page as `1 + (columns * rows)` (e.g. 7 items per page for 2 columns / 3 rows, 5 items for 2 columns / 2 rows) with smart pagination dots and swipe gestures.
+  - Added configurable `rows` option (2, 3, or 4 rows, default 3) in `layout: 'featured'` via YAML and visual editor sliders with localized helper text across all 8 supported languages.
+  - Symmetrical height alignment: when set to 2, 3, or 4 rows, the hero poster scales proportionally to match the side card rows.
   - Hid redundant "Items Per Page" field from the card editor in Featured layout, as item capacity is strictly defined by columns and rows.
-  - Added visual editor slider support (1 to 4 columns) with localized helper text across all 8 languages.
   - Responsive stacking: gracefully collapses to 1 column on narrower viewports and mobile screens (< 640px).
-- **Configurable Rows in Featured Layout**:
-  - Added `rows` configuration option (2 or 3, default 3) in `layout: 'featured'`.
-  - Visual editor slider with localized helper text across all 8 languages.
-  - Symmetrical height alignment: when set to 2 rows, the hero poster scales proportionally (~240px tall) to match the 2 side card rows.
+- **List Layout Modernization & Ergonomics**:
+  - Standardized fixed `136px` card height and `76px` poster width (`width: 76px !important`).
+  - Redesigned header grouping with top-right badges (`media-type-badge`, `new-badge`, `status-badge`).
+  - Dynamic 2-line title wrapping and 1-2 line description clamping with ellipsis (`-webkit-line-clamp`).
+  - Multi-column list support with dynamic container measurement: automatically falls back to 1 column on narrow dashboards (< 500px) to prevent horizontal overflow.
+  - Interactive tactile card feedback: whole-card depression effect on active press (`scale(0.98)` / `translateX(2px) scale(0.98)`) and hover slide transition (`translateX(4px)`).
+- **Poster Screensaver Badge Placement (`badge_style`) Consistency**:
+  - Unified `badge_style: poster`, `header`, and `inline` options on Now Playing Card poster screensaver (`idle-card-mode`) with active playback behavior.
+  - In `badge_style: poster` (or `header`): runtime (`1h 30m`) and rating (`★ 4.9`) badges render directly on the poster corners with glassmorphism, keeping the inline title metadata clean.
+  - In `badge_style: inline`: poster artwork remains completely uncovered, with media badge, runtime, rating pill, year, and genres rendered together inline next to the title.
+- **Glassmorphic Rating & Runtime Badges on Carousel and Grid Posters**:
+  - Brought rating pill (`.rating-pill`) and genre-style runtime badge (`.genre-pill`) to Carousel and Grid view posters, replacing plain text overlays and removing the clock icon.
+- **Truncated Title Tooltips**:
+  - Added native `title` attribute tooltips to card titles with ellipsis truncation across List and Featured queue cards, matching genre pills behavior on hover.
 
 ### Changed
-- **Refined Queue Card Poster Sizing & Spacing**:
-  - Resized side queue card posters from `72×108px` to `60×90px` (2:3 aspect ratio), providing balanced vertical margins.
-  - Tightened card padding from `8px 14px` to `7px 12px`, unlocking an extra 18px of horizontal width for titles, runtime/dates, and genre pills.
-  - Reduced responsive un-cramped threshold to 200px to keep text and metadata visible in multi-column configurations.
-- **Featured Layout Poster & Backdrop Refinements**:
-  - Removed redundant central "Play" button overlay on the main hero poster in Featured layout.
+- **Unified Metadata & Description Typography**:
+  - Standardized font size across metadata (release year, runtime, created date, separator dots, rating pill, genre pills, and description) to **`11px`** for Featured and List layouts.
+  - Standardized screensaver metadata font size to **`12px`** and descriptions to **`12px`** across both poster screensaver (`.idle-card-desc`) and fanart screensaver (`.idle-overview`).
+- **Rating Pill Optical Vertical Alignment**:
+  - Lifted rating number text by 1px (`transform: translateY(-0.5px)`) across all cards for optical alignment with the star icon.
+- **Card Background & Border Refinements**:
+  - Removed borders around smaller posters in Featured side queue cards and List cards, keeping border solely on the main hero poster.
+  - Softened backdrop shading and scrim gradients on List and Featured queue cards with subtle 2px blur (`filter: blur(2px) brightness(0.92)`), matching the poster screensaver backdrop styling.
   - Renamed configuration toggle from "Queue Card Backdrop" to "Show Card Backdrop" (`show_card_backdrop`) with full backwards compatibility for `featured_queue_backdrop` across all 8 supported languages.
-  - Aligned card hover border styles and transitions with standard library cards for a smooth, unified aesthetic.
+  - Removed redundant central "Play" button overlay on the main hero poster in Featured layout.
+  - Refined Featured hero poster hover to use a subtle elevation lift without harsh white halos, while preserving full standard hover behavior on Carousel, Grid, and List layouts.
+- **Queue Card Sizing & Compact Mode**:
+  - Resized side queue card posters to `68×102px` (2:3 aspect ratio), providing balanced vertical margins.
+  - Smart responsive compact mode for Featured queue cards: keeps full title and metadata visible when card width is wide enough (>= 220px), and cleanly transitions to compact mode (centered poster, top badges, no text) when cards are too small (e.g. 3+ columns, or narrow containers < 220px).
   - Added support for `show_date_added` in Featured layout cards, rendering the addition date cleanly in the metadata row right after runtime (`Year • Runtime • Date Added`).
-  - Smart responsive compact mode for Featured queue cards: keeps full title and metadata visible when card width is wide enough (>= 220px, such as 2 columns on desktop), and cleanly transitions to compact mode (centered poster, top badges, no text) when cards are too small (e.g. 3+ columns, or narrow containers < 220px).
   - Hid redundant "Show Description" and "Metadata Position" fields from the card editor when Featured layout is selected.
   - Reorganized visual card editor controls by relocating **Enable "Play in Browser"** out of the general display checkboxes to sit directly above **Show "Now Playing" Overlay on Posters** in the Playback section.
-  - Refined Featured hero poster hover to use a subtle elevation lift without harsh white halos, while preserving full standard hover behavior on Carousel, Grid, and List layouts.
+- **Centralized Metadata Styling**:
+  - Centralized 22px height, optical alignments, and glassmorphic pill aesthetics in `src/styles/jellyha-shared-styles.ts` across both Now Playing and Library cards.
 
 ### Fixed
 - **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:
@@ -40,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.
 - **Carousel and Grid Layout Stability**:
   - Restored full intrinsic sizing to Carousel items (resolving Next Up overlapping sliver collapse) and Grid items by removing premature host inline containment.
-  - Locked Featured layout hero poster and queue cards to the intended 3-row height proportions, preventing vertical blowout and oversized posters when multiple columns are configured.
+  - Locked Featured layout hero poster and queue cards to the intended row height proportions, preventing vertical blowout and oversized posters when multiple columns are configured.
 - **Featured Layout Queue Card Title Wrapping**:
   - Allowed queue card titles to wrap up to 2 lines and floated queue badges to the top right of the title block.
   - Eliminated premature single-line ellipsis truncation (`white-space: nowrap` and `padding-right: 76px`), allowing the title to flow across the full card width underneath the badges.
