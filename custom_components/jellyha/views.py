@@ -9,6 +9,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .security import (
+    ALLOWED_HLS_EXTENSIONS,
     ALLOWED_IMAGE_TYPES,
     ALLOWED_MEDIA_TYPES,
     is_valid_entry_id,
@@ -515,6 +516,14 @@ class JellyHAHlsView(HomeAssistantView):
         if not manager:
             return web.Response(status=503, text="HLS manager not initialized")
 
+        if not path or ".." in path or path.startswith("/") or path.startswith("\\"):
+            return web.Response(status=400, text="Invalid path")
+
+        clean_path = path.split("?")[0].split("#")[0]
+        ext = ("." + clean_path.rsplit(".", 1)[-1].lower()) if "." in clean_path else ""
+        if ext not in ALLOWED_HLS_EXTENSIONS:
+            return web.Response(status=400, text="Invalid HLS file type")
+
         session = manager.get_session(token)
         if not session:
             return web.Response(status=404, text="HLS session expired or invalid")
@@ -524,6 +533,9 @@ class JellyHAHlsView(HomeAssistantView):
         params["PlaySessionId"] = session.play_session_id
 
         if path.startswith("Videos/"):
+            parts = path.split("/")
+            if len(parts) > 1 and parts[1] != session.item_id:
+                return web.Response(status=403, text="Forbidden: Token item mismatch")
             target_url = f"{session.server_url}/{path}"
         else:
             target_url = f"{session.server_url}/Videos/{session.item_id}/{path}"
@@ -577,7 +589,7 @@ class JellyHAHlsView(HomeAssistantView):
                 )
             except Exception as err:
                 _LOGGER.error("Error proxying HLS playlist %s: %s", path, err)
-                return web.Response(status=500, text=str(err))
+                return web.Response(status=500, text="HLS proxy error")
 
         # Media segments (.ts / .m4s / .mp4 / .key)
         prepared = False
@@ -620,5 +632,5 @@ class JellyHAHlsView(HomeAssistantView):
                 _LOGGER.debug("HLS segment streaming disconnected for %s: %s", path, err)
                 return response
             _LOGGER.error("HLS segment streaming error for %s: %s", path, err)
-            return web.Response(status=500, text=str(err))
+            return web.Response(status=500, text="HLS proxy error")
 

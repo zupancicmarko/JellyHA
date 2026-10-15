@@ -23,6 +23,7 @@ ALLOWED_IMAGE_TYPES: frozenset[str] = frozenset({
 })
 
 ALLOWED_MEDIA_TYPES: frozenset[str] = frozenset({"Audio", "Videos"})
+ALLOWED_HLS_EXTENSIONS: frozenset[str] = frozenset({".m3u8", ".ts", ".m4s", ".mp4", ".key"})
 
 
 def is_valid_item_id(val: Any) -> bool:
