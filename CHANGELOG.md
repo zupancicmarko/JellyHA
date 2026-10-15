@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unified Metadata & Description Typography**:
   - Unified font sizing for metadata and descriptions across Featured and List layouts.
   - Standardized text sizing across both poster and fanart screensaver modes.
+- **Context-Aware Runtime Option for TV Series**:
+  - Automatically hides the "Show Runtime" toggle in the Library card editor when browsing "TV Shows Only" (`series`) with TV Content set to "Shows / Series", preventing confusing single-item runtime options for multi-episode series.
 
 ### Fixed
 - **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:

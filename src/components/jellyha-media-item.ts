@@ -94,7 +94,7 @@ export class JellyHAMediaItem extends LitElement {
     const ratingStr = showRatings && rating ? rating.toFixed(1) : '';
     const yearVal = item.year ?? (item.date_added ? new Date(item.date_added).getFullYear() : undefined);
     const yearStr = this.config.show_year !== false && yearVal ? String(yearVal) : '';
-    const runtimeStr = this.config.show_runtime !== false && item.runtime_minutes
+    const runtimeStr = this._isRuntimeVisible() && item.runtime_minutes
       ? formatRuntime(item.runtime_minutes)
       : '';
     const showDateAdded = this.config.show_date_added === true;
@@ -347,7 +347,7 @@ export class JellyHAMediaItem extends LitElement {
                 `
         : nothing}
             
-            ${this.config.show_runtime !== false && item.runtime_minutes && !isPlaying
+            ${this._isRuntimeVisible() && item.runtime_minutes && !isPlaying
         ? html`
                   <span class="runtime genre-pill">
                     <span>${formatRuntime(item.runtime_minutes)}</span>
@@ -801,7 +801,7 @@ export class JellyHAMediaItem extends LitElement {
 
   private _renderMetaLine(item: MediaItem, rating?: number): TemplateResult | typeof nothing {
     const showYear = this.config.show_year !== false;
-    const showRuntime = this.config.show_runtime !== false;
+    const showRuntime = this._isRuntimeVisible();
     const showDateAdded = this.config.show_date_added === true;
     const showRatings = (this.config as any).show_ratings !== false && (this.config as any).show_rating !== false;
     const showGenres = this.config.show_genres !== false;
@@ -858,6 +858,15 @@ export class JellyHAMediaItem extends LitElement {
         ` : nothing}
       </div>
     `;
+  }
+
+  private _isRuntimeVisible(): boolean {
+    const mediaType = this.config?.media_type;
+    const tvContent = this.config?.tv_content || 'series';
+    if (mediaType === 'series' && tvContent === 'series') {
+      return false;
+    }
+    return this.config?.show_runtime !== false;
   }
 
   private _renderFeaturedHero(): TemplateResult {

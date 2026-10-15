@@ -77,14 +77,14 @@ let Et = class {
     return this.cssText;
   }
 };
-const Wt = (e) => new Et(typeof e == "string" ? e : e + "", void 0, Ke), me = (e, ...t) => {
+const Vt = (e) => new Et(typeof e == "string" ? e : e + "", void 0, Ke), me = (e, ...t) => {
   const i = e.length === 1 ? e[0] : t.reduce((a, s, o) => a + ((r) => {
     if (r._$cssResult$ === !0) return r.cssText;
     if (typeof r == "number") return r;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + r + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(s) + e[o + 1], e[0]);
   return new Et(i, e, Ke);
-}, Vt = (e, t) => {
+}, Wt = (e, t) => {
   if (Xe) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of t) {
     const a = document.createElement("style"), s = Ae.litNonce;
@@ -93,7 +93,7 @@ const Wt = (e) => new Et(typeof e == "string" ? e : e + "", void 0, Ke), me = (e
 }, _t = Xe ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
   let i = "";
   for (const a of t.cssRules) i += a.cssText;
-  return Wt(i);
+  return Vt(i);
 })(e) : e;
 /**
  * @license
@@ -211,7 +211,7 @@ let ce = class extends HTMLElement {
   }
   createRenderRoot() {
     const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Vt(t, this.constructor.elementStyles), t;
+    return Wt(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((t) => t.hostConnected?.());
@@ -649,7 +649,7 @@ function ze(e, t) {
   const i = new Date(e.date_added);
   return ((/* @__PURE__ */ new Date()).getTime() - i.getTime()) / (1e3 * 60 * 60 * 24) <= t;
 }
-function We(e, t = "en") {
+function Ve(e, t = "en") {
   try {
     const i = new Date(e);
     return new Intl.DateTimeFormat(t, {
@@ -684,7 +684,7 @@ function he(e, t) {
   }
   return (t.includes(".") ? t.split(".").slice(1).join(".") : t).split("_").map((o) => ["on", "in", "at", "to", "for", "a", "an", "the", "and", "or", "of"].includes(o.toLowerCase()) ? o.toLowerCase() : o.toLowerCase() === "tv" ? "TV" : o.charAt(0).toUpperCase() + o.slice(1)).join(" ").replace(/^\w/, (o) => o.toUpperCase());
 }
-var mi = Object.defineProperty, fi = Object.getOwnPropertyDescriptor, V = (e, t, i, a) => {
+var mi = Object.defineProperty, fi = Object.getOwnPropertyDescriptor, W = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? fi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && mi(t, i, s), s;
@@ -1295,40 +1295,40 @@ let H = class extends Y {
     return h;
   }
 };
-V([
+W([
   F({ attribute: !1 })
 ], H.prototype, "hass", 2);
-V([
+W([
   f()
 ], H.prototype, "_open", 2);
-V([
+W([
   f()
 ], H.prototype, "_loading", 2);
-V([
+W([
   f()
 ], H.prototype, "_error", 2);
-V([
+W([
   f()
 ], H.prototype, "_streamUrl", 2);
-V([
+W([
   f()
 ], H.prototype, "_mimeType", 2);
-V([
+W([
   f()
 ], H.prototype, "_playMethod", 2);
-V([
+W([
   f()
 ], H.prototype, "_playSessionId", 2);
-V([
+W([
   f()
 ], H.prototype, "_hlsToken", 2);
-V([
+W([
   f()
 ], H.prototype, "_item", 2);
-V([
+W([
   f()
 ], H.prototype, "_subtitleTracks", 2);
-H = V([
+H = W([
   ne("jellyha-browser-player")
 ], H);
 let be = null;
@@ -5453,7 +5453,7 @@ function Ci(e) {
   }
   return "";
 }
-function Ve(e) {
+function We(e) {
   return e ? String(e).replace(/-/g, "").toLowerCase() : "";
 }
 function Q(e, t) {
@@ -5471,14 +5471,14 @@ function St(e, t, i) {
   for (const u of Object.keys(t.states))
     u.startsWith("media_player.jellyha_") && !u.includes("_library_browser") && !u.endsWith("_browser") && !a.includes(u) && a.push(u);
   let s = null;
-  const o = Ve(e.id), r = (e.type || "").toLowerCase(), n = r === "episode" || !!(e.series_name && e.name && e.series_name !== e.name && r !== "series"), c = r === "series", p = r === "season";
+  const o = We(e.id), r = (e.type || "").toLowerCase(), n = r === "episode" || !!(e.series_name && e.name && e.series_name !== e.name && r !== "series"), c = r === "series", p = r === "season";
   for (const u of a) {
     const _ = t.states[u];
     if (!_) continue;
     const g = _.state;
     if (g !== "playing" && g !== "paused" && g !== "buffering")
       continue;
-    const m = _.attributes?.media_title || _.attributes?.title, b = _.attributes?.media_series_title || _.attributes?.series_title, w = _.attributes?.item_id || _.attributes?.media_content_id, y = _.attributes?.series_id || _.attributes?.media_series_id, v = _.attributes?.media_season ?? _.attributes?.season, k = _.attributes?.media_episode ?? _.attributes?.episode, $ = Ve(w), L = Ve(y);
+    const m = _.attributes?.media_title || _.attributes?.title, b = _.attributes?.media_series_title || _.attributes?.series_title, w = _.attributes?.item_id || _.attributes?.media_content_id, y = _.attributes?.series_id || _.attributes?.media_series_id, v = _.attributes?.media_season ?? _.attributes?.season, k = _.attributes?.media_episode ?? _.attributes?.episode, $ = We(w), L = We(y);
     let x = !1;
     if ($ && o && $ === o)
       x = !0;
@@ -7854,13 +7854,15 @@ let ke = class extends Y {
       <span>${d(o, "editor.show_rating")}</span>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_runtime !== !1}
-        @change=${this._showRuntimeChanged}
-      ></ha-switch>
-      <span>${d(o, "editor.show_runtime")}</span>
-    </div>
+    ${this._isRuntimeOptionVisible() ? l`
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_runtime !== !1}
+            @change=${this._showRuntimeChanged}
+          ></ha-switch>
+          <span>${d(o, "editor.show_runtime")}</span>
+        </div>
+      ` : h}
 
     <div class="checkbox-row">
       <ha-switch
@@ -8383,6 +8385,10 @@ let ke = class extends Y {
     const t = e.target;
     this._updateConfig("show_ratings", t.checked);
   }
+  _isRuntimeOptionVisible() {
+    const e = this._config?.media_type, t = this._config?.tv_content || "series";
+    return !(e === "series" && t === "series");
+  }
   _showRuntimeChanged(e) {
     const t = e.target;
     this._updateConfig("show_runtime", t.checked);
@@ -8602,7 +8608,7 @@ let D = class extends Y {
     return !this.item || !this.config || !this.hass ? l`` : this.layout === "list" || this.layout === "featured-queue" ? this._renderListItem() : this.layout === "featured-hero" ? this._renderFeaturedHero() : this._renderMediaItem();
   }
   _renderListItem() {
-    const e = this.item, t = ze(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), r = this.config.show_ratings !== !1 && this.config.show_rating !== !1 && i ? i.toFixed(1) : "", n = e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0), c = this.config.show_year !== !1 && n ? String(n) : "", p = this.config.show_runtime !== !1 && e.runtime_minutes ? ue(e.runtime_minutes) : "", _ = this.config.show_date_added === !0 && e.date_added ? We(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", g = e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "MOVIE" : "SERIES", m = e.series_name ? "series" : e.type === "Movie" ? "movie" : "series", b = this.config.show_subtitle !== !1, w = e.type === "Episode" || !!(e.series_name && e.name !== e.series_name), y = b && w && e.series_name && e.name !== e.series_name ? e.series_name : "", v = this.config.show_genres !== !1 && e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], k = v.length > 0, $ = this.config.show_card_backdrop !== void 0 ? !!this.config.show_card_backdrop : this.config.featured_queue_backdrop !== !1, L = $ ? O(
+    const e = this.item, t = ze(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), r = this.config.show_ratings !== !1 && this.config.show_rating !== !1 && i ? i.toFixed(1) : "", n = e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0), c = this.config.show_year !== !1 && n ? String(n) : "", p = this._isRuntimeVisible() && e.runtime_minutes ? ue(e.runtime_minutes) : "", _ = this.config.show_date_added === !0 && e.date_added ? Ve(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", g = e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "MOVIE" : "SERIES", m = e.series_name ? "series" : e.type === "Movie" ? "movie" : "series", b = this.config.show_subtitle !== !1, w = e.type === "Episode" || !!(e.series_name && e.name !== e.series_name), y = b && w && e.series_name && e.name !== e.series_name ? e.series_name : "", v = this.config.show_genres !== !1 && e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], k = v.length > 0, $ = this.config.show_card_backdrop !== void 0 ? !!this.config.show_card_backdrop : this.config.featured_queue_backdrop !== !1, L = $ ? O(
       e.backdrop_url || (this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url),
       600
     ) : "", x = this.config.show_watched_status !== !1, C = x && e.is_played, j = x && e.type === "Series" && (e.unplayed_count || 0) > 0, J = (a || (t || C || j)) && !s, U = this.layout === "featured-queue" && (this.isCramped !== void 0 ? this.isCramped : !!this.classList?.contains("cramped") || (this.config.columns || 1) >= 3);
@@ -8767,7 +8773,7 @@ let D = class extends Y {
                   </span>
                 ` : h}
             
-            ${this.config.show_runtime !== !1 && e.runtime_minutes && !s ? l`
+            ${this._isRuntimeVisible() && e.runtime_minutes && !s ? l`
                   <span class="runtime genre-pill">
                     <span>${ue(e.runtime_minutes)}</span>
                   </span>
@@ -8789,7 +8795,7 @@ let D = class extends Y {
           <div class="media-info-below">
             ${n ? l`<p class="media-title" title="${e.name}">${e.name}</p>` : h}
             ${o ? l`<p class="media-year">${e.year ?? new Date(e.date_added).getFullYear()}</p>` : h}
-            ${r ? l`<p class="media-date-added">${We(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : h}
+            ${r ? l`<p class="media-date-added">${Ve(e.date_added, this.hass?.locale?.language || this.hass?.language)}</p>` : h}
           </div>
         ` : h}
       </div>
@@ -9050,13 +9056,13 @@ let D = class extends Y {
     this.dispatchEvent(t);
   }
   _renderMetaLine(e, t) {
-    const i = this.config.show_year !== !1, a = this.config.show_runtime !== !1, s = this.config.show_date_added === !0, o = this.config.show_ratings !== !1 && this.config.show_rating !== !1, r = this.config.show_genres !== !1;
+    const i = this.config.show_year !== !1, a = this._isRuntimeVisible(), s = this.config.show_date_added === !0, o = this.config.show_ratings !== !1 && this.config.show_rating !== !1, r = this.config.show_genres !== !1;
     let n = e.year;
     if (!n && e.date_added) {
       const v = new Date(e.date_added);
       isNaN(v.getFullYear()) || (n = v.getFullYear());
     }
-    const c = i && n ? String(n) : "", p = a && e.runtime_minutes ? ue(e.runtime_minutes) : "", u = s && e.date_added ? We(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", _ = o && t && !this._isItemPlaying(e) ? t.toFixed(1) : "", g = r && e.genres && e.genres.length > 0 ? e.genres.slice(0, 2) : [], m = g.length > 0, b = [];
+    const c = i && n ? String(n) : "", p = a && e.runtime_minutes ? ue(e.runtime_minutes) : "", u = s && e.date_added ? Ve(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", _ = o && t && !this._isItemPlaying(e) ? t.toFixed(1) : "", g = r && e.genres && e.genres.length > 0 ? e.genres.slice(0, 2) : [], m = g.length > 0, b = [];
     c && b.push({ text: c, className: "meta-year" }), p && b.push({ text: p, className: "meta-runtime" }), u && b.push({ text: u, className: "meta-date-added" });
     const w = b.length > 0, y = !!_ || m;
     return !w && !y ? h : l`
@@ -9082,6 +9088,10 @@ let D = class extends Y {
         ` : h}
       </div>
     `;
+  }
+  _isRuntimeVisible() {
+    const e = this.config?.media_type, t = this.config?.tv_content || "series";
+    return e === "series" && t === "series" ? !1 : this.config?.show_runtime !== !1;
   }
   _renderFeaturedHero() {
     const e = this.item, t = ze(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), o = this.config.show_title !== !1;
@@ -11145,9 +11155,9 @@ let I = class extends Y {
     y !== this._cachedColorItemId && b && (this._cachedColorItemId = y, this._extractDominantColor(O(b, 80)));
     const v = this._cachedBackdropUrl, k = this._config.show_background !== !1 && v, $ = a ? t.state === "paused" : i.is_paused, x = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), C = x === "audio" || x === "music";
     let j = i.title || t.attributes.media_title || r?.name || "";
-    const A = this._config.show_subtitle !== !1, J = i.series_title || t.attributes.media_series_title || r?.series_name || "", U = A && (i.artist_name || t.attributes.media_artist || J || r?.artist_name) || "", M = i.year ?? r?.year, B = this._config.show_year !== !1 && M ? String(M) : "", q = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, te = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, N = Number(q), le = Number(te), K = q != null && te != null && !isNaN(N) && !isNaN(le) && N >= 0 && le >= 0, G = (x === "episode" || x === "tvshow") && K ? `S${String(N).padStart(2, "0")}E${String(le).padStart(2, "0")}` : x === "movie" ? "MOVIE" : x === "episode" ? "EPISODE" : x === "tvshow" ? "SERIES" : i.media_type || r?.type || "", W = this._config.badge_style || this._config.media_type_badge_style || "poster", ot = this._config.show_media_type_badge !== !1 && !!G, ae = W === "inline", st = ot && ae && !!G;
+    const A = this._config.show_subtitle !== !1, J = i.series_title || t.attributes.media_series_title || r?.series_name || "", U = A && (i.artist_name || t.attributes.media_artist || J || r?.artist_name) || "", M = i.year ?? r?.year, B = this._config.show_year !== !1 && M ? String(M) : "", q = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, te = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, N = Number(q), le = Number(te), K = q != null && te != null && !isNaN(N) && !isNaN(le) && N >= 0 && le >= 0, G = (x === "episode" || x === "tvshow") && K ? `S${String(N).padStart(2, "0")}E${String(le).padStart(2, "0")}` : x === "movie" ? "MOVIE" : x === "episode" ? "EPISODE" : x === "tvshow" ? "SERIES" : i.media_type || r?.type || "", V = this._config.badge_style || this._config.media_type_badge_style || "poster", ot = this._config.show_media_type_badge !== !1 && !!G, ae = V === "inline", st = ot && ae && !!G;
     let rt = !1, nt = !1;
-    ot && W !== "none" && (W === "poster" ? rt = !0 : W === "header" && (nt = !0));
+    ot && V !== "none" && (V === "poster" ? rt = !0 : V === "header" && (nt = !0));
     const lt = i.runtime_minutes || (n > 0 ? Math.round(n / 60) : r?.runtime_minutes || 0), dt = x === "audio" && n > 0 ? `${Math.floor(n / 60)}m ${Math.floor(n % 60)}s` : lt > 0 ? ue(lt) : "", Ce = this._config.show_runtime !== !1 && dt ? dt : "", Oe = i.community_rating ?? r?.community_rating ?? r?.rating, Ue = Number(Oe), ct = !isNaN(Ue) && Ue > 0 ? Ue.toFixed(1) : Oe ? String(Oe) : "", Pe = this._config.show_ratings !== !1 && ct ? ct : "", pt = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], Be = this._config.show_genres !== !1 && pt?.length ? pt.slice(0, 3) : [];
     ae ? st || B || Ce || Pe || Be.length > 0 : B || Be.length > 0;
     const Ut = i.user_name || this.hass?.user?.name || "", je = this._config.show_user !== !1 ? Ut : "", Bt = i.client || t.attributes.app_name || t.attributes.friendly_name || "", Ht = this._config.show_client !== !1 ? Bt : "", Ft = this._config.show_device_name === !0 && i.device_name || "", He = [...new Set([Ft, Ht].filter(Boolean))].join(" · "), Fe = w && this._optimisticFavorites[w] !== void 0 ? this._optimisticFavorites[w] : i.is_favorite || r?.is_favorite || !1, ht = 125.66, qt = ht * (1 - this._longPressProgress), Z = this._supportsRemote(t);
@@ -11466,7 +11476,7 @@ let I = class extends Y {
     const x = e.season, C = e.episode, j = Number(x), A = Number(C), J = x != null && C != null && !isNaN(j) && !isNaN(A) && j >= 0 && A >= 0, M = L && J ? `S${String(j).padStart(2, "0")}E${String(A).padStart(2, "0")}` : "";
     let B = "", q = "";
     L ? (B = e.name || e.series_name || "", q = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (B = e.name || "", q = this._config.show_subtitle !== !1 && e.tagline || "");
-    const te = this._idleItems.findIndex((W) => $ ? W.type === "Movie" : L ? W.type === "Episode" : W.type === "Series" || W.type !== "Movie" && W.type !== "Episode") === this._currentIdleIndex, N = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && te, le = L && !!M, K = N && le ? M : null, ie = $ ? "movie" : L ? "episode" : "series", G = N ? $ ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : L ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : $ ? d(i, "movie") || "Movie" : le ? M : d(i, "episode") || "Episode";
+    const te = this._idleItems.findIndex((V) => $ ? V.type === "Movie" : L ? V.type === "Episode" : V.type === "Series" || V.type !== "Movie" && V.type !== "Episode") === this._currentIdleIndex, N = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && te, le = L && !!M, K = N && le ? M : null, ie = $ ? "movie" : L ? "episode" : "series", G = N ? $ ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : L ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : $ ? d(i, "movie") || "Movie" : le ? M : d(i, "episode") || "Episode";
     return l`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
                 <div class="idle-card-bg-container">

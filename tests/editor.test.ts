@@ -142,6 +142,35 @@ describe('Editor Config Mapping for Power & Volume', () => {
         // For movies only, it should not be visible
         expect(isUseSeriesImageVisible('movies', 'episodes')).toBe(false);
     });
+
+    it('hides show_runtime on library card when media_type is TV Shows Only (series) and tv_content is Shows / Series (series)', async () => {
+        const { JellyHALibraryEditor } = await import('../src/editors/jellyha-library-editor');
+        const editor = new JellyHALibraryEditor();
+
+        // 1. media_type = 'series' and tv_content = 'series' -> hidden
+        (editor as any)._config = { media_type: 'series', tv_content: 'series' };
+        expect((editor as any)._isRuntimeOptionVisible()).toBe(false);
+
+        // 2. media_type = 'series' and tv_content undefined (default is 'series') -> hidden
+        (editor as any)._config = { media_type: 'series' };
+        expect((editor as any)._isRuntimeOptionVisible()).toBe(false);
+
+        // 3. media_type = 'series' and tv_content = 'episodes' -> visible
+        (editor as any)._config = { media_type: 'series', tv_content: 'episodes' };
+        expect((editor as any)._isRuntimeOptionVisible()).toBe(true);
+
+        // 4. media_type = 'movies' -> visible
+        (editor as any)._config = { media_type: 'movies', tv_content: 'series' };
+        expect((editor as any)._isRuntimeOptionVisible()).toBe(true);
+
+        // 5. media_type = 'both' -> visible
+        (editor as any)._config = { media_type: 'both', tv_content: 'series' };
+        expect((editor as any)._isRuntimeOptionVisible()).toBe(true);
+
+        // 6. media_type = 'next_up' -> visible
+        (editor as any)._config = { media_type: 'next_up' };
+        expect((editor as any)._isRuntimeOptionVisible()).toBe(true);
+    });
 });
 
 describe('Library Card Editor - Jellyfin Client Device Filtering', () => {

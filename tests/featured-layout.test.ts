@@ -921,6 +921,27 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(cssText).toMatch(/\.media-item\.featured-hero\.playing\s+\.poster-inner\s*\{[^}]*border-color:\s*var\(--jf-primary\)/);
         expect(cssText).toMatch(/\.media-item\.featured-hero\.playing\s+\.poster-inner\s*\{[^}]*box-shadow:[^}]*16px/);
     });
+
+    it('ensures runtime is suppressed on media items when media_type is series and tv_content is series', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaItem = new JellyHAMediaItem();
+
+        // 1. media_type = 'series', tv_content = 'series' -> false
+        mediaItem.config = { show_runtime: true, media_type: 'series', tv_content: 'series' } as any;
+        expect((mediaItem as any)._isRuntimeVisible()).toBe(false);
+
+        // 2. media_type = 'series', tv_content undefined (defaults to series) -> false
+        mediaItem.config = { show_runtime: true, media_type: 'series' } as any;
+        expect((mediaItem as any)._isRuntimeVisible()).toBe(false);
+
+        // 3. media_type = 'series', tv_content = 'episodes' -> true
+        mediaItem.config = { show_runtime: true, media_type: 'series', tv_content: 'episodes' } as any;
+        expect((mediaItem as any)._isRuntimeVisible()).toBe(true);
+
+        // 4. media_type = 'movies' -> true
+        mediaItem.config = { show_runtime: true, media_type: 'movies' } as any;
+        expect((mediaItem as any)._isRuntimeVisible()).toBe(true);
+    });
 });
 
 

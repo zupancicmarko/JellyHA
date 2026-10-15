@@ -432,13 +432,17 @@ export class JellyHALibraryEditor extends LitElement {
       <span>${localize(lang, 'editor.show_rating')}</span>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_runtime !== false}
-        @change=${this._showRuntimeChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_runtime')}</span>
-    </div>
+    ${this._isRuntimeOptionVisible()
+      ? html`
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_runtime !== false}
+            @change=${this._showRuntimeChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_runtime')}</span>
+        </div>
+      `
+      : nothing}
 
     <div class="checkbox-row">
       <ha-switch
@@ -1129,6 +1133,12 @@ export class JellyHALibraryEditor extends LitElement {
   private _showRatingsChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_ratings', target.checked);
+  }
+
+  private _isRuntimeOptionVisible(): boolean {
+    const mediaType = this._config?.media_type;
+    const tvContent = this._config?.tv_content || 'series';
+    return !(mediaType === 'series' && tvContent === 'series');
   }
 
   private _showRuntimeChanged(e: Event): void {
