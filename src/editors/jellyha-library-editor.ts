@@ -69,7 +69,6 @@ export class JellyHALibraryEditor extends LitElement {
     }
     .warning-banner {
       margin-top: 8px;
-      margin-left: 32px;
       padding: 8px 12px;
       background: rgba(255, 152, 0, 0.12);
       border: 1px solid rgba(255, 152, 0, 0.35);
@@ -734,6 +733,14 @@ export class JellyHALibraryEditor extends LitElement {
                 label="${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}"
                 @value-changed=${this._defaultClientDeviceChanged}
               ></ha-entity-picker>
+              ${!this._hasConfiguredClientDevices()
+                ? html`
+                    <div class="warning-banner">
+                      <ha-icon icon="mdi:alert-circle-outline"></ha-icon>
+                      <span>${localize(lang, 'editor.no_client_devices_warning') || 'No Jellyfin client devices configured in the JellyHA integration. Please configure devices in Settings → Devices & services → JellyHA → Configure.'}</span>
+                    </div>
+                  `
+                : ''}
             </div>
           `
         : ''}
@@ -964,19 +971,88 @@ export class JellyHALibraryEditor extends LitElement {
     return !eid.startsWith('media_player.jellyha_');
   };
 
-  private _filterClientDevices = (stateObj: any): boolean => {
+  private _isConfiguredClientDevice(stateObj: any): boolean {
     const eid = stateObj?.entity_id;
     if (!eid || !eid.startsWith('media_player.')) {
       return false;
     }
-    if (eid === this._config?.default_client_device) {
+
+    // Must exist as an active entity in hass.states (not restored/unavailable/ghost)
+    const liveState = this.hass?.states?.[eid] || stateObj;
+    if (!liveState || liveState.state === 'unavailable' || liveState.state === 'unknown') {
+      return false;
+    }
+
+    // If hass.states is available, the entity must actually be present in the state machine
+    if (this.hass?.states && !this.hass.states[eid]) {
+      return false;
+    }
+
+    const entityEntry = (this.hass as any)?.entities?.[eid];
+    if (entityEntry?.disabled_by) {
+      return false;
+    }
+
+    const friendlyName: string = liveState?.attributes?.friendly_name || '';
+
+    // Explicitly exclude Library Browser
+    if (
+      eid.includes('library_browser') ||
+      eid.includes('media_browser') ||
+      friendlyName.toLowerCase().includes('library browser')
+    ) {
+      return false;
+    }
+
+    const uniqueId: string = entityEntry?.unique_id || '';
+
+    // Exclude if unique_id indicates media_browser
+    if (uniqueId.includes('_media_browser') || uniqueId === 'JellyHA_media_browser') {
+      return false;
+    }
+
+    // Exclude User media players (unique_id contains _media_player_<guid>, e.g. Moonfin, User admin)
+    if (uniqueId.includes('_media_player_') && !uniqueId.includes('_device_player_')) {
+      return false;
+    }
+
+    // Must be a JellyHA device player
+    const isJellyhaPlatform =
+      entityEntry?.platform === 'jellyha' ||
+      eid.startsWith('media_player.jellyha_') ||
+      liveState?.attributes?.device_id !== undefined;
+
+    if (!isJellyhaPlatform) {
+      return false;
+    }
+
+    // 1. Matches state attribute device_id exposed by JellyHADeviceMediaPlayer
+    if (liveState?.attributes?.device_id) {
       return true;
     }
-    const platform = (this.hass as any)?.entities?.[eid]?.platform;
-    if (platform === 'jellyha') {
+
+    // 2. Matches configured device player unique_id (entry_id_device_player_<device_id>)
+    if (uniqueId.includes('_device_player_')) {
       return true;
     }
-    return eid.startsWith('media_player.jellyha_') || !!stateObj?.attributes?.client || !!stateObj?.attributes?.session_id;
+
+    // 3. Name or entity ID conventions for active JellyHA device players
+    if (friendlyName.startsWith('Device ') || eid.includes('_device_')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private _filterClientDevices = (stateObj: any): boolean => {
+    return this._isConfiguredClientDevice(stateObj);
+  };
+
+  private _hasConfiguredClientDevices(): boolean {
+    if (!this.hass?.states) return false;
+    return Object.keys(this.hass.states).some(eid =>
+      this._isConfiguredClientDevice(this.hass.states[eid])
+    );
   };
 
   private _defaultClientDeviceChanged(e: CustomEvent): void {

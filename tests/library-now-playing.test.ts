@@ -440,3 +440,135 @@ describe('stopMediaPlayback service selection', () => {
         });
     });
 });
+
+describe('Poster playback control hold-to-stop calculations', () => {
+    it('calculates long press progress and ring offset correctly', () => {
+        const duration = 800; // ms
+        const ringRadius = 20;
+        const ringCircumference = 2 * Math.PI * ringRadius;
+
+        // Progress at start
+        let elapsed = 0;
+        let progress = Math.min(elapsed / duration, 1);
+        let ringOffset = ringCircumference * (1 - progress);
+        expect(progress).toBe(0);
+        expect(ringOffset).toBeCloseTo(ringCircumference);
+
+        // Progress at halfway (400ms)
+        elapsed = 400;
+        progress = Math.min(elapsed / duration, 1);
+        ringOffset = ringCircumference * (1 - progress);
+        expect(progress).toBe(0.5);
+        expect(ringOffset).toBeCloseTo(ringCircumference / 2);
+
+        // Progress at 800ms (complete)
+        elapsed = 800;
+        progress = Math.min(elapsed / duration, 1);
+        ringOffset = ringCircumference * (1 - progress);
+        expect(progress).toBe(1);
+        expect(ringOffset).toBeCloseTo(0);
+    });
+
+    it('consumes click event when long press triggers stop', () => {
+        let longPressConsumed = false;
+        let playPauseCalled = false;
+        let stopCalled = false;
+
+        const onLongPressComplete = () => {
+            longPressConsumed = true;
+            stopCalled = true;
+        };
+
+        const onClick = () => {
+            if (longPressConsumed) {
+                longPressConsumed = false;
+                return;
+            }
+            playPauseCalled = true;
+        };
+
+        // Normal click without hold
+        onClick();
+        expect(playPauseCalled).toBe(true);
+        expect(stopCalled).toBe(false);
+
+        // Reset
+        playPauseCalled = false;
+        stopCalled = false;
+
+        // Hold to stop triggered
+        onLongPressComplete();
+        expect(stopCalled).toBe(true);
+
+        // Subsequent click fired on mouseup/touchend
+        onClick();
+        expect(playPauseCalled).toBe(false); // Play/pause suppressed!
+        expect(longPressConsumed).toBe(false); // Reset for next time
+    });
+
+    it('ensures now playing poster overlay does not render pillow status pill', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const mediaElem = new JellyHAMediaItem();
+        mediaElem.config = {
+            type: 'custom:jellyha-library-card',
+            entity: 'sensor.jellyha_library',
+            show_now_playing: true,
+            default_cast_device: 'media_player.chromecast_living_room',
+        };
+        const movieItem: MediaItem = {
+            id: 'movie-1',
+            name: 'Inception',
+            type: 'Movie',
+            year: 2010,
+        };
+        mediaElem.item = movieItem;
+        mediaElem.hass = {
+            states: {
+                'media_player.chromecast_living_room': {
+                    entity_id: 'media_player.chromecast_living_room',
+                    state: 'playing',
+                    attributes: {
+                        media_title: 'Inception',
+                        friendly_name: 'Living Room TV',
+                    },
+                },
+            },
+        } as unknown as HomeAssistant;
+
+        const overlay = (mediaElem as any)._renderNowPlayingOverlay(mediaElem.item);
+        const overlayStr = JSON.stringify(overlay);
+
+        expect(overlayStr).toBeDefined();
+        expect(overlayStr).toContain('now-playing-overlay');
+        expect(overlayStr).toContain('now-playing-controls');
+        expect(overlayStr).not.toContain('now-playing-status');
+    });
+});
+
+describe('Immediate item deletion and local cache eviction', () => {
+    it('evicts deleted item from local items cache and updates next-up highlight', () => {
+        let items: MediaItem[] = [
+            { id: 'item-1', name: 'Movie 1', type: 'Movie' },
+            { id: 'item-2', name: 'Movie 2', type: 'Movie' },
+            { id: 'item-3', name: 'Movie 3', type: 'Movie' },
+        ];
+        let mostRecentNextUpItemId: string | undefined = 'item-1';
+
+        const onItemDeleted = (itemId: string) => {
+            items = items.filter(i => i.id !== itemId);
+            if (mostRecentNextUpItemId === itemId) {
+                mostRecentNextUpItemId = items[0]?.id;
+            }
+        };
+
+        // Delete item-1
+        onItemDeleted('item-1');
+        expect(items.length).toBe(2);
+        expect(items.find(i => i.id === 'item-1')).toBeUndefined();
+        expect(mostRecentNextUpItemId).toBe('item-2');
+
+        // Delete non-existent item
+        onItemDeleted('item-999');
+        expect(items.length).toBe(2);
+    });
+});

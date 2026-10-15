@@ -163,13 +163,12 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         }
     });
 
-    it('queue action only renders playing icon when active, chevron is removed', () => {
-        // Test verify logic that queue items only display action when isPlaying is true
+    it('queue cards do not render volume icon (playback controls consolidated onto poster)', () => {
         const renderAction = (isPlaying: boolean) => {
-            return isPlaying ? 'mdi:volume-high' : null;
+            return null; // volume icon removed from card content
         };
         expect(renderAction(false)).toBeNull();
-        expect(renderAction(true)).toBe('mdi:volume-high');
+        expect(renderAction(true)).toBeNull();
     });
 
     it('suppresses title when show_title is false in featured hero and queue', () => {
@@ -911,6 +910,16 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         expect(cssText).toContain('.featured-hero-scrim .meta-text');
         expect(cssText).toMatch(/\.featured-hero-scrim\s+\.meta-text[^{]*\{[^}]*font-size:\s*11px/);
         expect(cssText).toMatch(/\.featured-hero-scrim\s+\.rating-pill[^{]*\{[^}]*font-size:\s*11px/);
+    });
+
+    it('ensures featured hero poster card has glowing theme border when playing', async () => {
+        const { cardStyles } = await import('../src/styles/jellyha-library-styles');
+        const cssText = cardStyles.cssText;
+
+        expect(cssText).toContain('.media-item.featured-hero.playing .poster-inner');
+        expect(cssText).toContain('border-color: var(--jf-primary)');
+        expect(cssText).toMatch(/\.media-item\.featured-hero\.playing\s+\.poster-inner\s*\{[^}]*border-color:\s*var\(--jf-primary\)/);
+        expect(cssText).toMatch(/\.media-item\.featured-hero\.playing\s+\.poster-inner\s*\{[^}]*box-shadow:[^}]*16px/);
     });
 });
 

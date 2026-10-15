@@ -6,21 +6,20 @@
 Jellyfin for Home Assistant
 
 <div align="center">
-  <img src="./docs/JellyHA-Library-Grid.png" width="44%" alt="Library Card - Grid View" />
-  <img src="./docs/JellyHA-Now-Playing-Card_Updated.png" width="35%" alt="Now Playing Card" />
+  <img src="./docs/JellyHA-Library-Featured.png" width="48%" alt="Featured View" />
+  <img src="./docs/JellyHA-Now-Playing-Card-Updated.png" width="39%" alt="Now Playing Card" />
 </div>
 
 <details>
   <summary><b>📸 Click to view all layout variations & screenshots (Carousel, List, Next Up, Details Modal, Card Selector)</b></summary>
   <br>
   <div align="center">
-    <img src="./docs/JellyHA-Library-Carousel.png" width="48%" alt="Carousel View" />
-    <img src="./docs/JellyHA-Library-Next-Up.png" width="48%" alt="Next Up View" />
-    <img src="./docs/JellyHA-Library-List.png" width="48%" alt="List View" />
+    <img src="./docs/JellyHA-Library-Grid.png" width="44%" alt="Library Card - Grid View" />
     <img src="./docs/JellyHA-Library-More-Information.png" width="48%" alt="More Information" />
     <img src="./docs/JellyHA-Cards.png" width="48%" alt="Add to dashboard" />
-    <img src="./docs/JellyHA-Latest-Movie-Card-Mod.png" width="48%" alt="Latest Movie Card Mod" />
-    <img src="./docs/JellyHA-Now-Playing-Card.png" width="97%" alt="Now Playing Card" />
+    <img src="./docs/JellyHA-Library-List.png" width="48%" alt="List View" />
+    <img src="./docs/JellyHA-Library-Carousel.png" width="48%" alt="Carousel View" />
+    <img src="./docs/JellyHA-Now-Playing-Card.png" width="48%" alt="Now Playing Card" />
   </div>
 </details>
 

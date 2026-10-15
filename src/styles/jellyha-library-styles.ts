@@ -542,6 +542,28 @@ export const cardStyles = css`
     z-index: 10;
   }
 
+  .media-item.featured-hero.playing .poster-inner {
+    border-color: var(--jf-primary);
+    box-shadow: 
+      0 0 16px rgba(24, 188, 242, 0.3),
+      0 4px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 
+      0 0 16px color-mix(in srgb, var(--jf-primary), transparent 65%),
+      0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .media-item.featured-hero.playing:hover .poster-inner {
+    transform: scale(1.02);
+    border-color: var(--jf-primary);
+    box-shadow: 
+      0 0 20px rgba(24, 188, 242, 0.45),
+      0 8px 22px rgba(0, 0, 0, 0.5);
+    box-shadow: 
+      0 0 20px color-mix(in srgb, var(--jf-primary), transparent 50%),
+      0 8px 22px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+  }
+
   .poster-container.featured-hero-poster .poster {
     width: 100%;
     height: 100%;
@@ -723,6 +745,14 @@ export const cardStyles = css`
   .media-item.featured-queue-item.playing {
     border-color: var(--jf-primary);
     background: color-mix(in srgb, var(--jf-primary), transparent 90%);
+    box-shadow: 0 0 16px rgba(24, 188, 242, 0.3);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--jf-primary), transparent 65%);
+  }
+
+  .media-item.featured-queue-item.playing:hover {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 20px rgba(24, 188, 242, 0.45);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--jf-primary), transparent 50%);
   }
 
   .featured-queue-poster-wrapper {
@@ -1768,6 +1798,14 @@ export const cardStyles = css`
   /* Theme border for currently playing item */
   .media-item.playing .poster-container {
     border-color: var(--jf-primary);
+    box-shadow: 0 0 16px rgba(24, 188, 242, 0.3);
+    box-shadow: 0 0 16px color-mix(in srgb, var(--jf-primary), transparent 65%);
+  }
+
+  .media-item.playing:hover .poster-container {
+    border-color: var(--jf-primary);
+    box-shadow: 0 0 20px rgba(24, 188, 242, 0.45);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--jf-primary), transparent 50%);
   }
 
   .poster-inner {
@@ -2228,19 +2266,28 @@ export const cardStyles = css`
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 12px;
     z-index: 10;
     border-radius: var(--jf-poster-radius);
     animation: fadeIn 0.3s ease-out;
+    cursor: pointer;
   }
 
   .now-playing-controls {
     display: flex;
-    gap: 16px;
+    justify-content: center;
     align-items: center;
+    z-index: 3;
+  }
+
+  .now-playing-controls .play-pause-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    border-radius: 50%;
   }
 
   .now-playing-controls ha-icon-button {
@@ -2252,6 +2299,7 @@ export const cardStyles = css`
     border-radius: 50% !important;
     transition: background 0.2s;
     overflow: hidden;
+    cursor: pointer;
   }
 
   .now-playing-controls ha-icon-button:hover {
@@ -2265,20 +2313,27 @@ export const cardStyles = css`
     color: #fff;
   }
 
-  .now-playing-status {
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 700;
-    font-size: 0.8rem;
-    line-height: 1;
-    letter-spacing: 0.5px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    padding: 7px 10px 5px;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    white-space: nowrap;
-    text-transform: uppercase;
+  /* Stop ring SVG */
+  .now-playing-controls .stop-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Stop confirmed pulse animation */
+  .now-playing-controls .play-pause-wrapper.stop-pulse {
+    animation: stopPulse 0.5s ease-out;
+  }
+
+  @keyframes stopPulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+    50% { transform: scale(1.15); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   }
   @keyframes fadeIn {
     from { opacity: 0; }

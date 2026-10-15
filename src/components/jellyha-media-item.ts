@@ -22,8 +22,12 @@ export class JellyHAMediaItem extends LitElement {
   @state() private _itemTouchStartY: number = 0;
   @state() private _clickTimer?: number;
 
-  // Local state for rewind animation
+  // Local state for rewind animation and hold-to-stop
   @state() private _rewindActive: boolean = false;
+  @state() private _longPressProgress: number = 0;
+  @state() private _stopPulse: boolean = false;
+  private _longPressRaf: number | null = null;
+  private _longPressConsumed: boolean = false;
   private _metaResizeObserver?: ResizeObserver;
 
   static styles = cardStyles;
@@ -44,6 +48,10 @@ export class JellyHAMediaItem extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._metaResizeObserver?.disconnect();
+    if (this._longPressRaf) {
+      cancelAnimationFrame(this._longPressRaf);
+      this._longPressRaf = null;
+    }
   }
 
   updated(changedProps: PropertyValues): void {
@@ -257,11 +265,7 @@ export class JellyHAMediaItem extends LitElement {
           ${this.config.show_description_on_hover !== false && (item.description || (item as any).overview) && !isCramped
             ? html`<p class="list-description" title="${item.description || (item as any).overview}">${item.description || (item as any).overview}</p>`
             : nothing}
-          ${isPlaying ? html`
-            <div class="list-action">
-              <ha-icon icon="mdi:volume-high" class="list-playing-icon"></ha-icon>
-            </div>
-          ` : nothing}
+
         </div>
       </div>
     `;
@@ -419,10 +423,15 @@ export class JellyHAMediaItem extends LitElement {
       return nothing;
     }
 
+    const isPaused = activePlayer.state === 'paused';
+    const ringRadius = 18;
+    const ringCircumference = 2 * Math.PI * ringRadius;
+    const ringOffset = ringCircumference * (1 - this._longPressProgress);
+
     return html`
       <div 
         class="now-playing-overlay" 
-        @click="${() => this._handleRewind(activePlayer.entityId)}"
+        @click="${(e: Event) => { e.stopPropagation(); this._handleRewind(activePlayer.entityId); }}"
         @mousedown="${this._stopPropagation}"
         @mouseup="${this._stopPropagation}"
         @touchstart="${this._stopPropagation}"
@@ -431,24 +440,64 @@ export class JellyHAMediaItem extends LitElement {
         role="button"
         tabindex="0"
       >
-        <span class="now-playing-status">
-          ${this._rewindActive ? 'REWINDING' : activePlayer.state}
-        </span>
         <div class="now-playing-controls">
-          <ha-icon-button
-            class="${this._rewindActive ? 'spinning' : ''}"
-            .label=${'Play/Pause'}
-            @click="${(e: Event) => { e.stopPropagation(); this._handlePlayPause(activePlayer.entityId); }}"
+          <div 
+            class="play-pause-wrapper ${this._stopPulse ? 'stop-pulse' : ''}"
+            @pointerdown="${(e: PointerEvent) => { e.stopPropagation(); this._startLongPress(activePlayer.entityId); }}"
+            @pointerup="${(e: PointerEvent) => { e.stopPropagation(); this._endLongPress(); }}"
+            @pointerleave="${() => this._endLongPress()}"
+            @pointercancel="${() => this._endLongPress()}"
+            @contextmenu="${(e: Event) => { e.preventDefault(); e.stopPropagation(); }}"
           >
-            <ha-icon icon="${this._rewindActive ? 'mdi:loading' : (activePlayer.state === 'playing' ? 'mdi:pause' : 'mdi:play')}"></ha-icon>
-          </ha-icon-button>
-          <ha-icon-button
-            class="stop"
-            .label=${'Stop'}
-            @click="${(e: Event) => { e.stopPropagation(); this._handleStop(activePlayer.entityId); }}"
-          >
-            <ha-icon icon="mdi:stop"></ha-icon>
-          </ha-icon-button>
+            ${this._rewindActive ? html`
+              <ha-icon-button
+                class="play-pause-btn spinning"
+                .label=${localize(this.hass?.locale?.language || this.hass?.language, 'loading') || 'Loading'}
+              >
+                <ha-icon icon="mdi:loading"></ha-icon>
+              </ha-icon-button>
+            ` : isPaused ? html`
+              <ha-icon-button
+                class="play-pause-btn"
+                .label=${localize(this.hass?.locale?.language || this.hass?.language, 'play') || 'Play'}
+                @click="${(e: Event) => {
+                  e.stopPropagation();
+                  if (this._longPressConsumed) {
+                    this._longPressConsumed = false;
+                    return;
+                  }
+                  this._handlePlayPause(activePlayer.entityId);
+                }}"
+              >
+                <ha-icon icon="mdi:play"></ha-icon>
+              </ha-icon-button>
+            ` : html`
+              <ha-icon-button
+                class="play-pause-btn"
+                .label=${localize(this.hass?.locale?.language || this.hass?.language, 'pause') || 'Pause'}
+                @click="${(e: Event) => {
+                  e.stopPropagation();
+                  if (this._longPressConsumed) {
+                    this._longPressConsumed = false;
+                    return;
+                  }
+                  this._handlePlayPause(activePlayer.entityId);
+                }}"
+              >
+                <ha-icon icon="mdi:pause"></ha-icon>
+              </ha-icon-button>
+            `}
+            ${this._longPressProgress > 0 ? html`
+              <svg class="stop-ring" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="18"
+                  stroke="#ef4444" stroke-width="2.5" fill="none"
+                  stroke-dasharray="${ringCircumference}"
+                  stroke-dashoffset="${ringOffset}"
+                  stroke-linecap="round"
+                  transform="rotate(-90 20 20)" />
+              </svg>
+            ` : nothing}
+          </div>
         </div>
       </div>
     `;
@@ -655,13 +704,58 @@ export class JellyHAMediaItem extends LitElement {
   }
 
   private _handlePlayPause(entityId: string): void {
+    if (!this.hass) return;
     this._dispatchHaptic();
     this.hass.callService('media_player', 'media_play_pause', { entity_id: entityId });
   }
 
   private _handleStop(entityId: string): void {
+    if (!this.hass) return;
     this._dispatchHaptic();
     stopMediaPlayback(this.hass, entityId, this.config);
+  }
+
+  private _startLongPress(entityId: string): void {
+    if (this._longPressRaf) {
+      cancelAnimationFrame(this._longPressRaf);
+      this._longPressRaf = null;
+    }
+    this._longPressConsumed = false;
+    const start = Date.now();
+    const duration = 800; // ms to hold before stopping
+
+    this._dispatchHaptic('selection');
+
+    const animate = () => {
+      const elapsed = Date.now() - start;
+      this._longPressProgress = Math.min(elapsed / duration, 1);
+
+      if (this._longPressProgress >= 1) {
+        this._longPressConsumed = true;
+        this._handleStop(entityId);
+        this._dispatchHaptic('success');
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate(50);
+        }
+        this._stopPulse = true;
+        setTimeout(() => {
+          this._stopPulse = false;
+        }, 600);
+        this._endLongPress();
+        return;
+      }
+      this._longPressRaf = requestAnimationFrame(animate);
+    };
+
+    this._longPressRaf = requestAnimationFrame(animate);
+  }
+
+  private _endLongPress(): void {
+    if (this._longPressRaf) {
+      cancelAnimationFrame(this._longPressRaf);
+      this._longPressRaf = null;
+    }
+    this._longPressProgress = 0;
   }
 
   private _handleRewind(entityId: string): void {
