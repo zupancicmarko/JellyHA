@@ -13398,73 +13398,23 @@ j.styles = ke`
             --short-badge-padding: 1px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .playback-controls {
-            margin-bottom: 2px !important;
-            gap: 6px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .playback-controls ha-icon-button:not(.music-subtle-btn) {
-            --mdc-icon-button-size: 32px !important;
-            --mdc-icon-size: 18px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .play-pause-btn {
-            --mdc-icon-button-size: 38px !important;
-            --mdc-icon-size: 24px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .stop-ring {
-            width: 38px !important;
-            height: 38px !important;
+            margin-bottom: 3px !important;
+            gap: 8px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .volume-capsule {
-            height: 30px !important;
-            margin-top: 2px !important;
-            margin-bottom: 2px !important;
-            padding: 0 6px !important;
-            gap: 6px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .volume-btn {
-            --mdc-icon-button-size: 24px !important;
-            --mdc-icon-size: 16px !important;
-            width: 24px !important;
-            height: 24px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .volume-step-btn {
-            --mdc-icon-button-size: 24px !important;
-            --mdc-icon-size: 14px !important;
-            width: 24px !important;
-            height: 24px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .volume-slider-track {
-            height: 8px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .volume-slider-thumb {
-            width: 12px !important;
-            height: 12px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .volume-pct {
-            font-size: 11px !important;
-            min-width: 28px !important;
+            margin-top: 3px !important;
+            margin-bottom: 3px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .progress-container {
             padding: 2px 0 !important;
             position: relative;
             z-index: 10;
         }
-        ha-card:not(.empty-state):not(.error-state).compact-height .progress-bar {
-            height: 5px !important;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .seek-handle {
-            width: 10px !important;
-            height: 10px !important;
-        }
         ha-card:not(.empty-state):not(.error-state).compact-height .timestamps {
             margin-top: 2px !important;
-            line-height: 1 !important;
+            line-height: 1.1 !important;
             position: relative;
             z-index: 10;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .time-elapsed,
-        ha-card:not(.empty-state):not(.error-state).compact-height .time-remaining {
-            font-size: 0.72rem !important;
-            line-height: 1 !important;
         }
 
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
