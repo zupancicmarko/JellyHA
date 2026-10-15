@@ -478,12 +478,16 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
             expect(str).not.toContain('client-line');
         });
 
-        it('ensures CSS styles have overflow: hidden on .info-container and .info-top, and power button is top-most', () => {
+        it('ensures CSS styles have overflow: hidden on .info-container and .info-top, and power button & progress timestamps are top-most', () => {
             const cssText = (JellyHANowPlayingCard as any).styles.cssText;
             expect(cssText).toMatch(/\.info-container\s*\{[^}]*overflow:\s*hidden/);
             expect(cssText).toMatch(/\.info-top[^{]*\{[^}]*overflow:\s*hidden/);
             expect(cssText).toMatch(/\.title-row\s*\{[^}]*z-index:\s*10/);
             expect(cssText).toMatch(/\.power-btn-hit-area\s*\{[^}]*z-index:\s*10/);
+            expect(cssText).toMatch(/\.progress-container\s*\{[^}]*z-index:\s*10/);
+            expect(cssText).toMatch(/\.timestamps\s*\{[^}]*z-index:\s*10/);
+            expect(cssText).toContain('compact-height');
+            expect(cssText).toContain('volume-capsule');
         });
     });
 });

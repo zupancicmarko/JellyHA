@@ -2109,10 +2109,10 @@ export class JellyHANowPlayingCard extends LitElement {
         const w = cardRect.width;
 
         // Hysteresis to prevent threshold oscillation
-        const isCompact = haCard.classList.contains('compact-height') ? h <= 200 : h <= 190;
+        const isCompact = haCard.classList.contains('compact-height') ? h <= 215 : h <= 205;
         haCard.classList.toggle('compact-height', isCompact);
 
-        const isMicro = haCard.classList.contains('micro-height') ? h <= 185 : h <= 175;
+        const isMicro = haCard.classList.contains('micro-height') ? h <= 135 : h <= 125;
         haCard.classList.toggle('micro-height', isMicro);
 
         const isTallNarrow = haCard.classList.contains('tall-narrow')
@@ -2139,7 +2139,10 @@ export class JellyHANowPlayingCard extends LitElement {
 
         // Space available for middle metadata between title-row and controls
         const titleBottom = titleRect ? titleRect.bottom : (infoContainerEl ? infoContainerEl.getBoundingClientRect().top + 32 : cardRect.top + 32);
-        const availableMiddleHeight = bottomRect.top - titleBottom;
+        const rawMiddle = bottomRect.top - titleBottom;
+        // If bottom section itself is pushed down past the card bottom boundary, clamp middle space immediately
+        const overflowPastCard = bottomRect.bottom - (cardRect.bottom - 6);
+        const availableMiddleHeight = overflowPastCard > 0 ? Math.min(rawMiddle - overflowPastCard, 0) : rawMiddle;
 
         const stateObj = this._config?.entity ? this.hass?.states[this._config.entity] : null;
         const attrs = stateObj?.attributes as any;
@@ -2614,7 +2617,7 @@ export class JellyHANowPlayingCard extends LitElement {
             font-weight: 700;
             line-height: 1.2;
             color: var(--card-dominant-color, var(--primary-text-color));
-            margin-top: 6px;
+            margin-top: 2px;
             margin-bottom: 2px;
             overflow: hidden;
         }
@@ -2715,7 +2718,7 @@ export class JellyHANowPlayingCard extends LitElement {
             gap: 8px;
             align-items: center;
             justify-content: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .playback-controls ha-icon-button:not(.music-subtle-btn) {
             --mdc-icon-button-size: 36px;
@@ -2988,8 +2991,8 @@ export class JellyHANowPlayingCard extends LitElement {
             -webkit-backdrop-filter: blur(16px);
             border: none;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
-            margin-top: 8px;
-            margin-bottom: 8px;
+            margin-top: 4px;
+            margin-bottom: 4px;
             width: 100%;
         }
         .volume-capsule.no-step-buttons {
@@ -3138,6 +3141,7 @@ export class JellyHANowPlayingCard extends LitElement {
             padding: 4px 0;
             box-sizing: border-box;
             touch-action: none;
+            z-index: 10;
         }
         .progress-container.readonly {
             cursor: default;
@@ -3183,6 +3187,8 @@ export class JellyHANowPlayingCard extends LitElement {
             justify-content: space-between;
             margin-top: 2px;
             padding: 0;
+            position: relative;
+            z-index: 10;
         }
         .time-elapsed,
         .time-remaining {
@@ -3341,26 +3347,104 @@ export class JellyHANowPlayingCard extends LitElement {
         ha-card:not(.empty-state):not(.error-state).compact-height .card-header {
             display: none !important;
         }
+        ha-card:not(.empty-state):not(.error-state).compact-height .card-content,
+        ha-card:not(.empty-state):not(.error-state).compact-height .jellyha-now-playing.has-background .card-content,
+        .jellyha-now-playing.has-background ha-card:not(.empty-state):not(.error-state).compact-height .card-content {
+            gap: 6px !important;
+            padding: 10px 14px 8px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .title-row {
+            gap: 6px !important;
+        }
         ha-card:not(.empty-state):not(.error-state).compact-height .title {
-            font-size: 1.2rem;
-            line-height: 1.1;
-            margin-bottom: 2px;
+            font-size: 1.15rem !important;
+            line-height: 1.15 !important;
+            margin: 0 !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .header-actions {
+            margin-top: 0 !important;
+            height: 26px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .header-badge {
-            margin-top: 2px;
-            font-size: 0.75rem;
-            padding: 1px 6px;
+            margin-top: 0 !important;
+            font-size: 0.75rem !important;
+            padding: 1px 6px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .main-container {
-            gap: 12px;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .card-content {
-            gap: 8px;
-            padding: 12px 16px !important;
+            gap: 12px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .poster-container {
             min-height: 0;
             --short-badge-padding: 1px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .playback-controls {
+            margin-bottom: 2px !important;
+            gap: 6px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .playback-controls ha-icon-button:not(.music-subtle-btn) {
+            --mdc-icon-button-size: 32px !important;
+            --mdc-icon-size: 18px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .play-pause-btn {
+            --mdc-icon-button-size: 38px !important;
+            --mdc-icon-size: 24px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .stop-ring {
+            width: 38px !important;
+            height: 38px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-capsule {
+            height: 30px !important;
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
+            padding: 0 6px !important;
+            gap: 6px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-btn {
+            --mdc-icon-button-size: 24px !important;
+            --mdc-icon-size: 16px !important;
+            width: 24px !important;
+            height: 24px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-step-btn {
+            --mdc-icon-button-size: 24px !important;
+            --mdc-icon-size: 14px !important;
+            width: 24px !important;
+            height: 24px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-slider-track {
+            height: 8px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-slider-thumb {
+            width: 12px !important;
+            height: 12px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-pct {
+            font-size: 11px !important;
+            min-width: 28px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .progress-container {
+            padding: 2px 0 !important;
+            position: relative;
+            z-index: 10;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .progress-bar {
+            height: 5px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .seek-handle {
+            width: 10px !important;
+            height: 10px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .timestamps {
+            margin-top: 2px !important;
+            line-height: 1 !important;
+            position: relative;
+            z-index: 10;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .time-elapsed,
+        ha-card:not(.empty-state):not(.error-state).compact-height .time-remaining {
+            font-size: 0.72rem !important;
+            line-height: 1 !important;
         }
 
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
