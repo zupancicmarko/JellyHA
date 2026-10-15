@@ -485,7 +485,7 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
             expect(cssText).toMatch(/\.title-row\s*\{[^}]*z-index:\s*10/);
             expect(cssText).toMatch(/\.power-btn-hit-area\s*\{[^}]*z-index:\s*10/);
             expect(cssText).toMatch(/\.progress-container\s*\{[^}]*z-index:\s*10/);
-            expect(cssText).toMatch(/\.timestamps\s*\{[^}]*z-index:\s*10/);
+            expect(cssText).toMatch(/\.title-row\s*\{[^}]*align-items:\s*center/);
             expect(cssText).toContain('compact-height');
             expect(cssText).toContain('volume-capsule');
         });

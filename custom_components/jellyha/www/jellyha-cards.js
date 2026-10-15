@@ -12572,7 +12572,7 @@ I.styles = Ce`
         }
         .title-row {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 8px;
             width: 100%;
@@ -12584,6 +12584,7 @@ I.styles = Ce`
         .title-row .title {
             flex: 1 1 auto;
             min-width: 0;
+            margin: 0;
         }
 
         .header-actions {
@@ -12592,7 +12593,7 @@ I.styles = Ce`
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
-            margin-top: 3px;
+            margin: 0;
             position: relative;
             z-index: 10;
         }
@@ -12817,7 +12818,7 @@ I.styles = Ce`
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
-            margin-top: 3px;
+            margin: 0;
         }
         .header-actions .media-type-badge.header-badge {
             margin-top: 0 !important;
@@ -13375,14 +13376,15 @@ I.styles = Ce`
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .title-row {
             gap: 6px !important;
+            align-items: center !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .title {
-            font-size: 1.15rem !important;
-            line-height: 1.15 !important;
+            font-size: 1.25rem !important;
+            line-height: 1.2 !important;
             margin: 0 !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .header-actions {
-            margin-top: 0 !important;
+            margin: 0 !important;
             height: 26px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .header-badge {
