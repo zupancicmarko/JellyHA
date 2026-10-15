@@ -5,67 +5,61 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.0] - 2026-10-14
+## [1.7.0] - 2026-10-15
 
 ### Added
-- **Featured Layout Multi-Column & Configurable Rows (2, 3, or 4 rows)**:
-  - Added support for the `columns` configuration option (1 to 4) in `layout: 'featured'`, allowing side queue cards to be arranged in multiple columns (e.g. 2 columns showing 6 cards side-by-side with 3 rows per column) beside the hero poster.
-  - Automatically calculates effective items per page as `1 + (columns * rows)` (e.g. 7 items per page for 2 columns / 3 rows, 5 items for 2 columns / 2 rows) with smart pagination dots and swipe gestures.
-  - Added configurable `rows` option (2, 3, or 4 rows, default 3) in `layout: 'featured'` via YAML and visual editor sliders with localized helper text across all 8 supported languages.
-  - Symmetrical height alignment: when set to 2, 3, or 4 rows, the hero poster scales proportionally to match the side card rows.
-  - Hid redundant "Items Per Page" field from the card editor in Featured layout, as item capacity is strictly defined by columns and rows.
-  - Responsive stacking: gracefully collapses to 1 column on narrower viewports and mobile screens (< 640px).
+- **Featured Layout in Library Card**:
+  - Introduces a dedicated spotlight layout featuring a large hero poster for the main item alongside smaller queue cards—perfect for wall tablet dashboards, media room displays, and wide views.
+  - Configurable side queue with adjustable columns (1 to 4) and rows (2, 3, or 4), with the large poster automatically scaling proportionally to balance with the side cards.
+  - Built-in touch swipe gestures and pagination dots for smooth browsing, with automatic responsive stacking on mobile screens.
 - **List Layout Modernization & Ergonomics**:
-  - Standardized fixed `136px` card height and `76px` poster width (`width: 76px !important`).
-  - Redesigned header grouping with top-right badges (`media-type-badge`, `new-badge`, `status-badge`).
-  - Dynamic 2-line title wrapping and 1-2 line description clamping with ellipsis (`-webkit-line-clamp`).
-  - Multi-column list support with dynamic container measurement: automatically falls back to 1 column on narrow dashboards (< 500px) to prevent horizontal overflow.
-  - Interactive tactile card feedback: whole-card depression effect on active press (`scale(0.98)` / `translateX(2px) scale(0.98)`) and hover slide transition (`translateX(4px)`).
-- **Poster Screensaver Badge Placement (`badge_style`) Consistency**:
-  - Unified `badge_style: poster`, `header`, and `inline` options on Now Playing Card poster screensaver (`idle-card-mode`) with active playback behavior.
-  - In `badge_style: poster` (or `header`): runtime (`1h 30m`) and rating (`★ 4.9`) badges render directly on the poster corners with glassmorphism, keeping the inline title metadata clean.
-  - In `badge_style: inline`: poster artwork remains completely uncovered, with media badge, runtime, rating pill, year, and genres rendered together inline next to the title.
-- **Glassmorphic Rating & Runtime Badges on Carousel and Grid Posters**:
-  - Brought rating pill (`.rating-pill`) and genre-style runtime badge (`.genre-pill`) to Carousel and Grid view posters, replacing plain text overlays and removing the clock icon.
+  - Added optional fanart card backdrops (`show_card_backdrop`) with soft shading and subtle blur for rich visual depth.
+  - Refined card proportions and poster sizing for a cleaner, more consistent look across dashboards.
+  - Improved text layout with top badges, 2-line title wrapping, and clean description clamping.
+  - Multi-column list support that automatically adapts to a single column on narrow screens and mobile.
+  - Smooth interactive hover effects and tactile press feedback when clicking cards.
+  - Added `show_date_added` option to list card, rendering the addition date in the metadata row right after runtime (`Year • Runtime • Date Added`).
+- **Screensaver Badge Placement in Now Playing Card**:
+  - Added full support for "Badge in poster" and "Badge inline" placement on the poster screensaver, matching active playback behavior.
+  - Choose between sleek corner badges directly on the poster artwork or displaying all badges and metadata inline next to the title.
 - **Truncated Title Tooltips**:
   - Added native `title` attribute tooltips to card titles with ellipsis truncation across List and Featured queue cards, matching genre pills behavior on hover.
 
 ### Changed
+- **Poster Playback Controls & Playing Indicators**:
+  - Centered the playback button on posters, combining play/pause with hold-to-stop (press and hold the button to stop playback), matching the Now Playing card.
+  - Removed the status text pill (PLAYING/PAUSED) and volume icon from cards to keep poster artwork clean and unobstructed.
+- **Instant Item Deletion**:
+  - Deleting an item in the details dialog now removes it from your dashboard cards immediately without waiting for a library refresh.
+- **Client Device Selection in Library Card**:
+  - Filtered the "Play on Jellyfin Client" entity picker to strictly show configured Jellyfin client devices from the JellyHA integration, removing Library Browser and user entities.
+  - Added an informative warning banner in the card editor if no client devices have been configured yet in the integration.
+- **Glassmorphic Rating & Runtime Badges on Carousel and Grid Posters**:
+  - Replaced plain text overlays with modern glassmorphic rating and runtime badges on Carousel and Grid view posters.
 - **Unified Metadata & Description Typography**:
-  - Standardized font size across metadata (release year, runtime, created date, separator dots, rating pill, genre pills, and description) to **`11px`** for Featured and List layouts.
-  - Standardized screensaver metadata font size to **`12px`** and descriptions to **`12px`** across both poster screensaver (`.idle-card-desc`) and fanart screensaver (`.idle-overview`).
-- **Rating Pill Optical Vertical Alignment**:
-  - Lifted rating number text by 1px (`transform: translateY(-0.5px)`) across all cards for optical alignment with the star icon.
-- **Card Background & Border Refinements**:
-  - Removed borders around smaller posters in Featured side queue cards and List cards, keeping border solely on the main hero poster.
-  - Softened backdrop shading and scrim gradients on List and Featured queue cards with subtle 2px blur (`filter: blur(2px) brightness(0.92)`), matching the poster screensaver backdrop styling.
-  - Renamed configuration toggle from "Queue Card Backdrop" to "Show Card Backdrop" (`show_card_backdrop`) with full backwards compatibility for `featured_queue_backdrop` across all 8 supported languages.
-  - Removed redundant central "Play" button overlay on the main hero poster in Featured layout.
-  - Refined Featured hero poster hover to use a subtle elevation lift without harsh white halos, while preserving full standard hover behavior on Carousel, Grid, and List layouts.
-- **Queue Card Sizing & Compact Mode**:
-  - Resized side queue card posters to `68×102px` (2:3 aspect ratio), providing balanced vertical margins.
-  - Smart responsive compact mode for Featured queue cards: keeps full title and metadata visible when card width is wide enough (>= 220px), and cleanly transitions to compact mode (centered poster, top badges, no text) when cards are too small (e.g. 3+ columns, or narrow containers < 220px).
-  - Added support for `show_date_added` in Featured layout cards, rendering the addition date cleanly in the metadata row right after runtime (`Year • Runtime • Date Added`).
-  - Hid redundant "Show Description" and "Metadata Position" fields from the card editor when Featured layout is selected.
-  - Reorganized visual card editor controls by relocating **Enable "Play in Browser"** out of the general display checkboxes to sit directly above **Show "Now Playing" Overlay on Posters** in the Playback section.
-- **Centralized Metadata Styling**:
-  - Centralized 22px height, optical alignments, and glassmorphic pill aesthetics in `src/styles/jellyha-shared-styles.ts` across both Now Playing and Library cards.
+  - Unified font sizing for metadata and descriptions across Featured and List layouts.
+  - Standardized text sizing across both poster and fanart screensaver modes.
 
 ### Fixed
 - **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:
   - Capped H.264 level parameter to `42` (`h264-level=42`) for modern Chromecast devices. Google Cast specifications cap Chromecast Ultra H.264 hardware decoding at Level 4.2 (`1080p@60fps`), resolving playback stalls where streams marked with Level 5.1 were rejected by Google Cast's Default Media Receiver.
   - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.
-- **Carousel and Grid Layout Stability**:
-  - Restored full intrinsic sizing to Carousel items (resolving Next Up overlapping sliver collapse) and Grid items by removing premature host inline containment.
-  - Locked Featured layout hero poster and queue cards to the intended row height proportions, preventing vertical blowout and oversized posters when multiple columns are configured.
-- **Featured Layout Queue Card Title Wrapping**:
-  - Allowed queue card titles to wrap up to 2 lines and floated queue badges to the top right of the title block.
-  - Eliminated premature single-line ellipsis truncation (`white-space: nowrap` and `padding-right: 76px`), allowing the title to flow across the full card width underneath the badges.
-- **Display Configuration Toggles Robustness**:
-  - Fixed `show_title` configuration being ignored on queue cards in Featured layout.
-  - Fixed `show_title`, `show_year`, `show_ratings`/`show_rating`, `show_runtime`, and `show_genres` toggles across all card views by using strict `!== false` checks so defaults and falsy values evaluate reliably.
-  - Added fallback to `date_added` year when `year` is omitted on Jellyfin media items.
-  - Added community rating fallback (`community_rating`) when standard rating field is missing.
+
+### Security
+- **Administrator-Only Item Deletion**:
+  - Restricts the `delete_item` service to Home Assistant users with administrator privileges, preventing non-admin household users from deleting items on the Jellyfin server.
+- **Input Validation & Path Traversal Protection**:
+  - Validates and sanitizes item IDs, config entry IDs, stream indices, and image types across all proxy endpoints (`views.py`) and services (`services.py`).
+  - Rejects traversal attempts (e.g. `../`) and malformed parameters at the API gateway boundary with HTTP 400 Bad Request.
+- **HLS Capability Token Scoping & Hard Lifetime**:
+  - Scopes ephemeral HLS tokens strictly to their authorized item ID, returning HTTP 403 Forbidden on cross-item path access.
+  - Limits file extensions to valid HLS playlist and segment types (`.m3u8`, `.ts`, `.m4s`, `.mp4`, `.key`).
+  - Enforces a 4-hour hard maximum lifetime ceiling on HLS sessions regardless of activity touches.
+- **External & Trailer URL Navigation Hardening**:
+  - Validates external and trailer URLs before opening, blocking dangerous URI schemes (`javascript:`, `data:`, `file:`, `vbscript:`).
+  - Enforces `'noopener,noreferrer'` on all opened browser tabs for strict tab isolation.
+- **Sanitized HTTP Error Responses**:
+  - Replaces raw backend exception traces with generic, privacy-preserving HTTP 500 error messages for image, stream, subtitle, and HLS proxy endpoints.
 
 ## [1.6.0] - 2026-10-11
 
