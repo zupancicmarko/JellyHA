@@ -220,6 +220,10 @@ export class JellyHANowPlayingCard extends LitElement {
                 ? (this._optimisticSeekPercent / 100) * durationSeconds
                 : currentPositionSeconds;
 
+        const curProgress = this._isDragging ? this._dragPercentage : progressPercent;
+        const handleOffset = this._isDragging ? 8 : 6;
+        const handleLeft = `calc(${curProgress}% + (50 - ${curProgress}) * ${(handleOffset * 2) / 100}px)`;
+
         // Resolve images (handling both Jellyfin entities and generic media players like Chromecast)
         const { seriesImageUrl, episodeImageUrl } = this._resolveImages(stateObj, cachedItem);
 
@@ -461,8 +465,8 @@ export class JellyHANowPlayingCard extends LitElement {
                                     @pointercancel=${supportsRemote ? this._cancelDrag : undefined}
                                 >
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
-                                        <div class="seek-handle" style="left: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'left 1s linear'}; transform: translate(-50%, -50%) ${this._isDragging ? 'scale(1.3)' : 'scale(1)'}; background: ${this._dominantColor}"></div>
+                                        <div class="progress-fill" style="width: ${curProgress}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${handleLeft}; transition: ${this._isDragging ? 'none' : 'left 1s linear'}; transform: translate(-50%, -50%) ${this._isDragging ? 'scale(1.3)' : 'scale(1)'}; background: ${this._dominantColor}"></div>
                                     </div>
                                 </div>
 

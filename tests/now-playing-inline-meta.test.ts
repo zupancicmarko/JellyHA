@@ -489,5 +489,13 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
             expect(cssText).toContain('compact-height');
             expect(cssText).toContain('volume-capsule');
         });
+
+        it('renders seek-handle with bounded position to prevent edge clipping at 0% and 100%', () => {
+            const card = setupCardWithState(0);
+            const str = JSON.stringify((card as any).render());
+
+            expect(str).toContain('seek-handle');
+            expect(str).toContain('calc(0% + (50 - 0) * 0.12px)');
+        });
     });
 });
