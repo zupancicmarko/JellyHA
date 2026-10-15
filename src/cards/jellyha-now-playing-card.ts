@@ -42,7 +42,7 @@ export class JellyHANowPlayingCard extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private _config!: JellyHANowPlayingCardConfig;
     @state() private _rewindActive: boolean = false;
-    @state() private _overflowState: number = 0; // 0=All, 1=Hide line3/4, 2=Hide all text
+    @state() private _overflowState: number = 0; // 0=All, 1=Hide client line, 2=Hide genres, 3=Hide meta row, 4=Hide subtitle
     @state() private _dominantColor: string = 'var(--primary-color)';
     @state() private _longPressProgress: number = 0;
     @state() private _stopPulse: boolean = false;
@@ -378,13 +378,13 @@ export class JellyHANowPlayingCard extends LitElement {
                                             ${this._renderPowerButton()}
                                         </div>
                                     </div>
-                                    ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
-                                    ${this._overflowState < 2 ? this._renderMetaRow({
+                                    ${this._overflowState < 4 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
+                                    ${this._overflowState < 3 ? this._renderMetaRow({
                                         badge: showInlineBadge ? html`<span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>` : nothing,
                                         year: yearStr,
                                         runtime: isInlineBadge ? runtimeStr : undefined,
                                         rating: isInlineBadge ? ratingStr : undefined,
-                                        genres,
+                                        genres: this._overflowState < 2 ? genres : [],
                                         isInline: isInlineBadge,
                                     }) : nothing}
                                     ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
@@ -2064,6 +2064,7 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
         if (changedProps.has('_config')) {
+            this._checkLayout();
             const oldConfig = changedProps.get('_config') as JellyHANowPlayingCardConfig | undefined;
             if (!this._config?.idle_backdrop_cycle) {
                 this._stopIdleTimer();
@@ -2127,46 +2128,107 @@ export class JellyHANowPlayingCard extends LitElement {
         const isNarrow = haCard.classList.contains('compact-width') ? w <= 310 : w <= 300;
         haCard.classList.toggle('compact-width', isNarrow);
 
-        const titleEl = this.shadowRoot?.querySelector('.title') as HTMLElement;
         const bottomEl = this.shadowRoot?.querySelector('.info-bottom') as HTMLElement;
+        const infoTopEl = this.shadowRoot?.querySelector('.info-top') as HTMLElement;
+        const titleEl = (this.shadowRoot?.querySelector('.title-row') || this.shadowRoot?.querySelector('.title')) as HTMLElement;
 
-        if (!titleEl || !bottomEl) return;
+        if (!bottomEl) return;
 
-        const titleRect = titleEl.getBoundingClientRect();
         const bottomRect = bottomEl.getBoundingClientRect();
+        const infoTopRect = infoTopEl ? infoTopEl.getBoundingClientRect() : null;
 
-        const bottomSectionTop = bottomRect.top - cardRect.top;
-        const SAFE_THRESHOLD = bottomSectionTop - 6;
+        // Vertical space available for info-top before colliding with media controls / info-bottom
+        const availableHeight = infoTopRect
+            ? (bottomRect.top - infoTopRect.top)
+            : (bottomRect.top - cardRect.top);
 
-        const titleBottomRel = titleRect.bottom - cardRect.top;
+        const SAFE_HEIGHT = availableHeight - 6;
 
-        // Check if this item has an active subtitle
         const stateObj = this._config?.entity ? this.hass?.states[this._config.entity] : null;
         const attrs = stateObj?.attributes as any;
         const itemId = stateObj ? this._extractItemId(stateObj) : null;
         const cachedItem = itemId ? this._resolvedMetadata[itemId] : null;
+
+        const showTitle = this._config?.show_title !== false;
+        const titleHeight = (showTitle && titleEl) ? titleEl.getBoundingClientRect().height : (showTitle ? 26 : 0);
+
         const showSubtitle = this._config?.show_subtitle !== false;
         const seriesTitle = attrs?.series_title || attrs?.media_series_title || cachedItem?.series_name || '';
         const subtitle = showSubtitle ? (attrs?.artist_name || attrs?.media_artist || seriesTitle || cachedItem?.artist_name || '') : '';
         const hasSubtitle = !!subtitle;
+        const subtitleHeight = hasSubtitle ? 26 : 0;
 
-        let curBottom = titleBottomRel;
-        if (hasSubtitle) {
-            curBottom += 20; // approximate subtitle height + margin
-        }
+        const isInlineBadge = this._config?.badge_style === 'inline';
+        const showInlineBadge = isInlineBadge && this._config?.show_media_type_badge !== false;
+        const yearStr = this._config?.show_year !== false ? (attrs?.release_year || attrs?.year || cachedItem?.year) : '';
+        const runtimeFormatted = (attrs?.runtime_minutes ? formatRuntime(attrs.runtime_minutes) : '');
+        const runtimeStr = (this._config?.show_runtime !== false && isInlineBadge && runtimeFormatted) ? runtimeFormatted : '';
+        const rawRating = attrs?.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
+        const numRating = Number(rawRating);
+        const communityRating = (!isNaN(numRating) && numRating > 0) ? numRating.toFixed(1) : (rawRating ? String(rawRating) : '');
+        const ratingStr = (this._config?.show_ratings !== false && isInlineBadge && communityRating) ? communityRating : '';
+        const effectiveGenres = (attrs?.genres && attrs.genres.length > 0) ? attrs.genres : (cachedItem?.genres || []);
+        const genres = (this._config?.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
+        const hasGenres = genres.length > 0;
+        const hasBaseMeta = showInlineBadge || !!yearStr || !!runtimeStr || !!ratingStr;
+        const baseMetaHeight = (hasBaseMeta || hasGenres) ? 29 : 0;
 
-        const projectedMetaBottom = curBottom + 18;
-        const projectedClientBottom = projectedMetaBottom + 16;
+        // Estimate width to detect whether genres wrap onto an extra line
+        const availableWidth = Math.max(100, (infoTopRect ? infoTopRect.width : cardRect.width) - 10);
+        let metaWidth = 0;
+        if (showInlineBadge) metaWidth += 65;
+        if (yearStr) metaWidth += (metaWidth > 0 ? 12 : 0) + 45;
+        if (runtimeStr) metaWidth += (metaWidth > 0 ? 12 : 0) + 55;
+        if (ratingStr) metaWidth += (metaWidth > 0 ? 12 : 0) + 50;
 
-        let newState = 0;
-        if (projectedClientBottom > SAFE_THRESHOLD) {
-            newState = 1; // Hide client-line
+        let currentLineWidth = metaWidth;
+        let genreExtraLines = 0;
+        for (const g of genres) {
+            const pillWidth = Math.max(30, String(g).length * 7.5 + 16) + 8;
+            if (currentLineWidth + pillWidth > availableWidth && currentLineWidth > 0) {
+                genreExtraLines++;
+                currentLineWidth = pillWidth;
+            } else {
+                currentLineWidth += pillWidth;
+            }
         }
-        if (projectedMetaBottom > SAFE_THRESHOLD) {
-            newState = 2; // Hide meta-line
-        }
-        if (hasSubtitle && curBottom > SAFE_THRESHOLD) {
-            newState = 3; // Hide subtitle
+        const genresExtraHeight = genreExtraLines * 27;
+
+        // Client line
+        const effectiveUser = attrs?.user_name || (this.hass as any)?.user?.name || '';
+        const userName = (this._config?.show_user !== false) ? effectiveUser : '';
+        const effectiveClient = attrs?.client || (stateObj?.attributes as any)?.app_name || (stateObj?.attributes as any)?.friendly_name || '';
+        const clientInfo = (this._config?.show_client !== false) ? effectiveClient : '';
+        const deviceInfo = (this._config?.show_device_name === true) ? (attrs?.device_name || '') : '';
+        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
+        const hasClient = !!(userName || sourceInfo);
+        const clientHeight = hasClient ? 22 : 0;
+
+        // Cumulative level heights:
+        // Level 4: Title only
+        const hLevel4 = titleHeight;
+        // Level 3: Title + Subtitle
+        const hLevel3 = hLevel4 + subtitleHeight;
+        // Level 2: Title + Subtitle + Base Meta (no genres)
+        const hLevel2 = hLevel3 + (hasBaseMeta ? baseMetaHeight : 0);
+        // Level 1: Title + Subtitle + Base Meta + Genres
+        const hLevel1 = hLevel2 + (hasGenres ? (hasBaseMeta ? genresExtraHeight : baseMetaHeight + genresExtraHeight) : 0);
+        // Level 0: Title + Subtitle + Base Meta + Genres + Client
+        const hLevel0 = hLevel1 + clientHeight;
+
+        // Choose state with 4px hysteresis headroom when stepping down to a less restrictive state
+        const cur = this._overflowState;
+        let newState = 4;
+        if (hLevel0 + (cur > 0 ? 4 : 0) <= SAFE_HEIGHT) {
+            newState = 0;
+        } else if (hLevel1 + (cur > 1 ? 4 : 0) <= SAFE_HEIGHT) {
+            newState = 1;
+        } else if (hLevel2 + (cur > 2 ? 4 : 0) <= SAFE_HEIGHT) {
+            newState = 2;
+        } else if (hLevel3 + (cur > 3 ? 4 : 0) <= SAFE_HEIGHT) {
+            newState = 3;
+        } else {
+            newState = 4;
         }
 
         if (this._overflowState !== newState) {
@@ -2485,12 +2547,12 @@ export class JellyHANowPlayingCard extends LitElement {
             align-self: stretch;
             min-height: 0;
             min-width: 0;
-            overflow: visible;
+            overflow: hidden;
         }
         .info-top {
             flex: 1 1 auto;
             min-height: 0;
-            overflow: visible;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             margin-bottom: 0;
@@ -2499,6 +2561,7 @@ export class JellyHANowPlayingCard extends LitElement {
         .header {
             margin-bottom: 0px;
             flex-shrink: 0;
+            min-height: 0;
         }
 
         .title-row {

@@ -41,8 +41,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Standardized text sizing across both poster and fanart screensaver modes.
 - **Context-Aware Runtime Option for TV Series**:
   - Automatically hides the "Show Runtime" toggle in the Library card editor when browsing "TV Shows Only" (`series`) with TV Content set to "Shows / Series", preventing confusing single-item runtime options for multi-episode series.
+- **Featured Hero Playing Overlay**:
+  - Automatically hides all poster information (title, subtitle, metadata line, genres, and dark scrim) on the large Featured Hero poster while media is playing, keeping the artwork clean and unobstructed with only the centered play/pause / hold-to-stop button overlay.
 
 ### Fixed
+- **Now Playing Card Controls Collision & Progressive Overflow**:
+  - Fixed an issue where playback controls and volume sliders overlapped metadata text, multiline wrapped genre pills, and client lines on compact card heights.
+  - Implemented accurate dynamic layout measurement with multi-level progressive overflow hiding (`_overflowState`: client line -> wrapped genre pills -> entire metadata row -> subtitle) and enforced strict bounds to guarantee media controls never collide with text content.
 - **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:
   - Capped H.264 level parameter to `42` (`h264-level=42`) for modern Chromecast devices. Google Cast specifications cap Chromecast Ultra H.264 hardware decoding at Level 4.2 (`1080p@60fps`), resolving playback stalls where streams marked with Level 5.1 were rejected by Google Cast's Default Media Receiver.
   - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.

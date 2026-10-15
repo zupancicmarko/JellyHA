@@ -931,15 +931,19 @@ export class JellyHAMediaItem extends LitElement {
                 </div>
               ` : nothing}
 
-            <div class="featured-hero-scrim">
-              ${showTitle
-                ? html`<h3 class="featured-hero-title" title="${item.name}">${item.name}</h3>`
-                : nothing}
-              ${showTitle && item.series_name && item.name !== item.series_name
-                ? html`<p class="featured-hero-subtitle" title="${item.series_name}">${item.series_name}</p>`
-                : nothing}
-              ${this._renderMetaLine(item, rating)}
-            </div>
+            ${!isPlaying
+              ? html`
+                <div class="featured-hero-scrim">
+                  ${showTitle
+                    ? html`<h3 class="featured-hero-title" title="${item.name}">${item.name}</h3>`
+                    : nothing}
+                  ${showTitle && item.series_name && item.name !== item.series_name
+                    ? html`<p class="featured-hero-subtitle" title="${item.series_name}">${item.series_name}</p>`
+                    : nothing}
+                  ${this._renderMetaLine(item, rating)}
+                </div>
+              `
+              : nothing}
 
             ${this._renderNowPlayingOverlay(item)}
           </div>

@@ -942,6 +942,33 @@ describe('Featured Layout (Concept 1 Spotlight Hero)', () => {
         mediaItem.config = { show_runtime: true, media_type: 'movies' } as any;
         expect((mediaItem as any)._isRuntimeVisible()).toBe(true);
     });
+
+    it('hides featured hero scrim and metadata on the big poster when media is playing', async () => {
+        const { JellyHAMediaItem } = await import('../src/components/jellyha-media-item');
+        const { html } = await import('lit');
+        const mediaItem = new JellyHAMediaItem();
+        mediaItem.item = {
+            id: 'item-1',
+            name: 'Fall 2: Deadpoint',
+            type: 'Movie',
+            year: 2026,
+            poster_url: 'http://example.com/poster.jpg'
+        } as any;
+        mediaItem.config = { show_title: true } as any;
+
+        // When playing is false: scrim is rendered with title
+        (mediaItem as any)._isItemPlaying = () => false;
+        const falseStr = JSON.stringify((mediaItem as any)._renderFeaturedHero());
+        expect(falseStr).toContain('featured-hero-scrim');
+        expect(falseStr).toContain('Fall 2: Deadpoint');
+
+        // When playing is true: scrim is omitted, only the now playing button overlay remains
+        (mediaItem as any)._isItemPlaying = () => true;
+        (mediaItem as any)._renderNowPlayingOverlay = () => html`<div class="now-playing-overlay"></div>`;
+        const trueStr = JSON.stringify((mediaItem as any)._renderFeaturedHero());
+        expect(trueStr).not.toContain('featured-hero-scrim');
+        expect(trueStr).toContain('now-playing-overlay');
+    });
 });
 
 
