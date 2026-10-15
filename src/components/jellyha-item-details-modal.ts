@@ -5,6 +5,7 @@ import { HomeAssistant, MediaItem, PlayTarget } from '../shared/types';
 import { getScriptDefaultName } from '../shared/utils';
 import { localize } from '../shared/localize';
 import { showJellyHABrowserPlayer } from './jellyha-browser-player';
+import { safeOpenWindow } from '../shared/safe-url';
 
 @customElement('jellyha-item-details-modal')
 export class JellyHAItemDetailsModal extends LitElement {
@@ -2160,6 +2161,18 @@ export class JellyHAItemDetailsModal extends LitElement {
         const itemId = this._item.id;
         this.closeDialog();
 
+        // Dispatch immediate deletion event so local card memory cache drops item without waiting for refresh
+        this.dispatchEvent(new CustomEvent('jellyha-item-deleted', {
+            detail: { itemId },
+            bubbles: true,
+            composed: true,
+        }));
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('jellyha-item-deleted', {
+                detail: { itemId },
+            }));
+        }
+
         const serviceData: any = {
             item_id: itemId,
         };
@@ -2209,15 +2222,15 @@ export class JellyHAItemDetailsModal extends LitElement {
             const isAndroid = /android/i.test(ua);
 
             if (isAndroid) {
-                window.open(`vnd.youtube:${youtubeId}`, '_blank');
+                safeOpenWindow(`vnd.youtube:${youtubeId}`, '_blank');
                 return;
             }
-            window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank');
+            safeOpenWindow(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank');
             return;
         }
 
         // Directly open the trailer URL in a new window (never rewrite through Jellyfin external URL!)
-        window.open(url, '_blank');
+        safeOpenWindow(url, '_blank');
     }
 
     private _getJellyfinUrl(item?: MediaItem): string | undefined {
@@ -2300,7 +2313,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         try {
             const parsed = new URL(targetUrl);
             if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-                window.open(targetUrl, '_blank');
+                safeOpenWindow(targetUrl, '_blank');
                 return;
             }
         } catch (e) {
@@ -2308,7 +2321,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         }
 
         const finalUrl = this._getJellyfinUrl({ ...this._item!, jellyfin_url: targetUrl }) || targetUrl;
-        window.open(finalUrl, '_blank');
+        safeOpenWindow(finalUrl, '_blank');
     }
 
     private _handleMarkEpisodeWatched = async (episode: MediaItem) => {

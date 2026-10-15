@@ -14,6 +14,7 @@ import { showJellyHABrowserPlayer } from '../components/jellyha-browser-player';
 import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
 import { getLibraryWatchedPlayerEntities } from '../shared/power-volume-helpers';
+import { safeOpenWindow } from '../shared/safe-url';
 
 // Import modal for side effects (registration)
 import '../components/jellyha-item-details-modal';
@@ -171,6 +172,9 @@ export class JellyHALibraryCard extends LitElement {
     this.addEventListener('touchstart', this._handleTouchStartInteraction, { passive: true });
     this.addEventListener('touchend', this._handleTouchEndInteraction);
     this._setupAutoSwipe();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('jellyha-item-deleted', this._handleItemDeleted);
+    }
   }
 
   disconnectedCallback(): void {
@@ -184,6 +188,9 @@ export class JellyHALibraryCard extends LitElement {
     this.removeEventListener('touchstart', this._handleTouchStartInteraction);
     this.removeEventListener('touchend', this._handleTouchEndInteraction);
     this._clearAutoSwipe();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('jellyha-item-deleted', this._handleItemDeleted);
+    }
   }
 
   private _setupAutoSwipe(): void {
@@ -1081,7 +1088,7 @@ export class JellyHALibraryCard extends LitElement {
         : this._renderLayout(items)}
             </div>
         </div>
-        <jellyha-item-details-modal .hass=${this.hass}></jellyha-item-details-modal>
+        <jellyha-item-details-modal .hass=${this.hass} @jellyha-item-deleted=${this._handleItemDeleted}></jellyha-item-details-modal>
       </ha-card>
     `;
   }
@@ -1592,7 +1599,7 @@ export class JellyHALibraryCard extends LitElement {
         break;
       case 'trailer':
         if (item.trailer_url) {
-          window.open(item.trailer_url, '_blank');
+          safeOpenWindow(item.trailer_url, '_blank');
         } else {
           fireEvent(this, 'hass-notification', {
             message: localize(this.hass.locale?.language || this.hass.language, 'no_trailer'),
@@ -1802,7 +1809,7 @@ export class JellyHALibraryCard extends LitElement {
     try {
       const parsed = new URL(targetUrl);
       if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-        window.open(targetUrl, '_blank');
+        safeOpenWindow(targetUrl, '_blank');
         return;
       }
     } catch (e) {
@@ -1832,7 +1839,7 @@ export class JellyHALibraryCard extends LitElement {
           originalUrlObj.pathname = extPath + originalUrlObj.pathname;
         }
 
-        window.open(originalUrlObj.toString(), '_blank');
+        safeOpenWindow(originalUrlObj.toString(), '_blank');
         return;
       } catch (e) {
         console.warn('JellyHA: Failed to parse URLs to inject external URL override, falling back to original', e);
@@ -1840,7 +1847,7 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Fallback to the original URL and let browser handle it
-    window.open(targetUrl, '_blank');
+    safeOpenWindow(targetUrl, '_blank');
   }
 
   /**
@@ -1967,6 +1974,25 @@ export class JellyHALibraryCard extends LitElement {
       });
     }
   }
+
+  private _handleItemDeleted = (e: Event): void => {
+    const customEvent = e as CustomEvent<{ itemId: string }>;
+    const itemId = customEvent.detail?.itemId;
+    if (itemId && this._items && this._items.length > 0) {
+      const prevLength = this._items.length;
+      this._items = this._items.filter(item => item.id !== itemId);
+      if (this._items.length !== prevLength) {
+        if (this._mostRecentNextUpItemId === itemId) {
+          this._mostRecentNextUpItemId = this._items[0]?.id;
+        }
+        const totalPages = this._getTotalPages();
+        if (this._currentPage >= totalPages && totalPages > 0) {
+          this._currentPage = Math.max(0, totalPages - 1);
+        }
+        this.requestUpdate();
+      }
+    }
+  };
 
   private _handleSearchInput(e: Event): void {
     const target = e.target as HTMLInputElement;
