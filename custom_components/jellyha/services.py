@@ -27,6 +27,7 @@ except Exception:  # pragma: no cover
     get_url = None
 
 from .const import DOMAIN
+from .security import validate_item_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1295,37 +1296,70 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
     async def async_delete_item(call: ServiceCall) -> None:
         """Delete an item from Jellyfin library."""
+        # Enforce administrator permissions
+        if call.context and call.context.user_id:
+            user = await hass.auth.async_get_user(call.context.user_id)
+            if user and not user.is_admin:
+                _LOGGER.warning("Unauthorized delete_item attempt by non-admin user %s", call.context.user_id)
+                raise HomeAssistantError("Unauthorized: Only administrators can delete items from Jellyfin")
+
+        try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
+
         try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
-            await coordinator._api._request("DELETE", f"/Items/{call.data['item_id']}")
+            await coordinator._api._request("DELETE", f"/Items/{item_id}")
+            if hasattr(coordinator, "async_remove_item_from_cache"):
+                await coordinator.async_remove_item_from_cache(item_id)
             await coordinator.async_refresh()
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Delete failed: %s", e)
+            raise HomeAssistantError(f"Delete failed: {e}") from e
 
     async def async_update_favorite(call: ServiceCall) -> None:
         """Update favorite status for an item."""
         try:
-            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
-            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
-            state = hass.states.get(entity_id) if entity_id else None
-            user_id = (state.attributes.get("user_id") if state else None) or coordinator.entry.data.get("user_id")
-            await coordinator._api.update_favorite(user_id, call.data["item_id"], call.data["is_favorite"])
-            await coordinator.async_refresh()
-        except Exception as e:
-            _LOGGER.error("Favorite update failed: %s", e)
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
 
-    async def async_mark_watched(call: ServiceCall) -> None:
-        """Update watched status for an item."""
         try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             state = hass.states.get(entity_id) if entity_id else None
             user_id = (state.attributes.get("user_id") if state else None) or coordinator.entry.data.get("user_id")
-            await coordinator._api.update_played_status(user_id, call.data["item_id"], call.data["is_played"])
+            await coordinator._api.update_favorite(user_id, item_id, call.data["is_favorite"])
             await coordinator.async_refresh()
+        except HomeAssistantError:
+            raise
+        except Exception as e:
+            _LOGGER.error("Favorite update failed: %s", e)
+            raise HomeAssistantError(f"Favorite update failed: {e}") from e
+
+    async def async_mark_watched(call: ServiceCall) -> None:
+        """Update watched status for an item."""
+        try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
+
+        try:
+            entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
+            coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
+            state = hass.states.get(entity_id) if entity_id else None
+            user_id = (state.attributes.get("user_id") if state else None) or coordinator.entry.data.get("user_id")
+            await coordinator._api.update_played_status(user_id, item_id, call.data["is_played"])
+            await coordinator.async_refresh()
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Mark watched failed: %s", e)
+            raise HomeAssistantError(f"Mark watched failed: {e}") from e
 
     async def async_session_control(call: ServiceCall) -> None:
         """Send control command to session."""
