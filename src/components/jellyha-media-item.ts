@@ -799,7 +799,7 @@ export class JellyHAMediaItem extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private _renderMetaLine(item: MediaItem, rating?: number): TemplateResult | typeof nothing {
+  private _renderMetaLine(item: MediaItem, rating?: number | null): TemplateResult | typeof nothing {
     const showYear = this.config.show_year !== false;
     const showRuntime = this._isRuntimeVisible();
     const showDateAdded = this.config.show_date_added === true;
