@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.7.0] - 2026-10-15
 
 ### Added
-- **Featured Layout in Library Card**:
+- **New Featured Layout in Library Card** (idea from [#65](https://github.com/zupancicmarko/JellyHA/pull/65)):
   - Introduces a dedicated spotlight layout featuring a large hero poster for the main item alongside smaller queue cards—perfect for wall tablet dashboards, media room displays, and wide views.
   - Configurable side queue with adjustable columns (1 to 4) and rows (2, 3, or 4), with the large poster automatically scaling proportionally to balance with the side cards.
   - Built-in touch swipe gestures and pagination dots for smooth browsing, with automatic responsive stacking on mobile screens.
@@ -41,32 +41,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Standardized text sizing across both poster and fanart screensaver modes.
 - **Context-Aware Runtime Option for TV Series**:
   - Automatically hides the "Show Runtime" toggle in the Library card editor when browsing "TV Shows Only" (`series`) with TV Content set to "Shows / Series", preventing confusing single-item runtime options for multi-episode series.
-- **Featured Hero Playing Overlay**:
-  - Automatically hides all poster information (title, subtitle, metadata line, genres, and dark scrim) on the large Featured Hero poster while media is playing, keeping the artwork clean and unobstructed with only the centered play/pause / hold-to-stop button overlay.
 
 ### Fixed
-- **Now Playing Card Controls Collision & Progressive Overflow**:
-  - Restructured card layout so `.title-row` is a dedicated, unshrinkable top-level flex layer (`flex: 0 0 auto`, `z-index: 10`) above metadata, guaranteeing the power button and title are always 100% visible, unclipped, and top-most.
-  - Implemented accurate dynamic layout measurement between `.title-row` and `.info-bottom` with multi-level progressive overflow hiding (`_overflowState`: client line -> wrapped genre pills -> entire metadata row -> subtitle) and enforced strict bounds to guarantee media controls never collide with text content or cut genre pills in half.
-  - Ensured progress runtime timestamps are top-most (`z-index: 10`) and never clipped at the bottom on fixed-height / 5-row cards by optimizing compact-height container padding and margins while preserving full-size playback buttons (44px play/pause, 36px controls) and 38px volume capsule controls.
-  - Bounded progress bar seek handle position at 0% and 100% so the circular thumb is always 100% visible and never sliced in half by container boundaries at the beginning or end of media playback.
-  - Aligned card title vertically centered with the power button in `.title-row`, eliminating optical height offsets.
-- **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:
+- **Chromecast Ultra Playback H.264 Profile & Scaling (Issue [#63](https://github.com/zupancicmarko/JellyHA/issues/63))**:
   - Capped H.264 level parameter to `42` (`h264-level=42`) for modern Chromecast devices. Google Cast specifications cap Chromecast Ultra H.264 hardware decoding at Level 4.2 (`1080p@60fps`), resolving playback stalls where streams marked with Level 5.1 were rejected by Google Cast's Default Media Receiver.
   - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.
-- **TypeScript Strict Types & Timer Lifecycle Hardening**:
-  - Resolved timer type mismatch between browser DOM (`number`) and Node (`Timeout`) definitions, expanded `MediaStreamInfo` technical specifications, corrected browser player imports, and removed unnecessary Lit state decorators to prevent redundant re-renders on touch/click while ensuring complete timer disposal on disconnect.
+- **Now Playing Card Seeking & Chromecast Buffering Stability**:
+  - Prevents the Now Playing card from prematurely flipping to the screensaver/idle backdrop when seeking or dragging the progress bar on Chromecast devices.
+  - Displays a spinning loading icon on the play/pause button during seek repositioning and buffering, providing smooth visual feedback while the media player buffers the new timestamp.
 
 ### Security
 - **Administrator-Only Item Deletion**:
   - Restricts the `delete_item` service to Home Assistant users with administrator privileges, preventing non-admin household users from deleting items on the Jellyfin server.
+  - Hides the Delete button in the item details dialog for non-admin users.
 - **Input Validation & Path Traversal Protection**:
-  - Validates and sanitizes item IDs, config entry IDs, stream indices, and image types across all proxy endpoints (`views.py`) and services (`services.py`).
+  - Validates and sanitizes item IDs, session IDs, config entry IDs, stream indices, and image formats across all proxy endpoints (`views.py`), services (`services.py`), and WebSocket handlers (`websocket.py`).
+  - Restricts `session_general_command` to a strict whitelist of standard Jellyfin remote commands (`SetVolume`, `Mute`, `Unmute`, `ToggleMute`, `DisplayMessage`, etc.).
   - Rejects traversal attempts (e.g. `../`) and malformed parameters at the API gateway boundary with HTTP 400 Bad Request.
 - **HLS Capability Token Scoping & Hard Lifetime**:
   - Scopes ephemeral HLS tokens strictly to their authorized item ID, returning HTTP 403 Forbidden on cross-item path access.
-  - Limits file extensions to valid HLS playlist and segment types (`.m3u8`, `.ts`, `.m4s`, `.mp4`, `.key`).
+  - Limits file extensions to valid HLS playlist, subtitle, and segment types (`.m3u8`, `.ts`, `.m4s`, `.mp4`, `.key`, `.vtt`, `.webvtt`).
   - Enforces a 4-hour hard maximum lifetime ceiling on HLS sessions regardless of activity touches.
+- **Chromecast Metadata & Artwork Privacy**:
+  - Routes cast artwork and episode stills through signed Home Assistant proxy URLs, preventing exposure of the Jellyfin API key in media player entity attributes and recorder history.
 - **External & Trailer URL Navigation Hardening**:
   - Validates external and trailer URLs before opening, blocking dangerous URI schemes (`javascript:`, `data:`, `file:`, `vbscript:`).
   - Enforces `'noopener,noreferrer'` on all opened browser tabs for strict tab isolation.

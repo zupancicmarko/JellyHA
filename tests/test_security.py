@@ -2,13 +2,20 @@ import unittest
 import tests.ha_mock  # Load HA mock environment
 
 from custom_components.jellyha.security import (
+    ALLOWED_GENERAL_COMMANDS,
+    ALLOWED_HLS_EXTENSIONS,
+    ALLOWED_IMAGE_FORMATS,
     ALLOWED_IMAGE_TYPES,
     ALLOWED_MEDIA_TYPES,
     is_valid_entry_id,
+    is_valid_general_command,
     is_valid_item_id,
+    is_valid_session_id,
     is_valid_stream_index,
     validate_entry_id,
+    validate_general_command,
     validate_item_id,
+    validate_session_id,
 )
 
 
@@ -80,6 +87,50 @@ class TestSecurityValidation(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     validate_entry_id(entry_id)
 
+    def test_session_id_validation(self) -> None:
+        """Ensure session IDs accept valid alphanumerics and reject traversal payloads."""
+        self.assertTrue(is_valid_session_id("session_999"))
+        self.assertTrue(is_valid_session_id("c03b1234abcd5678ef90123456789abc"))
+        self.assertTrue(is_valid_session_id("my-device-session-123"))
+        self.assertEqual(validate_session_id("session_999"), "session_999")
+
+        invalid_sessions = [
+            "../sessions/other",
+            "..%2F..%2FSystem",
+            "/root/session",
+            "session/../",
+            "; rm -rf",
+            "",
+            None,
+            "a" * 65,
+        ]
+        for s in invalid_sessions:
+            with self.subTest(session=s):
+                self.assertFalse(is_valid_session_id(s))
+                with self.assertRaises(ValueError):
+                    validate_session_id(s)
+
+    def test_general_command_validation(self) -> None:
+        """Ensure general commands only allow whitelisted Jellyfin commands."""
+        for cmd in ["SetVolume", "Mute", "Unmute", "ToggleMute", "VolumeUp", "VolumeDown", "DisplayMessage"]:
+            with self.subTest(cmd=cmd):
+                self.assertTrue(is_valid_general_command(cmd))
+                self.assertEqual(validate_general_command(cmd), cmd)
+
+        invalid_commands = [
+            "ArbitraryCommand",
+            "DeleteMedia",
+            "ExecuteScript",
+            "../Command",
+            "",
+            None,
+        ]
+        for cmd in invalid_commands:
+            with self.subTest(cmd=cmd):
+                self.assertFalse(is_valid_general_command(cmd))
+                with self.assertRaises(ValueError):
+                    validate_general_command(cmd)
+
     def test_allowed_types(self) -> None:
         """Ensure allowed image types and media types match Jellyfin standards."""
         self.assertIn("Primary", ALLOWED_IMAGE_TYPES)
@@ -92,6 +143,15 @@ class TestSecurityValidation(unittest.TestCase):
         self.assertIn("Audio", ALLOWED_MEDIA_TYPES)
         self.assertNotIn("Users", ALLOWED_MEDIA_TYPES)
         self.assertNotIn("System", ALLOWED_MEDIA_TYPES)
+
+        self.assertIn("webp", ALLOWED_IMAGE_FORMATS)
+        self.assertIn("jpg", ALLOWED_IMAGE_FORMATS)
+        self.assertIn("png", ALLOWED_IMAGE_FORMATS)
+
+        self.assertIn(".m3u8", ALLOWED_HLS_EXTENSIONS)
+        self.assertIn(".ts", ALLOWED_HLS_EXTENSIONS)
+        self.assertIn(".vtt", ALLOWED_HLS_EXTENSIONS)
+        self.assertIn(".webvtt", ALLOWED_HLS_EXTENSIONS)
 
     def test_stream_index_validation(self) -> None:
         """Ensure stream indices only accept positive integer values."""

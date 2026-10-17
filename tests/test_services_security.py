@@ -138,5 +138,57 @@ class TestServicesSecurity(unittest.IsolatedAsyncioTestCase):
         self.mock_api.update_played_status.assert_not_called()
 
 
+    async def test_session_control_rejects_invalid_session_id(self) -> None:
+        """Ensure session_control validates session_id."""
+        ctrl_func = self.registered_services["session_control"]
+        call = MagicMock()
+        call.data = {"session_id": "../../sessions/1", "command": "Pause"}
+
+        with self.assertRaises(HomeAssistantError) as cm:
+            await ctrl_func(call)
+        self.assertIn("Invalid session ID", str(cm.exception))
+
+    async def test_session_general_command_validation(self) -> None:
+        """Ensure session_general_command validates session_id and restricts commands."""
+        gen_func = self.registered_services["session_general_command"]
+
+        # Traversal session_id
+        call = MagicMock()
+        call.data = {"session_id": "../root", "command": "SetVolume"}
+        with self.assertRaises(HomeAssistantError) as cm:
+            await gen_func(call)
+        self.assertIn("Invalid session ID", str(cm.exception))
+
+        # Disallowed command
+        call = MagicMock()
+        call.data = {"session_id": "valid_session_1", "command": "ExecuteCustomShell"}
+        with self.assertRaises(HomeAssistantError) as cm:
+            await gen_func(call)
+        self.assertIn("Invalid command", str(cm.exception))
+
+    async def test_play_on_chromecast_rejects_invalid_item_id(self) -> None:
+        """Ensure play_on_chromecast validates item_id."""
+        play_func = self.registered_services["play_on_chromecast"]
+        call = MagicMock()
+        call.data = {
+            "entity_id": "media_player.living_room_tv",
+            "item_id": "../evil_path",
+        }
+
+        with self.assertRaises(HomeAssistantError) as cm:
+            await play_func(call)
+        self.assertIn("Invalid item ID", str(cm.exception))
+
+    async def test_get_item_rejects_invalid_item_id(self) -> None:
+        """Ensure get_item validates item_id."""
+        get_item_func = self.registered_services["get_item"]
+        call = MagicMock()
+        call.data = {"item_id": "../bad_item"}
+
+        with self.assertRaises(ValueError) as cm:
+            await get_item_func(call)
+        self.assertIn("Invalid item ID", str(cm.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

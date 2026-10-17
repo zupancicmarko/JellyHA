@@ -1459,9 +1459,10 @@ export class JellyHAItemDetailsModal extends LitElement {
                                     <ha-icon icon="mdi:open-in-new"></ha-icon>
                                 </a>
 
+                                ${this.hass?.user?.is_admin === false ? nothing : html`
                                 <button class="action-btn btn-danger" @click=${() => { this._haptic(); this._confirmDelete = true; }} title="Delete Item">
                                     <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-                                </button>
+                                </button>`}
                             </div>
                         `}
                 </div>
@@ -2159,20 +2160,6 @@ export class JellyHAItemDetailsModal extends LitElement {
         if (!this._item) return;
         this._haptic(); // Feedback
         const itemId = this._item.id;
-        this.closeDialog();
-
-        // Dispatch immediate deletion event so local card memory cache drops item without waiting for refresh
-        this.dispatchEvent(new CustomEvent('jellyha-item-deleted', {
-            detail: { itemId },
-            bubbles: true,
-            composed: true,
-        }));
-        if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('jellyha-item-deleted', {
-                detail: { itemId },
-            }));
-        }
-
         const serviceData: any = {
             item_id: itemId,
         };
@@ -2184,7 +2171,27 @@ export class JellyHAItemDetailsModal extends LitElement {
             serviceData.server_entity_id = this._serverEntityId;
         }
 
-        await this.hass.callService('jellyha', 'delete_item', serviceData);
+        this.closeDialog();
+
+        try {
+            await this.hass.callService('jellyha', 'delete_item', serviceData);
+        } catch (err) {
+            console.error('Failed to delete item', err);
+            const reason = err instanceof Error ? err.message : (err as any)?.message;
+            this.dispatchEvent(new CustomEvent('hass-notification', {
+                detail: { message: reason ? `Failed to delete item: ${reason}` : 'Failed to delete item. Check logs.' },
+                bubbles: true,
+                composed: true
+            }));
+            return;
+        }
+
+        // Deletion succeeded: drop the item from all cards' local cache without waiting for refresh
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('jellyha-item-deleted', {
+                detail: { itemId },
+            }));
+        }
     }
 
 

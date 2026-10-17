@@ -39,7 +39,7 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
         mock_coordinator = MagicMock()
         mock_api = MagicMock()
         mock_api.session_play = AsyncMock(return_value=True)
-        mock_api.get_item = AsyncMock(return_value={"Id": "movie_123", "Type": "Movie", "Name": "Inception"})
+        mock_api.get_item = AsyncMock(return_value={"Id": "0123456789abcdef0123456789abcdef", "Type": "Movie", "Name": "Inception"})
         mock_coordinator._api = mock_api
         mock_coordinator.entry.data = {"user_id": "user_abc"}
         mock_coordinator.entry.runtime_data.session.data = [{"Id": "session_999", "DeviceId": "living_room_guid"}]
@@ -52,7 +52,7 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
             call = MagicMock()
             call.data = {
                 "entity_id": target_entity,
-                "item_id": "movie_123",
+                "item_id": "0123456789abcdef0123456789abcdef",
             }
 
             # Invoke play_on_chromecast
@@ -61,7 +61,7 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
             # It should have called session_play on mock_api with target session and item
             mock_api.session_play.assert_called_once_with(
                 "session_999",
-                "movie_123",
+                "0123456789abcdef0123456789abcdef",
                 play_command="PlayNow",
                 start_position_ticks=None,
             )
@@ -104,7 +104,7 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
             call = MagicMock()
             call.data = {
                 "entity_id": target_entity,
-                "item_id": "movie_123",
+                "item_id": "0123456789abcdef0123456789abcdef",
             }
 
             with self.assertRaises(HomeAssistantError) as ctx:
@@ -139,7 +139,7 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
         mock_coordinator = MagicMock()
         mock_api = MagicMock()
         mock_api.session_play = AsyncMock(return_value=False)  # Device rejected command
-        mock_api.get_item = AsyncMock(return_value={"Id": "movie_123", "Type": "Movie", "Name": "Inception"})
+        mock_api.get_item = AsyncMock(return_value={"Id": "0123456789abcdef0123456789abcdef", "Type": "Movie", "Name": "Inception"})
         mock_coordinator._api = mock_api
         mock_coordinator.entry.data = {"user_id": "user_abc"}
         mock_coordinator.entry.runtime_data.session.data = [{"Id": "session_999", "DeviceId": "living_room_guid"}]
@@ -152,7 +152,7 @@ class TestPlayOnClientDelegation(unittest.IsolatedAsyncioTestCase):
             call = MagicMock()
             call.data = {
                 "entity_id": target_entity,
-                "item_id": "movie_123",
+                "item_id": "0123456789abcdef0123456789abcdef",
             }
 
             with self.assertRaises(HomeAssistantError) as ctx:

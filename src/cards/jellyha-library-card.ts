@@ -1088,7 +1088,7 @@ export class JellyHALibraryCard extends LitElement {
         : this._renderLayout(items)}
             </div>
         </div>
-        <jellyha-item-details-modal .hass=${this.hass} @jellyha-item-deleted=${this._handleItemDeleted}></jellyha-item-details-modal>
+        <jellyha-item-details-modal .hass=${this.hass}></jellyha-item-details-modal>
       </ha-card>
     `;
   }

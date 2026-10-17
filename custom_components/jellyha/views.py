@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .security import (
     ALLOWED_HLS_EXTENSIONS,
+    ALLOWED_IMAGE_FORMATS,
     ALLOWED_IMAGE_TYPES,
     ALLOWED_MEDIA_TYPES,
     is_valid_entry_id,
@@ -74,6 +75,9 @@ class JellyHAImageView(HomeAssistantView):
         if (width and not width.isdigit()) or (height and not height.isdigit()) or (quality and not quality.isdigit()):
             return web.Response(status=400, text="Invalid query parameters")
 
+        if format_type.lower() not in ALLOWED_IMAGE_FORMATS:
+            return web.Response(status=400, text="Invalid image format")
+
         # Retrieve config entry (case-insensitive fallback for ULIDs modified by routers)
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if not entry:
@@ -83,7 +87,7 @@ class JellyHAImageView(HomeAssistantView):
                     break
 
         if not entry:
-            return web.Response(status=404, text=f"Instance not found for ID: {entry_id}")
+            return web.Response(status=404, text="Instance not found")
 
         # Access runtime_data safely
         try:
@@ -93,11 +97,7 @@ class JellyHAImageView(HomeAssistantView):
 
         if not client:
             return web.Response(status=404, text="API not available")
-        
-        # Default quality to 80 to save bandwidth
-        quality = request.query.get("quality", "80")
-        
-        tag = request.query.get("tag")
+
 
         params = {}
         if width: params["width"] = width

@@ -10,6 +10,11 @@ export interface HomeAssistant {
         darkMode: boolean;
         selectedTheme?: string;
     };
+    user?: {
+        id: string;
+        name?: string;
+        is_admin?: boolean;
+    };
     callService: (domain: string, service: string, data?: Record<string, unknown>, target?: Record<string, unknown>) => Promise<any>;
     callWS: <T>(msg: Record<string, unknown>) => Promise<T>;
     locale?: {

@@ -49,6 +49,7 @@ export class JellyHANowPlayingCard extends LitElement {
     @state() private _isDragging: boolean = false;
     @state() private _dragPercentage: number = 0;
     @state() private _optimisticSeekPercent: number | null = null;
+    @state() private _isSeeking: boolean = false;
     @state() private _powerActivating: boolean = false;
     @state() private _isVolumeDragging: boolean = false;
     @state() private _dragVolumePercent: number | null = null;
@@ -61,7 +62,9 @@ export class JellyHANowPlayingCard extends LitElement {
     private _idleTimer?: number;
     private _fetchingIdleItems: boolean = false;
     private _visibilityHandler?: () => void;
-    private _optimisticSeekTimer?: number;
+    private _optimisticSeekTimer?: any;
+    private _seekingTimer?: any;
+    private _lastActiveStateObj?: HassEntity;
     private _longPressRaf: number | null = null;
     private _longPressConsumed: boolean = false;
     private _resizeObserver?: ResizeObserver;
@@ -173,16 +176,22 @@ export class JellyHANowPlayingCard extends LitElement {
             return this._renderError('Please configure a JellyHA Now Playing entity');
         }
 
-        const stateObj = this.hass.states[entityId];
-        if (!stateObj) {
+        const rawStateObj = this.hass.states[entityId];
+        if (!rawStateObj) {
             return this._renderError(localize(this.hass.locale?.language || this.hass.language, 'entity_not_found') || 'Entity not found');
         }
 
-        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const isMediaPlayer = entityId.startsWith('media_player.');
-        const isPlaying = isMediaPlayer
-            ? (stateObj.state === 'playing' || stateObj.state === 'paused' || !!attributes.item_id)
-            : !!attributes.item_id;
+        const rawAttributes = rawStateObj.attributes as unknown as NowPlayingSensorData;
+        const rawIsPlaying = isMediaPlayer
+            ? (rawStateObj.state === 'playing' || rawStateObj.state === 'paused' || rawStateObj.state === 'buffering' || !!rawAttributes.item_id)
+            : !!rawAttributes.item_id;
+
+        if (rawIsPlaying) {
+            this._lastActiveStateObj = rawStateObj;
+        }
+
+        const isPlaying = rawIsPlaying || (this._isSeeking && !!this._lastActiveStateObj);
 
         if (!isPlaying) {
             if (this._config.idle_backdrop_cycle) {
@@ -194,6 +203,12 @@ export class JellyHANowPlayingCard extends LitElement {
 
         // Active playback: stop idle timer if it was running
         this._stopIdleTimer();
+
+        // Use last active state snapshot if device is temporarily buffering/idle during seek
+        const stateObj = (!rawIsPlaying && this._isSeeking && this._lastActiveStateObj)
+            ? this._lastActiveStateObj
+            : rawStateObj;
+        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
 
         // Extract Jellyfin item ID and enrich missing metadata for generic media players (like Chromecast)
         const itemId = this._extractItemId(stateObj);
@@ -416,7 +431,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                             @pointerleave=${this._endLongPress}
                                             @contextmenu=${(e: Event) => e.preventDefault()}
                                         >
-                                            ${this._rewindActive ? html`
+                                            ${(this._rewindActive || this._isSeeking || rawStateObj.state === 'buffering') ? html`
                                                 <ha-icon-button class="play-pause-btn spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
                                                     <ha-icon icon="mdi:loading"></ha-icon>
                                                 </ha-icon-button>
@@ -1817,8 +1832,17 @@ export class JellyHANowPlayingCard extends LitElement {
     private _setOptimisticSeek(percent: number): void {
         if (this._optimisticSeekTimer) clearTimeout(this._optimisticSeekTimer);
         this._optimisticSeekPercent = percent;
+
+        // Set seeking state with a grace timeout to prevent screensaver flash on Chromecast
+        this._isSeeking = true;
+        if (this._seekingTimer) clearTimeout(this._seekingTimer);
+        this._seekingTimer = setTimeout(() => {
+            this._isSeeking = false;
+            this.requestUpdate();
+        }, 3000);
+
         this.requestUpdate();
-        this._optimisticSeekTimer = window.setTimeout(() => {
+        this._optimisticSeekTimer = setTimeout(() => {
             this._optimisticSeekPercent = null;
             this.requestUpdate();
         }, 2500);
@@ -2019,6 +2043,14 @@ export class JellyHANowPlayingCard extends LitElement {
         this._stopProgressTimer();
         this._endLongPress();
         this._stopIdleTimer();
+        if (this._seekingTimer) {
+            clearTimeout(this._seekingTimer);
+            this._seekingTimer = undefined;
+        }
+        if (this._optimisticSeekTimer) {
+            clearTimeout(this._optimisticSeekTimer);
+            this._optimisticSeekTimer = undefined;
+        }
         if (this._visibilityHandler) {
             document.removeEventListener('visibilitychange', this._visibilityHandler);
             this._visibilityHandler = undefined;
