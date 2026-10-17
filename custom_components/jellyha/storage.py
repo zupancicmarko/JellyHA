@@ -33,6 +33,15 @@ class JellyfinLibraryData:
         """Save data to storage."""
         await self._store.async_save({"items": self._items})
 
+    async def async_remove_item(self, item_id: str) -> bool:
+        """Remove single item from storage and save immediately."""
+        if item_id in self._items:
+            del self._items[item_id]
+            await self.async_save()
+            self._notify_listeners()
+            return True
+        return False
+
     def get_item(self, item_id: str) -> dict[str, Any] | None:
         """Get single item by ID."""
         return self._items.get(item_id)

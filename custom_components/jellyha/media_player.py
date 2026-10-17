@@ -24,6 +24,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
@@ -126,6 +127,38 @@ async def async_setup_entry(
     # Create a media player for each configured client device
     device_ids: list[str] = entry.options.get(CONF_DEVICE_PLAYERS, [])
     device_names: dict[str, str] = dict(entry.options.get(CONF_DEVICE_NAMES, {}))
+
+    # Clean up stale or unconfigured device player entities from the entity registry
+    try:
+        ent_reg = er.async_get(hass)
+        if hasattr(er, "async_entries_for_config_entry"):
+            existing_entries = er.async_entries_for_config_entry(ent_reg, entry.entry_id)
+        else:
+            existing_entries = [
+                e for e in getattr(ent_reg, "entities", {}).values()
+                if getattr(e, "config_entry_id", None) == entry.entry_id
+            ]
+        for reg_entry in existing_entries:
+            if getattr(reg_entry, "domain", None) == "media_player" and "_device_player_" in getattr(reg_entry, "unique_id", ""):
+                dev_id = reg_entry.unique_id.split("_device_player_")[-1]
+                if dev_id not in device_ids:
+                    _LOGGER.info(
+                        "Removing unconfigured JellyHA device player entity: %s",
+                        reg_entry.entity_id,
+                    )
+                    ent_reg.async_remove(reg_entry.entity_id)
+
+        # Also clean up any orphaned entities from previously deleted JellyHA config entries
+        for reg_entry in list(getattr(ent_reg, "entities", {}).values()):
+            if getattr(reg_entry, "platform", None) == DOMAIN and getattr(reg_entry, "config_entry_id", None) is None:
+                _LOGGER.info(
+                    "Removing orphaned JellyHA entity: %s",
+                    reg_entry.entity_id,
+                )
+                ent_reg.async_remove(reg_entry.entity_id)
+    except Exception as err:
+        _LOGGER.debug("Could not clean up stale entities from entity registry: %s", err)
+
 
     # Enrich device names with client/app info from Jellyfin API if available
     api = getattr(session_coordinator, "api", None) or getattr(session_coordinator, "_api", None)

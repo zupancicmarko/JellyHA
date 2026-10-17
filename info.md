@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.6.0** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.0** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,13 +8,13 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.6.0
+### 🆕 What's new in v1.7.0
 
-- ⚡ **TV & Display Power Button with Dual-Entity Pairing (Issue [#60](https://github.com/zupancicmarko/JellyHA/issues/60))** — Uniform `36px` frosted glass power button across Active Playback, Ambient Showcase, and Idle states. State-responsive white (ON) / dimmed (OFF) styling with script support, dual-entity pairing (`power_state_entity`), haptic feedback, and auto-stopping Jellyfin sessions when powering off.
-- 🔊 **Option 1 Capsule Volume Slider with Tactile Scrubbing** — Sleek translucent pillow capsule row above the timeline bar with continuous track, 5% haptic notches while scrubbing, discrete `−`/`+` step buttons, mute toggle, and AVR/soundbar routing (`volume_entity`).
-- 🛠️ **Visual Card Editor Enhancements** — Dedicated TV Power and Volume settings sections, dynamic placeholders, contextual helpers, and seamless clearing with native `✕` button support.
-- 🏷️ **User & Device Media Player Naming Differentiation** — Clear `JellyHA User <name>` and `JellyHA Device <name>` entity display names in UI pickers and dashboards with zero breakage for existing setups.
-- 🔄 **Automatic Lovelace Resource Version Cache-Busting** — Auto-registers and updates `/jellyha/jellyha-cards.js?v={version}` in Home Assistant Lovelace resources on startup, eliminating stale frontend caches across releases.
+- 🌟 **Featured Layout Multi-Column & Configurable Rows (2, 3, or 4 rows)** — Multi-column side queue cards (1 to 4 columns) with proportional hero poster scaling, responsive compact mode, and customizable 2, 3, or 4 row arrangements.
+- 📋 **List Layout Modernization & Ergonomics** — Standardized 136px card height, 76px posters, dynamic 2-line title wrapping, 1-2 line description clamping, subtle backdrop blur, and tactile click press feedback.
+- 🎨 **Glassmorphic Rating & Runtime Poster Badges** — Extended rating and runtime glassmorphic pill badges to Carousel and Grid view posters with optical vertical centering.
+- 📺 **Now Playing Poster Screensaver Badge Placement (`badge_style`)** — Screensaver poster mode now fully supports `badge_style: poster` (runtime and rating badges on the poster corners) and `badge_style: inline` (all metadata inline), identical to active playback.
+- 🔤 **Typography & Metadata Font Standardization** — Unified metadata and description font size to 11px across Featured and List layouts, and 12px across Screensaver modes.
 
 ---
 

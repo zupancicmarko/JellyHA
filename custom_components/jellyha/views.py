@@ -8,6 +8,15 @@ from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 from .const import DOMAIN
+from .security import (
+    ALLOWED_HLS_EXTENSIONS,
+    ALLOWED_IMAGE_FORMATS,
+    ALLOWED_IMAGE_TYPES,
+    ALLOWED_MEDIA_TYPES,
+    is_valid_entry_id,
+    is_valid_item_id,
+    is_valid_stream_index,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,33 +35,13 @@ class JellyHAImageView(HomeAssistantView):
         self, request: web.Request, entry_id: str, item_id: str, image_type: str
     ) -> web.Response:
         """Handle image request."""
-        # Retrieve config entry (case-insensitive fallback for ULIDs modified by routers)
-        entry = self.hass.config_entries.async_get_entry(entry_id)
-        if not entry:
-            for e in self.hass.config_entries.async_entries(DOMAIN):
-                if e.entry_id.lower() == entry_id.lower():
-                    entry = e
-                    break
-                    
-        if not entry:
-             return web.Response(status=404, text=f"Instance not found for ID: {entry_id}")
-        
-        # Access runtime_data safely
-        try:
-            client = entry.runtime_data.library._api
-        except AttributeError:
-             return web.Response(status=404, text="Integration not loaded")
-
-        if not client:
-             return web.Response(status=404, text="API not available")
-
         # Check authentication:
         # 1. Standard HA user session (logged in via UI)
         # 2. Valid signed path (HA sets hass_refresh_token_id when authSig is valid)
         # If neither, reject the request.
         is_authenticated = request.get("hass_user") is not None
         has_valid_signature = request.get("hass_refresh_token_id") is not None
-        
+
         _LOGGER.debug(
             "Image request: entry=%s, item=%s, type=%s, user=%s, refresh_token=%s, query=%s",
             entry_id, item_id, image_type,
@@ -60,22 +49,55 @@ class JellyHAImageView(HomeAssistantView):
             request.get("hass_refresh_token_id"),
             dict(request.query)
         )
-        
+
         if not is_authenticated and not has_valid_signature:
             _LOGGER.warning("Unauthorized image request - no user session or valid signature")
             return web.Response(status=401, text="Unauthorized")
 
+        if not is_valid_entry_id(entry_id):
+            return web.Response(status=400, text="Invalid entry ID")
+        if not is_valid_item_id(item_id):
+            return web.Response(status=400, text="Invalid item ID")
+        if image_type not in ALLOWED_IMAGE_TYPES:
+            return web.Response(status=400, text="Invalid image type")
 
         width = request.query.get("width")
         height = request.query.get("height")
         # Default to WebP if format not specified (Standard 2026 practice)
         # WebP is supported by all relevant HA clients (Mobile, Chrome, Safari)
         format_type = request.query.get("format", "webp")
-        
+
         # Default quality to 80 to save bandwidth
         quality = request.query.get("quality", "80")
-        
+
         tag = request.query.get("tag")
+
+        if (width and not width.isdigit()) or (height and not height.isdigit()) or (quality and not quality.isdigit()):
+            return web.Response(status=400, text="Invalid query parameters")
+
+        if format_type.lower() not in ALLOWED_IMAGE_FORMATS:
+            return web.Response(status=400, text="Invalid image format")
+
+        # Retrieve config entry (case-insensitive fallback for ULIDs modified by routers)
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if not entry:
+            for e in self.hass.config_entries.async_entries(DOMAIN):
+                if e.entry_id.lower() == entry_id.lower():
+                    entry = e
+                    break
+
+        if not entry:
+            return web.Response(status=404, text="Instance not found")
+
+        # Access runtime_data safely
+        try:
+            client = entry.runtime_data.library._api
+        except AttributeError:
+            return web.Response(status=404, text="Integration not loaded")
+
+        if not client:
+            return web.Response(status=404, text="API not available")
+
 
         params = {}
         if width: params["width"] = width
@@ -135,7 +157,8 @@ class JellyHAImageView(HomeAssistantView):
             if prepared:
                 _LOGGER.debug("Image request disconnected for %s: %s", item_id, err)
                 return response
-            return web.Response(status=500, text=str(err))
+            _LOGGER.error("Image proxy error for %s: %s", item_id, err)
+            return web.Response(status=500, text="Image proxy error")
 
 
 class JellyHAStreamView(HomeAssistantView):
@@ -209,6 +232,9 @@ class JellyHAStreamView(HomeAssistantView):
             _LOGGER.warning("Unauthorized stream request for item %s", item_id)
             return web.Response(status=401, text="Unauthorized")
 
+        if not is_valid_entry_id(entry_id):
+            return web.Response(status=400, text="Invalid entry ID")
+
         # Handle 3-segment route if item_id was matched as media_type
         # e.g. /api/jellyha/stream/{entry_id}/{media_type}/{item_id}
         if item_id in ("Audio", "Videos"):
@@ -219,10 +245,13 @@ class JellyHAStreamView(HomeAssistantView):
         if not item_id:
             return web.Response(status=400, text="Missing item_id")
 
+        if not is_valid_item_id(item_id):
+            return web.Response(status=400, text="Invalid item ID")
+
         # media_type can be in path or query parameters (fallback)
         if not media_type:
             media_type = request.query.get("media_type", "Videos")
-        if media_type not in ("Audio", "Videos"):
+        if media_type not in ALLOWED_MEDIA_TYPES:
             return web.Response(status=400, text="Invalid media_type")
 
         # Retrieve config entry
@@ -342,7 +371,7 @@ class JellyHAStreamView(HomeAssistantView):
                 _LOGGER.debug("Stream playback disconnected for %s: %s", item_id, err)
                 return response
             _LOGGER.error("Stream proxy error for %s: %s", item_id, err)
-            return web.Response(status=500, text=str(err))
+            return web.Response(status=500, text="Stream proxy error")
 
 
 class JellyHASubtitleView(HomeAssistantView):
@@ -378,6 +407,19 @@ class JellyHASubtitleView(HomeAssistantView):
             )
             return web.Response(status=401, text="Unauthorized")
 
+        if not is_valid_entry_id(entry_id):
+            return web.Response(status=400, text="Invalid entry ID")
+
+        if not is_valid_item_id(item_id):
+            return web.Response(status=400, text="Invalid item ID")
+
+        if not is_valid_stream_index(stream_index):
+            return web.Response(status=400, text="Invalid stream index")
+
+        media_source_id = request.query.get("media_source_id") or item_id
+        if not is_valid_item_id(media_source_id):
+            return web.Response(status=400, text="Invalid media_source_id")
+
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if not entry:
             for e in self.hass.config_entries.async_entries(DOMAIN):
@@ -397,7 +439,6 @@ class JellyHASubtitleView(HomeAssistantView):
             return web.Response(status=404, text="API not available")
 
         # In Jellyfin, the primary WebVTT path is /Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.vtt
-        media_source_id = request.query.get("media_source_id") or item_id
         url = f"{client.server_url}/Videos/{item_id}/{media_source_id}/Subtitles/{stream_index}/Stream.vtt"
 
         _LOGGER.debug(
@@ -455,7 +496,7 @@ class JellyHASubtitleView(HomeAssistantView):
                 )
         except Exception as err:
             _LOGGER.exception("Subtitle proxy error for item %s, stream %s", item_id, stream_index)
-            return web.Response(status=500, text=str(err))
+            return web.Response(status=500, text="Subtitle proxy error")
 
 
 class JellyHAHlsView(HomeAssistantView):
@@ -475,6 +516,14 @@ class JellyHAHlsView(HomeAssistantView):
         if not manager:
             return web.Response(status=503, text="HLS manager not initialized")
 
+        if not path or ".." in path or path.startswith("/") or path.startswith("\\"):
+            return web.Response(status=400, text="Invalid path")
+
+        clean_path = path.split("?")[0].split("#")[0]
+        ext = ("." + clean_path.rsplit(".", 1)[-1].lower()) if "." in clean_path else ""
+        if ext not in ALLOWED_HLS_EXTENSIONS:
+            return web.Response(status=400, text="Invalid HLS file type")
+
         session = manager.get_session(token)
         if not session:
             return web.Response(status=404, text="HLS session expired or invalid")
@@ -484,6 +533,9 @@ class JellyHAHlsView(HomeAssistantView):
         params["PlaySessionId"] = session.play_session_id
 
         if path.startswith("Videos/"):
+            parts = path.split("/")
+            if len(parts) > 1 and parts[1] != session.item_id:
+                return web.Response(status=403, text="Forbidden: Token item mismatch")
             target_url = f"{session.server_url}/{path}"
         else:
             target_url = f"{session.server_url}/Videos/{session.item_id}/{path}"
@@ -537,7 +589,7 @@ class JellyHAHlsView(HomeAssistantView):
                 )
             except Exception as err:
                 _LOGGER.error("Error proxying HLS playlist %s: %s", path, err)
-                return web.Response(status=500, text=str(err))
+                return web.Response(status=500, text="HLS proxy error")
 
         # Media segments (.ts / .m4s / .mp4 / .key)
         prepared = False
@@ -580,5 +632,5 @@ class JellyHAHlsView(HomeAssistantView):
                 _LOGGER.debug("HLS segment streaming disconnected for %s: %s", path, err)
                 return response
             _LOGGER.error("HLS segment streaming error for %s: %s", path, err)
-            return web.Response(status=500, text=str(err))
+            return web.Response(status=500, text="HLS proxy error")
 

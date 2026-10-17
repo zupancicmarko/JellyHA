@@ -55,6 +55,11 @@ class TestMediaStrategy(unittest.TestCase):
         self.assertIn(f"api_key={self.api_key}", media_url)
         self.assertIn(f"token={self.api_key}", media_url)
 
+        # 6. Video level must be capped at 4.2 for Chromecast Ultra hardware decode compliance
+        self.assertIn("h264-level=42", media_url)
+        self.assertIn("MaxWidth=1920", media_url)
+        self.assertIn("MaxHeight=1080", media_url)
+
     def test_legacy_chromecast_transcode_parameters(self):
         """Verify legacy Chromecast (Gen 1) uses 720p and stereo downmix."""
         media_info = {

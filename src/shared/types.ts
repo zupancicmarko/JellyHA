@@ -10,6 +10,11 @@ export interface HomeAssistant {
         darkMode: boolean;
         selectedTheme?: string;
     };
+    user?: {
+        id: string;
+        name?: string;
+        is_admin?: boolean;
+    };
     callService: (domain: string, service: string, data?: Record<string, unknown>, target?: Record<string, unknown>) => Promise<any>;
     callWS: <T>(msg: Record<string, unknown>) => Promise<T>;
     locale?: {
@@ -48,7 +53,16 @@ export interface MediaStreamInfo {
     IsForced?: boolean;
     IsDefault?: boolean;
     IsExternal?: boolean;
+    IsHearingImpaired?: boolean;
     DeliveryUrl?: string;
+    Width?: number;
+    Height?: number;
+    Channels?: number;
+    VideoRangeType?: string;
+    VideoRange?: string;
+    ColorTransfer?: string;
+    DvProfile?: number | string | null;
+    [key: string]: any;
 }
 
 export interface MediaItem {
@@ -113,14 +127,16 @@ export interface PlayTarget {
 export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     entity: string;
     title?: string;
-    layout?: 'carousel' | 'grid' | 'list';
+    layout?: 'carousel' | 'grid' | 'list' | 'featured';
     media_type?: 'movies' | 'series' | 'next_up' | 'both';
     tv_content?: 'series' | 'episodes';
     items_per_page?: number;
     max_pages?: number;
     auto_swipe_interval?: number; // seconds, 0 = disabled
     columns?: number;
+    rows?: number;
     show_title?: boolean;
+    show_subtitle?: boolean;
     show_year?: boolean;
     show_runtime?: boolean;
     show_ratings?: boolean;
@@ -132,6 +148,8 @@ export interface JellyHALibraryCardConfig extends LovelaceCardConfig {
     enable_pagination?: boolean;
     show_pagination_dots?: boolean;
     metadata_position?: 'above' | 'below';
+    show_card_backdrop?: boolean;
+    featured_queue_backdrop?: boolean;
     rating_source?: 'auto' | 'imdb' | 'tmdb';
     new_badge_days?: number;
     horizontal_alignment?: 'left' | 'center';

@@ -18,6 +18,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN, ITEM_TYPE_EPISODE
 from .api import BROWSER_DEVICE_PROFILE
+from .security import is_valid_item_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -248,6 +249,9 @@ async def websocket_get_episodes(
 ) -> None:
     """Handle get episodes command."""
     series_id = msg["series_id"]
+    if not is_valid_item_id(series_id):
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Invalid series ID")
+        return
     season = msg.get("season")
     _LOGGER.debug(f"Fetching episodes for series {series_id}, season={season}")
 
@@ -435,6 +439,9 @@ async def websocket_get_item(
 ) -> None:
     """Handle get single item command."""
     item_id = msg["item_id"]
+    if not is_valid_item_id(item_id):
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Invalid item ID")
+        return
     coordinator, err = _get_coordinator_from_msg(hass, msg)
     if not coordinator:
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, err or "Integration not loaded")
@@ -481,6 +488,9 @@ async def websocket_resolve_playback(
 ) -> None:
     """Resolve playback URL for browser player, deciding DirectPlay vs HLS transcode."""
     item_id = msg["item_id"]
+    if not is_valid_item_id(item_id):
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Invalid item ID")
+        return
     coordinator, err = _get_coordinator_from_msg(hass, msg)
     if not coordinator:
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, err or "Integration not loaded")

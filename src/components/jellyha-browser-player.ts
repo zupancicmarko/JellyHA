@@ -1,7 +1,6 @@
 import { LitElement, html, render, nothing, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { HomeAssistant } from 'custom-card-helpers';
-import { MediaItem, MediaStreamInfo } from '../shared/types';
+import { HomeAssistant, MediaItem, MediaStreamInfo } from '../shared/types';
 
 export interface BrowserPlayerParams {
     hass: HomeAssistant;
@@ -154,10 +153,10 @@ export class JellyHABrowserPlayer extends LitElement {
             }
             if (!entryId) {
                 const foundEntity = Object.values(params.hass.states).find(
-                    s => s.entity_id.startsWith('sensor.jellyha') && s.attributes?.config_entry_id
+                    (s: any) => s?.entity_id?.startsWith('sensor.jellyha') && s?.attributes?.config_entry_id
                 );
                 if (foundEntity) {
-                    entryId = foundEntity.attributes.config_entry_id;
+                    entryId = (foundEntity.attributes as any)?.config_entry_id;
                 }
             }
 
@@ -519,10 +518,10 @@ export class JellyHABrowserPlayer extends LitElement {
         }
         if (!entryId) {
             const foundEntity = Object.values(hass.states).find(
-                s => s.entity_id.startsWith('sensor.jellyha') && s.attributes?.config_entry_id
+                (s: any) => s?.entity_id?.startsWith('sensor.jellyha') && s?.attributes?.config_entry_id
             );
             if (foundEntity) {
-                entryId = foundEntity.attributes.config_entry_id;
+                entryId = (foundEntity.attributes as any)?.config_entry_id;
             }
         }
 

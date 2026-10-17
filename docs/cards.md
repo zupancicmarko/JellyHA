@@ -1,7 +1,7 @@
 # Dashboard Cards Configuration
 
 JellyHA provides two custom Lovelace cards for Home Assistant:
-- **JellyHA Library Card** (`custom:jellyha-library-card`): Browse and play your media collection with Carousel, Grid, and List layouts.
+- **JellyHA Library Card** (`custom:jellyha-library-card`): Browse and play your media collection with Carousel, Grid, List, and Featured layouts.
 - **JellyHA Now Playing Card** (`custom:jellyha-now-playing-card`): View active playback, metadata, and control media sessions with blurred dynamic backdrops.
 
 Both cards feature a full visual configuration editor in the Home Assistant dashboard UI (Add Card -> search for "JellyHA"). YAML configuration is optional.
@@ -30,11 +30,12 @@ max_pages: 5
 |---|---|---|---|
 | `entity` | string | **Required** | The sensor entity ID (e.g. `sensor.jellyha_library`) |
 | `title` | string | `Jellyfin Library` | Card header title |
-| `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, or `list` |
+| `layout` | string | `carousel` | Layout mode: `carousel`, `grid`, `list`, or `featured` |
 | `media_type` | string | `both` | Media filter: `movies`, `series`, `next_up`, or `both` |
 | `tv_content` | string | `series` | Content type when TV shows are active: `series` (Shows / Series) or `episodes` (Individual Episodes) |
-| `columns` | number | `4` | Number of columns for grid and list layout. Changes to number of rows when Grid layout has Auto-Swipe enabled. |
-| `items_per_page` | number | `3` | Items visible per page. For more than 8 rows in Grid view, set this via the YAML code editor. |
+| `columns` | number | `4` | Number of columns for grid, list, and featured layout (in Featured layout, controls the number of side card columns beside the hero poster, 1 to 4). Changes to number of rows when Grid layout has Auto-Swipe enabled. |
+| `rows` | number | `3` | Number of side card rows in Featured layout (`2` or `3`). In 2-row mode, the hero poster scales proportionally (~240px tall) to match the 2 side card rows. |
+| `items_per_page` | number | `3` | Items visible per page for Carousel, Grid, and List layouts. In Featured layout, items per page is hidden and strictly calculated from columns and rows (`1 + columns * rows`). For more than 8 rows in Grid view, set this via the YAML code editor. |
 | `max_pages` | number | `5` | Maximum number of pages to display (set to `0` for infinite pagination) |
 | `auto_swipe_interval` | number | `0` | Auto-scroll interval in seconds (`0` = disabled) |
 | `new_badge_days` | number | `3` | Items added within X days display a "New" badge |
@@ -70,6 +71,7 @@ max_pages: 5
 | `filter_favorites` | boolean | `false` | Display only favorite items |
 | `filter_newly_added` | boolean | `false` | Display only items added within `new_badge_days` |
 | `use_series_image` | boolean | `false` | For episodes and Next Up, display parent series cover art instead of episode thumbnail |
+| `show_card_backdrop` | boolean | `true` | In Featured layout, display movie/series backdrop fanart in the background of cards (alias: `featured_queue_backdrop`) |
 
 > **Performance Note:** When using **Auto Swipe** with a large number of items, keep `items_per_page` and `max_pages` reasonable to ensure smooth animation on low-power tablets and mobile devices.
 

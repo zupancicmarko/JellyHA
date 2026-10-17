@@ -27,6 +27,12 @@ except Exception:  # pragma: no cover
     get_url = None
 
 from .const import DOMAIN
+from .security import (
+    ALLOWED_GENERAL_COMMANDS,
+    validate_general_command,
+    validate_item_id,
+    validate_session_id,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -210,7 +216,7 @@ SESSION_SEEK_SCHEMA = vol.Schema(
 SESSION_GENERAL_COMMAND_SCHEMA = vol.Schema(
     {
         vol.Required("session_id"): cv.string,
-        vol.Required("command"): cv.string,
+        vol.Required("command"): vol.In(sorted(list(ALLOWED_GENERAL_COMMANDS))),
         vol.Optional("arguments"): dict,
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional("server_entity_id"): cv.entity_id,
@@ -419,7 +425,10 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_play_on_device(call: ServiceCall) -> None:
         """Play a Jellyfin item using Tuned 2026 Strategy."""
         target_entity_id = call.data["entity_id"]
-        item_id = call.data["item_id"]
+        try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
         server_entity_id = call.data.get("server_entity_id")
         config_entry_id = call.data.get("config_entry_id")
 
@@ -560,10 +569,22 @@ async def async_register_services(hass: HomeAssistant) -> None:
         series_id = item.get("SeriesId")
 
         # Choose primary image: series poster for episodes if enabled, otherwise item image
-        if is_episode and series_id and use_series_img:
-            primary_img_url = api.get_image_url(series_id, "Primary")
-        else:
-            primary_img_url = api.get_image_url(item_id, "Primary")
+        target_img_item_id = series_id if (is_episode and series_id and use_series_img) else item_id
+
+        # Signed Home Assistant proxy URL (prevents exposing Jellyfin API key in HA entity state/attributes)
+        base_url = None
+        if get_url:
+            try:
+                base_url = get_url(hass)
+            except Exception:
+                base_url = None
+
+        primary_thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{target_img_item_id}/Primary"
+        primary_img_url = async_sign_path(hass, primary_thumb_path, timedelta(hours=24))
+        if base_url and primary_img_url and primary_img_url.startswith("/"):
+            primary_img_url = f"{base_url.rstrip('/')}{primary_img_url}"
+        elif not primary_img_url:
+            primary_img_url = api.get_image_url(target_img_item_id, "Primary")
 
         metadata = {"title": item.get("Name", "Jellyfin Media"), "images": [{"url": primary_img_url}]}
         if is_episode:
@@ -574,8 +595,13 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 "episode": item.get("IndexNumber"),
             })
             # Also include episode still as secondary image in metadata
-            episode_img_url = api.get_image_url(item_id, "Primary")
-            if episode_img_url != primary_img_url:
+            if target_img_item_id != item_id:
+                ep_thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{item_id}/Primary"
+                episode_img_url = async_sign_path(hass, ep_thumb_path, timedelta(hours=24))
+                if base_url and episode_img_url and episode_img_url.startswith("/"):
+                    episode_img_url = f"{base_url.rstrip('/')}{episode_img_url}"
+                elif not episode_img_url:
+                    episode_img_url = api.get_image_url(item_id, "Primary")
                 metadata["images"].append({"url": episode_img_url})
 
         extra_payload = {
@@ -632,6 +658,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         sort_by = call.data.get("sort_by")
         sort_order = call.data.get("sort_order")
         parent_id = call.data.get("parent_id") or call.data.get("series_id")
+        if parent_id:
+            try:
+                parent_id = validate_item_id(parent_id)
+            except ValueError as err:
+                raise ValueError(f"Invalid parent/series ID: {err}") from err
         official_rating = call.data.get("official_rating")
         studio = call.data.get("studio")
         person = call.data.get("person")
@@ -1295,49 +1326,95 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
     async def async_delete_item(call: ServiceCall) -> None:
         """Delete an item from Jellyfin library."""
+        # Enforce administrator permissions
+        if call.context and call.context.user_id:
+            user = await hass.auth.async_get_user(call.context.user_id)
+            if user and not user.is_admin:
+                _LOGGER.warning("Unauthorized delete_item attempt by non-admin user %s", call.context.user_id)
+                raise HomeAssistantError("Unauthorized: Only administrators can delete items from Jellyfin")
+
+        try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
+
         try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
-            await coordinator._api._request("DELETE", f"/Items/{call.data['item_id']}")
+            await coordinator._api._request("DELETE", f"/Items/{item_id}")
+            if hasattr(coordinator, "async_remove_item_from_cache"):
+                await coordinator.async_remove_item_from_cache(item_id)
             await coordinator.async_refresh()
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Delete failed: %s", e)
+            raise HomeAssistantError(f"Delete failed: {e}") from e
 
     async def async_update_favorite(call: ServiceCall) -> None:
         """Update favorite status for an item."""
         try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
+
+        try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             state = hass.states.get(entity_id) if entity_id else None
             user_id = (state.attributes.get("user_id") if state else None) or coordinator.entry.data.get("user_id")
-            await coordinator._api.update_favorite(user_id, call.data["item_id"], call.data["is_favorite"])
+            await coordinator._api.update_favorite(user_id, item_id, call.data["is_favorite"])
             await coordinator.async_refresh()
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Favorite update failed: %s", e)
+            raise HomeAssistantError(f"Favorite update failed: {e}") from e
 
     async def async_mark_watched(call: ServiceCall) -> None:
         """Update watched status for an item."""
         try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid item ID: {err}") from err
+
+        try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             state = hass.states.get(entity_id) if entity_id else None
             user_id = (state.attributes.get("user_id") if state else None) or coordinator.entry.data.get("user_id")
-            await coordinator._api.update_played_status(user_id, call.data["item_id"], call.data["is_played"])
+            await coordinator._api.update_played_status(user_id, item_id, call.data["is_played"])
             await coordinator.async_refresh()
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Mark watched failed: %s", e)
+            raise HomeAssistantError(f"Mark watched failed: {e}") from e
 
     async def async_session_control(call: ServiceCall) -> None:
         """Send control command to session."""
         try:
+            session_id = validate_session_id(call.data["session_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid session ID: {err}") from err
+
+        try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
-            await coordinator._api.session_control(call.data["session_id"], call.data["command"])
+            await coordinator._api.session_control(session_id, call.data["command"])
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Session control failed: %s", e)
+            raise HomeAssistantError(f"Session control failed: {e}") from e
 
     async def async_session_seek(call: ServiceCall) -> None:
         """Send seek command to session."""
+        try:
+            session_id = validate_session_id(call.data["session_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid session ID: {err}") from err
+
         try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
@@ -1346,18 +1423,34 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 position_ticks = int(call.data["position_seconds"] * 10_000_000)
             if position_ticks is None:
                 raise ValueError("Either 'position_ticks' or 'position_seconds' must be provided.")
-            await coordinator._api.session_seek(call.data["session_id"], position_ticks)
+            await coordinator._api.session_seek(session_id, position_ticks)
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Session seek failed: %s", e)
+            raise HomeAssistantError(f"Session seek failed: {e}") from e
 
     async def async_session_general_command(call: ServiceCall) -> None:
         """Send a general command to session."""
         try:
+            session_id = validate_session_id(call.data["session_id"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid session ID: {err}") from err
+
+        try:
+            command = validate_general_command(call.data["command"])
+        except ValueError as err:
+            raise HomeAssistantError(f"Invalid command: {err}") from err
+
+        try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
-            await coordinator._api.session_general_command(call.data["session_id"], call.data["command"], call.data.get("arguments"))
+            await coordinator._api.session_general_command(session_id, command, call.data.get("arguments"))
+        except HomeAssistantError:
+            raise
         except Exception as e:
             _LOGGER.error("Session general command failed: %s", e)
+            raise HomeAssistantError(f"Session general command failed: {e}") from e
 
     async def async_session_play(call: ServiceCall) -> None:
         """Instruct a Jellyfin session/device to play an item."""
@@ -1372,6 +1465,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
             dev_name = call.data.get("device_name")
             client = call.data.get("client")
             target_session_id = call.data.get("session_id")
+            if target_session_id:
+                try:
+                    target_session_id = validate_session_id(target_session_id)
+                except ValueError as err:
+                    raise HomeAssistantError(f"Invalid session ID: {err}") from err
 
             # Check if entity_id provided maps to a device player entity
             if not target_session_id and entity_id and entity_id.startswith("media_player."):
@@ -1430,7 +1528,10 @@ async def async_register_services(hass: HomeAssistant) -> None:
                     f"Cannot play on '{client_label}': No active Jellyfin session found. Make sure the device is on and the app is open on the device."
                 )
 
-            item_id = call.data["item_id"]
+            try:
+                item_id = validate_item_id(call.data["item_id"])
+            except ValueError as err:
+                raise HomeAssistantError(f"Invalid item ID: {err}") from err
             # Auto-resolve series to Next Up episode
             user_id = coordinator.entry.data.get("user_id")
             if user_id:
@@ -1465,10 +1566,15 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_get_recommendations(call: ServiceCall) -> ServiceResponse:
         """Get recommendations for an item."""
         try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise ValueError(f"Invalid item ID: {err}") from err
+
+        try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             user_id = coordinator.entry.data.get("user_id")
-            items = await coordinator._api.get_similar_items(user_id=user_id, item_id=call.data["item_id"], limit=call.data["limit"])
+            items = await coordinator._api.get_similar_items(user_id=user_id, item_id=item_id, limit=call.data["limit"])
             results = list(await asyncio.gather(*(coordinator._async_transform_item(item) for item in items)))
             return {"items": [_clean_transformed_item(r) for r in results]}
         except Exception as e:
@@ -1477,10 +1583,15 @@ async def async_register_services(hass: HomeAssistant) -> None:
     async def async_get_item(call: ServiceCall) -> ServiceResponse:
         """Get full details for an item."""
         try:
+            item_id = validate_item_id(call.data["item_id"])
+        except ValueError as err:
+            raise ValueError(f"Invalid item ID: {err}") from err
+
+        try:
             entity_id = call.data.get("entity_id") or call.data.get("server_entity_id")
             coordinator = _get_coordinator(hass, call.data.get("config_entry_id"), entity_id)
             user_id = coordinator.entry.data.get("user_id")
-            raw_item = await coordinator._api.get_item(user_id=user_id, item_id=call.data["item_id"])
+            raw_item = await coordinator._api.get_item(user_id=user_id, item_id=item_id)
             if not raw_item:
                 return {"item": None}
 

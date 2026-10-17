@@ -5,6 +5,7 @@ import { HomeAssistant, MediaItem, PlayTarget } from '../shared/types';
 import { getScriptDefaultName } from '../shared/utils';
 import { localize } from '../shared/localize';
 import { showJellyHABrowserPlayer } from './jellyha-browser-player';
+import { safeOpenWindow } from '../shared/safe-url';
 
 @customElement('jellyha-item-details-modal')
 export class JellyHAItemDetailsModal extends LitElement {
@@ -1458,9 +1459,10 @@ export class JellyHAItemDetailsModal extends LitElement {
                                     <ha-icon icon="mdi:open-in-new"></ha-icon>
                                 </a>
 
+                                ${this.hass?.user?.is_admin === false ? nothing : html`
                                 <button class="action-btn btn-danger" @click=${() => { this._haptic(); this._confirmDelete = true; }} title="Delete Item">
                                     <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-                                </button>
+                                </button>`}
                             </div>
                         `}
                 </div>
@@ -2158,8 +2160,6 @@ export class JellyHAItemDetailsModal extends LitElement {
         if (!this._item) return;
         this._haptic(); // Feedback
         const itemId = this._item.id;
-        this.closeDialog();
-
         const serviceData: any = {
             item_id: itemId,
         };
@@ -2171,7 +2171,27 @@ export class JellyHAItemDetailsModal extends LitElement {
             serviceData.server_entity_id = this._serverEntityId;
         }
 
-        await this.hass.callService('jellyha', 'delete_item', serviceData);
+        this.closeDialog();
+
+        try {
+            await this.hass.callService('jellyha', 'delete_item', serviceData);
+        } catch (err) {
+            console.error('Failed to delete item', err);
+            const reason = err instanceof Error ? err.message : (err as any)?.message;
+            this.dispatchEvent(new CustomEvent('hass-notification', {
+                detail: { message: reason ? `Failed to delete item: ${reason}` : 'Failed to delete item. Check logs.' },
+                bubbles: true,
+                composed: true
+            }));
+            return;
+        }
+
+        // Deletion succeeded: drop the item from all cards' local cache without waiting for refresh
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('jellyha-item-deleted', {
+                detail: { itemId },
+            }));
+        }
     }
 
 
@@ -2209,15 +2229,15 @@ export class JellyHAItemDetailsModal extends LitElement {
             const isAndroid = /android/i.test(ua);
 
             if (isAndroid) {
-                window.open(`vnd.youtube:${youtubeId}`, '_blank');
+                safeOpenWindow(`vnd.youtube:${youtubeId}`, '_blank');
                 return;
             }
-            window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank');
+            safeOpenWindow(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank');
             return;
         }
 
         // Directly open the trailer URL in a new window (never rewrite through Jellyfin external URL!)
-        window.open(url, '_blank');
+        safeOpenWindow(url, '_blank');
     }
 
     private _getJellyfinUrl(item?: MediaItem): string | undefined {
@@ -2300,7 +2320,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         try {
             const parsed = new URL(targetUrl);
             if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-                window.open(targetUrl, '_blank');
+                safeOpenWindow(targetUrl, '_blank');
                 return;
             }
         } catch (e) {
@@ -2308,7 +2328,7 @@ export class JellyHAItemDetailsModal extends LitElement {
         }
 
         const finalUrl = this._getJellyfinUrl({ ...this._item!, jellyfin_url: targetUrl }) || targetUrl;
-        window.open(finalUrl, '_blank');
+        safeOpenWindow(finalUrl, '_blank');
     }
 
     private _handleMarkEpisodeWatched = async (episode: MediaItem) => {

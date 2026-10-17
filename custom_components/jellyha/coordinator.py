@@ -336,6 +336,36 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 f"{self._server_version or 'unknown'}): {err}"
             ) from err
 
+    async def async_remove_item_from_cache(self, item_id: str) -> None:
+        """Immediately remove item from coordinator data, URL cache, and persistent storage."""
+        # 1. Remove from persistent storage cache
+        if self.storage:
+            await self.storage.async_remove_item(item_id)
+
+        # 2. Evict signed URLs for this item from memory cache
+        self._url_cache = {
+            k: v for k, v in self._url_cache.items()
+            if k[0] != item_id
+        }
+
+        # 3. Update coordinator data in-place if available
+        if self.data and isinstance(self.data, dict):
+            new_data = dict(self.data)
+            if "items" in new_data and isinstance(new_data["items"], list):
+                new_data["items"] = [item for item in new_data["items"] if item.get("id") != item_id]
+                new_data["count"] = len(new_data["items"])
+            if "next_up_items" in new_data and isinstance(new_data["next_up_items"], list):
+                new_data["next_up_items"] = [item for item in new_data["next_up_items"] if item.get("id") != item_id]
+            if "latest_movie" in new_data and isinstance(new_data["latest_movie"], dict):
+                if new_data["latest_movie"].get("id") == item_id:
+                    new_data["latest_movie"] = None
+            if "latest_episode" in new_data and isinstance(new_data["latest_episode"], dict):
+                if new_data["latest_episode"].get("id") == item_id:
+                    new_data["latest_episode"] = None
+
+            self.last_data_change_time = dt_util.utcnow()
+            self.async_set_updated_data(new_data)
+
     async def _compute_data_hash(self, items: list[dict[str, Any]], next_up_items: list[dict[str, Any]] = None) -> str:
         """Compute a hash of item data to detect changes (runs in executor)."""
         return await self.hass.async_add_executor_job(

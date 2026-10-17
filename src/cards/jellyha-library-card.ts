@@ -14,6 +14,7 @@ import { showJellyHABrowserPlayer } from '../components/jellyha-browser-player';
 import { cardStyles } from '../styles/jellyha-library-styles';
 import { localize } from '../shared/localize';
 import { getLibraryWatchedPlayerEntities } from '../shared/power-volume-helpers';
+import { safeOpenWindow } from '../shared/safe-url';
 
 // Import modal for side effects (registration)
 import '../components/jellyha-item-details-modal';
@@ -26,7 +27,7 @@ import '../editors/jellyha-library-editor';
 import '../components/jellyha-media-item';
 
 // Register card in the custom cards array
-const CARD_VERSION = '1.6.0';
+const CARD_VERSION = '1.7.0';
 
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${CARD_VERSION} `,
@@ -35,14 +36,16 @@ console.info(
 );
 
 // Register card for picker
-window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === 'jellyha-library-card')) {
-  window.customCards.push({
-    type: 'jellyha-library-card',
-    name: 'JellyHA Library',
-    description: 'Display media from Jellyfin',
-    preview: true,
-  });
+if (typeof window !== 'undefined') {
+  window.customCards = window.customCards || [];
+  if (!window.customCards.some(card => card.type === 'jellyha-library-card')) {
+    window.customCards.push({
+      type: 'jellyha-library-card',
+      name: 'JellyHA Library',
+      description: 'Display media from Jellyfin',
+      preview: true,
+    });
+  }
 }
 
 const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
@@ -63,7 +66,6 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   show_description_on_hover: true,
   enable_pagination: true,
   show_pagination_dots: true,
-  metadata_position: 'below',
   horizontal_alignment: 'center',
   show_date_added: false,
   rating_source: 'auto',
@@ -78,6 +80,8 @@ const DEFAULT_CONFIG: Partial<JellyHALibraryCardConfig> = {
   show_now_playing: true,
   use_series_image: false,
   show_search: false,
+  show_card_backdrop: true,
+  featured_queue_backdrop: true,
   filter_favorites: false,
   status_filter: 'all',
   filter_newly_added: false,
@@ -126,10 +130,11 @@ export class JellyHALibraryCard extends LitElement {
   private _resizeObserver?: ResizeObserver;
   private _resizeHandler?: () => void;
   private _containerWidth = 0;
-  private readonly ITEM_WIDTH = 148; // 140px poster + 8px gap - tighter packing
-  private readonly LIST_ITEM_MIN_WIDTH = 380; // Minimum width per list column
+  private readonly LIST_ITEM_MIN_WIDTH = 300; // Minimum width per list column
+  private readonly FEATURED_QUEUE_ITEM_MIN_WIDTH = 200; // Minimum card width to show horizontal info in featured layout
   private _autoSwipeTimer?: number;
-  private _effectiveListColumns = 1; // Calculated based on container width
+  @state() private _effectiveListColumns = 1; // Calculated based on container width
+  @state() private _isFeaturedCramped = false;
 
   private _isSwiping = false;
   private _autoSwipePaused = false;
@@ -167,6 +172,9 @@ export class JellyHALibraryCard extends LitElement {
     this.addEventListener('touchstart', this._handleTouchStartInteraction, { passive: true });
     this.addEventListener('touchend', this._handleTouchEndInteraction);
     this._setupAutoSwipe();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('jellyha-item-deleted', this._handleItemDeleted);
+    }
   }
 
   disconnectedCallback(): void {
@@ -180,6 +188,9 @@ export class JellyHALibraryCard extends LitElement {
     this.removeEventListener('touchstart', this._handleTouchStartInteraction);
     this.removeEventListener('touchend', this._handleTouchEndInteraction);
     this._clearAutoSwipe();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('jellyha-item-deleted', this._handleItemDeleted);
+    }
   }
 
   private _setupAutoSwipe(): void {
@@ -187,7 +198,7 @@ export class JellyHALibraryCard extends LitElement {
     const interval = this._config?.auto_swipe_interval;
     if (!interval || interval <= 0) return;
 
-    if (this._config.enable_pagination !== false) {
+    if (this._config.enable_pagination !== false || this._config.layout === 'featured') {
       // Version 1: Paginated (Interval-based)
       this._autoSwipeTimer = window.setInterval(() => {
         if (!this._autoSwipePaused) {
@@ -228,7 +239,7 @@ export class JellyHALibraryCard extends LitElement {
       this._lastFrameTime = timestamp;
 
       if (!this._autoSwipePaused && this._config.auto_swipe_interval) {
-        const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+        const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
 
         if (scrollContainer) {
           const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
@@ -269,12 +280,22 @@ export class JellyHALibraryCard extends LitElement {
     this._animationFrameId = requestAnimationFrame(scrollFn);
   }
 
+  /* Helper to get items per page based on layout */
+  private _getEffectiveItemsPerPage(): number {
+    if (this._config?.layout === 'featured') {
+      const sideColumns = Math.max(1, this._config.columns || 1);
+      const sideRows = Math.max(2, Math.min(3, this._config.rows || 3));
+      return 1 + (sideColumns * sideRows);
+    }
+    return this._config?.items_per_page || this._itemsPerPage;
+  }
+
   /* Pagination Auto Swipe Logic */
   private async _handleAutoSwipePage(): Promise<void> {
     // Determine if we need to loop
     // Re-calculate basic stats
     const items = this._items || []; // Use cached items
-    const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
+    const itemsPerPage = this._getEffectiveItemsPerPage();
     const maxPages = this._config.max_pages || 10;
     const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
 
@@ -299,7 +320,7 @@ export class JellyHALibraryCard extends LitElement {
     // Use _items fetched from WebSocket
     const items = this._filterItems(this._items || []);
 
-    const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
+    const itemsPerPage = this._getEffectiveItemsPerPage();
     const maxPages = this._config.max_pages || 10;
     const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
 
@@ -322,7 +343,7 @@ export class JellyHALibraryCard extends LitElement {
    * Helper to set scroll position after page change
    */
   private _setScrollPosition(position: 'start' | 'end'): void {
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper');
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper');
     if (scrollContainer) {
       if (position === 'start') {
         scrollContainer.scrollLeft = 0;
@@ -337,7 +358,7 @@ export class JellyHALibraryCard extends LitElement {
    * Helper to animate page changes (Slide & Fade)
    **/
   private async _animatePageChange(direction: 'next' | 'prev', updateState: () => void): Promise<void> {
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
     if (!scrollContainer) {
       updateState();
       return;
@@ -391,7 +412,7 @@ export class JellyHALibraryCard extends LitElement {
     // Quick estimation logic as per _nextPage
     // Use _items fetched from WebSocket
     const items = this._filterItems(this._items || []);
-    const itemsPerPage = this._config.items_per_page || this._itemsPerPage;
+    const itemsPerPage = this._getEffectiveItemsPerPage();
     const maxPages = this._config.max_pages || 10;
     return Math.min(Math.ceil(items.length / itemsPerPage), maxPages);
   }
@@ -413,7 +434,7 @@ export class JellyHALibraryCard extends LitElement {
     // Only swipe/scroll logic if horizontal movement > vertical
     if (Math.abs(diffX) > Math.abs(diffY)) {
       // Elastic Scroll Effect Logic
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer && Math.abs(diffX) > 0) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
         const maxScroll = scrollWidth - clientWidth;
@@ -462,7 +483,7 @@ export class JellyHALibraryCard extends LitElement {
   private _handleTouchEnd(e: TouchEvent): void {
     // Handle Elastic Reset
     if (this._isOverscrolling) {
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer) {
         scrollContainer.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)';
         scrollContainer.style.transform = '';
@@ -489,7 +510,7 @@ export class JellyHALibraryCard extends LitElement {
     const diffX = e.changedTouches[0].clientX - this._touchStartX;
     const threshold = 50; // Minimum swipe distance
     // Check for either carousel or grid wrapper (whichever is active)
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper');
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper');
 
     if (diffX < -threshold) {
       // Swipe Left (Next Page)
@@ -539,7 +560,7 @@ export class JellyHALibraryCard extends LitElement {
     // Only swipe/scroll logic if horizontal movement > vertical
     if (Math.abs(diffX) > Math.abs(diffY)) {
       // Elastic Scroll Effect Logic
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer && Math.abs(diffX) > 0) {
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
         const maxScroll = scrollWidth - clientWidth;
@@ -586,7 +607,7 @@ export class JellyHALibraryCard extends LitElement {
 
     // Handle Elastic Reset
     if (this._isOverscrolling) {
-      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper') as HTMLElement;
+      const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper') as HTMLElement;
       if (scrollContainer) {
         scrollContainer.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.5, 1)';
         scrollContainer.style.transform = '';
@@ -612,7 +633,7 @@ export class JellyHALibraryCard extends LitElement {
 
     const diffX = e.clientX - this._touchStartX;
     const threshold = 50;
-    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper');
+    const scrollContainer = this.shadowRoot?.querySelector('.carousel, .grid-wrapper, .list-wrapper, .featured-wrapper');
 
     if (diffX < -threshold) {
       if (scrollContainer) {
@@ -733,18 +754,23 @@ export class JellyHALibraryCard extends LitElement {
         }
 
         // Calculate effective list columns
-        if (this._config) {
-          const configColumns = this._config.columns || 1;
-          const LIST_ITEM_MIN_WIDTH = 300;
-          if (configColumns > 1) {
-            const maxFitColumns = Math.max(1, Math.floor(contentWidth / LIST_ITEM_MIN_WIDTH));
-            const newEffectiveColumns = Math.min(configColumns, maxFitColumns);
-            if (newEffectiveColumns !== this._effectiveListColumns) {
-              this._effectiveListColumns = newEffectiveColumns;
-              this.requestUpdate();
-            }
-          } else if (this._effectiveListColumns !== 1) {
-            this._effectiveListColumns = 1;
+        this._updateEffectiveListColumns(contentWidth);
+
+        // Calculate cramped mode for featured layout queue cards
+        if (this._config && this._config.layout === 'featured') {
+          const sideColumns = Math.max(1, this._config.columns || 1);
+          let cardWidth: number;
+          const sideElem = this.shadowRoot?.querySelector('.featured-side') as HTMLElement;
+          if (sideElem && sideElem.clientWidth > 0) {
+            cardWidth = (sideElem.clientWidth - (sideColumns - 1) * 10) / sideColumns;
+          } else {
+            const isStacked = contentWidth < 500;
+            const sideWidth = isStacked ? contentWidth : Math.max(0, contentWidth - 266);
+            cardWidth = (sideWidth - (sideColumns - 1) * 10) / sideColumns;
+          }
+          const isCramped = sideColumns >= 3 || cardWidth < this.FEATURED_QUEUE_ITEM_MIN_WIDTH;
+          if (isCramped !== this._isFeaturedCramped) {
+            this._isFeaturedCramped = isCramped;
             this.requestUpdate();
           }
         }
@@ -763,14 +789,30 @@ export class JellyHALibraryCard extends LitElement {
     } catch (e) {
       // Fallback for very old browsers (unlikely in HA)
       console.warn('ResizeObserver not supported, falling back to window resize', e);
-      window.addEventListener('resize', this._resizeHandler);
     }
+
+    // Always listen to window resize as safety net
+    window.addEventListener('resize', this._resizeHandler);
 
     // Call once initially
     this._resizeHandler();
   }
 
-
+  private _updateEffectiveListColumns(contentWidth: number): void {
+    if (!this._config) return;
+    const configColumns = this._config.columns || 1;
+    if (configColumns > 1) {
+      const maxFitColumns = Math.max(1, Math.floor(contentWidth / this.LIST_ITEM_MIN_WIDTH));
+      const newEffectiveColumns = Math.min(configColumns, maxFitColumns);
+      if (newEffectiveColumns !== this._effectiveListColumns) {
+        this._effectiveListColumns = newEffectiveColumns;
+        this.requestUpdate();
+      }
+    } else if (this._effectiveListColumns !== 1) {
+      this._effectiveListColumns = 1;
+      this.requestUpdate();
+    }
+  }
 
   private _handleDotClick(page: number): void {
     if (page !== this._currentPage) {
@@ -796,8 +838,12 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     this._config = { ...DEFAULT_CONFIG, ...config };
-    // Initialize effective list columns from config
-    this._effectiveListColumns = this._config.columns || 1;
+    // Initialize or recalculate effective list columns from config
+    if (this._containerWidth > 0) {
+      this._updateEffectiveListColumns(this._containerWidth);
+    } else {
+      this._effectiveListColumns = this._config.columns || 1;
+    }
   }
 
   /**
@@ -821,7 +867,7 @@ export class JellyHALibraryCard extends LitElement {
    * Get card size for layout
    */
   public getCardSize(): number {
-    return this._config?.layout === 'list' ? 5 : 3;
+    return this._config?.layout === 'list' || this._config?.layout === 'featured' ? 5 : 3;
   }
 
   public getLayoutOptions() {
@@ -849,7 +895,7 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Always update if internal carousel state changes or items change
-    if (changedProps.has('_currentPage') || changedProps.has('_itemsPerPage') || changedProps.has('_items') || changedProps.has('_error') || changedProps.has('_searchQuery') || changedProps.has('_searchGenre')) {
+    if (changedProps.has('_currentPage') || changedProps.has('_itemsPerPage') || changedProps.has('_items') || changedProps.has('_error') || changedProps.has('_searchQuery') || changedProps.has('_searchGenre') || changedProps.has('_isFeaturedCramped')) {
       return true;
     }
 
@@ -976,6 +1022,17 @@ export class JellyHALibraryCard extends LitElement {
           this._fetchItems();
         }
       }
+
+      if (this._config?.layout === 'featured') {
+        const sideColumns = Math.max(1, this._config.columns || 1);
+        const sideElem = this.shadowRoot?.querySelector('.featured-side') as HTMLElement;
+        if (sideElem && sideElem.clientWidth > 0) {
+          const cardWidth = (sideElem.clientWidth - (sideColumns - 1) * 10) / sideColumns;
+          this._isFeaturedCramped = sideColumns >= 3 || cardWidth < this.FEATURED_QUEUE_ITEM_MIN_WIDTH;
+        } else {
+          this._isFeaturedCramped = sideColumns >= 3;
+        }
+      }
     }
 
     // Check if carousel/grid/list is scrollable after render
@@ -1096,7 +1153,7 @@ export class JellyHALibraryCard extends LitElement {
     if (this._config.media_type === 'next_up') {
       const maxPages = this._config.max_pages;
       if (maxPages !== undefined && maxPages !== null && maxPages > 0) {
-        const limit = (this._config.items_per_page || 5) * maxPages;
+        const limit = this._getEffectiveItemsPerPage() * maxPages;
         filtered = filtered.slice(0, limit);
       }
       return filtered;
@@ -1134,7 +1191,7 @@ export class JellyHALibraryCard extends LitElement {
     // Apply limit based on items_per_page * max_pages
     const maxPages = this._config.max_pages;
     if (maxPages !== undefined && maxPages !== null && maxPages > 0) {
-      const limit = (this._config.items_per_page || 5) * maxPages;
+      const limit = this._getEffectiveItemsPerPage() * maxPages;
       filtered = filtered.slice(0, limit);
     }
 
@@ -1166,6 +1223,10 @@ export class JellyHALibraryCard extends LitElement {
 
     if (layout === 'grid') {
       return this._renderGrid(items, enablePagination);
+    }
+
+    if (layout === 'featured') {
+      return this._renderFeatured(items, enablePagination);
     }
 
     return html`
@@ -1343,6 +1404,75 @@ export class JellyHALibraryCard extends LitElement {
   }
 
   /**
+   * Render featured layout: first item of each page as a large hero poster,
+   * and the remaining items (default 3) as a compact, height-locked queue beside it.
+   */
+  private _renderFeatured(items: MediaItem[], enablePagination: boolean): TemplateResult {
+    const itemsPerPage = this._getEffectiveItemsPerPage();
+    const rawMaxPages = this._config.max_pages;
+    const maxPagesNum = rawMaxPages ? Number(rawMaxPages) : 0;
+    const effectiveMaxPages = (maxPagesNum > 0) ? maxPagesNum : Infinity;
+    const totalPages = Math.min(Math.ceil(items.length / itemsPerPage), effectiveMaxPages);
+
+    const startIdx = this._currentPage * itemsPerPage;
+    const pageItems = items.slice(startIdx, startIdx + itemsPerPage);
+    const [heroItem, ...sideItems] = pageItems;
+    if (!heroItem) return html``;
+
+    const sideColumns = Math.max(1, this._config.columns || 1);
+    const sideRows = Math.max(2, Math.min(3, this._config.rows || 3));
+    const isCramped = sideColumns >= 3 || this._isFeaturedCramped;
+
+    return html`
+      <div 
+        class="featured-wrapper"
+        @touchstart="${this._handleTouchStart}"
+        @touchmove="${this._handleTouchMove}"
+        @touchend="${this._handleTouchEnd}"
+        @pointerdown="${this._handlePointerDown}"
+        @pointermove="${this._handlePointerMove}"
+        @pointerup="${this._handlePointerUp}"
+      >
+        <div class="featured ${sideItems.length === 0 ? 'single' : ''} ${sideColumns > 1 ? 'multi-column' : ''} rows-${sideRows}">
+            <div class="featured-hero-container">
+              <jellyha-media-item
+                class="featured-main"
+                .hass=${this.hass}
+                .config=${this._config}
+                .item=${heroItem}
+                .layout=${'featured-hero'}
+                .isNextUpHighlight=${this._config.media_type === 'next_up' && heroItem.id === this._mostRecentNextUpItemId}
+                @jellyha-action=${this._handleItemAction}
+              ></jellyha-media-item>
+            </div>
+            ${sideItems.length > 0 ? html`
+              <div 
+                class="featured-side columns-${sideColumns} rows-${sideRows} ${isCramped ? 'cramped' : ''}"
+                style="--jf-featured-columns: ${sideColumns}; --jf-featured-rows: ${sideRows};"
+              >
+                ${sideItems.map((item) => html`
+                  <jellyha-media-item
+                    class="${isCramped ? 'cramped' : ''}"
+                    .hass=${this.hass}
+                    .config=${this._config}
+                    .item=${item}
+                    .layout=${'featured-queue'}
+                    .isCramped=${isCramped}
+                    .isNextUpHighlight=${this._config.media_type === 'next_up' && item.id === this._mostRecentNextUpItemId}
+                    @jellyha-action=${this._handleItemAction}
+                  ></jellyha-media-item>
+                `)}
+              </div>
+            ` : nothing}
+          </div>
+        ${enablePagination && totalPages > 1
+        ? this._renderPagination(totalPages)
+        : nothing}
+      </div>
+    `;
+  }
+
+  /**
    * Main Pagination Render Dispatcher
    * Decides between standard and smart pagination based on page count
    */
@@ -1469,7 +1599,7 @@ export class JellyHALibraryCard extends LitElement {
         break;
       case 'trailer':
         if (item.trailer_url) {
-          window.open(item.trailer_url, '_blank');
+          safeOpenWindow(item.trailer_url, '_blank');
         } else {
           fireEvent(this, 'hass-notification', {
             message: localize(this.hass.locale?.language || this.hass.language, 'no_trailer'),
@@ -1679,7 +1809,7 @@ export class JellyHALibraryCard extends LitElement {
     try {
       const parsed = new URL(targetUrl);
       if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be') || parsed.hostname.includes('vimeo.com')) {
-        window.open(targetUrl, '_blank');
+        safeOpenWindow(targetUrl, '_blank');
         return;
       }
     } catch (e) {
@@ -1709,7 +1839,7 @@ export class JellyHALibraryCard extends LitElement {
           originalUrlObj.pathname = extPath + originalUrlObj.pathname;
         }
 
-        window.open(originalUrlObj.toString(), '_blank');
+        safeOpenWindow(originalUrlObj.toString(), '_blank');
         return;
       } catch (e) {
         console.warn('JellyHA: Failed to parse URLs to inject external URL override, falling back to original', e);
@@ -1717,7 +1847,7 @@ export class JellyHALibraryCard extends LitElement {
     }
 
     // Fallback to the original URL and let browser handle it
-    window.open(targetUrl, '_blank');
+    safeOpenWindow(targetUrl, '_blank');
   }
 
   /**
@@ -1844,6 +1974,25 @@ export class JellyHALibraryCard extends LitElement {
       });
     }
   }
+
+  private _handleItemDeleted = (e: Event): void => {
+    const customEvent = e as CustomEvent<{ itemId: string }>;
+    const itemId = customEvent.detail?.itemId;
+    if (itemId && this._items && this._items.length > 0) {
+      const prevLength = this._items.length;
+      this._items = this._items.filter(item => item.id !== itemId);
+      if (this._items.length !== prevLength) {
+        if (this._mostRecentNextUpItemId === itemId) {
+          this._mostRecentNextUpItemId = this._items[0]?.id;
+        }
+        const totalPages = this._getTotalPages();
+        if (this._currentPage >= totalPages && totalPages > 0) {
+          this._currentPage = Math.max(0, totalPages - 1);
+        }
+        this.requestUpdate();
+      }
+    }
+  };
 
   private _handleSearchInput(e: Event): void {
     const target = e.target as HTMLInputElement;

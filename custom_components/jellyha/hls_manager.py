@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant
 _LOGGER = logging.getLogger(__name__)
 
 SESSION_TTL_SECONDS = 900  # 15 minutes of inactivity before reap
+MAX_SESSION_LIFETIME_SECONDS = 14400  # 4 hours hard maximum lifetime cap
 
 
 @dataclass
@@ -29,11 +30,13 @@ class HlsSession:
     created_at: float
     last_accessed: float
     api: Any
+    max_expires_at: float = 0.0
 
     def is_expired(self, now: float | None = None) -> bool:
-        """Check if the session has timed out from inactivity."""
+        """Check if the session has timed out from inactivity or exceeded max lifetime."""
         ts = now or time.time()
-        return (ts - self.last_accessed) > SESSION_TTL_SECONDS
+        max_exp = self.max_expires_at or (self.created_at + MAX_SESSION_LIFETIME_SECONDS)
+        return ts > max_exp or (ts - self.last_accessed) > SESSION_TTL_SECONDS
 
     def touch(self) -> None:
         """Update last accessed timestamp to extend the active TTL."""
@@ -73,6 +76,7 @@ class HlsSessionManager:
             created_at=now,
             last_accessed=now,
             api=api,
+            max_expires_at=now + MAX_SESSION_LIFETIME_SECONDS,
         )
         self._sessions[token] = session
         self._ensure_cleanup_task()

@@ -2,7 +2,7 @@
  * Graphical editor for JellyHA Library Card
  */
 
-import { LitElement, html, TemplateResult, css } from 'lit';
+import { LitElement, html, TemplateResult, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { JellyHALibraryCardConfig, HomeAssistant, PlayTarget } from '../shared/types';
 import { getScriptDefaultName } from '../shared/utils';
@@ -69,7 +69,6 @@ export class JellyHALibraryEditor extends LitElement {
     }
     .warning-banner {
       margin-top: 8px;
-      margin-left: 32px;
       padding: 8px 12px;
       background: rgba(255, 152, 0, 0.12);
       border: 1px solid rgba(255, 152, 0, 0.35);
@@ -160,6 +159,7 @@ export class JellyHALibraryEditor extends LitElement {
                     { value: 'carousel', label: localize(lang, 'editor.layout_carousel') },
                     { value: 'grid', label: localize(lang, 'editor.layout_grid') },
                     { value: 'list', label: localize(lang, 'editor.layout_list') },
+                    { value: 'featured', label: localize(lang, 'editor.layout_featured') },
                   ],
                 },
               }}
@@ -236,13 +236,17 @@ export class JellyHALibraryEditor extends LitElement {
                 @value-changed=${this._tvContentChanged}
               ></ha-selector>
             </div>
-            <div class="checkbox-row">
-              <ha-switch
-                .checked=${this._config.use_series_image === true}
-                @change=${this._useSeriesImageChanged}
-              ></ha-switch>
-              <span>${localize(lang, 'editor.use_series_image')}</span>
-            </div>
+            ${this._config.tv_content === 'episodes'
+            ? html`
+              <div class="checkbox-row">
+                <ha-switch
+                  .checked=${this._config.use_series_image === true}
+                  @change=${this._useSeriesImageChanged}
+                ></ha-switch>
+                <span>${localize(lang, 'editor.use_series_image')}</span>
+              </div>
+            `
+            : nothing}
           </div>
         `
         : ''}
@@ -259,7 +263,7 @@ export class JellyHALibraryEditor extends LitElement {
         `
         : ''}
 
-        ${this._config.layout === 'grid' || this._config.layout === 'list'
+        ${this._config.layout === 'grid' || this._config.layout === 'list' || this._config.layout === 'featured'
         ? html`
               <div class="form-row">
                 <ha-selector
@@ -267,54 +271,104 @@ export class JellyHALibraryEditor extends LitElement {
                   .selector=${{
                     number: {
                       min: 1,
-                      max: this._config.layout === 'list' ? 8 : 12,
+                      max: this._config.layout === 'featured' ? 4 : (this._config.layout === 'list' ? 8 : 12),
                       mode: 'slider',
                     },
                   }}
                   .value=${this._config.columns || 1}
-                  .label=${`${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}`}
-                  label="${`${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}`}"
+                  .label=${this._config.layout === 'featured'
+                    ? `${localize(lang, 'editor.columns')}: ${this._config.columns || 1}`
+                    : `${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}`}
+                  label="${this._config.layout === 'featured'
+                    ? `${localize(lang, 'editor.columns')}: ${this._config.columns || 1}`
+                    : `${columnsLabel}: ${(this._config.columns || 1) === 1 ? localize(lang, 'editor.auto') : this._config.columns}`}"
                   @value-changed=${this._columnsChanged}
                 ></ha-selector>
               </div>
+              ${this._config.layout === 'featured' ? html`
+                <div class="helper-text" style="margin-top: -8px; margin-bottom: 12px;">
+                  ${localize(lang, 'editor.featured_columns_helper')}
+                </div>
+                <div class="form-row">
+                  <ha-selector
+                    .hass=${this.hass}
+                    .selector=${{
+                      number: {
+                        min: 2,
+                        max: 3,
+                        mode: 'slider',
+                      },
+                    }}
+                    .value=${this._config.rows || 3}
+                    .label=${`${localize(lang, 'editor.featured_rows') || 'Rows'}: ${this._config.rows || 3}`}
+                    label="${`${localize(lang, 'editor.featured_rows') || 'Rows'}: ${this._config.rows || 3}`}"
+                    @value-changed=${this._rowsChanged}
+                  ></ha-selector>
+                </div>
+                <div class="helper-text" style="margin-top: -8px; margin-bottom: 12px;">
+                  ${localize(lang, 'editor.featured_rows_helper')}
+                </div>
+              ` : ''}
             `
-        : ''}
+          : ''}
 
-        <div class="side-by-side">
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                number: {
-                  min: 1,
-                  max: 50,
-                  mode: 'box',
-                },
-              }}
-              .value=${this._config.items_per_page !== undefined && this._config.items_per_page !== null ? this._config.items_per_page : 5}
-              .label=${localize(lang, 'editor.items_per_page')}
-              label="${localize(lang, 'editor.items_per_page')}"
-              @value-changed=${this._itemsPerPageChanged}
-            ></ha-selector>
-          </div>
 
-          <div class="form-row">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                number: {
-                  min: 0,
-                  max: 20,
-                  mode: 'box',
-                },
-              }}
-              .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? this._config.max_pages : 5}
-              .label=${localize(lang, 'editor.max_pages')}
-              label="${localize(lang, 'editor.max_pages')}"
-              @value-changed=${this._maxPagesChanged}
-            ></ha-selector>
-          </div>
-        </div>
+        ${this._config.layout === 'featured'
+        ? html`
+            <div class="form-row">
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  number: {
+                    min: 0,
+                    max: 20,
+                    mode: 'box',
+                  },
+                }}
+                .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? this._config.max_pages : 5}
+                .label=${localize(lang, 'editor.max_pages')}
+                label="${localize(lang, 'editor.max_pages')}"
+                @value-changed=${this._maxPagesChanged}
+              ></ha-selector>
+            </div>
+          `
+        : html`
+            <div class="side-by-side">
+              <div class="form-row">
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+                    number: {
+                      min: 1,
+                      max: 50,
+                      mode: 'box',
+                    },
+                  }}
+                  .value=${this._config.items_per_page !== undefined && this._config.items_per_page !== null ? this._config.items_per_page : 5}
+                  .label=${localize(lang, 'editor.items_per_page')}
+                  label="${localize(lang, 'editor.items_per_page')}"
+                  @value-changed=${this._itemsPerPageChanged}
+                ></ha-selector>
+              </div>
+
+              <div class="form-row">
+                <ha-selector
+                  .hass=${this.hass}
+                  .selector=${{
+                    number: {
+                      min: 0,
+                      max: 20,
+                      mode: 'box',
+                    },
+                  }}
+                  .value=${this._config.max_pages !== undefined && this._config.max_pages !== null ? this._config.max_pages : 5}
+                  .label=${localize(lang, 'editor.max_pages')}
+                  label="${localize(lang, 'editor.max_pages')}"
+                  @value-changed=${this._maxPagesChanged}
+                ></ha-selector>
+              </div>
+            </div>
+          `}
 
         <div class="side-by-side">
           <div class="form-row">
@@ -356,14 +410,6 @@ export class JellyHALibraryEditor extends LitElement {
 
     <div class="checkbox-row">
       <ha-switch
-        .checked=${this._config.enable_browser_player !== false}
-        @change=${this._enableBrowserPlayerChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.enable_browser_player')}</span>
-    </div>
-
-    <div class="checkbox-row">
-      <ha-switch
         .checked=${this._config.show_title !== false}
         @change=${this._showTitleChanged}
       ></ha-switch>
@@ -386,13 +432,17 @@ export class JellyHALibraryEditor extends LitElement {
       <span>${localize(lang, 'editor.show_rating')}</span>
     </div>
 
-    <div class="checkbox-row">
-      <ha-switch
-        .checked=${this._config.show_runtime !== false}
-        @change=${this._showRuntimeChanged}
-      ></ha-switch>
-      <span>${localize(lang, 'editor.show_runtime')}</span>
-    </div>
+    ${this._isRuntimeOptionVisible()
+      ? html`
+        <div class="checkbox-row">
+          <ha-switch
+            .checked=${this._config.show_runtime !== false}
+            @change=${this._showRuntimeChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_runtime')}</span>
+        </div>
+      `
+      : nothing}
 
     <div class="checkbox-row">
       <ha-switch
@@ -442,55 +492,51 @@ export class JellyHALibraryEditor extends LitElement {
       <span>${localize(lang, 'editor.show_search')}</span>
     </div>
 
-    <div class="side-by-side">
-      <div class="form-row">
-        <ha-selector
-          .hass=${this.hass}
-          .selector=${{
-            select: {
-              mode: 'dropdown',
-              options: [
-                { value: 'below', label: localize(lang, 'editor.metadata_below') },
-                { value: 'above', label: localize(lang, 'editor.metadata_above') },
-              ],
-            },
-          }}
-          .value=${this._config.metadata_position || 'below'}
-          .label=${localize(lang, 'editor.metadata_position')}
-          label="${localize(lang, 'editor.metadata_position')}"
-          @value-changed=${this._metadataPositionChanged}
-        ></ha-selector>
-      </div>
+    ${(this._config.layout === 'list' || this._config.layout === 'featured')
+    ? html`
+        <div class="checkbox-row" style="margin-bottom: 4px;">
+          <ha-switch
+            .checked=${this._config.show_card_backdrop !== undefined
+              ? this._config.show_card_backdrop !== false
+              : (this._config.layout === 'featured' ? this._config.featured_queue_backdrop !== false : true)}
+            @change=${this._showCardBackdropChanged}
+          ></ha-switch>
+          <span>${localize(lang, 'editor.show_card_backdrop')}</span>
+        </div>
+        <div class="helper-text" style="margin-bottom: 12px;">
+          ${localize(lang, 'editor.show_card_backdrop_helper')}
+        </div>
+      `
+    : ''}
 
-      <div class="form-row">
-        ${this._config.media_type !== 'next_up'
-        ? html`
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                select: {
-                  mode: 'dropdown',
-                  options: [
-                    { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
-                    { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
-                    { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
-                    { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
-                    { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
-                    { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
-                    { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
-                    { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
-                  ],
-                },
-              }}
-              .value=${this._config.sort_option || 'date_added_desc'}
-              .label=${localize(lang, 'editor.sort_order')}
-              label="${localize(lang, 'editor.sort_order')}"
-              @value-changed=${this._sortOptionChanged}
-            ></ha-selector>
-        `
-        : html`<div></div>`}
-      </div>
-    </div>
+    ${this._config.media_type !== 'next_up'
+    ? html`
+        <div class="form-row">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              select: {
+                mode: 'dropdown',
+                options: [
+                  { value: 'date_added_desc', label: localize(lang, 'editor.sort_date_added_desc') },
+                  { value: 'date_added_asc', label: localize(lang, 'editor.sort_date_added_asc') },
+                  { value: 'title_asc', label: localize(lang, 'editor.sort_title_asc') },
+                  { value: 'title_desc', label: localize(lang, 'editor.sort_title_desc') },
+                  { value: 'year_desc', label: localize(lang, 'editor.sort_year_desc') },
+                  { value: 'year_asc', label: localize(lang, 'editor.sort_year_asc') },
+                  { value: 'last_played_desc', label: localize(lang, 'editor.sort_last_played_desc') },
+                  { value: 'last_played_asc', label: localize(lang, 'editor.sort_last_played_asc') },
+                ],
+              },
+            }}
+            .value=${this._config.sort_option || 'date_added_desc'}
+            .label=${localize(lang, 'editor.sort_order')}
+            label="${localize(lang, 'editor.sort_order')}"
+            @value-changed=${this._sortOptionChanged}
+          ></ha-selector>
+        </div>
+      `
+    : ''}
 
     <div class="side-by-side">
       <div class="checkbox-row">
@@ -691,6 +737,14 @@ export class JellyHALibraryEditor extends LitElement {
                 label="${localize(lang, 'editor.default_client_device') || 'Default Jellyfin Client'}"
                 @value-changed=${this._defaultClientDeviceChanged}
               ></ha-entity-picker>
+              ${!this._hasConfiguredClientDevices()
+                ? html`
+                    <div class="warning-banner">
+                      <ha-icon icon="mdi:alert-circle-outline"></ha-icon>
+                      <span>${localize(lang, 'editor.no_client_devices_warning') || 'No Jellyfin client devices configured in the JellyHA integration. Please configure devices in Settings → Devices & services → JellyHA → Configure.'}</span>
+                    </div>
+                  `
+                : ''}
             </div>
           `
         : ''}
@@ -752,17 +806,21 @@ export class JellyHALibraryEditor extends LitElement {
           `
         : ''}
 
-        ${clickAction === 'cast' || holdAction === 'cast' || doubleTapAction === 'cast'
-        ? html`
-              <div class="checkbox-row">
-                <ha-switch
-                  .checked=${this._config.show_now_playing !== false}
-                  @change=${this._showNowPlayingChanged}
-                ></ha-switch>
-                <span>${localize(lang, 'editor.show_now_playing_overlay')}</span>
-              </div>
-            `
-        : ''}
+    <div class="checkbox-row" style="margin-top: 16px;">
+      <ha-switch
+        .checked=${this._config.enable_browser_player !== false}
+        @change=${this._enableBrowserPlayerChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.enable_browser_player')}</span>
+    </div>
+
+    <div class="checkbox-row">
+      <ha-switch
+        .checked=${this._config.show_now_playing !== false}
+        @change=${this._showNowPlayingChanged}
+      ></ha-switch>
+      <span>${localize(lang, 'editor.show_now_playing_overlay')}</span>
+    </div>
 
     <div class="checkbox-row" style="margin-top: 16px; margin-bottom: 4px;">
       <ha-switch
@@ -807,6 +865,11 @@ export class JellyHALibraryEditor extends LitElement {
   private _columnsChanged(e: CustomEvent): void {
     const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
     this._updateConfig('columns', Number(raw));
+  }
+
+  private _rowsChanged(e: CustomEvent): void {
+    const raw = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
+    this._updateConfig('rows', Number(raw));
   }
 
   private _mediaTypeChanged(e: CustomEvent): void {
@@ -912,19 +975,88 @@ export class JellyHALibraryEditor extends LitElement {
     return !eid.startsWith('media_player.jellyha_');
   };
 
-  private _filterClientDevices = (stateObj: any): boolean => {
+  private _isConfiguredClientDevice(stateObj: any): boolean {
     const eid = stateObj?.entity_id;
     if (!eid || !eid.startsWith('media_player.')) {
       return false;
     }
-    if (eid === this._config?.default_client_device) {
+
+    // Must exist as an active entity in hass.states (not restored/unavailable/ghost)
+    const liveState = this.hass?.states?.[eid] || stateObj;
+    if (!liveState || liveState.state === 'unavailable' || liveState.state === 'unknown') {
+      return false;
+    }
+
+    // If hass.states is available, the entity must actually be present in the state machine
+    if (this.hass?.states && !this.hass.states[eid]) {
+      return false;
+    }
+
+    const entityEntry = (this.hass as any)?.entities?.[eid];
+    if (entityEntry?.disabled_by) {
+      return false;
+    }
+
+    const friendlyName: string = String(liveState?.attributes?.friendly_name || '');
+
+    // Explicitly exclude Library Browser
+    if (
+      eid.includes('library_browser') ||
+      eid.includes('media_browser') ||
+      friendlyName.toLowerCase().includes('library browser')
+    ) {
+      return false;
+    }
+
+    const uniqueId: string = entityEntry?.unique_id || '';
+
+    // Exclude if unique_id indicates media_browser
+    if (uniqueId.includes('_media_browser') || uniqueId === 'JellyHA_media_browser') {
+      return false;
+    }
+
+    // Exclude User media players (unique_id contains _media_player_<guid>, e.g. Moonfin, User admin)
+    if (uniqueId.includes('_media_player_') && !uniqueId.includes('_device_player_')) {
+      return false;
+    }
+
+    // Must be a JellyHA device player
+    const isJellyhaPlatform =
+      entityEntry?.platform === 'jellyha' ||
+      eid.startsWith('media_player.jellyha_') ||
+      liveState?.attributes?.device_id !== undefined;
+
+    if (!isJellyhaPlatform) {
+      return false;
+    }
+
+    // 1. Matches state attribute device_id exposed by JellyHADeviceMediaPlayer
+    if (liveState?.attributes?.device_id) {
       return true;
     }
-    const platform = (this.hass as any)?.entities?.[eid]?.platform;
-    if (platform === 'jellyha') {
+
+    // 2. Matches configured device player unique_id (entry_id_device_player_<device_id>)
+    if (uniqueId.includes('_device_player_')) {
       return true;
     }
-    return eid.startsWith('media_player.jellyha_') || !!stateObj?.attributes?.client || !!stateObj?.attributes?.session_id;
+
+    // 3. Name or entity ID conventions for active JellyHA device players
+    if (friendlyName.startsWith('Device ') || eid.includes('_device_')) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private _filterClientDevices = (stateObj: any): boolean => {
+    return this._isConfiguredClientDevice(stateObj);
+  };
+
+  private _hasConfiguredClientDevices(): boolean {
+    if (!this.hass?.states) return false;
+    return Object.keys(this.hass.states).some(eid =>
+      this._isConfiguredClientDevice(this.hass.states[eid])
+    );
   };
 
   private _defaultClientDeviceChanged(e: CustomEvent): void {
@@ -1003,6 +1135,12 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('show_ratings', target.checked);
   }
 
+  private _isRuntimeOptionVisible(): boolean {
+    const mediaType = this._config?.media_type;
+    const tvContent = this._config?.tv_content || 'series';
+    return !(mediaType === 'series' && tvContent === 'series');
+  }
+
   private _showRuntimeChanged(e: Event): void {
     const target = e.target as HTMLInputElement;
     this._updateConfig('show_runtime', target.checked);
@@ -1033,11 +1171,11 @@ export class JellyHALibraryEditor extends LitElement {
     this._updateConfig('show_description_on_hover', target.checked);
   }
 
-  private _metadataPositionChanged(e: CustomEvent): void {
-    const value = e.detail?.value !== undefined ? e.detail.value : (e.target as any)?.value;
-    if (value !== undefined) {
-      this._updateConfig('metadata_position', value);
-    }
+
+  private _showCardBackdropChanged(e: Event): void {
+    const target = e.target as HTMLInputElement;
+    this._updateConfig('show_card_backdrop', target.checked);
+    this._updateConfig('featured_queue_backdrop', target.checked);
   }
 
   private _horizontalAlignmentChanged(e: CustomEvent): void {

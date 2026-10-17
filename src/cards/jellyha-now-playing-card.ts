@@ -19,6 +19,7 @@ import {
     toggleMute,
     resolveInstanceSensorBase
 } from '../shared/power-volume-helpers';
+import { sharedMetaRowStyles } from '../styles/jellyha-shared-styles';
 
 // Import editor for side effects
 import '../editors/jellyha-now-playing-editor';
@@ -41,13 +42,14 @@ export class JellyHANowPlayingCard extends LitElement {
     @property({ attribute: false }) public hass!: HomeAssistant;
     @state() private _config!: JellyHANowPlayingCardConfig;
     @state() private _rewindActive: boolean = false;
-    @state() private _overflowState: number = 0; // 0=All, 1=Hide line3/4, 2=Hide all text
+    @state() private _overflowState: number = 0; // 0=All, 1=Hide client line, 2=Hide genres, 3=Hide meta row, 4=Hide subtitle
     @state() private _dominantColor: string = 'var(--primary-color)';
     @state() private _longPressProgress: number = 0;
     @state() private _stopPulse: boolean = false;
     @state() private _isDragging: boolean = false;
     @state() private _dragPercentage: number = 0;
     @state() private _optimisticSeekPercent: number | null = null;
+    @state() private _isSeeking: boolean = false;
     @state() private _powerActivating: boolean = false;
     @state() private _isVolumeDragging: boolean = false;
     @state() private _dragVolumePercent: number | null = null;
@@ -60,7 +62,9 @@ export class JellyHANowPlayingCard extends LitElement {
     private _idleTimer?: number;
     private _fetchingIdleItems: boolean = false;
     private _visibilityHandler?: () => void;
-    private _optimisticSeekTimer?: number;
+    private _optimisticSeekTimer?: any;
+    private _seekingTimer?: any;
+    private _lastActiveStateObj?: HassEntity;
     private _longPressRaf: number | null = null;
     private _longPressConsumed: boolean = false;
     private _resizeObserver?: ResizeObserver;
@@ -172,16 +176,22 @@ export class JellyHANowPlayingCard extends LitElement {
             return this._renderError('Please configure a JellyHA Now Playing entity');
         }
 
-        const stateObj = this.hass.states[entityId];
-        if (!stateObj) {
+        const rawStateObj = this.hass.states[entityId];
+        if (!rawStateObj) {
             return this._renderError(localize(this.hass.locale?.language || this.hass.language, 'entity_not_found') || 'Entity not found');
         }
 
-        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
         const isMediaPlayer = entityId.startsWith('media_player.');
-        const isPlaying = isMediaPlayer
-            ? (stateObj.state === 'playing' || stateObj.state === 'paused' || !!attributes.item_id)
-            : !!attributes.item_id;
+        const rawAttributes = rawStateObj.attributes as unknown as NowPlayingSensorData;
+        const rawIsPlaying = isMediaPlayer
+            ? (rawStateObj.state === 'playing' || rawStateObj.state === 'paused' || rawStateObj.state === 'buffering' || !!rawAttributes.item_id)
+            : !!rawAttributes.item_id;
+
+        if (rawIsPlaying) {
+            this._lastActiveStateObj = rawStateObj;
+        }
+
+        const isPlaying = rawIsPlaying || (this._isSeeking && !!this._lastActiveStateObj);
 
         if (!isPlaying) {
             if (this._config.idle_backdrop_cycle) {
@@ -193,6 +203,12 @@ export class JellyHANowPlayingCard extends LitElement {
 
         // Active playback: stop idle timer if it was running
         this._stopIdleTimer();
+
+        // Use last active state snapshot if device is temporarily buffering/idle during seek
+        const stateObj = (!rawIsPlaying && this._isSeeking && this._lastActiveStateObj)
+            ? this._lastActiveStateObj
+            : rawStateObj;
+        const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
 
         // Extract Jellyfin item ID and enrich missing metadata for generic media players (like Chromecast)
         const itemId = this._extractItemId(stateObj);
@@ -218,6 +234,10 @@ export class JellyHANowPlayingCard extends LitElement {
             : (this._optimisticSeekPercent !== null && durationSeconds > 0)
                 ? (this._optimisticSeekPercent / 100) * durationSeconds
                 : currentPositionSeconds;
+
+        const curProgress = this._isDragging ? this._dragPercentage : progressPercent;
+        const handleOffset = this._isDragging ? 8 : 6;
+        const handleLeft = `calc(${curProgress}% + (50 - ${curProgress}) * ${(handleOffset * 2) / 100}px)`;
 
         // Resolve images (handling both Jellyfin entities and generic media players like Chromecast)
         const { seriesImageUrl, episodeImageUrl } = this._resolveImages(stateObj, cachedItem);
@@ -346,15 +366,14 @@ export class JellyHANowPlayingCard extends LitElement {
                                     <span class="poster-badge media-type-badge ${mediaType}">${badgeText}</span>
                                 ` : nothing}
                                 ${!isInlineBadge && ratingStr ? html`
-                                    <span class="poster-badge rating-badge">
+                                    <span class="poster-badge rating-badge rating-pill">
                                         <ha-icon icon="mdi:star"></ha-icon>
-                                        ${ratingStr}
+                                        <span>${ratingStr}</span>
                                     </span>
                                 ` : nothing}
                                 ${!isInlineBadge && runtimeStr ? html`
-                                    <span class="poster-badge runtime-badge">
-                                        <ha-icon icon="mdi:clock-outline"></ha-icon>
-                                        ${runtimeStr}
+                                    <span class="poster-badge runtime-badge genre-pill">
+                                        <span>${runtimeStr}</span>
                                     </span>
                                 ` : nothing}
 
@@ -367,28 +386,27 @@ export class JellyHANowPlayingCard extends LitElement {
                         ` : nothing}
                         
                         <div class="info-container">
-                            <div class="info-top">
-                                <div class="header">
-                                    <div class="title-row">
-                                        ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
-                                        <div class="header-actions">
-                                            ${showHeaderBadge ? html`
-                                                <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
-                                            ` : nothing}
-                                            ${this._renderPowerButton()}
-                                        </div>
-                                    </div>
-                                    ${this._overflowState < 3 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
-                                    ${this._overflowState < 2 ? this._renderMetaRow({
-                                        badge: showInlineBadge ? html`<span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>` : nothing,
-                                        year: yearStr,
-                                        runtime: isInlineBadge ? runtimeStr : undefined,
-                                        rating: isInlineBadge ? ratingStr : undefined,
-                                        genres,
-                                        isInline: isInlineBadge,
-                                    }) : nothing}
-                                    ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
+                            <div class="title-row">
+                                ${this._config.show_title !== false ? html`<div class="title">${displayTitle}</div>` : nothing}
+                                <div class="header-actions">
+                                    ${showHeaderBadge ? html`
+                                        <span class="media-type-badge header-badge ${mediaType}">${badgeText}</span>
+                                    ` : nothing}
+                                    ${this._renderPowerButton()}
                                 </div>
+                            </div>
+
+                            <div class="info-top info-middle">
+                                ${this._overflowState < 4 && subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
+                                ${this._overflowState < 3 ? this._renderMetaRow({
+                                    badge: showInlineBadge ? html`<span class="media-type-badge inline-badge ${mediaType}">${badgeText}</span>` : nothing,
+                                    year: yearStr,
+                                    runtime: isInlineBadge ? runtimeStr : undefined,
+                                    rating: isInlineBadge ? ratingStr : undefined,
+                                    genres: this._overflowState < 2 ? genres : [],
+                                    isInline: isInlineBadge,
+                                }) : nothing}
+                                ${this._overflowState < 1 && (userName || sourceInfo) ? html`<div class="client-line">${userName ? html`<strong>${userName}</strong>` : nothing}${userName && sourceInfo ? ' · ' : ''}${sourceInfo || nothing}</div>` : nothing}
                             </div>
 
                             <div class="info-bottom">
@@ -413,7 +431,7 @@ export class JellyHANowPlayingCard extends LitElement {
                                             @pointerleave=${this._endLongPress}
                                             @contextmenu=${(e: Event) => e.preventDefault()}
                                         >
-                                            ${this._rewindActive ? html`
+                                            ${(this._rewindActive || this._isSeeking || rawStateObj.state === 'buffering') ? html`
                                                 <ha-icon-button class="play-pause-btn spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
                                                     <ha-icon icon="mdi:loading"></ha-icon>
                                                 </ha-icon-button>
@@ -462,8 +480,8 @@ export class JellyHANowPlayingCard extends LitElement {
                                     @pointercancel=${supportsRemote ? this._cancelDrag : undefined}
                                 >
                                     <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
-                                        <div class="seek-handle" style="left: ${this._isDragging ? this._dragPercentage : progressPercent}%; transition: ${this._isDragging ? 'none' : 'left 1s linear'}; transform: translate(-50%, -50%) ${this._isDragging ? 'scale(1.3)' : 'scale(1)'}; background: ${this._dominantColor}"></div>
+                                        <div class="progress-fill" style="width: ${curProgress}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
+                                        <div class="seek-handle" style="left: ${handleLeft}; transition: ${this._isDragging ? 'none' : 'left 1s linear'}; transform: translate(-50%, -50%) ${this._isDragging ? 'scale(1.3)' : 'scale(1)'}; background: ${this._dominantColor}"></div>
                                     </div>
                                 </div>
 
@@ -740,6 +758,8 @@ export class JellyHANowPlayingCard extends LitElement {
         const rawRating = item.community_rating ?? item.rating;
         const communityRating = (typeof rawRating === 'number' && !isNaN(rawRating) && rawRating > 0) ? rawRating.toFixed(1) : (rawRating ? String(rawRating) : '');
         const runtime = item.runtime_minutes ? formatRuntime(item.runtime_minutes) : '';
+        const runtimeStr = (this._config.show_runtime !== false && runtime) ? runtime : '';
+        const ratingStr = (this._config.show_ratings !== false && communityRating) ? communityRating : '';
         const rawGenres = item.genres && item.genres.length > 0 ? item.genres.slice(0, 3) : [];
         const genres = this._config.show_genres !== false ? rawGenres : [];
 
@@ -819,6 +839,17 @@ export class JellyHANowPlayingCard extends LitElement {
                                     ` : nothing}
                                 </div>
                             ` : nothing}
+                            ${!isInlineBadge && ratingStr ? html`
+                                <span class="poster-badge rating-badge rating-pill">
+                                    <ha-icon icon="mdi:star"></ha-icon>
+                                    <span>${ratingStr}</span>
+                                </span>
+                            ` : nothing}
+                            ${!isInlineBadge && runtimeStr ? html`
+                                <span class="poster-badge runtime-badge genre-pill">
+                                    <span>${runtimeStr}</span>
+                                </span>
+                            ` : nothing}
                         </div>
 
                         <div class="info-container">
@@ -843,17 +874,17 @@ export class JellyHANowPlayingCard extends LitElement {
                                     </div>
                                 ` : nothing}
                                 ${this._renderMetaRow({
-                                    badge: (showBadge && badgeStyle === 'inline') ? html`
+                                    badge: (showBadge && isInlineBadge) ? html`
                                         <span class="media-type-badge inline-badge ${isLatest ? 'latest-badge' : ''} ${badgeTypeClass}">${badgeText}</span>
                                         ${episodeBadgeText ? html`
                                             <span class="media-type-badge inline-badge ${badgeTypeClass}">${episodeBadgeText}</span>
                                         ` : nothing}
                                     ` : nothing,
                                     year: this._config.show_year !== false && item.year ? item.year : undefined,
-                                    runtime: this._config.show_runtime !== false && runtime ? runtime : undefined,
-                                    rating: this._config.show_ratings !== false && communityRating ? communityRating : undefined,
+                                    runtime: isInlineBadge ? runtimeStr : undefined,
+                                    rating: isInlineBadge ? ratingStr : undefined,
                                     genres,
-                                    isInline: true,
+                                    isInline: isInlineBadge,
                                 })}
                                 ${this._config.show_description !== false && item.description ? html`
                                     <div class="idle-card-desc">${item.description}</div>
@@ -1175,6 +1206,7 @@ export class JellyHANowPlayingCard extends LitElement {
                 this._resolvedMetadata[itemId] = {};
             }
             this.requestUpdate();
+            this._checkLayout();
         } catch (e) {
             // WS call failed, ignore
         } finally {
@@ -1800,8 +1832,17 @@ export class JellyHANowPlayingCard extends LitElement {
     private _setOptimisticSeek(percent: number): void {
         if (this._optimisticSeekTimer) clearTimeout(this._optimisticSeekTimer);
         this._optimisticSeekPercent = percent;
+
+        // Set seeking state with a grace timeout to prevent screensaver flash on Chromecast
+        this._isSeeking = true;
+        if (this._seekingTimer) clearTimeout(this._seekingTimer);
+        this._seekingTimer = setTimeout(() => {
+            this._isSeeking = false;
+            this.requestUpdate();
+        }, 3000);
+
         this.requestUpdate();
-        this._optimisticSeekTimer = window.setTimeout(() => {
+        this._optimisticSeekTimer = setTimeout(() => {
             this._optimisticSeekPercent = null;
             this.requestUpdate();
         }, 2500);
@@ -2002,6 +2043,14 @@ export class JellyHANowPlayingCard extends LitElement {
         this._stopProgressTimer();
         this._endLongPress();
         this._stopIdleTimer();
+        if (this._seekingTimer) {
+            clearTimeout(this._seekingTimer);
+            this._seekingTimer = undefined;
+        }
+        if (this._optimisticSeekTimer) {
+            clearTimeout(this._optimisticSeekTimer);
+            this._optimisticSeekTimer = undefined;
+        }
         if (this._visibilityHandler) {
             document.removeEventListener('visibilitychange', this._visibilityHandler);
             this._visibilityHandler = undefined;
@@ -2033,8 +2082,8 @@ export class JellyHANowPlayingCard extends LitElement {
 
     protected updated(changedProps: PropertyValues): void {
         super.updated(changedProps);
+        this._checkLayout();
         if (changedProps.has('hass')) {
-            this._checkLayout();
             if (this._config?.idle_backdrop_cycle) {
                 if (this._idleItems.length === 0 && !this._fetchingIdleItems) {
                     this._fetchIdleLibraryItems();
@@ -2051,6 +2100,7 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
         if (changedProps.has('_config')) {
+            this._checkLayout();
             const oldConfig = changedProps.get('_config') as JellyHANowPlayingCardConfig | undefined;
             if (!this._config?.idle_backdrop_cycle) {
                 this._stopIdleTimer();
@@ -2095,10 +2145,10 @@ export class JellyHANowPlayingCard extends LitElement {
         const w = cardRect.width;
 
         // Hysteresis to prevent threshold oscillation
-        const isCompact = haCard.classList.contains('compact-height') ? h <= 200 : h <= 190;
+        const isCompact = haCard.classList.contains('compact-height') ? h <= 215 : h <= 205;
         haCard.classList.toggle('compact-height', isCompact);
 
-        const isMicro = haCard.classList.contains('micro-height') ? h <= 185 : h <= 175;
+        const isMicro = haCard.classList.contains('micro-height') ? h <= 135 : h <= 125;
         haCard.classList.toggle('micro-height', isMicro);
 
         const isTallNarrow = haCard.classList.contains('tall-narrow')
@@ -2114,46 +2164,107 @@ export class JellyHANowPlayingCard extends LitElement {
         const isNarrow = haCard.classList.contains('compact-width') ? w <= 310 : w <= 300;
         haCard.classList.toggle('compact-width', isNarrow);
 
-        const titleEl = this.shadowRoot?.querySelector('.title') as HTMLElement;
+        const titleRowEl = (this.shadowRoot?.querySelector('.title-row') || this.shadowRoot?.querySelector('.title')) as HTMLElement;
         const bottomEl = this.shadowRoot?.querySelector('.info-bottom') as HTMLElement;
+        const infoContainerEl = this.shadowRoot?.querySelector('.info-container') as HTMLElement;
 
-        if (!titleEl || !bottomEl) return;
+        if (!bottomEl) return;
 
-        const titleRect = titleEl.getBoundingClientRect();
         const bottomRect = bottomEl.getBoundingClientRect();
+        const titleRect = titleRowEl ? titleRowEl.getBoundingClientRect() : null;
 
-        const bottomSectionTop = bottomRect.top - cardRect.top;
-        const SAFE_THRESHOLD = bottomSectionTop - 6;
+        // Space available for middle metadata between title-row and controls
+        const titleBottom = titleRect ? titleRect.bottom : (infoContainerEl ? infoContainerEl.getBoundingClientRect().top + 32 : cardRect.top + 32);
+        const rawMiddle = bottomRect.top - titleBottom;
+        // If bottom section itself is pushed down past the card bottom boundary, clamp middle space immediately
+        const overflowPastCard = bottomRect.bottom - (cardRect.bottom - 6);
+        const availableMiddleHeight = overflowPastCard > 0 ? Math.min(rawMiddle - overflowPastCard, 0) : rawMiddle;
 
-        const titleBottomRel = titleRect.bottom - cardRect.top;
-
-        // Check if this item has an active subtitle
         const stateObj = this._config?.entity ? this.hass?.states[this._config.entity] : null;
         const attrs = stateObj?.attributes as any;
         const itemId = stateObj ? this._extractItemId(stateObj) : null;
         const cachedItem = itemId ? this._resolvedMetadata[itemId] : null;
+
         const showSubtitle = this._config?.show_subtitle !== false;
         const seriesTitle = attrs?.series_title || attrs?.media_series_title || cachedItem?.series_name || '';
         const subtitle = showSubtitle ? (attrs?.artist_name || attrs?.media_artist || seriesTitle || cachedItem?.artist_name || '') : '';
         const hasSubtitle = !!subtitle;
 
-        let curBottom = titleBottomRel;
-        if (hasSubtitle) {
-            curBottom += 20; // approximate subtitle height + margin
+        const badgeStyle = this._config?.badge_style || this._config?.media_type_badge_style || 'poster';
+        const showBadge = this._config?.show_media_type_badge !== false && badgeStyle !== 'none';
+        const isInlineBadge = showBadge && badgeStyle === 'inline';
+
+        const yearStr = this._config?.show_year !== false ? (attrs?.release_year || attrs?.year || cachedItem?.year) : '';
+        const rawMinutes = attrs?.runtime_minutes || (cachedItem?.runtime_minutes || 0);
+        const runtimeFormatted = rawMinutes > 0 ? formatRuntime(rawMinutes) : '';
+        const runtimeStr = (this._config?.show_runtime !== false && isInlineBadge && runtimeFormatted) ? runtimeFormatted : '';
+        const rawRating = attrs?.community_rating ?? cachedItem?.community_rating ?? cachedItem?.rating;
+        const numRating = Number(rawRating);
+        const communityRating = (!isNaN(numRating) && numRating > 0) ? numRating.toFixed(1) : (rawRating ? String(rawRating) : '');
+        const ratingStr = (this._config?.show_ratings !== false && isInlineBadge && communityRating) ? communityRating : '';
+        const effectiveGenres = (attrs?.genres && attrs.genres.length > 0) ? attrs.genres : (cachedItem?.genres || []);
+        const genres = (this._config?.show_genres !== false && effectiveGenres?.length) ? effectiveGenres.slice(0, 3) : [];
+        const hasGenres = genres.length > 0;
+        const hasBaseMeta = isInlineBadge || !!yearStr || !!runtimeStr || !!ratingStr;
+
+        // Metadata heights:
+        // Subtitle: line height ~16px + margin-bottom 6px = 22px
+        const hSubtitle = hasSubtitle ? 22 : 0;
+
+        // Base metadata (inline badge, year, runtime, rating):
+        // Height of pills is 22px + margin-top 4px + margin-bottom 3px = 29px
+        const hBaseMeta = hasBaseMeta ? 29 : 0;
+
+        // Genres:
+        // When inline badge / year / runtime / rating is present, 3 genres wrap onto an additional line (+27px).
+        // When there is no base meta, genres take line 1 (29px) and wrap to line 2 (+27px) if many.
+        let hGenres = 0;
+        if (hasGenres) {
+            if (hasBaseMeta) {
+                hGenres = 27;
+            } else {
+                hGenres = genres.length > 2 ? 56 : 29;
+            }
         }
 
-        const projectedMetaBottom = curBottom + 18;
-        const projectedClientBottom = projectedMetaBottom + 16;
+        // Client line: font-size 0.8rem, margin-top 7px = 22px
+        const effectiveUser = attrs?.user_name || (this.hass as any)?.user?.name || '';
+        const userName = (this._config?.show_user !== false) ? effectiveUser : '';
+        const effectiveClient = attrs?.client || (stateObj?.attributes as any)?.app_name || (stateObj?.attributes as any)?.friendly_name || '';
+        const clientInfo = (this._config?.show_client !== false) ? effectiveClient : '';
+        const deviceInfo = (this._config?.show_device_name === true) ? (attrs?.device_name || '') : '';
+        const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
+        const hasClient = !!(userName || sourceInfo);
+        const clientHeight = hasClient ? 22 : 0;
 
-        let newState = 0;
-        if (projectedClientBottom > SAFE_THRESHOLD) {
-            newState = 1; // Hide client-line
-        }
-        if (projectedMetaBottom > SAFE_THRESHOLD) {
-            newState = 2; // Hide meta-line
-        }
-        if (hasSubtitle && curBottom > SAFE_THRESHOLD) {
-            newState = 3; // Hide subtitle
+        // Cumulative middle heights:
+        // Level 4: Title only (0px in middle)
+        const hMid4 = 0;
+        // Level 3: Title + Subtitle
+        const hMid3 = hSubtitle;
+        // Level 2: Title + Subtitle + Base Meta (no genres, no client line)
+        const hMid2 = hMid3 + hBaseMeta;
+        // Level 1: Title + Subtitle + Base Meta + Genres (no client line)
+        const hMid1 = hMid2 + hGenres;
+        // Level 0: Title + Subtitle + Base Meta + Genres + Client
+        const hMid0 = hMid1 + clientHeight;
+
+        // Space available for middle section (with 4px safety margin):
+        const SAFE_MID = availableMiddleHeight - 4;
+
+        // Choose state with 4px hysteresis headroom when stepping down to a less restrictive state
+        const cur = this._overflowState;
+        let newState = 4;
+        if (hMid0 + (cur > 0 ? 4 : 0) <= SAFE_MID) {
+            newState = 0;
+        } else if (hMid1 + (cur > 1 ? 4 : 0) <= SAFE_MID) {
+            newState = 1;
+        } else if (hMid2 + (cur > 2 ? 4 : 0) <= SAFE_MID) {
+            newState = 2;
+        } else if (hMid3 + (cur > 3 ? 4 : 0) <= SAFE_MID) {
+            newState = 3;
+        } else {
+            newState = 4;
         }
 
         if (this._overflowState !== newState) {
@@ -2413,38 +2524,14 @@ export class JellyHANowPlayingCard extends LitElement {
         .rating-badge {
             bottom: 6px;
             right: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #F59E0B;
-            padding: var(--short-badge-padding, 3px 6px);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        .rating-badge ha-icon {
-            --mdc-icon-size: 13px;
-            color: #F59E0B;
-            margin-top: -1px;
+            position: absolute;
+            z-index: 5;
         }
         .runtime-badge {
             bottom: 6px;
             left: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            background: rgba(0, 0, 0, 0.6);
-            color: rgba(255, 255, 255, 0.85);
-            padding: var(--short-badge-padding, 3px 6px);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        .runtime-badge ha-icon {
-            --mdc-icon-size: 12px;
-            color: rgba(255, 255, 255, 0.85);
-            margin-top: -1px;
+            position: absolute;
+            z-index: 5;
         }
 
         /* Rewind overlay */
@@ -2496,33 +2583,55 @@ export class JellyHANowPlayingCard extends LitElement {
             align-self: stretch;
             min-height: 0;
             min-width: 0;
-            overflow: visible;
+            overflow: hidden;
+            position: relative;
         }
-        .info-top {
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow: visible;
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 0;
-            padding-bottom: 4px;
-        }
-        .header {
-            margin-bottom: 0px;
-            flex-shrink: 0;
-        }
-
         .title-row {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 8px;
             width: 100%;
+            flex: 0 0 auto;
+            position: relative;
+            z-index: 10;
         }
 
         .title-row .title {
             flex: 1 1 auto;
             min-width: 0;
+            margin: 0;
+        }
+
+        .header-actions {
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            margin: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .title-row .header-actions {
+            margin-left: auto;
+        }
+
+        .info-top,
+        .info-middle {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+            padding-bottom: 2px;
+        }
+        .header {
+            margin-bottom: 0px;
+            flex-shrink: 0;
+            min-height: 0;
         }
 
         .media-type-badge.header-badge {
@@ -2545,7 +2654,7 @@ export class JellyHANowPlayingCard extends LitElement {
             font-weight: 700;
             line-height: 1.2;
             color: var(--card-dominant-color, var(--primary-text-color));
-            margin-top: 6px;
+            margin-top: 2px;
             margin-bottom: 2px;
             overflow: hidden;
         }
@@ -2646,7 +2755,7 @@ export class JellyHANowPlayingCard extends LitElement {
             gap: 8px;
             align-items: center;
             justify-content: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .playback-controls ha-icon-button:not(.music-subtle-btn) {
             --mdc-icon-button-size: 36px;
@@ -2725,7 +2834,7 @@ export class JellyHANowPlayingCard extends LitElement {
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
-            margin-top: 3px;
+            margin: 0;
         }
         .header-actions .media-type-badge.header-badge {
             margin-top: 0 !important;
@@ -2762,6 +2871,7 @@ export class JellyHANowPlayingCard extends LitElement {
             cursor: pointer;
             outline: none;
             -webkit-tap-highlight-color: transparent;
+            z-index: 10;
         }
         .power-btn-hit-area::before {
             content: '';
@@ -2918,8 +3028,8 @@ export class JellyHANowPlayingCard extends LitElement {
             -webkit-backdrop-filter: blur(16px);
             border: none;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
-            margin-top: 8px;
-            margin-bottom: 8px;
+            margin-top: 4px;
+            margin-bottom: 4px;
             width: 100%;
         }
         .volume-capsule.no-step-buttons {
@@ -3068,6 +3178,7 @@ export class JellyHANowPlayingCard extends LitElement {
             padding: 4px 0;
             box-sizing: border-box;
             touch-action: none;
+            z-index: 10;
         }
         .progress-container.readonly {
             cursor: default;
@@ -3113,6 +3224,8 @@ export class JellyHANowPlayingCard extends LitElement {
             justify-content: space-between;
             margin-top: 2px;
             padding: 0;
+            position: relative;
+            z-index: 10;
         }
         .time-elapsed,
         .time-remaining {
@@ -3271,26 +3384,55 @@ export class JellyHANowPlayingCard extends LitElement {
         ha-card:not(.empty-state):not(.error-state).compact-height .card-header {
             display: none !important;
         }
+        ha-card:not(.empty-state):not(.error-state).compact-height .card-content,
+        ha-card:not(.empty-state):not(.error-state).compact-height .jellyha-now-playing.has-background .card-content,
+        .jellyha-now-playing.has-background ha-card:not(.empty-state):not(.error-state).compact-height .card-content {
+            gap: 6px !important;
+            padding: 10px 14px 8px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .title-row {
+            gap: 6px !important;
+            align-items: center !important;
+        }
         ha-card:not(.empty-state):not(.error-state).compact-height .title {
-            font-size: 1.2rem;
-            line-height: 1.1;
-            margin-bottom: 2px;
+            font-size: 1.25rem !important;
+            line-height: 1.2 !important;
+            margin: 0 !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .header-actions {
+            margin: 0 !important;
+            height: 26px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .header-badge {
-            margin-top: 2px;
-            font-size: 0.75rem;
-            padding: 1px 6px;
+            margin-top: 0 !important;
+            font-size: 0.75rem !important;
+            padding: 1px 6px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .main-container {
-            gap: 12px;
-        }
-        ha-card:not(.empty-state):not(.error-state).compact-height .card-content {
-            gap: 8px;
-            padding: 12px 16px !important;
+            gap: 12px !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .poster-container {
             min-height: 0;
             --short-badge-padding: 1px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .playback-controls {
+            margin-bottom: 3px !important;
+            gap: 8px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .volume-capsule {
+            margin-top: 3px !important;
+            margin-bottom: 3px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .progress-container {
+            padding: 2px 0 !important;
+            position: relative;
+            z-index: 10;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .timestamps {
+            margin-top: 2px !important;
+            line-height: 1.1 !important;
+            position: relative;
+            z-index: 10;
         }
 
         /* Ultra-Compact Micro Mode (Overlay controls on poster) */
@@ -3982,106 +4124,11 @@ export class JellyHANowPlayingCard extends LitElement {
             overflow: hidden;
         }
 
-        .idle-meta-row,
-        .meta-line.idle-meta-row {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px 8px;
-            font-size: 0.85rem;
-            color: #ffffff;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
-            margin: 4px 0 7px 0 !important;
-            line-height: 1;
-        }
-
-        .idle-meta-text,
-        .meta-text {
-            display: inline-flex;
-            align-items: center;
-            height: 22px;
-            line-height: 1;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ffffff;
-            transform: translateY(1px);
-        }
-
-        .idle-dot,
-        .meta-dot {
-            opacity: 0.6;
-            font-size: 0.72rem;
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            height: 22px;
-            line-height: 1;
-            transform: translateY(0.5px);
-        }
-
-        .idle-rating-pill,
-        .rating-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            background: rgba(245, 158, 11, 0.25);
-            border: 1px solid rgba(245, 158, 11, 0.45);
-            color: #fbbf24;
-            height: 22px;
-            padding: 0 6px;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            line-height: 1;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-
-        .idle-rating-pill ha-icon,
-        .rating-pill ha-icon {
-            --mdc-icon-size: 12px;
-            width: 12px;
-            height: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform: translateY(-1px);
-            margin: 0;
-            padding: 0;
-            flex-shrink: 0;
-        }
-
-        .idle-rating-pill span,
-        .rating-pill span {
-            display: inline-flex;
-            align-items: center;
-            line-height: 1;
-        }
-
-        .idle-genre-pill,
-        .genre-pill.idle-genre-pill,
-        .genre-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            height: 22px;
-            padding: 0 7px !important;
-            border-radius: 4px;
-            font-size: 0.80rem;
-            color: #ffffff;
-            font-weight: 500;
-            line-height: 1 !important;
-            box-sizing: border-box;
-            flex-shrink: 0;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-        }
+        ${sharedMetaRowStyles}
 
         .idle-overview {
             margin: 2px 0 0 0 !important;
-            font-size: 0.8rem;
+            font-size: 12px !important;
             line-height: 1.35;
             color: rgba(255, 255, 255, 0.72);
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
@@ -4196,6 +4243,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Movie / no subtitle: Title followed directly by meta row */
+        .idle-card-mode .title-row + .meta-line,
         .idle-card-mode .title-row + .idle-meta-row,
         .idle-showcase-card .title-row + .idle-meta-row {
             margin-top: 8px !important;
@@ -4203,6 +4251,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         /* Episode / with subtitle: Subtitle row followed by meta row */
+        .idle-card-mode .subtitle-row + .meta-line,
         .idle-card-mode .subtitle-row + .idle-meta-row,
         .idle-showcase-card .subtitle-row + .idle-meta-row {
             margin-top: 5px !important;
@@ -4210,7 +4259,7 @@ export class JellyHANowPlayingCard extends LitElement {
         }
 
         .idle-card-desc {
-            font-size: 0.82rem;
+            font-size: 12px !important;
             color: rgba(255, 255, 255, 0.72);
             line-height: 1.35;
             margin-top: 2px;
@@ -4219,6 +4268,20 @@ export class JellyHANowPlayingCard extends LitElement {
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .idle-showcase-card .idle-meta-row,
+        .idle-card-mode .idle-meta-row,
+        .idle-card-mode .meta-line,
+        .idle-showcase-card .meta-text,
+        .idle-card-mode .meta-text,
+        .idle-showcase-card .meta-dot,
+        .idle-card-mode .meta-dot,
+        .idle-showcase-card .rating-pill,
+        .idle-card-mode .rating-pill,
+        .idle-showcase-card .genre-pill,
+        .idle-card-mode .genre-pill {
+            font-size: 12px !important;
         }
 
         @container now-playing (max-width: 320px) {

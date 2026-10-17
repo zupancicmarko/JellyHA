@@ -29,8 +29,8 @@ class TestWebsocketPlayback(unittest.IsolatedAsyncioTestCase):
         self.mock_api = MagicMock()
         self.mock_api.server_url = "https://jellyfin.local"
         self.mock_api._api_key = "test_key"
-        self.mock_api.get_item = AsyncMock(return_value={"Id": "item_123", "Type": "Movie", "Container": "avi"})
-        self.mock_api.get_stream_path = MagicMock(return_value="/api/jellyha/stream/entry_1/Videos/item_123")
+        self.mock_api.get_item = AsyncMock(return_value={"Id": "0123456789abcdef0123456789abcdef", "Type": "Movie", "Container": "avi"})
+        self.mock_api.get_stream_path = MagicMock(return_value="/api/jellyha/stream/entry_1/Videos/0123456789abcdef0123456789abcdef")
 
         self.mock_coordinator = MagicMock()
         self.mock_coordinator._api = self.mock_api
@@ -60,12 +60,12 @@ class TestWebsocketPlayback(unittest.IsolatedAsyncioTestCase):
         })
 
         # Mock async_sign_path
-        sys.modules["homeassistant.components.http.auth"].async_sign_path.return_value = "/api/jellyha/stream/entry_1/Videos/item_123?authSig=valid"
+        sys.modules["homeassistant.components.http.auth"].async_sign_path.return_value = "/api/jellyha/stream/entry_1/Videos/0123456789abcdef0123456789abcdef?authSig=valid"
 
         msg = {
             "id": 1,
             "type": "jellyha/resolve_playback",
-            "item_id": "item_123",
+            "item_id": "0123456789abcdef0123456789abcdef",
             "config_entry_id": "entry_1",
         }
 
@@ -94,7 +94,7 @@ class TestWebsocketPlayback(unittest.IsolatedAsyncioTestCase):
         msg = {
             "id": 2,
             "type": "jellyha/resolve_playback",
-            "item_id": "item_123",
+            "item_id": "0123456789abcdef0123456789abcdef",
             "config_entry_id": "entry_1",
         }
 
@@ -113,13 +113,13 @@ class TestWebsocketPlayback(unittest.IsolatedAsyncioTestCase):
         # Check session was registered in HlsSessionManager
         session = self.manager.get_session(res["token"])
         self.assertIsNotNone(session)
-        self.assertEqual(session.item_id, "item_123")
+        self.assertEqual(session.item_id, "0123456789abcdef0123456789abcdef")
 
     async def test_stop_playback(self):
         """Verify stop_playback terminates active session."""
         session = self.manager.create_session(
             entry_id="entry_1",
-            item_id="item_123",
+            item_id="0123456789abcdef0123456789abcdef",
             play_session_id="play_session_abc",
             media_source_id="ms_001",
             server_url="https://jellyfin.local",

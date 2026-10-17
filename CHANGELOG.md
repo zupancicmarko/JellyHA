@@ -5,6 +5,71 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-10-15
+
+### Added
+- **New Featured Layout in Library Card** (idea from [#65](https://github.com/zupancicmarko/JellyHA/pull/65)):
+  - Introduces a dedicated spotlight layout featuring a large hero poster for the main item alongside smaller queue cards—perfect for wall tablet dashboards, media room displays, and wide views.
+  - Configurable side queue with adjustable columns (1 to 4) and rows (2, 3, or 4), with the large poster automatically scaling proportionally to balance with the side cards.
+  - Built-in touch swipe gestures and pagination dots for smooth browsing, with automatic responsive stacking on mobile screens.
+- **List Layout Modernization & Ergonomics**:
+  - Added optional fanart card backdrops (`show_card_backdrop`) with soft shading and subtle blur for rich visual depth.
+  - Refined card proportions and poster sizing for a cleaner, more consistent look across dashboards.
+  - Improved text layout with top badges, 2-line title wrapping, and clean description clamping.
+  - Multi-column list support that automatically adapts to a single column on narrow screens and mobile.
+  - Smooth interactive hover effects and tactile press feedback when clicking cards.
+  - Added `show_date_added` option to list card, rendering the addition date in the metadata row right after runtime (`Year • Runtime • Date Added`).
+- **Screensaver Badge Placement in Now Playing Card**:
+  - Added full support for "Badge in poster" and "Badge inline" placement on the poster screensaver, matching active playback behavior.
+  - Choose between sleek corner badges directly on the poster artwork or displaying all badges and metadata inline next to the title.
+- **Truncated Title Tooltips**:
+  - Added native `title` attribute tooltips to card titles with ellipsis truncation across List and Featured queue cards, matching genre pills behavior on hover.
+
+### Changed
+- **Poster Playback Controls & Playing Indicators**:
+  - Centered the playback button on posters, combining play/pause with hold-to-stop (press and hold the button to stop playback), matching the Now Playing card.
+  - Removed the status text pill (PLAYING/PAUSED) and volume icon from cards to keep poster artwork clean and unobstructed.
+- **Instant Item Deletion**:
+  - Deleting an item in the details dialog now removes it from your dashboard cards immediately without waiting for a library refresh.
+- **Client Device Selection in Library Card**:
+  - Filtered the "Play on Jellyfin Client" entity picker to strictly show configured Jellyfin client devices from the JellyHA integration, removing Library Browser and user entities.
+  - Added an informative warning banner in the card editor if no client devices have been configured yet in the integration.
+- **Glassmorphic Rating & Runtime Badges on Carousel and Grid Posters**:
+  - Replaced plain text overlays with modern glassmorphic rating and runtime badges on Carousel and Grid view posters.
+- **Unified Metadata & Description Typography**:
+  - Unified font sizing for metadata and descriptions across Featured and List layouts.
+  - Standardized text sizing across both poster and fanart screensaver modes.
+- **Context-Aware Runtime Option for TV Series**:
+  - Automatically hides the "Show Runtime" toggle in the Library card editor when browsing "TV Shows Only" (`series`) with TV Content set to "Shows / Series", preventing confusing single-item runtime options for multi-episode series.
+
+### Fixed
+- **Chromecast Ultra Playback H.264 Profile & Scaling (Issue [#63](https://github.com/zupancicmarko/JellyHA/issues/63))**:
+  - Capped H.264 level parameter to `42` (`h264-level=42`) for modern Chromecast devices. Google Cast specifications cap Chromecast Ultra H.264 hardware decoding at Level 4.2 (`1080p@60fps`), resolving playback stalls where streams marked with Level 5.1 were rejected by Google Cast's Default Media Receiver.
+  - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.
+- **Now Playing Card Seeking & Chromecast Buffering Stability**:
+  - Prevents the Now Playing card from prematurely flipping to the screensaver/idle backdrop when seeking or dragging the progress bar on Chromecast devices.
+  - Displays a spinning loading icon on the play/pause button during seek repositioning and buffering, providing smooth visual feedback while the media player buffers the new timestamp.
+
+### Security
+- **Administrator-Only Item Deletion**:
+  - Restricts the `delete_item` service to Home Assistant users with administrator privileges, preventing non-admin household users from deleting items on the Jellyfin server.
+  - Hides the Delete button in the item details dialog for non-admin users.
+- **Input Validation & Path Traversal Protection**:
+  - Validates and sanitizes item IDs, session IDs, config entry IDs, stream indices, and image formats across all proxy endpoints (`views.py`), services (`services.py`), and WebSocket handlers (`websocket.py`).
+  - Restricts `session_general_command` to a strict whitelist of standard Jellyfin remote commands (`SetVolume`, `Mute`, `Unmute`, `ToggleMute`, `DisplayMessage`, etc.).
+  - Rejects traversal attempts (e.g. `../`) and malformed parameters at the API gateway boundary with HTTP 400 Bad Request.
+- **HLS Capability Token Scoping & Hard Lifetime**:
+  - Scopes ephemeral HLS tokens strictly to their authorized item ID, returning HTTP 403 Forbidden on cross-item path access.
+  - Limits file extensions to valid HLS playlist, subtitle, and segment types (`.m3u8`, `.ts`, `.m4s`, `.mp4`, `.key`, `.vtt`, `.webvtt`).
+  - Enforces a 4-hour hard maximum lifetime ceiling on HLS sessions regardless of activity touches.
+- **Chromecast Metadata & Artwork Privacy**:
+  - Routes cast artwork and episode stills through signed Home Assistant proxy URLs, preventing exposure of the Jellyfin API key in media player entity attributes and recorder history.
+- **External & Trailer URL Navigation Hardening**:
+  - Validates external and trailer URLs before opening, blocking dangerous URI schemes (`javascript:`, `data:`, `file:`, `vbscript:`).
+  - Enforces `'noopener,noreferrer'` on all opened browser tabs for strict tab isolation.
+- **Sanitized HTTP Error Responses**:
+  - Replaces raw backend exception traces with generic, privacy-preserving HTTP 500 error messages for image, stream, subtitle, and HLS proxy endpoints.
+
 ## [1.6.0] - 2026-10-11
 
 ### Added
