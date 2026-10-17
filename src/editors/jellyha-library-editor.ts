@@ -997,7 +997,7 @@ export class JellyHALibraryEditor extends LitElement {
       return false;
     }
 
-    const friendlyName: string = liveState?.attributes?.friendly_name || '';
+    const friendlyName: string = String(liveState?.attributes?.friendly_name || '');
 
     // Explicitly exclude Library Browser
     if (

@@ -48,7 +48,16 @@ export interface MediaStreamInfo {
     IsForced?: boolean;
     IsDefault?: boolean;
     IsExternal?: boolean;
+    IsHearingImpaired?: boolean;
     DeliveryUrl?: string;
+    Width?: number;
+    Height?: number;
+    Channels?: number;
+    VideoRangeType?: string;
+    VideoRange?: string;
+    ColorTransfer?: string;
+    DvProfile?: number | string | null;
+    [key: string]: any;
 }
 
 export interface MediaItem {

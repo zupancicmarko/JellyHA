@@ -548,7 +548,7 @@ const Ze = (e, t, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const mt = globalThis;
-class X extends we {
+class G extends we {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -570,9 +570,9 @@ class X extends we {
     return $e;
   }
 }
-X._$litElement$ = !0, X.finalized = !0, mt.litElementHydrateSupport?.({ LitElement: X });
+G._$litElement$ = !0, G.finalized = !0, mt.litElementHydrateSupport?.({ LitElement: G });
 const _i = mt.litElementPolyfillSupport;
-_i?.({ LitElement: X });
+_i?.({ LitElement: G });
 (mt.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -610,7 +610,7 @@ const gi = { attribute: !0, type: String, converter: Xe, reflect: !1, hasChanged
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function V(e) {
+function F(e) {
   return (t, i) => typeof i == "object" ? mi(e, t, i) : ((a, s, o) => {
     const r = s.hasOwnProperty(o);
     return s.constructor.createProperty(o, a), r ? Object.getOwnPropertyDescriptor(s, o) : void 0;
@@ -622,7 +622,7 @@ function V(e) {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 function f(e) {
-  return V({ ...e, state: !0, attribute: !1 });
+  return F({ ...e, state: !0, attribute: !1 });
 }
 /**
  * @license
@@ -667,7 +667,7 @@ function de(e) {
   const t = Math.floor(e / 60), i = e % 60;
   return i > 0 ? `${t}h ${i}m` : `${t}h`;
 }
-function U(e, t) {
+function R(e, t) {
   if (!e || e.includes("width=")) return e;
   const i = e.includes("?") ? "&" : "?";
   return `${e}${i}width=${t}`;
@@ -684,7 +684,7 @@ function ke(e, t) {
   }
   return (t.includes(".") ? t.split(".").slice(1).join(".") : t).split("_").map((o) => ["on", "in", "at", "to", "for", "a", "an", "the", "and", "or", "of"].includes(o.toLowerCase()) ? o.toLowerCase() : o.toLowerCase() === "tv" ? "TV" : o.charAt(0).toUpperCase() + o.slice(1)).join(" ").replace(/^\w/, (o) => o.toUpperCase());
 }
-var yi = Object.defineProperty, vi = Object.getOwnPropertyDescriptor, Y = (e, t, i, a) => {
+var yi = Object.defineProperty, vi = Object.getOwnPropertyDescriptor, J = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? vi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && yi(t, i, s), s;
@@ -755,7 +755,7 @@ function ki(e, t, i) {
   } else if (o === a || o.startsWith(a) || r.includes(a)) return !0;
   return !1;
 }
-let q = class extends X {
+let H = class extends G {
   constructor() {
     super(...arguments), this._open = !1, this._loading = !1, this._mimeType = "video/mp4", this._playMethod = "DirectPlay", this._subtitleTracks = [], this._portalContainer = null, this._handleKeyDown = (e) => {
       e.key === "Escape" && this._open && (this.close(), e.stopPropagation());
@@ -775,9 +775,9 @@ let q = class extends X {
       let t = e.item, i = e.configEntryId || t.config_entry_id || t.entry_id;
       if (!i && e.serverEntityId && e.hass.states[e.serverEntityId] && (i = e.hass.states[e.serverEntityId]?.attributes?.config_entry_id), !i) {
         const s = Object.values(e.hass.states).find(
-          (o) => o.entity_id.startsWith("sensor.jellyha") && o.attributes?.config_entry_id
+          (o) => o?.entity_id?.startsWith("sensor.jellyha") && o?.attributes?.config_entry_id
         );
-        s && (i = s.attributes.config_entry_id);
+        s && (i = s.attributes?.config_entry_id);
       }
       if (t.type === "Series" || t.type === "Season")
         try {
@@ -1005,9 +1005,9 @@ let q = class extends X {
     let a = e.configEntryId || t.config_entry_id || t.entry_id;
     if (!a && e.serverEntityId && i.states[e.serverEntityId] && (a = i.states[e.serverEntityId]?.attributes?.config_entry_id), !a) {
       const r = Object.values(i.states).find(
-        (n) => n.entity_id.startsWith("sensor.jellyha") && n.attributes?.config_entry_id
+        (n) => n?.entity_id?.startsWith("sensor.jellyha") && n?.attributes?.config_entry_id
       );
-      r && (a = r.attributes.config_entry_id);
+      r && (a = r.attributes?.config_entry_id);
     }
     let s, o = t.type === "Audio" ? "audio/mp4" : "video/mp4";
     try {
@@ -1295,42 +1295,42 @@ let q = class extends X {
     return h;
   }
 };
-Y([
-  V({ attribute: !1 })
-], q.prototype, "hass", 2);
-Y([
+J([
+  F({ attribute: !1 })
+], H.prototype, "hass", 2);
+J([
   f()
-], q.prototype, "_open", 2);
-Y([
+], H.prototype, "_open", 2);
+J([
   f()
-], q.prototype, "_loading", 2);
-Y([
+], H.prototype, "_loading", 2);
+J([
   f()
-], q.prototype, "_error", 2);
-Y([
+], H.prototype, "_error", 2);
+J([
   f()
-], q.prototype, "_streamUrl", 2);
-Y([
+], H.prototype, "_streamUrl", 2);
+J([
   f()
-], q.prototype, "_mimeType", 2);
-Y([
+], H.prototype, "_mimeType", 2);
+J([
   f()
-], q.prototype, "_playMethod", 2);
-Y([
+], H.prototype, "_playMethod", 2);
+J([
   f()
-], q.prototype, "_playSessionId", 2);
-Y([
+], H.prototype, "_playSessionId", 2);
+J([
   f()
-], q.prototype, "_hlsToken", 2);
-Y([
+], H.prototype, "_hlsToken", 2);
+J([
   f()
-], q.prototype, "_item", 2);
-Y([
+], H.prototype, "_item", 2);
+J([
   f()
-], q.prototype, "_subtitleTracks", 2);
-q = Y([
+], H.prototype, "_subtitleTracks", 2);
+H = J([
   pe("jellyha-browser-player")
-], q);
+], H);
 let Ae = null;
 async function Ht(e) {
   (!Ae || !document.body.contains(Ae)) && (Ae = document.createElement("jellyha-browser-player"), document.body.appendChild(Ae)), await Ae.play(e);
@@ -5546,7 +5546,7 @@ var Ai = Object.defineProperty, zi = Object.getOwnPropertyDescriptor, E = (e, t,
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && Ai(t, i, s), s;
 };
-let C = class extends X {
+let C = class extends G {
   constructor() {
     super(...arguments), this._playTargets = [], this._showTargetPicker = !1, this._open = !1, this._confirmDelete = !1, this._viewMode = "default", this._episodes = [], this._selectedSeason = "all", this._touchStartY = 0, this._currentTranslateY = 0, this._isDragging = !1, this._swipeClosingThreshold = 100, this._rowTouchStartX = 0, this._rowTouchStartY = 0, this._portalContainer = null, this._handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -7460,7 +7460,7 @@ C.styles = Ce`
         /* Styles handled in _getPortalStyles */
     `;
 E([
-  V({ attribute: !1 })
+  F({ attribute: !1 })
 ], C.prototype, "hass", 2);
 E([
   f()
@@ -7535,7 +7535,7 @@ function lt(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let Ne = class extends X {
+let Ne = class extends G {
   constructor() {
     super(...arguments), this._filterCastDevices = (e) => {
       const t = e?.entity_id;
@@ -8320,7 +8320,7 @@ let Ne = class extends X {
     const a = this.hass?.entities?.[t];
     if (a?.disabled_by)
       return !1;
-    const s = i?.attributes?.friendly_name || "";
+    const s = String(i?.attributes?.friendly_name || "");
     if (t.includes("library_browser") || t.includes("media_browser") || s.toLowerCase().includes("library browser"))
       return !1;
     const o = a?.unique_id || "";
@@ -8563,7 +8563,7 @@ Ne.styles = Ce`
     }
   `;
 ft([
-  V({ attribute: !1 })
+  F({ attribute: !1 })
 ], Ne.prototype, "hass", 2);
 ft([
   f()
@@ -8571,12 +8571,12 @@ ft([
 Ne = ft([
   pe("jellyha-library-editor")
 ], Ne);
-var Li = Object.defineProperty, Ni = Object.getOwnPropertyDescriptor, N = (e, t, i, a) => {
+var Li = Object.defineProperty, Ni = Object.getOwnPropertyDescriptor, Z = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? Ni(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
   return a && s && Li(t, i, s), s;
 };
-let L = class extends X {
+let W = class extends G {
   constructor() {
     super(...arguments), this.layout = "grid", this.isNextUpHighlight = !1, this._pressStartTime = 0, this._isHoldActive = !1, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._rewindActive = !1, this._longPressProgress = 0, this._stopPulse = !1, this._longPressRaf = null, this._longPressConsumed = !1;
   }
@@ -8590,7 +8590,7 @@ let L = class extends X {
     }
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._metaResizeObserver?.disconnect(), this._longPressRaf && (cancelAnimationFrame(this._longPressRaf), this._longPressRaf = null);
+    super.disconnectedCallback(), this._metaResizeObserver?.disconnect(), this._longPressRaf && (cancelAnimationFrame(this._longPressRaf), this._longPressRaf = null), this._clearHoldTimer(), this._clickTimer && (clearTimeout(this._clickTimer), this._clickTimer = void 0);
   }
   updated(e) {
     super.updated(e), this._checkMetaWrap();
@@ -8608,13 +8608,13 @@ let L = class extends X {
     return !this.item || !this.config || !this.hass ? l`` : this.layout === "list" || this.layout === "featured-queue" ? this._renderListItem() : this.layout === "featured-hero" ? this._renderFeaturedHero() : this._renderMediaItem();
   }
   _renderListItem() {
-    const e = this.item, t = Ge(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), r = this.config.show_ratings !== !1 && this.config.show_rating !== !1 && i ? i.toFixed(1) : "", n = e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0), c = this.config.show_year !== !1 && n ? String(n) : "", p = this._isRuntimeVisible() && e.runtime_minutes ? de(e.runtime_minutes) : "", _ = this.config.show_date_added === !0 && e.date_added ? rt(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", g = e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "MOVIE" : "SERIES", m = e.series_name ? "series" : e.type === "Movie" ? "movie" : "series", b = this.config.show_subtitle !== !1, x = e.type === "Episode" || !!(e.series_name && e.name !== e.series_name), v = b && x && e.series_name && e.name !== e.series_name ? e.series_name : "", w = this.config.show_genres !== !1 && e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], k = w.length > 0, y = this.config.show_card_backdrop !== void 0 ? !!this.config.show_card_backdrop : this.config.featured_queue_backdrop !== !1, T = y ? U(
+    const e = this.item, t = Ge(e, this.config.new_badge_days || 0), i = this._getRating(e), a = this.config.show_media_type_badge !== !1, s = this._isItemPlaying(e), r = this.config.show_ratings !== !1 && this.config.show_rating !== !1 && i ? i.toFixed(1) : "", n = e.year ?? (e.date_added ? new Date(e.date_added).getFullYear() : void 0), c = this.config.show_year !== !1 && n ? String(n) : "", p = this._isRuntimeVisible() && e.runtime_minutes ? de(e.runtime_minutes) : "", _ = this.config.show_date_added === !0 && e.date_added ? rt(e.date_added, this.hass?.locale?.language || this.hass?.language) : "", g = e.series_name && e.season != null && e.episode != null && !isNaN(Number(e.season)) && !isNaN(Number(e.episode)) ? `S${String(Number(e.season)).padStart(2, "0")}E${String(Number(e.episode)).padStart(2, "0")}` : e.type === "Movie" ? "MOVIE" : "SERIES", m = e.series_name ? "series" : e.type === "Movie" ? "movie" : "series", b = this.config.show_subtitle !== !1, x = e.type === "Episode" || !!(e.series_name && e.name !== e.series_name), v = b && x && e.series_name && e.name !== e.series_name ? e.series_name : "", w = this.config.show_genres !== !1 && e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], k = w.length > 0, y = this.config.show_card_backdrop !== void 0 ? !!this.config.show_card_backdrop : this.config.featured_queue_backdrop !== !1, T = y ? R(
       e.backdrop_url || (this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url),
       600
-    ) : "", $ = this.config.show_watched_status !== !1, j = $ && e.is_played, D = $ && e.type === "Series" && (e.unplayed_count || 0) > 0, W = (a || (t || j || D)) && !s, R = this.layout === "featured-queue" && (this.isCramped !== void 0 ? this.isCramped : !!this.classList?.contains("cramped") || (this.config.columns || 1) >= 3);
+    ) : "", $ = this.config.show_watched_status !== !1, j = $ && e.is_played, D = $ && e.type === "Series" && (e.unplayed_count || 0) > 0, q = (a || (t || j || D)) && !s, L = this.layout === "featured-queue" && (this.isCramped !== void 0 ? this.isCramped : !!this.classList?.contains("cramped") || (this.config.columns || 1) >= 3);
     return l`
       <div
-        class="media-item list-item ${this.layout === "featured-queue" ? "featured-queue-item" : ""} ${y ? "has-backdrop" : ""} ${s ? "playing" : ""} ${this.config.show_title === !1 ? "no-title" : ""} ${v ? "has-subtitle" : ""} ${R ? "cramped" : ""}"
+        class="media-item list-item ${this.layout === "featured-queue" ? "featured-queue-item" : ""} ${y ? "has-backdrop" : ""} ${s ? "playing" : ""} ${this.config.show_title === !1 ? "no-title" : ""} ${v ? "has-subtitle" : ""} ${L ? "cramped" : ""}"
         tabindex="0"
         role="button"
         aria-label="${e.name}"
@@ -8647,7 +8647,7 @@ let L = class extends X {
             <div class="poster-inner">
               <img
                 class="poster"
-                src="${U(
+                src="${R(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       240
     )}"
@@ -8678,8 +8678,8 @@ let L = class extends X {
               ${this.config.show_title !== !1 ? l`<h3 class="list-title" title="${e.name}">${e.name}</h3>` : h}
               ${v ? l`<p class="list-subtitle" title="${v}">${v}</p>` : h}
             </div>
-            ${W ? l`
-              <div class="list-badges ${R ? "cramped-badges" : ""}">
+            ${q ? l`
+              <div class="list-badges ${L ? "cramped-badges" : ""}">
                 ${a ? l`<span class="media-type-badge list-type-badge ${m}">${g}</span>` : h}
                 ${t ? l`<span class="new-badge inline-badge">${d(this.hass?.locale?.language || this.hass?.language, "new")}</span>` : h}
                 ${$ && e.is_played ? l`<div class="status-badge watched inline-badge"><ha-icon icon="mdi:check-bold"></ha-icon></div>` : h}
@@ -8705,12 +8705,12 @@ let L = class extends X {
                       <ha-icon icon="mdi:star"></ha-icon>
                       <span>${r}</span>
                     </span>` : h}
-                ${w.map((J) => l`<span class="genre-pill idle-genre-pill list-genre-pill" title="${J}"><span>${J}</span></span>`)}
+                ${w.map((V) => l`<span class="genre-pill idle-genre-pill list-genre-pill" title="${V}"><span>${V}</span></span>`)}
               </div>
             ` : h}
           </div>
           
-          ${this.config.show_description_on_hover !== !1 && (e.description || e.overview) && !R ? l`<p class="list-description" title="${e.description || e.overview}">${e.description || e.overview}</p>` : h}
+          ${this.config.show_description_on_hover !== !1 && (e.description || e.overview) && !L ? l`<p class="list-description" title="${e.description || e.overview}">${e.description || e.overview}</p>` : h}
 
         </div>
       </div>
@@ -8738,7 +8738,7 @@ let L = class extends X {
           <div class="poster-inner">
             <img
               class="poster"
-              src="${U(
+              src="${R(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       300
     )}"
@@ -9115,7 +9115,7 @@ let L = class extends X {
           <div class="poster-inner">
             <img
               class="poster"
-              src="${U(
+              src="${R(
       this.config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url,
       600
     )}"
@@ -9161,55 +9161,37 @@ let L = class extends X {
     return this._renderListItem();
   }
 };
-L.styles = qt;
-N([
-  V({ attribute: !1 })
-], L.prototype, "hass", 2);
-N([
-  V({ attribute: !1 })
-], L.prototype, "config", 2);
-N([
-  V({ attribute: !1 })
-], L.prototype, "item", 2);
-N([
-  V({ type: String })
-], L.prototype, "layout", 2);
-N([
-  V({ type: Boolean })
-], L.prototype, "isNextUpHighlight", 2);
-N([
-  V({ type: Boolean })
-], L.prototype, "isCramped", 2);
-N([
+W.styles = qt;
+Z([
+  F({ attribute: !1 })
+], W.prototype, "hass", 2);
+Z([
+  F({ attribute: !1 })
+], W.prototype, "config", 2);
+Z([
+  F({ attribute: !1 })
+], W.prototype, "item", 2);
+Z([
+  F({ type: String })
+], W.prototype, "layout", 2);
+Z([
+  F({ type: Boolean })
+], W.prototype, "isNextUpHighlight", 2);
+Z([
+  F({ type: Boolean })
+], W.prototype, "isCramped", 2);
+Z([
   f()
-], L.prototype, "_pressStartTime", 2);
-N([
+], W.prototype, "_rewindActive", 2);
+Z([
   f()
-], L.prototype, "_holdTimer", 2);
-N([
+], W.prototype, "_longPressProgress", 2);
+Z([
   f()
-], L.prototype, "_isHoldActive", 2);
-N([
-  f()
-], L.prototype, "_itemTouchStartX", 2);
-N([
-  f()
-], L.prototype, "_itemTouchStartY", 2);
-N([
-  f()
-], L.prototype, "_clickTimer", 2);
-N([
-  f()
-], L.prototype, "_rewindActive", 2);
-N([
-  f()
-], L.prototype, "_longPressProgress", 2);
-N([
-  f()
-], L.prototype, "_stopPulse", 2);
-L = N([
+], W.prototype, "_stopPulse", 2);
+W = Z([
   pe("jellyha-media-item")
-], L);
+], W);
 var Ri = Object.defineProperty, Oi = Object.getOwnPropertyDescriptor, z = (e, t, i, a) => {
   for (var s = a > 1 ? void 0 : a ? Oi(t, i) : t, o = e.length - 1, r; o >= 0; o--)
     (r = e[o]) && (s = (a ? r(t, i, s) : r(s)) || s);
@@ -9275,7 +9257,7 @@ function ve(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let P = class extends X {
+let P = class extends G {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.LIST_ITEM_MIN_WIDTH = 300, this.FEATURED_QUEUE_ITEM_MIN_WIDTH = 200, this._effectiveListColumns = 1, this._isFeaturedCramped = !1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -10347,7 +10329,7 @@ let P = class extends X {
 };
 P.styles = qt;
 z([
-  V({ attribute: !1 })
+  F({ attribute: !1 })
 ], P.prototype, "hass", 2);
 z([
   f()
@@ -10419,7 +10401,7 @@ function Fi(e, t, i) {
   });
   e.dispatchEvent(a);
 }
-let Re = class extends X {
+let Re = class extends G {
   setConfig(e) {
     this._config = e;
   }
@@ -11031,7 +11013,7 @@ Re.styles = Ce`
     }
   `;
 bt([
-  V({ attribute: !1 })
+  F({ attribute: !1 })
 ], Re.prototype, "hass", 2);
 bt([
   f()
@@ -11050,7 +11032,7 @@ typeof window < "u" && (window.customCards = window.customCards || [], window.cu
   description: "Display currently playing media from Jellyfin",
   preview: !0
 }));
-let I = class extends X {
+let I = class extends G {
   constructor() {
     super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._powerActivating = !1, this._isVolumeDragging = !1, this._dragVolumePercent = null, this._optimisticVolume = {}, this._idleItems = [], this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._lastHapticVolumeTick = 0, this._fetchingIdleItems = !1, this._longPressRaf = null, this._longPressConsumed = !1, this._layoutCheckRaf = null, this._optimisticFavorites = {}, this._resolvedImages = {}, this._fetchingImageKey = null, this._resolvedMetadata = {}, this._fetchingMetadataId = null, this._phrases = [];
   }
@@ -11152,12 +11134,12 @@ let I = class extends X {
     if (y !== this._cachedItemId) {
       this._cachedItemId = y;
       const Ve = i.backdrop_url || r?.backdrop_url || v;
-      this._cachedBackdropUrl = Ve ? U(Ve, 640) : void 0;
+      this._cachedBackdropUrl = Ve ? R(Ve, 640) : void 0;
     }
-    y !== this._cachedColorItemId && w && (this._cachedColorItemId = y, this._extractDominantColor(U(w, 80)));
-    const T = this._cachedBackdropUrl, $ = this._config.show_background !== !1 && T, j = a ? t.state === "paused" : i.is_paused, S = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), W = S === "audio" || S === "music";
-    let R = i.title || t.attributes.media_title || r?.name || "";
-    const J = this._config.show_subtitle !== !1, O = i.series_title || t.attributes.media_series_title || r?.series_name || "", B = J && (i.artist_name || t.attributes.media_artist || O || r?.artist_name) || "", K = i.year ?? r?.year, A = this._config.show_year !== !1 && K ? String(K) : "", re = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, F = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, H = Number(re), Z = Number(F), G = re != null && F != null && !isNaN(H) && !isNaN(Z) && H >= 0 && Z >= 0, ie = (S === "episode" || S === "tvshow") && G ? `S${String(H).padStart(2, "0")}E${String(Z).padStart(2, "0")}` : S === "movie" ? "MOVIE" : S === "episode" ? "EPISODE" : S === "tvshow" ? "SERIES" : i.media_type || r?.type || "", he = this._config.badge_style || this._config.media_type_badge_style || "poster", Pe = this._config.show_media_type_badge !== !1 && !!ie, Q = he === "inline", Ue = Pe && Q && !!ie;
+    y !== this._cachedColorItemId && w && (this._cachedColorItemId = y, this._extractDominantColor(R(w, 80)));
+    const T = this._cachedBackdropUrl, $ = this._config.show_background !== !1 && T, j = a ? t.state === "paused" : i.is_paused, S = (i.media_type || (r?.type ? r.type : null) || t.attributes.media_content_type || "").toLowerCase(), q = S === "audio" || S === "music";
+    let L = i.title || t.attributes.media_title || r?.name || "";
+    const V = this._config.show_subtitle !== !1, N = i.series_title || t.attributes.media_series_title || r?.series_name || "", O = V && (i.artist_name || t.attributes.media_artist || N || r?.artist_name) || "", X = i.year ?? r?.year, A = this._config.show_year !== !1 && X ? String(X) : "", re = i.season !== void 0 && i.season !== null ? i.season : t.attributes.media_season !== void 0 && t.attributes.media_season !== null ? t.attributes.media_season : r?.season, B = i.episode !== void 0 && i.episode !== null ? i.episode : t.attributes.media_episode !== void 0 && t.attributes.media_episode !== null ? t.attributes.media_episode : r?.episode, U = Number(re), K = Number(B), Y = re != null && B != null && !isNaN(U) && !isNaN(K) && U >= 0 && K >= 0, ie = (S === "episode" || S === "tvshow") && Y ? `S${String(U).padStart(2, "0")}E${String(K).padStart(2, "0")}` : S === "movie" ? "MOVIE" : S === "episode" ? "EPISODE" : S === "tvshow" ? "SERIES" : i.media_type || r?.type || "", he = this._config.badge_style || this._config.media_type_badge_style || "poster", Pe = this._config.show_media_type_badge !== !1 && !!ie, Q = he === "inline", Ue = Pe && Q && !!ie;
     let ue = !1, Be = !1;
     Pe && he !== "none" && (he === "poster" ? ue = !0 : he === "header" && (Be = !0));
     const He = i.runtime_minutes || (n > 0 ? Math.round(n / 60) : r?.runtime_minutes || 0), Fe = S === "audio" && n > 0 ? `${Math.floor(n / 60)}m ${Math.floor(n % 60)}s` : He > 0 ? de(He) : "", _e = this._config.show_runtime !== !1 && Fe ? Fe : "", je = i.community_rating ?? r?.community_rating ?? r?.rating, Ie = Number(je), it = !isNaN(Ie) && Ie > 0 ? Ie.toFixed(1) : je ? String(je) : "", ge = this._config.show_ratings !== !1 && it ? it : "", Ee = i.genres && i.genres.length > 0 ? i.genres : r?.genres || [], me = this._config.show_genres !== !1 && Ee?.length ? Ee.slice(0, 3) : [];
@@ -11178,7 +11160,7 @@ let I = class extends X {
                     <div class="main-container">
                         ${w ? l`
                             <div class="poster-container ${ae ? "" : "no-rewind"}" @click=${ae ? this._handlePosterRewind : void 0}>
-                                <img src="${U(w, 160)}" alt="${R}" loading="eager" fetchpriority="high" />
+                                <img src="${R(w, 160)}" alt="${L}" loading="eager" fetchpriority="high" />
                                 
                                 ${ue ? l`
                                     <span class="poster-badge media-type-badge ${S}">${ie}</span>
@@ -11205,7 +11187,7 @@ let I = class extends X {
                         
                         <div class="info-container">
                             <div class="title-row">
-                                ${this._config.show_title !== !1 ? l`<div class="title">${R}</div>` : h}
+                                ${this._config.show_title !== !1 ? l`<div class="title">${L}</div>` : h}
                                 <div class="header-actions">
                                     ${Be ? l`
                                         <span class="media-type-badge header-badge ${S}">${ie}</span>
@@ -11215,7 +11197,7 @@ let I = class extends X {
                             </div>
 
                             <div class="info-top info-middle">
-                                ${this._overflowState < 4 && B ? l`<div class="subtitle">${B}</div>` : h}
+                                ${this._overflowState < 4 && O ? l`<div class="subtitle">${O}</div>` : h}
                                 ${this._overflowState < 3 ? this._renderMetaRow({
       badge: Ue ? l`<span class="media-type-badge inline-badge ${S}">${ie}</span>` : h,
       year: A,
@@ -11230,7 +11212,7 @@ let I = class extends X {
                             <div class="info-bottom">
                                 ${ae && this._config.show_controls !== !1 ? l`
                                     <div class="playback-controls">
-                                        ${W ? l`
+                                        ${q ? l`
                                             <ha-icon-button class="music-subtle-btn ${ot ? "active" : ""}" .label=${"Favorite"} @click=${() => this._handleFavoriteToggle(i.item_id, ot)}>
                                                 <ha-icon icon="${ot ? "mdi:heart" : "mdi:heart-outline"}"></ha-icon>
                                             </ha-icon-button>
@@ -11259,7 +11241,7 @@ let I = class extends X {
         this._longPressConsumed = !1;
         return;
       }
-      this._handleControl(W ? "PlayPause" : "Unpause");
+      this._handleControl(q ? "PlayPause" : "Unpause");
     }}>
                                                     <ha-icon icon="mdi:play"></ha-icon>
                                                 </ha-icon-button>
@@ -11286,7 +11268,7 @@ let I = class extends X {
                                             ` : h}
                                         </div>
 
-                                        ${W ? l`
+                                        ${q ? l`
                                             <ha-icon-button .label=${d(this.hass.locale?.language || this.hass.language, "next") || "Next"} @click=${() => this._handleControl("NextTrack")}>
                                                 <ha-icon icon="mdi:skip-next"></ha-icon>
                                             </ha-icon-button>
@@ -11414,12 +11396,12 @@ let I = class extends X {
     };
   }
   _renderIdleBackdropMode(e, t, i) {
-    const a = U(e.backdrop_url || e.poster_url, 960), s = t ? U(t.backdrop_url || t.poster_url, 960) : "", o = e.community_rating ?? e.rating, r = typeof o == "number" && !isNaN(o) && o > 0 ? o.toFixed(1) : o ? String(o) : "", n = e.runtime_minutes ? de(e.runtime_minutes) : "", c = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], p = this._config.show_genres !== !1 ? c : [], u = this._config.show_media_type_badge !== !1 && this._config.badge_style !== "none", _ = this._config.badge_style || this._config.media_type_badge_style || "poster", g = u && _ === "inline", m = u && !g, b = e.type === "Movie", x = e.type === "Episode";
+    const a = R(e.backdrop_url || e.poster_url, 960), s = t ? R(t.backdrop_url || t.poster_url, 960) : "", o = e.community_rating ?? e.rating, r = typeof o == "number" && !isNaN(o) && o > 0 ? o.toFixed(1) : o ? String(o) : "", n = e.runtime_minutes ? de(e.runtime_minutes) : "", c = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], p = this._config.show_genres !== !1 ? c : [], u = this._config.show_media_type_badge !== !1 && this._config.badge_style !== "none", _ = this._config.badge_style || this._config.media_type_badge_style || "poster", g = u && _ === "inline", m = u && !g, b = e.type === "Movie", x = e.type === "Episode";
     e.type;
     const v = e.season, w = e.episode, k = Number(v), y = Number(w), T = v != null && w != null && !isNaN(k) && !isNaN(y) && k >= 0 && y >= 0, j = x && T ? `S${String(k).padStart(2, "0")}E${String(y).padStart(2, "0")}` : "";
     let D = "", S = "";
     x ? (D = e.name || e.series_name || "", S = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (D = e.name || "", S = this._config.show_subtitle !== !1 && e.tagline || "");
-    const W = this._idleItems.findIndex((A) => b ? A.type === "Movie" : x ? A.type === "Episode" : A.type === "Series" || A.type !== "Movie" && A.type !== "Episode") === this._currentIdleIndex, R = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && W, J = x && !!j, O = R && J ? j : null, B = b ? "movie" : x ? "episode" : "series", K = R ? b ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : x ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : b ? d(i, "movie") || "Movie" : J ? j : d(i, "episode") || "Episode";
+    const q = this._idleItems.findIndex((A) => b ? A.type === "Movie" : x ? A.type === "Episode" : A.type === "Series" || A.type !== "Movie" && A.type !== "Episode") === this._currentIdleIndex, L = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && q, V = x && !!j, N = L && V ? j : null, O = b ? "movie" : x ? "episode" : "series", X = L ? b ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : x ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : b ? d(i, "movie") || "Movie" : V ? j : d(i, "episode") || "Episode";
     return l`
             <ha-card class="jellyha-now-playing has-background idle-showcase-card">
                 <div class="idle-backdrop-container">
@@ -11432,9 +11414,9 @@ let I = class extends X {
 
                 <div class="idle-backdrop-top-actions">
                     ${m ? l`
-                        <span class="media-type-badge idle-backdrop-top-badge ${R ? "latest-badge" : ""} ${B}">${K}</span>
-                        ${O ? l`
-                            <span class="media-type-badge idle-backdrop-top-badge ${B}">${O}</span>
+                        <span class="media-type-badge idle-backdrop-top-badge ${L ? "latest-badge" : ""} ${O}">${X}</span>
+                        ${N ? l`
+                            <span class="media-type-badge idle-backdrop-top-badge ${O}">${N}</span>
                         ` : h}
                     ` : h}
                     ${this._renderPowerButton()}
@@ -11453,9 +11435,9 @@ let I = class extends X {
                     ` : h}
                     ${this._renderMetaRow({
       badge: g ? l`
-                            <span class="media-type-badge inline-badge ${R ? "latest-badge" : ""} ${B}">${K}</span>
-                            ${O ? l`
-                                <span class="media-type-badge inline-badge ${B}">${O}</span>
+                            <span class="media-type-badge inline-badge ${L ? "latest-badge" : ""} ${O}">${X}</span>
+                            ${N ? l`
+                                <span class="media-type-badge inline-badge ${O}">${N}</span>
                             ` : h}
                         ` : h,
       year: this._config.show_year !== !1 && e.year ? e.year : void 0,
@@ -11472,12 +11454,12 @@ let I = class extends X {
         `;
   }
   _renderIdleCardMode(e, t, i) {
-    const a = U(e.backdrop_url || e.poster_url, 960), s = t ? U(t.backdrop_url || t.poster_url, 960) : "", o = this._config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url || e.backdrop_url, r = U(o, 320), n = t && this._config.use_series_image && t.series_poster_url ? t.series_poster_url : t?.poster_url || t?.backdrop_url, c = n ? U(n, 320) : "", p = e.community_rating ?? e.rating, u = typeof p == "number" && !isNaN(p) && p > 0 ? p.toFixed(1) : p ? String(p) : "", _ = e.runtime_minutes ? de(e.runtime_minutes) : "", g = this._config.show_runtime !== !1 && _ ? _ : "", m = this._config.show_ratings !== !1 && u ? u : "", b = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], x = this._config.show_genres !== !1 ? b : [], v = this._config.badge_style || this._config.media_type_badge_style || "poster", w = this._config.show_media_type_badge !== !1 && v !== "none", k = w && v === "inline", y = e.type === "Movie", T = e.type === "Episode";
+    const a = R(e.backdrop_url || e.poster_url, 960), s = t ? R(t.backdrop_url || t.poster_url, 960) : "", o = this._config.use_series_image && e.series_poster_url ? e.series_poster_url : e.poster_url || e.backdrop_url, r = R(o, 320), n = t && this._config.use_series_image && t.series_poster_url ? t.series_poster_url : t?.poster_url || t?.backdrop_url, c = n ? R(n, 320) : "", p = e.community_rating ?? e.rating, u = typeof p == "number" && !isNaN(p) && p > 0 ? p.toFixed(1) : p ? String(p) : "", _ = e.runtime_minutes ? de(e.runtime_minutes) : "", g = this._config.show_runtime !== !1 && _ ? _ : "", m = this._config.show_ratings !== !1 && u ? u : "", b = e.genres && e.genres.length > 0 ? e.genres.slice(0, 3) : [], x = this._config.show_genres !== !1 ? b : [], v = this._config.badge_style || this._config.media_type_badge_style || "poster", w = this._config.show_media_type_badge !== !1 && v !== "none", k = w && v === "inline", y = e.type === "Movie", T = e.type === "Episode";
     e.type;
-    const $ = e.season, j = e.episode, D = Number($), S = Number(j), W = $ != null && j != null && !isNaN(D) && !isNaN(S) && D >= 0 && S >= 0, J = T && W ? `S${String(D).padStart(2, "0")}E${String(S).padStart(2, "0")}` : "";
-    let O = "", B = "";
-    T ? (O = e.name || e.series_name || "", B = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (O = e.name || "", B = this._config.show_subtitle !== !1 && e.tagline || "");
-    const K = this._idleItems.findIndex((G) => y ? G.type === "Movie" : T ? G.type === "Episode" : G.type === "Series" || G.type !== "Movie" && G.type !== "Episode") === this._currentIdleIndex, A = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && K, re = T && !!J, F = A && re ? J : null, H = y ? "movie" : T ? "episode" : "series", Z = A ? y ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : T ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : y ? d(i, "movie") || "Movie" : re ? J : d(i, "episode") || "Episode";
+    const $ = e.season, j = e.episode, D = Number($), S = Number(j), q = $ != null && j != null && !isNaN(D) && !isNaN(S) && D >= 0 && S >= 0, V = T && q ? `S${String(D).padStart(2, "0")}E${String(S).padStart(2, "0")}` : "";
+    let N = "", O = "";
+    T ? (N = e.name || e.series_name || "", O = this._config.show_subtitle !== !1 && (e.series_name || e.tagline) || "") : (N = e.name || "", O = this._config.show_subtitle !== !1 && e.tagline || "");
+    const X = this._idleItems.findIndex((Y) => y ? Y.type === "Movie" : T ? Y.type === "Episode" : Y.type === "Series" || Y.type !== "Movie" && Y.type !== "Episode") === this._currentIdleIndex, A = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" || this._config.idle_content_source === "recent" && X, re = T && !!V, B = A && re ? V : null, U = y ? "movie" : T ? "episode" : "series", K = A ? y ? d(i, "card.latest_movie_badge") || "LATEST MOVIE" : T ? d(i, "card.latest_episode_badge") || "LATEST EPISODE" : d(i, "card.latest_series_badge") || "LATEST SERIES" : y ? d(i, "movie") || "Movie" : re ? V : d(i, "episode") || "Episode";
     return l`
             <ha-card class="jellyha-now-playing has-background idle-card-mode">
                 <div class="idle-card-bg-container">
@@ -11499,9 +11481,9 @@ let I = class extends X {
                             ` : h}
                             ${w && v === "poster" ? l`
                                 <div class="poster-badge-group">
-                                    <span class="poster-badge media-type-badge ${A ? "latest-badge" : ""} ${H}">${Z}</span>
-                                    ${F ? l`
-                                        <span class="poster-badge media-type-badge ${H}">${F}</span>
+                                    <span class="poster-badge media-type-badge ${A ? "latest-badge" : ""} ${U}">${K}</span>
+                                    ${B ? l`
+                                        <span class="poster-badge media-type-badge ${U}">${B}</span>
                                     ` : h}
                                 </div>
                             ` : h}
@@ -11522,28 +11504,28 @@ let I = class extends X {
                             <div class="info-top">
                                 <div class="title-row">
                                     ${this._config.show_title !== !1 ? l`
-                                        <span class="title" title="${e.series_name ? `${e.series_name} - ${e.name}` : O}">${O}</span>
+                                        <span class="title" title="${e.series_name ? `${e.series_name} - ${e.name}` : N}">${N}</span>
                                     ` : h}
                                     <div class="header-actions">
                                         ${w && v === "header" ? l`
-                                            <span class="media-type-badge header-badge ${A ? "latest-badge" : ""} ${H}">${Z}</span>
-                                            ${F ? l`
-                                                <span class="media-type-badge header-badge ${H}">${F}</span>
+                                            <span class="media-type-badge header-badge ${A ? "latest-badge" : ""} ${U}">${K}</span>
+                                            ${B ? l`
+                                                <span class="media-type-badge header-badge ${U}">${B}</span>
                                             ` : h}
                                         ` : h}
                                         ${this._renderPowerButton()}
                                     </div>
                                 </div>
-                                ${B ? l`
+                                ${O ? l`
                                     <div class="subtitle-row">
-                                        <span class="subtitle">${B}</span>
+                                        <span class="subtitle">${O}</span>
                                     </div>
                                 ` : h}
                                 ${this._renderMetaRow({
       badge: w && k ? l`
-                                        <span class="media-type-badge inline-badge ${A ? "latest-badge" : ""} ${H}">${Z}</span>
-                                        ${F ? l`
-                                            <span class="media-type-badge inline-badge ${H}">${F}</span>
+                                        <span class="media-type-badge inline-badge ${A ? "latest-badge" : ""} ${U}">${K}</span>
+                                        ${B ? l`
+                                            <span class="media-type-badge inline-badge ${U}">${B}</span>
                                         ` : h}
                                     ` : h,
       year: this._config.show_year !== !1 && e.year ? e.year : void 0,
@@ -11608,12 +11590,12 @@ let I = class extends X {
     if (t) {
       if (this._config?.idle_display_mode === "card" && t.poster_url) {
         const s = new Image();
-        s.src = U(t.poster_url, 320);
+        s.src = R(t.poster_url, 320);
       }
       const a = t.backdrop_url || t.poster_url;
       if (a) {
         const s = new Image();
-        s.src = U(a, 960);
+        s.src = R(a, 960);
       }
     }
     setTimeout(() => {
@@ -12258,7 +12240,7 @@ let I = class extends X {
     t.classList.toggle("compact-width", c);
     const p = this.shadowRoot?.querySelector(".title-row") || this.shadowRoot?.querySelector(".title"), u = this.shadowRoot?.querySelector(".info-bottom"), _ = this.shadowRoot?.querySelector(".info-container");
     if (!u) return;
-    const g = u.getBoundingClientRect(), m = p ? p.getBoundingClientRect() : null, b = m ? m.bottom : _ ? _.getBoundingClientRect().top + 32 : e.top + 32, x = g.top - b, v = g.bottom - (e.bottom - 6), w = v > 0 ? Math.min(x - v, 0) : x, k = this._config?.entity ? this.hass?.states[this._config.entity] : null, y = k?.attributes, T = k ? this._extractItemId(k) : null, $ = T ? this._resolvedMetadata[T] : null, j = this._config?.show_subtitle !== !1, D = y?.series_title || y?.media_series_title || $?.series_name || "", W = !!(j && (y?.artist_name || y?.media_artist || D || $?.artist_name) || ""), R = this._config?.badge_style || this._config?.media_type_badge_style || "poster", O = this._config?.show_media_type_badge !== !1 && R !== "none" && R === "inline", B = this._config?.show_year !== !1 ? y?.release_year || y?.year || $?.year : "", K = y?.runtime_minutes || $?.runtime_minutes || 0, A = K > 0 ? de(K) : "", re = this._config?.show_runtime !== !1 && O && A ? A : "", F = y?.community_rating ?? $?.community_rating ?? $?.rating, H = Number(F), Z = !isNaN(H) && H > 0 ? H.toFixed(1) : F ? String(F) : "", G = this._config?.show_ratings !== !1 && O && Z ? Z : "", tt = y?.genres && y.genres.length > 0 ? y.genres : $?.genres || [], ie = this._config?.show_genres !== !1 && tt?.length ? tt.slice(0, 3) : [], he = ie.length > 0, Pe = O || !!B || !!re || !!G, Q = W ? 22 : 0, Ue = Pe ? 29 : 0;
+    const g = u.getBoundingClientRect(), m = p ? p.getBoundingClientRect() : null, b = m ? m.bottom : _ ? _.getBoundingClientRect().top + 32 : e.top + 32, x = g.top - b, v = g.bottom - (e.bottom - 6), w = v > 0 ? Math.min(x - v, 0) : x, k = this._config?.entity ? this.hass?.states[this._config.entity] : null, y = k?.attributes, T = k ? this._extractItemId(k) : null, $ = T ? this._resolvedMetadata[T] : null, j = this._config?.show_subtitle !== !1, D = y?.series_title || y?.media_series_title || $?.series_name || "", q = !!(j && (y?.artist_name || y?.media_artist || D || $?.artist_name) || ""), L = this._config?.badge_style || this._config?.media_type_badge_style || "poster", N = this._config?.show_media_type_badge !== !1 && L !== "none" && L === "inline", O = this._config?.show_year !== !1 ? y?.release_year || y?.year || $?.year : "", X = y?.runtime_minutes || $?.runtime_minutes || 0, A = X > 0 ? de(X) : "", re = this._config?.show_runtime !== !1 && N && A ? A : "", B = y?.community_rating ?? $?.community_rating ?? $?.rating, U = Number(B), K = !isNaN(U) && U > 0 ? U.toFixed(1) : B ? String(B) : "", Y = this._config?.show_ratings !== !1 && N && K ? K : "", tt = y?.genres && y.genres.length > 0 ? y.genres : $?.genres || [], ie = this._config?.show_genres !== !1 && tt?.length ? tt.slice(0, 3) : [], he = ie.length > 0, Pe = N || !!O || !!re || !!Y, Q = q ? 22 : 0, Ue = Pe ? 29 : 0;
     let ue = 0;
     he && (Pe ? ue = 27 : ue = ie.length > 2 ? 56 : 29);
     const Be = y?.user_name || this.hass?.user?.name || "", He = this._config?.show_user !== !1 ? Be : "", Fe = y?.client || k?.attributes?.app_name || k?.attributes?.friendly_name || "", _e = this._config?.show_client !== !1 ? Fe : "", je = this._config?.show_device_name === !0 && y?.device_name || "", Ie = [...new Set([je, _e].filter(Boolean))].join(" · "), ge = !!(He || Ie) ? 22 : 0, Ee = Q, me = Ee + Ue, qe = me + ue, fe = qe + ge, be = w - 4, ye = this._overflowState;
@@ -14291,7 +14273,7 @@ I.styles = Ce`
 
     `;
 M([
-  V({ attribute: !1 })
+  F({ attribute: !1 })
 ], I.prototype, "hass", 2);
 M([
   f()

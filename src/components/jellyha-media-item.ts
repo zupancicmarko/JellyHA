@@ -15,12 +15,12 @@ export class JellyHAMediaItem extends LitElement {
   @property({ type: Boolean }) isNextUpHighlight = false;
   @property({ type: Boolean }) isCramped?: boolean;
 
-  @state() private _pressStartTime: number = 0;
-  @state() private _holdTimer?: number;
-  @state() private _isHoldActive: boolean = false;
-  @state() private _itemTouchStartX: number = 0;
-  @state() private _itemTouchStartY: number = 0;
-  @state() private _clickTimer?: number;
+  private _pressStartTime: number = 0;
+  private _holdTimer?: ReturnType<typeof setTimeout> | number;
+  private _isHoldActive: boolean = false;
+  private _itemTouchStartX: number = 0;
+  private _itemTouchStartY: number = 0;
+  private _clickTimer?: ReturnType<typeof setTimeout> | number;
 
   // Local state for rewind animation and hold-to-stop
   @state() private _rewindActive: boolean = false;
@@ -51,6 +51,11 @@ export class JellyHAMediaItem extends LitElement {
     if (this._longPressRaf) {
       cancelAnimationFrame(this._longPressRaf);
       this._longPressRaf = null;
+    }
+    this._clearHoldTimer();
+    if (this._clickTimer) {
+      clearTimeout(this._clickTimer);
+      this._clickTimer = undefined;
     }
   }
 

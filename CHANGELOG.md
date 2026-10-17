@@ -54,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Chromecast Ultra Playback H.264 Profile & Scaling (Issue #63)**:
   - Capped H.264 level parameter to `42` (`h264-level=42`) for modern Chromecast devices. Google Cast specifications cap Chromecast Ultra H.264 hardware decoding at Level 4.2 (`1080p@60fps`), resolving playback stalls where streams marked with Level 5.1 were rejected by Google Cast's Default Media Receiver.
   - Replaced hardcoded `Width=1920&Height=1080` with `MaxWidth=1920&MaxHeight=1080` in the transcode stream query, preventing unnecessary server-side upscaling of SD/DVD media (480p/576p) while still downscaling 4K content to 1080p.
+- **TypeScript Strict Types & Timer Lifecycle Hardening**:
+  - Resolved timer type mismatch between browser DOM (`number`) and Node (`Timeout`) definitions, expanded `MediaStreamInfo` technical specifications, corrected browser player imports, and removed unnecessary Lit state decorators to prevent redundant re-renders on touch/click while ensuring complete timer disposal on disconnect.
 
 ### Security
 - **Administrator-Only Item Deletion**:
