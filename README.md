@@ -2,6 +2,7 @@
 
 [![HACS][hacs-badge]][hacs-url]
 [![GitHub Release][release-badge]][release-url]
+[![Buy Me A Coffee][coffee-badge]][coffee-url]
 
 Jellyfin for Home Assistant
 
@@ -231,6 +232,10 @@ For solutions to common issues, browser cache clearing, Android TV & Wholphin pl
 - [Report an issue](https://github.com/zupancicmarko/jellyha/issues)
 - [Home Assistant Community](https://community.home-assistant.io/t/jellyha-jellyfin-custom-integration-for-home-assistant/981271/30)
 
+If you enjoy JellyHA and would like to support its development:
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/zupancicmarko)
+
 ## Acknowledgments
 
 This project was developed with the assistance of AI.
@@ -250,3 +255,5 @@ This integration is provided as a neutral interface for your private media libra
 [release-url]: https://github.com/zupancicmarko/jellyha/releases
 [my-ha-badge]: https://my.home-assistant.io/badges/config_flow_start.svg
 [my-ha-url]: https://my.home-assistant.io/redirect/config_flow_start?domain=jellyha
+[coffee-badge]: https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donate-yellow.svg?logo=buy-me-a-coffee
+[coffee-url]: https://www.buymeacoffee.com/zupancicmarko
