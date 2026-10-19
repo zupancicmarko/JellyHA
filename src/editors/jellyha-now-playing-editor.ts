@@ -62,27 +62,46 @@ export class JellyHANowPlayingEditor extends LitElement {
       return html``;
     }
 
-    // Available JellyHA entities: media_player (preferred) and legacy now playing sensors
-    const mediaPlayers = Object.keys(this.hass.states).filter(
+    const sortByName = (a: string, b: string) => {
+      const nameA = String(this.hass.states[a]?.attributes?.friendly_name || a);
+      const nameB = String(this.hass.states[b]?.attributes?.friendly_name || b);
+      return nameA.localeCompare(nameB);
+    };
+
+    // Available JellyHA entities: media_player (preferred), other media players, and legacy now playing sensors
+    const jellyhaMediaPlayers = Object.keys(this.hass.states).filter(
       (entity) =>
         entity.startsWith('media_player.jellyha_') &&
         !entity.includes('_library_browser') &&
         !entity.endsWith('_browser')
-    );
+    ).sort(sortByName);
+
+    const otherMediaPlayers = Object.keys(this.hass.states).filter(
+      (entity) =>
+        entity.startsWith('media_player.') &&
+        !entity.startsWith('media_player.jellyha_') &&
+        !entity.includes('_library_browser') &&
+        !entity.endsWith('_browser')
+    ).sort(sortByName);
+
     const legacySensors = Object.keys(this.hass.states).filter(
       (entity) =>
         entity.startsWith('sensor.jellyha_') &&
         entity.includes('now_playing')
-    );
+    ).sort(sortByName);
 
     const availableEntities = [
-      ...mediaPlayers.map((e) => ({
+      ...jellyhaMediaPlayers.map((e) => ({
         entity: e,
-        label: `${this.hass.states[e]?.attributes.friendly_name || e} (Media Player)`,
+        label: `${this.hass.states[e]?.attributes?.friendly_name || e} (JellyHA)`,
+      })),
+      ...otherMediaPlayers.map((e) => ({
+        entity: e,
+        label: `${this.hass.states[e]?.attributes?.friendly_name || e} (Media Player)`,
       })),
       ...legacySensors.map((e) => ({
         entity: e,
-        label: `${this.hass.states[e]?.attributes.friendly_name || e} (Legacy Sensor)`,
+        label: `${this.hass.states[e]?.attributes?.friendly_name || e} (Legacy Sensor)`,
       })),
     ];
 

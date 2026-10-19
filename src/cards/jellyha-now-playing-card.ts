@@ -1175,11 +1175,12 @@ export class JellyHANowPlayingCard extends LitElement {
         const contentId = (stateObj.attributes as any).media_content_id || '';
         const entityPic = (stateObj.attributes as any).entity_picture || '';
 
-        // Match /Videos/<id>/... or /Items/<id>/... or /Audio/<id>/...
-        const vidMatch = contentId.match(/(?:Videos|Items|Audio)\/([a-zA-Z0-9_-]+)/i);
+        // Match direct Jellyfin (/Videos/<id>/..., /Items/<id>/..., /Audio/<id>/...) or JellyHA proxy (/api/jellyha/stream/<entry>/<id> or /api/jellyha/hls/<token>/<id>)
+        const vidMatch = contentId.match(/(?:Videos|Items|Audio|stream\/[a-zA-Z0-9_-]+|hls\/[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)/i);
         if (vidMatch && vidMatch[1]) return vidMatch[1];
 
-        const picMatch = entityPic.match(/Items\/([a-zA-Z0-9_-]+)/i);
+        // Match direct /Items/<id>/... or signed proxy /api/jellyha/image/<entry>/<id>/...
+        const picMatch = entityPic.match(/(?:Items|image\/[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)/i);
         if (picMatch && picMatch[1]) return picMatch[1];
 
         return null;
@@ -1249,10 +1250,11 @@ export class JellyHANowPlayingCard extends LitElement {
         // Try to parse Jellyfin URL from media_content_id or entity_picture
         const vidMatch = contentId.match(/^(https?:\/\/[^\/]+)\/(?:Videos|Items)\/([a-zA-Z0-9_-]+)/i);
         const picMatch = entityPic.match(/^(https?:\/\/[^\/]+)\/Items\/([a-zA-Z0-9_-]+)\/Images\/Primary/i);
+        const proxyPicMatch = entityPic.match(/(?:Items|image\/[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)/i);
 
         const serverBase = vidMatch ? vidMatch[1] : (picMatch ? picMatch[1] : '');
         const epId = vidMatch ? vidMatch[2] : (attributes.item_id || null);
-        const picId = picMatch ? picMatch[2] : null;
+        const picId = picMatch ? picMatch[2] : (proxyPicMatch ? proxyPicMatch[1] : null);
 
         // Find API key from contentId or entityPic
         const keyMatch = contentId.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i) ||
@@ -1274,7 +1276,7 @@ export class JellyHANowPlayingCard extends LitElement {
                 // picId differs from episode ID -> entity_picture is the Series poster!
                 seriesImageUrl = entityPic;
             }
-        } else if (picMatch && !episodeImageUrl && !seriesImageUrl) {
+        } else if ((picMatch || proxyPicMatch) && !episodeImageUrl && !seriesImageUrl) {
             // Default entity_picture as fallback for episode
             episodeImageUrl = entityPic;
         }
