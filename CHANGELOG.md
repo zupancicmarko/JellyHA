@@ -5,6 +5,16 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Full Artwork Playback Mode in Now Playing Card**:
+  - Introduces a cinematic full-bleed artwork presentation during active playback (`playing_display_mode: 'full_art'`), complementing the idle screensaver full fanart mode.
+  - Option to source either wide **Fanart Backdrop** (`playing_artwork_source: 'backdrop'`) or portrait **Poster** (`playing_artwork_source: 'poster'`) with intelligent top-center focal framing for posters.
+  - Complete playback controls (play/pause with animated hold-to-stop radial progress ring, seek forward/back, and volume capsule), progress bar with elapsed/remaining timestamps, badges, and metadata pills layered over an elegant dark gradient scrim.
+  - Seamless fallback between fanart backdrop and poster artwork when an item lacks one of the assets.
+  - Full card editor support with localized selectors across English, German, French, Spanish, Italian, Dutch, Slovenian, and Russian.
+
 ## [1.7.0] - 2026-10-17
 
 ### Added

@@ -253,6 +253,8 @@ show_background: true
 |---|---|---|---|
 | `entity` | string | **Required** | The target media player entity (e.g. `media_player.jellyha_user_admin` or `media_player.jellyha_device_living_room_tv`) |
 | `title` | string | `Jellyfin` | Header title text |
+| `playing_display_mode` | string | `'card'` | Active playback layout style: `'card'` (classic side-by-side poster + details) or `'full_art'` (cinematic hero artwork filling the card) |
+| `playing_artwork_source` | string | `'backdrop'` | Sourced image when `playing_display_mode: 'full_art'`: `'backdrop'` (fanart landscape backdrop) or `'poster'` (movie/show portrait poster) |
 | `show_background` | boolean | `true` | Display blurred backdrop fanart as card background |
 | `show_title` | boolean | `true` | Display media title text |
 | `show_subtitle` | boolean | `true` | Display subtitle (artist or series and season/episode info) |
@@ -298,6 +300,21 @@ idle_recent_limit: 10             # Number of recent items to cycle (default: 15
 idle_cycle_interval: 20           # Time in seconds per slide (default: 20s)
 idle_display_mode: card           # 'backdrop' (full fanart) or 'card' (poster + backdrop spotlight)
 idle_media_type: all              # 'all', 'movies', 'tvshows', or 'movies_episodes'
+```
+
+### Full Artwork Playback Mode (Fanart or Poster)
+
+During active playback, you can showcase media with cinematic full-bleed artwork across the entire card by setting `playing_display_mode: full_art`. All playback controls (play/pause with hold-to-stop ring, seeking, and volume), title, badges, metadata pills, and timestamps are layered over a gradient scrim at the bottom.
+
+You can choose whether full-art mode displays the landscape **Fanart Backdrop** (`playing_artwork_source: backdrop`) or the portrait **Poster** (`playing_artwork_source: poster`).
+
+```yaml
+type: custom:jellyha-now-playing-card
+entity: media_player.jellyha_admin
+playing_display_mode: full_art    # 'card' (default) or 'full_art'
+playing_artwork_source: backdrop  # 'backdrop' (fanart) or 'poster'
+show_time: true
+show_volume: true
 ```
 
 
