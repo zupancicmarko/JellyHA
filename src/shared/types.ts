@@ -257,6 +257,8 @@ export interface JellyHANowPlayingCardConfig extends LovelaceCardConfig {
     idle_backdrop_cycle?: boolean;
     idle_cycle_interval?: number;
     idle_display_mode?: 'backdrop' | 'card';
+    playing_display_mode?: 'card' | 'full_art';
+    playing_artwork_source?: 'backdrop' | 'poster';
     idle_media_type?: 'both' | 'movies' | 'series' | 'movies_episodes' | 'episodes';
     idle_content_source?: 'random' | 'movies' | 'series' | 'recent' | 'latest_movie' | 'latest_episode' | 'latest_both';
     idle_recent_limit?: number;

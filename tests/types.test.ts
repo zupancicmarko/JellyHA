@@ -49,4 +49,27 @@ describe('JellyHANowPlayingCardConfig types', () => {
         expect(libConfig.default_client_device).toBe('media_player.jellyha_device_living_room_tv');
         expect(libConfig.modal_play_actions?.[0].type).toBe('client');
     });
+
+    it('defines playing_display_mode and playing_artwork_source in now playing config', () => {
+        const config: JellyHANowPlayingCardConfig = {
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            playing_display_mode: 'full_art',
+            playing_artwork_source: 'poster',
+        };
+        expect(config.playing_display_mode).toBe('full_art');
+        expect(config.playing_artwork_source).toBe('poster');
+    });
+
+    it('translates playing display mode keys across languages', async () => {
+        const { localize } = await import('../src/shared/localize');
+        expect(localize('en', 'editor.playing_display_mode')).toBe('Playback Display Style');
+        expect(localize('en', 'editor.playing_display_mode_card')).toBe('Card Layout (Poster + Details)');
+        expect(localize('en', 'editor.playing_display_mode_full_art')).toBe('Full Artwork (Cinematic Hero)');
+        expect(localize('en', 'editor.playing_artwork_source')).toBe('Playback Artwork Image');
+        expect(localize('en', 'editor.playing_artwork_source_backdrop')).toBe('Fanart Backdrop');
+        expect(localize('en', 'editor.playing_artwork_source_poster')).toBe('Poster');
+
+        expect(localize('de', 'editor.playing_display_mode')).toBe('Wiedergabe-Anzeigestil');
+    });
 });
