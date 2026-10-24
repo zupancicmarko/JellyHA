@@ -295,6 +295,46 @@ export class JellyHANowPlayingEditor extends LitElement {
           <span>${localize(lang, 'editor.show_controls') || 'Show Playback Controls'}</span>
         </div>
 
+        <div class="form-row" style="margin-top: 10px;">
+          <ha-selector
+            .hass=${this.hass}
+            .selector=${{
+              select: {
+                mode: 'dropdown',
+                options: [
+                  { value: 'card', label: localize(lang, 'editor.playing_display_mode_card') || 'Card Layout (Poster + Details)' },
+                  { value: 'full_art', label: localize(lang, 'editor.playing_display_mode_full_art') || 'Full Artwork (Cinematic Hero)' },
+                ],
+              },
+            }}
+            .value=${this._config.playing_display_mode || 'card'}
+            .label="${localize(lang, 'editor.playing_display_mode') || 'Playback Display Style'}"
+            label="${localize(lang, 'editor.playing_display_mode') || 'Playback Display Style'}"
+            @value-changed=${this._playingDisplayModeChanged}
+          ></ha-selector>
+        </div>
+
+        ${(this._config.playing_display_mode === 'full_art') ? html`
+          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
+            <ha-selector
+              .hass=${this.hass}
+              .selector=${{
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'backdrop', label: localize(lang, 'editor.playing_artwork_source_backdrop') || 'Fanart Backdrop' },
+                    { value: 'poster', label: localize(lang, 'editor.playing_artwork_source_poster') || 'Poster' },
+                  ],
+                },
+              }}
+              .value=${this._config.playing_artwork_source || 'backdrop'}
+              .label="${localize(lang, 'editor.playing_artwork_source') || 'Playback Artwork Image'}"
+              label="${localize(lang, 'editor.playing_artwork_source') || 'Playback Artwork Image'}"
+              @value-changed=${this._playingArtworkSourceChanged}
+            ></ha-selector>
+          </div>
+        ` : ''}
+
         <div style="height: 1px; background: var(--divider-color, rgba(127,127,127,0.2)); margin: 16px 0 12px 0;"></div>
         <div style="font-weight: 500; font-size: 0.95rem; margin-bottom: 12px; color: var(--primary-text-color);">
           ${localize(lang, 'editor.power_section_title') || 'TV / Display Power'}
@@ -578,6 +618,20 @@ export class JellyHANowPlayingEditor extends LitElement {
     const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('idle_display_mode', value);
+    }
+  }
+
+  private _playingDisplayModeChanged(e: CustomEvent): void {
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('playing_display_mode', value);
+    }
+  }
+
+  private _playingArtworkSourceChanged(e: CustomEvent): void {
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('playing_artwork_source', value);
     }
   }
 
