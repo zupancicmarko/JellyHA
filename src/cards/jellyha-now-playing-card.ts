@@ -4522,6 +4522,179 @@ export class JellyHANowPlayingCard extends LitElement {
             }
         }
 
+        /* =========================================================================
+           Full Artwork Playback Mode Styles
+           ========================================================================= */
+        .full-art-playing-card {
+            position: relative;
+            min-height: 270px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            border-radius: var(--ha-card-border-radius, 12px);
+            background: #111;
+        }
+
+        .full-art-playing-card .full-art-backdrop-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .full-art-playing-card .full-art-hero-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .full-art-playing-card .full-art-hero-img.poster-source {
+            object-position: center 15%;
+        }
+
+        .full-art-playing-card .full-art-scrim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                180deg,
+                rgba(0, 0, 0, 0.45) 0%,
+                rgba(0, 0, 0, 0) 25%,
+                rgba(0, 0, 0, 0.15) 45%,
+                rgba(0, 0, 0, 0.6) 70%,
+                rgba(0, 0, 0, 0.88) 92%,
+                rgba(0, 0, 0, 0.95) 100%
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .full-art-playing-card .full-art-top-bar {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px 0 16px;
+        }
+
+        .full-art-playing-card .full-art-top-bar .card-header {
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .full-art-playing-card .full-art-top-bar .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .full-art-playing-card .full-art-bottom-overlay {
+            position: relative;
+            z-index: 3;
+            padding: 14px 18px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: auto;
+        }
+
+        .full-art-playing-card .full-art-bottom-overlay .title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .full-art-playing-card .full-art-bottom-overlay .title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .full-art-playing-card .full-art-bottom-overlay .subtitle {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .full-art-playing-card .full-art-overview {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .full-art-playing-card .playback-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 4px 0 2px 0;
+        }
+
+        .full-art-playing-card .progress-container {
+            width: 100%;
+            margin-top: 2px;
+        }
+
+        .full-art-playing-card .timestamps {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+            margin-top: 2px;
+        }
+
+        @container now-playing (max-width: 380px) {
+            .full-art-playing-card .full-art-bottom-overlay {
+                padding: 10px 12px 12px 12px;
+                gap: 4px;
+            }
+            .full-art-playing-card .full-art-bottom-overlay .title {
+                font-size: 1.15rem;
+            }
+            .full-art-playing-card .playback-controls {
+                gap: 6px;
+            }
+        }
+
     `;
 
 }

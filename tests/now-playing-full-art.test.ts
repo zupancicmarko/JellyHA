@@ -106,4 +106,57 @@ describe('Now Playing Card - Full Art Playback Mode', () => {
         expect(str).toContain('full-art-playing-card');
         expect(str).toContain('/api/poster.jpg');
     });
+
+    it('renders full playback controls, progress bar, volume and timestamps in full art mode', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            playing_display_mode: 'full_art',
+            show_controls: true,
+            show_time: true,
+            show_volume: true,
+        } as JellyHANowPlayingCardConfig);
+
+        card.hass = createMockHass('playing', {
+            media_title: 'Dune: Part Two',
+            media_content_type: 'movie',
+            entity_picture: '/api/poster.jpg',
+            backdrop_url: '/api/fanart.jpg',
+            media_duration: 3600,
+            media_position: 1200,
+            supports_remote_control: true,
+        });
+
+        const template = (card as any).render();
+        const str = JSON.stringify(template);
+        expect(str).toContain('full-art-bottom-overlay');
+        expect(str).toContain('playback-controls');
+        expect(str).toContain('play-pause-btn');
+        expect(str).toContain('progress-container');
+        expect(str).toContain('timestamps');
+    });
+
+    it('renders music controls (favorite, repeat) in full art mode', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            playing_display_mode: 'full_art',
+            show_controls: true,
+        } as JellyHANowPlayingCardConfig);
+
+        card.hass = createMockHass('playing', {
+            media_title: 'Starboy',
+            media_content_type: 'music',
+            artist_name: 'The Weeknd',
+            entity_picture: '/api/starboy.jpg',
+            supports_remote_control: true,
+        });
+
+        const template = (card as any).render();
+        const str = JSON.stringify(template);
+        expect(str).toContain('full-art-playing-card');
+        expect(str).toContain('music-subtle-btn');
+    });
 });
