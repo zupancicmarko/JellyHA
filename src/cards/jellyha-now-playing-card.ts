@@ -345,6 +345,41 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const supportsRemote = this._supportsRemote(stateObj);
 
+        if (this._config.playing_display_mode === 'full_art') {
+            return this._renderFullArtPlayingMode({
+                stateObj,
+                rawStateObj,
+                attributes,
+                cachedItem,
+                imageUrl,
+                backdropUrl,
+                displayTitle,
+                subtitle,
+                mediaType,
+                badgeText,
+                showBadge,
+                badgeStyle,
+                showInlineBadge,
+                showHeaderBadge,
+                yearStr,
+                runtimeStr,
+                ratingStr,
+                genres,
+                userName,
+                sourceInfo,
+                isFavorite,
+                supportsRemote,
+                isPaused,
+                isMusic,
+                durationSeconds,
+                displayPositionSeconds,
+                curProgress,
+                handleLeft,
+                ringCircumference,
+                ringOffset,
+            });
+        }
+
         return html`
             <ha-card class="jellyha-now-playing ${showBackground ? 'has-background' : ''} ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
                 ${showBackground ? html`
@@ -494,6 +529,186 @@ export class JellyHANowPlayingCard extends LitElement {
                             </div>
                         </div>
                     </div>
+                </div>
+            </ha-card>
+        `;
+    }
+
+    private _renderFullArtPlayingMode(p: {
+        stateObj: HassEntity;
+        rawStateObj: HassEntity;
+        attributes: NowPlayingSensorData;
+        cachedItem?: any;
+        imageUrl?: string;
+        backdropUrl?: string;
+        displayTitle: string;
+        subtitle: string;
+        mediaType: string;
+        badgeText: string;
+        showBadge: boolean;
+        badgeStyle: string;
+        showInlineBadge: boolean;
+        showHeaderBadge: boolean;
+        yearStr: string;
+        runtimeStr: string;
+        ratingStr: string;
+        genres: string[];
+        userName: string;
+        sourceInfo: string;
+        isFavorite: boolean;
+        supportsRemote: boolean;
+        isPaused: boolean;
+        isMusic: boolean;
+        durationSeconds: number;
+        displayPositionSeconds: number;
+        curProgress: number;
+        handleLeft: string;
+        ringCircumference: number;
+        ringOffset: number;
+    }): TemplateResult {
+        const isPosterSource = this._config.playing_artwork_source === 'poster';
+        let heroUrl: string | undefined;
+        let sourceClass = 'backdrop-source';
+
+        if (isPosterSource) {
+            heroUrl = p.imageUrl || p.backdropUrl;
+            sourceClass = 'poster-source';
+        } else {
+            heroUrl = p.backdropUrl || p.imageUrl;
+            sourceClass = 'backdrop-source';
+        }
+
+        const heroImgSrc = heroUrl ? addImageParams(heroUrl, isPosterSource ? 640 : 960) : '';
+
+        return html`
+            <ha-card class="jellyha-now-playing has-background full-art-playing-card ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
+                <div class="full-art-backdrop-container">
+                    ${heroImgSrc ? html`
+                        <img class="full-art-hero-img ${sourceClass}" src="${heroImgSrc}" alt="${p.displayTitle}" />
+                    ` : nothing}
+                    <div class="full-art-scrim"></div>
+                </div>
+
+                <div class="full-art-top-bar">
+                    ${this._config.title ? html`
+                        <div class="card-header">${this._config.title}</div>
+                    ` : html`<div></div>`}
+                    <div class="header-actions">
+                        ${p.showHeaderBadge ? html`
+                            <span class="media-type-badge header-badge ${p.mediaType}">${p.badgeText}</span>
+                        ` : nothing}
+                        ${this._renderPowerButton()}
+                    </div>
+                </div>
+
+                <div class="full-art-bottom-overlay">
+                    <div class="title-row">
+                        ${this._config.show_title !== false ? html`<div class="title">${p.displayTitle}</div>` : nothing}
+                        ${(p.showBadge && p.badgeStyle === 'poster') ? html`
+                            <span class="media-type-badge header-badge ${p.mediaType}">${p.badgeText}</span>
+                        ` : nothing}
+                    </div>
+
+                    ${p.subtitle ? html`<div class="subtitle">${p.subtitle}</div>` : nothing}
+
+                    ${this._renderMetaRow({
+                        badge: p.showInlineBadge ? html`<span class="media-type-badge inline-badge ${p.mediaType}">${p.badgeText}</span>` : nothing,
+                        year: p.yearStr,
+                        runtime: p.runtimeStr,
+                        rating: p.ratingStr,
+                        genres: p.genres,
+                        isInline: true,
+                    })}
+
+                    ${(p.userName || p.sourceInfo) ? html`
+                        <div class="client-line">${p.userName ? html`<strong>${p.userName}</strong>` : nothing}${p.userName && p.sourceInfo ? ' · ' : ''}${p.sourceInfo || nothing}</div>
+                    ` : nothing}
+
+                    ${this._config.show_description !== false && (p.attributes.overview || p.cachedItem?.description) ? html`
+                        <div class="full-art-overview">${p.attributes.overview || p.cachedItem?.description}</div>
+                    ` : nothing}
+
+                    ${p.supportsRemote && this._config.show_controls !== false ? html`
+                        <div class="playback-controls">
+                            ${p.isMusic ? html`
+                                <ha-icon-button class="music-subtle-btn ${p.isFavorite ? 'active' : ''}" .label=${'Favorite'} @click=${() => this._handleFavoriteToggle(p.attributes.item_id!, p.isFavorite)}>
+                                    <ha-icon icon="${p.isFavorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
+                                </ha-icon-button>
+                                <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'previous') || 'Previous'} @click=${() => this._handleControl('PreviousTrack')}>
+                                    <ha-icon icon="mdi:skip-previous"></ha-icon>
+                                </ha-icon-button>
+                            ` : html`
+                                <ha-icon-button class="seek-btn" .label=${'Rewind 10s'} @click=${() => this._handleSeekRelative(-10)}>
+                                    <ha-icon icon="mdi:rewind-10"></ha-icon>
+                                </ha-icon-button>
+                            `}
+
+                            <div class="play-pause-wrapper ${this._stopPulse ? 'stop-pulse' : ''}"
+                                @pointerdown=${this._startLongPress}
+                                @pointerup=${this._endLongPress}
+                                @pointerleave=${this._endLongPress}
+                                @contextmenu=${(e: Event) => e.preventDefault()}
+                            >
+                                ${(this._rewindActive || this._isSeeking || p.rawStateObj.state === 'buffering') ? html`
+                                    <ha-icon-button class="play-pause-btn spinning" .label=${localize(this.hass.locale?.language || this.hass.language, 'loading')}>
+                                        <ha-icon icon="mdi:loading"></ha-icon>
+                                    </ha-icon-button>
+                                ` : p.isPaused ? html`
+                                    <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'play')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl(p.isMusic ? 'PlayPause' : 'Unpause'); }}>
+                                        <ha-icon icon="mdi:play"></ha-icon>
+                                    </ha-icon-button>
+                                ` : html`
+                                    <ha-icon-button class="play-pause-btn" .label=${localize(this.hass.locale?.language || this.hass.language, 'pause')} @click=${() => { if (this._longPressConsumed) { this._longPressConsumed = false; return; } this._handleControl('Pause'); }}>
+                                        <ha-icon icon="mdi:pause"></ha-icon>
+                                    </ha-icon-button>
+                                `}
+                                ${this._longPressProgress > 0 ? html`
+                                    <svg class="stop-ring" viewBox="0 0 44 44">
+                                        <circle cx="22" cy="22" r="20"
+                                            stroke="#ef4444" stroke-width="3" fill="none"
+                                            stroke-dasharray="${p.ringCircumference}"
+                                            stroke-dashoffset="${p.ringOffset}"
+                                            stroke-linecap="round"
+                                            transform="rotate(-90 22 22)" />
+                                    </svg>
+                                ` : nothing}
+                            </div>
+
+                            ${p.isMusic ? html`
+                                <ha-icon-button .label=${localize(this.hass.locale?.language || this.hass.language, 'next') || 'Next'} @click=${() => this._handleControl('NextTrack')}>
+                                    <ha-icon icon="mdi:skip-next"></ha-icon>
+                                </ha-icon-button>
+                                <ha-icon-button class="music-subtle-btn ${(p.attributes.repeat_mode && p.attributes.repeat_mode !== 'RepeatNone') ? 'active' : ''}" .label=${'Repeat'} @click=${() => this._handleRepeatMode(p.attributes.session_id!, p.attributes.repeat_mode || 'RepeatNone')}>
+                                    <ha-icon icon="${p.attributes.repeat_mode === 'RepeatOne' ? 'mdi:repeat-once' : 'mdi:repeat'}"></ha-icon>
+                                </ha-icon-button>
+                            ` : html`
+                                <ha-icon-button class="seek-btn" .label=${'Forward 30s'} @click=${() => this._handleSeekRelative(30)}>
+                                    <ha-icon icon="mdi:fast-forward-30"></ha-icon>
+                                </ha-icon-button>
+                            `}
+                        </div>
+                    ` : nothing}
+
+                    ${this._renderVolumeControls()}
+
+                    <div class="progress-container ${p.supportsRemote ? '' : 'readonly'}"
+                        @pointerdown=${p.supportsRemote ? this._startDrag : undefined}
+                        @pointermove=${p.supportsRemote ? this._handleDrag : undefined}
+                        @pointerup=${p.supportsRemote ? this._endDrag : undefined}
+                        @pointercancel=${p.supportsRemote ? this._cancelDrag : undefined}
+                    >
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${p.curProgress}%; transition: ${this._isDragging ? 'none' : 'width 1s linear'}; background: ${this._dominantColor}"></div>
+                            <div class="seek-handle" style="left: ${p.handleLeft}; transition: ${this._isDragging ? 'none' : 'left 1s linear'}; transform: translate(-50%, -50%) ${this._isDragging ? 'scale(1.3)' : 'scale(1)'}; background: ${this._dominantColor}"></div>
+                        </div>
+                    </div>
+
+                    ${this._config.show_time && p.durationSeconds > 0 ? html`
+                        <div class="timestamps">
+                            <span class="time-elapsed">${this._formatSeconds(p.displayPositionSeconds)}</span>
+                            <span class="time-remaining">${this._formatSeconds(-(p.durationSeconds - p.displayPositionSeconds))}</span>
+                        </div>
+                    ` : nothing}
                 </div>
             </ha-card>
         `;
