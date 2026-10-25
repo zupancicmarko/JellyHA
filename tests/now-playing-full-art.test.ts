@@ -130,6 +130,8 @@ describe('Now Playing Card - Full Art Playback Mode', () => {
 
         const template = (card as any).render();
         const str = JSON.stringify(template);
+        expect(str).toContain('full-art-top-overlay');
+        expect(str).toContain('full-art-header-row');
         expect(str).toContain('full-art-bottom-overlay');
         expect(str).toContain('playback-controls');
         expect(str).toContain('play-pause-btn');
@@ -158,5 +160,13 @@ describe('Now Playing Card - Full Art Playback Mode', () => {
         const str = JSON.stringify(template);
         expect(str).toContain('full-art-playing-card');
         expect(str).toContain('music-subtle-btn');
+    });
+
+    it('does not limit max_rows in getGridOptions', () => {
+        const card = new JellyHANowPlayingCard();
+        const gridOptions = card.getGridOptions();
+        expect(gridOptions.rows).toBe(3);
+        expect(gridOptions.min_rows).toBe(2);
+        expect((gridOptions as any).max_rows).toBeUndefined();
     });
 });

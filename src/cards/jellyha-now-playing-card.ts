@@ -161,8 +161,7 @@ export class JellyHANowPlayingCard extends LitElement {
             columns: 12,
             rows: 3,
             min_columns: 6,
-            min_rows: 2,
-            max_rows: 5
+            min_rows: 2
         };
     }
 
@@ -589,24 +588,24 @@ export class JellyHANowPlayingCard extends LitElement {
                     <div class="full-art-scrim"></div>
                 </div>
 
-                <div class="full-art-top-bar">
+                <div class="full-art-top-overlay">
                     ${this._config.title ? html`
                         <div class="card-header">${this._config.title}</div>
-                    ` : html`<div></div>`}
-                    <div class="header-actions">
-                        ${p.showHeaderBadge ? html`
-                            <span class="media-type-badge header-badge ${p.mediaType}">${p.badgeText}</span>
-                        ` : nothing}
-                        ${this._renderPowerButton()}
-                    </div>
-                </div>
+                    ` : nothing}
 
-                <div class="full-art-bottom-overlay">
-                    <div class="title-row">
-                        ${this._config.show_title !== false ? html`<div class="title">${p.displayTitle}</div>` : nothing}
-                        ${(p.showBadge && p.badgeStyle === 'poster') ? html`
-                            <span class="media-type-badge header-badge ${p.mediaType}">${p.badgeText}</span>
-                        ` : nothing}
+                    <div class="full-art-header-row">
+                        <div class="title-row">
+                            ${this._config.show_title !== false ? html`<div class="title">${p.displayTitle}</div>` : html`<div></div>`}
+                            ${(p.showBadge && p.badgeStyle === 'poster') ? html`
+                                <span class="media-type-badge header-badge ${p.mediaType}">${p.badgeText}</span>
+                            ` : nothing}
+                        </div>
+                        <div class="header-actions">
+                            ${p.showHeaderBadge ? html`
+                                <span class="media-type-badge header-badge ${p.mediaType}">${p.badgeText}</span>
+                            ` : nothing}
+                            ${this._renderPowerButton()}
+                        </div>
                     </div>
 
                     ${p.subtitle ? html`<div class="subtitle">${p.subtitle}</div>` : nothing}
@@ -627,6 +626,9 @@ export class JellyHANowPlayingCard extends LitElement {
                     ${this._config.show_description !== false && (p.attributes.overview || p.cachedItem?.description) ? html`
                         <div class="full-art-overview">${p.attributes.overview || p.cachedItem?.description}</div>
                     ` : nothing}
+                </div>
+
+                <div class="full-art-bottom-overlay">
 
                     ${p.supportsRemote && this._config.show_controls !== false ? html`
                         <div class="playback-controls">
@@ -4527,7 +4529,8 @@ export class JellyHANowPlayingCard extends LitElement {
            ========================================================================= */
         .full-art-playing-card {
             position: relative;
-            min-height: 270px;
+            height: 100%;
+            min-height: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -4572,63 +4575,57 @@ export class JellyHANowPlayingCard extends LitElement {
             height: 100%;
             background: linear-gradient(
                 180deg,
-                rgba(0, 0, 0, 0.45) 0%,
-                rgba(0, 0, 0, 0) 25%,
-                rgba(0, 0, 0, 0.15) 45%,
-                rgba(0, 0, 0, 0.6) 70%,
-                rgba(0, 0, 0, 0.88) 92%,
+                rgba(0, 0, 0, 0.72) 0%,
+                rgba(0, 0, 0, 0.45) 22%,
+                rgba(0, 0, 0, 0.12) 42%,
+                rgba(0, 0, 0, 0.45) 68%,
+                rgba(0, 0, 0, 0.82) 88%,
                 rgba(0, 0, 0, 0.95) 100%
             );
             pointer-events: none;
             z-index: 1;
         }
 
-        .full-art-playing-card .full-art-top-bar {
+        .full-art-playing-card .full-art-top-overlay {
             position: relative;
             z-index: 3;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 4px;
             padding: 12px 16px 0 16px;
+            box-sizing: border-box;
         }
 
-        .full-art-playing-card .full-art-top-bar .card-header {
-            margin: 0;
+        .full-art-playing-card .full-art-top-overlay .card-header {
+            margin: 0 0 2px 0;
             padding: 0;
             color: #fff;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 500;
         }
 
-        .full-art-playing-card .full-art-top-bar .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: auto;
-        }
-
-        .full-art-playing-card .full-art-bottom-overlay {
-            position: relative;
-            z-index: 3;
-            padding: 14px 18px 16px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-top: auto;
-        }
-
-        .full-art-playing-card .full-art-bottom-overlay .title-row {
+        .full-art-playing-card .full-art-header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 12px;
+            min-height: 28px;
         }
 
-        .full-art-playing-card .full-art-bottom-overlay .title {
+        .full-art-playing-card .full-art-header-row .title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+            margin: 0;
+        }
+
+        .full-art-playing-card .full-art-header-row .title {
             font-size: 1.35rem;
             font-weight: 700;
-            line-height: 1.25;
+            line-height: 1.2;
             color: #ffffff;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
             display: -webkit-box;
@@ -4638,10 +4635,28 @@ export class JellyHANowPlayingCard extends LitElement {
             margin: 0;
         }
 
-        .full-art-playing-card .full-art-bottom-overlay .subtitle {
+        .full-art-playing-card .full-art-header-row .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .full-art-playing-card .full-art-top-overlay .subtitle {
             font-size: 0.95rem;
             font-weight: 400;
             color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .full-art-playing-card .full-art-top-overlay .client-line {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.75);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
             line-height: 1.2;
             white-space: nowrap;
@@ -4660,35 +4675,64 @@ export class JellyHANowPlayingCard extends LitElement {
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
         }
 
+        .full-art-playing-card .full-art-bottom-overlay {
+            position: relative;
+            z-index: 3;
+            padding: 8px 16px 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: auto;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
         .full-art-playing-card .playback-controls {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            margin: 4px 0 2px 0;
+            margin: 2px 0;
+            flex-shrink: 0;
+        }
+
+        .full-art-playing-card .volume-capsule {
+            margin: 2px 0 !important;
+            flex-shrink: 0;
         }
 
         .full-art-playing-card .progress-container {
             width: 100%;
             margin-top: 2px;
+            flex-shrink: 0;
+            box-sizing: border-box;
         }
 
         .full-art-playing-card .timestamps {
             display: flex;
             justify-content: space-between;
             font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.85);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
             margin-top: 2px;
+            margin-bottom: 2px;
+            line-height: 1.2;
+            flex-shrink: 0;
+            padding: 0 2px;
+            overflow: visible;
         }
 
         @container now-playing (max-width: 380px) {
-            .full-art-playing-card .full-art-bottom-overlay {
-                padding: 10px 12px 12px 12px;
-                gap: 4px;
+            .full-art-playing-card .full-art-top-overlay {
+                padding: 10px 12px 0 12px;
+                gap: 3px;
             }
-            .full-art-playing-card .full-art-bottom-overlay .title {
+            .full-art-playing-card .full-art-header-row .title {
                 font-size: 1.15rem;
+            }
+            .full-art-playing-card .full-art-bottom-overlay {
+                padding: 6px 12px 10px 12px;
+                gap: 3px;
             }
             .full-art-playing-card .playback-controls {
                 gap: 6px;
