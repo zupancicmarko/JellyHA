@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.7.0** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.1** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,13 +8,12 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.7.0
+### 🆕 What's new in v1.7.1
 
-- 🌟 **Featured Layout Multi-Column & Configurable Rows (2, 3, or 4 rows)** — Multi-column side queue cards (1 to 4 columns) with proportional hero poster scaling, responsive compact mode, and customizable 2, 3, or 4 row arrangements.
-- 📋 **List Layout Modernization & Ergonomics** — Standardized 136px card height, 76px posters, dynamic 2-line title wrapping, 1-2 line description clamping, subtle backdrop blur, and tactile click press feedback.
-- 🎨 **Glassmorphic Rating & Runtime Poster Badges** — Extended rating and runtime glassmorphic pill badges to Carousel and Grid view posters with optical vertical centering.
-- 📺 **Now Playing Poster Screensaver Badge Placement (`badge_style`)** — Screensaver poster mode now fully supports `badge_style: poster` (runtime and rating badges on the poster corners) and `badge_style: inline` (all metadata inline), identical to active playback.
-- 🔤 **Typography & Metadata Font Standardization** — Unified metadata and description font size to 11px across Featured and List layouts, and 12px across Screensaver modes.
+- 🎬 **Now Playing Full Artwork Playback Mode (`playing_display_mode: 'full_art'`)** — Cinematic full-bleed artwork mode during active media playback, supporting either landscape **Fanart Backdrop** or portrait **Poster** with intelligent focal positioning.
+- ✨ **Top-Aligned Header & Power Controls** — Title, subtitle, metadata pills, and client line aligned cleanly to the top matching the power button height, paired with an elegant dark gradient scrim.
+- 📐 **Unconstrained Dashboard Grid Rows** — Removed row height caps in `getGridOptions()`, giving full freedom to expand cards across any number of rows in Home Assistant Sections and Grid layouts.
+- ⏱️ **Zero-Clip Progress Bar & Timestamps** — Refined bottom overlay geometry ensuring elapsed and remaining time labels never clip against card borders.
 
 ---
 
