@@ -328,5 +328,103 @@ describe('Library Card Editor - Jellyfin Client Device Filtering', () => {
         // _hasConfiguredClientDevices must be false
         expect((editor as any)._hasConfiguredClientDevices()).toBe(false);
     });
+
+    it('populates availableEntities with JellyHA players, other media players (Chromecast), and legacy sensors', async () => {
+        const { JellyHANowPlayingEditor } = await import('../src/editors/jellyha-now-playing-editor');
+        const editor = new JellyHANowPlayingEditor();
+        editor.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.chromecast_ultra',
+        });
+        editor.hass = {
+            states: {
+                'media_player.jellyha_user': {
+                    entity_id: 'media_player.jellyha_user',
+                    attributes: { friendly_name: 'Marko JellyHA' },
+                },
+                'media_player.chromecast_ultra': {
+                    entity_id: 'media_player.chromecast_ultra',
+                    attributes: { friendly_name: 'Chromecast Ultra' },
+                },
+                'media_player.living_room_tv': {
+                    entity_id: 'media_player.living_room_tv',
+                    attributes: { friendly_name: 'Living Room TV' },
+                },
+                'media_player.jellyha_library_browser': {
+                    entity_id: 'media_player.jellyha_library_browser',
+                    attributes: { friendly_name: 'Browser' },
+                },
+                'sensor.jellyha_user_now_playing': {
+                    entity_id: 'sensor.jellyha_user_now_playing',
+                    attributes: { friendly_name: 'Marko Now Playing' },
+                },
+            },
+        } as any;
+
+        const rendered = (editor as any).render();
+        expect(rendered).toBeDefined();
+
+        // Check the selector options passed in the TemplateResult values
+        const selectorValue = rendered.values.find((v: any) => v && typeof v === 'object' && v.select && v.select.options);
+        expect(selectorValue).toBeDefined();
+        const options = selectorValue.select.options;
+
+        expect(options).toEqual([
+            { value: 'media_player.jellyha_user', label: 'Marko JellyHA (JellyHA)' },
+            { value: 'media_player.chromecast_ultra', label: 'Chromecast Ultra (Media Player)' },
+            { value: 'media_player.living_room_tv', label: 'Living Room TV (Media Player)' },
+            { value: 'sensor.jellyha_user_now_playing', label: 'Marko Now Playing (Legacy Sensor)' },
+        ]);
+    });
+
+    it('renders playing_display_mode and conditionally playing_artwork_source in now playing editor', async () => {
+        const { JellyHANowPlayingEditor } = await import('../src/editors/jellyha-now-playing-editor');
+        const editor = new JellyHANowPlayingEditor();
+        editor.hass = {
+            states: {},
+            locale: { language: 'en' },
+            language: 'en',
+        } as any;
+        editor.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.living_room_tv',
+            playing_display_mode: 'card',
+        });
+
+        let rendered = (editor as any).render();
+        let str = JSON.stringify(rendered);
+        expect(str).toContain('Playback Display Style');
+        expect(str).toContain('Full Artwork (Cinematic Hero)');
+        expect(str).not.toContain('Playback Artwork Image');
+
+        // Now set full_art
+        editor.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.living_room_tv',
+            playing_display_mode: 'full_art',
+        });
+        rendered = (editor as any).render();
+        str = JSON.stringify(rendered);
+        expect(str).toContain('Playback Display Style');
+        expect(str).toContain('Playback Artwork Image');
+        expect(str).toContain('Fanart Backdrop');
+
+        // Test handlers
+        let updatedKey = '';
+        let updatedVal = '';
+        (editor as any)._updateConfig = (k: string, v: string) => {
+            updatedKey = k;
+            updatedVal = v;
+        };
+
+        (editor as any)._playingDisplayModeChanged({ detail: { value: 'full_art' } });
+        expect(updatedKey).toBe('playing_display_mode');
+        expect(updatedVal).toBe('full_art');
+
+        (editor as any)._playingArtworkSourceChanged({ detail: { value: 'poster' } });
+        expect(updatedKey).toBe('playing_artwork_source');
+        expect(updatedVal).toBe('poster');
+    });
 });
+
 
