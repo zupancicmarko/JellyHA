@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.7.2** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.3** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,11 +8,9 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.7.2
+### 🆕 What's new in v1.7.3
 
-- 🖼️ **Artwork Fit Selection in Full Artwork Mode (`playing_artwork_fit`)** — Choose between edge-to-edge **Cover** or aspect-ratio-preserving **Contain** (letterbox/pillarbox) with deep black backgrounds in Now Playing Full Artwork mode.
-- ⚙️ **Streamlined Card Editor Controls** — Paired side-by-side selectors for Artwork Image Source and Artwork Fit under Full Visual playback display.
-- 🌐 **Comprehensive Localization** — Added translations for artwork fit options across English, German, French, Spanish, Italian, Dutch, Slovenian, and Russian.
+- 📈 **History Line Graphs & Long-Term Statistics for Count Sensors** ([#69](https://github.com/zupancicmarko/JellyHA/issues/69)) — Added `state_class: measurement` to all library count and storage sensors (movies, series, episodes, watched/unwatched, favorites, active & transcoding sessions, and storage free space), rendering them as proper numeric line graphs in the History panel and enabling them in `statistics-graph` cards.
 
 ---
 
