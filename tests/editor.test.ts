@@ -408,6 +408,9 @@ describe('Library Card Editor - Jellyfin Client Device Filtering', () => {
         expect(str).toContain('Playback Display Style');
         expect(str).toContain('Playback Artwork Image');
         expect(str).toContain('Fanart Backdrop');
+        expect(str).toContain('Artwork Fit');
+        expect(str).toContain('Cover (Fill Card)');
+        expect(str).toContain('Contain (Fit Whole Image)');
 
         // Test handlers
         let updatedKey = '';
@@ -424,6 +427,10 @@ describe('Library Card Editor - Jellyfin Client Device Filtering', () => {
         (editor as any)._playingArtworkSourceChanged({ detail: { value: 'poster' } });
         expect(updatedKey).toBe('playing_artwork_source');
         expect(updatedVal).toBe('poster');
+
+        (editor as any)._playingArtworkFitChanged({ detail: { value: 'contain' } });
+        expect(updatedKey).toBe('playing_artwork_fit');
+        expect(updatedVal).toBe('contain');
     });
 });
 

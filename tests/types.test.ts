@@ -50,18 +50,20 @@ describe('JellyHANowPlayingCardConfig types', () => {
         expect(libConfig.modal_play_actions?.[0].type).toBe('client');
     });
 
-    it('defines playing_display_mode and playing_artwork_source in now playing config', () => {
+    it('defines playing_display_mode, playing_artwork_source, and playing_artwork_fit in now playing config', () => {
         const config: JellyHANowPlayingCardConfig = {
             type: 'custom:jellyha-now-playing-card',
             entity: 'media_player.jellyfin',
             playing_display_mode: 'full_art',
             playing_artwork_source: 'poster',
+            playing_artwork_fit: 'contain',
         };
         expect(config.playing_display_mode).toBe('full_art');
         expect(config.playing_artwork_source).toBe('poster');
+        expect(config.playing_artwork_fit).toBe('contain');
     });
 
-    it('translates playing display mode keys across languages', async () => {
+    it('translates playing display mode and artwork fit keys across languages', async () => {
         const { localize } = await import('../src/shared/localize');
         expect(localize('en', 'editor.playing_display_mode')).toBe('Playback Display Style');
         expect(localize('en', 'editor.playing_display_mode_card')).toBe('Card Layout (Poster + Details)');
@@ -69,7 +71,12 @@ describe('JellyHANowPlayingCardConfig types', () => {
         expect(localize('en', 'editor.playing_artwork_source')).toBe('Playback Artwork Image');
         expect(localize('en', 'editor.playing_artwork_source_backdrop')).toBe('Fanart Backdrop');
         expect(localize('en', 'editor.playing_artwork_source_poster')).toBe('Poster');
+        expect(localize('en', 'editor.playing_artwork_fit')).toBe('Artwork Fit');
+        expect(localize('en', 'editor.playing_artwork_fit_cover')).toBe('Cover (Fill Card)');
+        expect(localize('en', 'editor.playing_artwork_fit_contain')).toBe('Contain (Fit Whole Image)');
 
         expect(localize('de', 'editor.playing_display_mode')).toBe('Wiedergabe-Anzeigestil');
+        expect(localize('de', 'editor.playing_artwork_fit')).toBe('Grafik-Anpassung');
+        expect(localize('sl', 'editor.playing_artwork_fit')).toBe('Prilagajanje slike');
     });
 });

@@ -566,6 +566,8 @@ export class JellyHANowPlayingCard extends LitElement {
         ringOffset: number;
     }): TemplateResult {
         const isPosterSource = this._config.playing_artwork_source === 'poster';
+        const isContainFit = this._config.playing_artwork_fit === 'contain';
+        const fitClass = isContainFit ? 'fit-contain' : 'fit-cover';
         let heroUrl: string | undefined;
         let sourceClass = 'backdrop-source';
 
@@ -580,10 +582,10 @@ export class JellyHANowPlayingCard extends LitElement {
         const heroImgSrc = heroUrl ? addImageParams(heroUrl, isPosterSource ? 640 : 960) : '';
 
         return html`
-            <ha-card class="jellyha-now-playing has-background full-art-playing-card ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
+            <ha-card class="jellyha-now-playing has-background full-art-playing-card ${fitClass} ${this._config.title ? 'has-title' : ''}" style="--card-dominant-color: ${this._dominantColor};">
                 <div class="full-art-backdrop-container">
                     ${heroImgSrc ? html`
-                        <img class="full-art-hero-img ${sourceClass}" src="${heroImgSrc}" alt="${p.displayTitle}" />
+                        <img class="full-art-hero-img ${sourceClass} ${fitClass}" src="${heroImgSrc}" alt="${p.displayTitle}" />
                     ` : nothing}
                     <div class="full-art-scrim"></div>
                 </div>
@@ -4565,6 +4567,19 @@ export class JellyHANowPlayingCard extends LitElement {
 
         .full-art-playing-card .full-art-hero-img.poster-source {
             object-position: center 15%;
+        }
+
+        .full-art-playing-card .full-art-hero-img.fit-contain {
+            object-fit: contain !important;
+            object-position: center center !important;
+        }
+
+        .full-art-playing-card .full-art-hero-img.fit-cover {
+            object-fit: cover;
+        }
+
+        .full-art-playing-card.fit-contain {
+            background: #000;
         }
 
         .full-art-playing-card .full-art-scrim {

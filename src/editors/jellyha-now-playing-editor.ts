@@ -36,6 +36,20 @@ export class JellyHANowPlayingEditor extends LitElement {
     .form-row ha-selector {
       width: 100%;
     }
+    .form-pair {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-pair > div {
+      flex: 1;
+      min-width: 0;
+    }
+    .form-pair ha-selector,
+    .form-pair ha-select,
+    .form-pair ha-textfield {
+      width: 100%;
+    }
     .checkbox-row {
       display: flex;
       align-items: center;
@@ -315,23 +329,43 @@ export class JellyHANowPlayingEditor extends LitElement {
         </div>
 
         ${(this._config.playing_display_mode === 'full_art') ? html`
-          <div class="form-row" style="margin-left: 16px; margin-top: 10px;">
-            <ha-selector
-              .hass=${this.hass}
-              .selector=${{
-                select: {
-                  mode: 'dropdown',
-                  options: [
-                    { value: 'backdrop', label: localize(lang, 'editor.playing_artwork_source_backdrop') || 'Fanart Backdrop' },
-                    { value: 'poster', label: localize(lang, 'editor.playing_artwork_source_poster') || 'Poster' },
-                  ],
-                },
-              }}
-              .value=${this._config.playing_artwork_source || 'backdrop'}
-              .label="${localize(lang, 'editor.playing_artwork_source') || 'Playback Artwork Image'}"
-              label="${localize(lang, 'editor.playing_artwork_source') || 'Playback Artwork Image'}"
-              @value-changed=${this._playingArtworkSourceChanged}
-            ></ha-selector>
+          <div class="form-pair" style="margin-left: 16px; margin-top: 10px;">
+            <div>
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      { value: 'backdrop', label: localize(lang, 'editor.playing_artwork_source_backdrop') || 'Fanart Backdrop' },
+                      { value: 'poster', label: localize(lang, 'editor.playing_artwork_source_poster') || 'Poster' },
+                    ],
+                  },
+                }}
+                .value=${this._config.playing_artwork_source || 'backdrop'}
+                .label="${localize(lang, 'editor.playing_artwork_source') || 'Playback Artwork Image'}"
+                label="${localize(lang, 'editor.playing_artwork_source') || 'Playback Artwork Image'}"
+                @value-changed=${this._playingArtworkSourceChanged}
+              ></ha-selector>
+            </div>
+            <div>
+              <ha-selector
+                .hass=${this.hass}
+                .selector=${{
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      { value: 'cover', label: localize(lang, 'editor.playing_artwork_fit_cover') || 'Cover (Fill Card)' },
+                      { value: 'contain', label: localize(lang, 'editor.playing_artwork_fit_contain') || 'Contain (Fit Whole Image)' },
+                    ],
+                  },
+                }}
+                .value=${this._config.playing_artwork_fit || 'cover'}
+                .label="${localize(lang, 'editor.playing_artwork_fit') || 'Artwork Fit'}"
+                label="${localize(lang, 'editor.playing_artwork_fit') || 'Artwork Fit'}"
+                @value-changed=${this._playingArtworkFitChanged}
+              ></ha-selector>
+            </div>
           </div>
         ` : ''}
 
@@ -632,6 +666,13 @@ export class JellyHANowPlayingEditor extends LitElement {
     const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
     if (value !== undefined) {
       this._updateConfig('playing_artwork_source', value);
+    }
+  }
+
+  private _playingArtworkFitChanged(e: CustomEvent): void {
+    const value = e.detail && 'value' in e.detail ? e.detail.value : (e.target as any)?.value;
+    if (value !== undefined) {
+      this._updateConfig('playing_artwork_fit', value);
     }
   }
 
