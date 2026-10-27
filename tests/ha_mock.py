@@ -41,6 +41,7 @@ HA_MODULES = [
     "homeassistant.helpers.entity_platform",
     "homeassistant.components.media_player",
     "homeassistant.components.media_player.const",
+    "homeassistant.components.sensor",
     "homeassistant.components.websocket_api",
 ]
 
@@ -128,3 +129,24 @@ ws_mod.websocket_command = lambda schema: lambda func: func
 ws_mod.ERR_NOT_FOUND = "not_found"
 ws_mod.ERR_INVALID_FORMAT = "invalid_format"
 ws_mod.ERR_UNKNOWN_ERROR = "unknown_error"
+
+class MockSensorEntity:
+    pass
+
+class MockSensorStateClass:
+    MEASUREMENT = "measurement"
+    TOTAL = "total"
+    TOTAL_INCREASING = "total_increasing"
+
+class MockSensorDeviceClass:
+    DATA_SIZE = "data_size"
+    TIMESTAMP = "timestamp"
+    ENUM = "enum"
+
+class MockUnitOfInformation:
+    GIGABYTES = "GB"
+
+sys.modules["homeassistant.components.sensor"].SensorEntity = MockSensorEntity
+sys.modules["homeassistant.components.sensor"].SensorStateClass = MockSensorStateClass
+sys.modules["homeassistant.components.sensor"].SensorDeviceClass = MockSensorDeviceClass
+sys.modules["homeassistant.const"].UnitOfInformation = MockUnitOfInformation
