@@ -255,6 +255,7 @@ show_background: true
 | `title` | string | `Jellyfin` | Header title text |
 | `playing_display_mode` | string | `'card'` | Active playback layout style: `'card'` (classic side-by-side poster + details) or `'full_art'` (cinematic hero artwork filling the card) |
 | `playing_artwork_source` | string | `'backdrop'` | Sourced image when `playing_display_mode: 'full_art'`: `'backdrop'` (fanart landscape backdrop) or `'poster'` (movie/show portrait poster) |
+| `playing_artwork_fit` | string | `'cover'` | Artwork scaling when `playing_display_mode: 'full_art'`: `'cover'` (scales & crops edge-to-edge) or `'contain'` (preserves uncropped aspect ratio with letterbox bars) |
 | `show_background` | boolean | `true` | Display blurred backdrop fanart as card background |
 | `show_title` | boolean | `true` | Display media title text |
 | `show_subtitle` | boolean | `true` | Display subtitle (artist or series and season/episode info) |
@@ -306,13 +307,14 @@ idle_media_type: all              # 'all', 'movies', 'tvshows', or 'movies_episo
 
 During active playback, you can showcase media with cinematic full-bleed artwork across the entire card by setting `playing_display_mode: full_art`. All playback controls (play/pause with hold-to-stop ring, seeking, and volume), title, badges, metadata pills, and timestamps are layered over a gradient scrim at the bottom.
 
-You can choose whether full-art mode displays the landscape **Fanart Backdrop** (`playing_artwork_source: backdrop`) or the portrait **Poster** (`playing_artwork_source: poster`).
+You can choose whether full-art mode displays the landscape **Fanart Backdrop** (`playing_artwork_source: backdrop`) or the portrait **Poster** (`playing_artwork_source: poster`), and configure whether artwork scales to fill the card bounds (`playing_artwork_fit: cover`) or remains uncropped inside letterbox bars (`playing_artwork_fit: contain`).
 
 ```yaml
 type: custom:jellyha-now-playing-card
 entity: media_player.jellyha_admin
 playing_display_mode: full_art    # 'card' (default) or 'full_art'
 playing_artwork_source: backdrop  # 'backdrop' (fanart) or 'poster'
+playing_artwork_fit: cover        # 'cover' (fill & crop) or 'contain' (letterbox)
 show_time: true
 show_volume: true
 ```

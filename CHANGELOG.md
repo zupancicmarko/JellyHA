@@ -5,6 +5,16 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.2] - 2026-10-27
+
+### Added
+- **Artwork Fit Selection in Full Artwork Playback Mode (`playing_artwork_fit`)**:
+  - Adds a new configuration option allowing users to choose how playback artwork is scaled in Full Artwork mode:
+    - **Cover** (`cover`, default): Scales and crops the artwork to fill the entire card bounds edge-to-edge.
+    - **Contain** (`contain`): Preserves the full uncropped image aspect ratio centered with elegant pure black letterbox / pillarbox bars.
+  - Paired side-by-side selection in the card editor under Full Artwork playback mode for easy customization of artwork source and fitting.
+  - Full localization support across 8 languages (EN, DE, FR, ES, IT, NL, SL, RU).
+
 ## [1.7.1] - 2026-10-25
 
 ### Added

@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.7.1** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.2** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,12 +8,11 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.7.1
+### 🆕 What's new in v1.7.2
 
-- 🎬 **Now Playing Full Artwork Playback Mode (`playing_display_mode: 'full_art'`)** — Cinematic full-bleed artwork mode during active media playback, supporting either landscape **Fanart Backdrop** or portrait **Poster** with intelligent focal positioning.
-- ✨ **Top-Aligned Header & Power Controls** — Title, subtitle, metadata pills, and client line aligned cleanly to the top matching the power button height, paired with an elegant dark gradient scrim.
-- 📐 **Unconstrained Dashboard Grid Rows** — Removed row height caps in `getGridOptions()`, giving full freedom to expand cards across any number of rows in Home Assistant Sections and Grid layouts.
-- ⏱️ **Zero-Clip Progress Bar & Timestamps** — Refined bottom overlay geometry ensuring elapsed and remaining time labels never clip against card borders.
+- 🖼️ **Artwork Fit Selection in Full Artwork Mode (`playing_artwork_fit`)** — Choose between edge-to-edge **Cover** or aspect-ratio-preserving **Contain** (letterbox/pillarbox) with deep black backgrounds in Now Playing Full Artwork mode.
+- ⚙️ **Streamlined Card Editor Controls** — Paired side-by-side selectors for Artwork Image Source and Artwork Fit under Full Visual playback display.
+- 🌐 **Comprehensive Localization** — Added translations for artwork fit options across English, German, French, Spanish, Italian, Dutch, Slovenian, and Russian.
 
 ---
 

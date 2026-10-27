@@ -790,6 +790,7 @@ entity: media_player.jellyha_user_admin # (Required) Per-user or per-device medi
 title: "Now Playing"               # (Optional) Header card title
 playing_display_mode: full_art      # (String, default 'card') 'card' (classic poster + details) or 'full_art' (cinematic hero artwork)
 playing_artwork_source: backdrop    # (String, default 'backdrop') 'backdrop' (fanart) or 'poster' (movie/show poster)
+playing_artwork_fit: cover          # (String, default 'cover') 'cover' (edge-to-edge fill & crop) or 'contain' (full uncropped inside letterbox)
 show_background: true              # (Boolean, default true) Blurred fanart backdrop
 show_title: true                   # (Boolean, default true) Media item title
 show_subtitle: true                # (Boolean, default true) Artist or TV series name
