@@ -86,6 +86,50 @@ describe('Now Playing Card - Full Art Playback Mode', () => {
         expect(str).toContain('/api/poster.jpg');
     });
 
+    it('applies fit-cover class by default or when playing_artwork_fit is cover', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            playing_display_mode: 'full_art',
+            playing_artwork_fit: 'cover',
+        } as JellyHANowPlayingCardConfig);
+
+        card.hass = createMockHass('playing', {
+            media_title: 'Dune: Part Two',
+            media_content_type: 'movie',
+            backdrop_url: '/api/fanart.jpg',
+        });
+
+        const template = (card as any).render();
+        const str = JSON.stringify(template);
+        expect(str).toContain('full-art-playing-card');
+        expect(str).toContain('fit-cover');
+        expect(str).not.toContain('fit-contain');
+    });
+
+    it('applies fit-contain class when playing_artwork_fit is contain', () => {
+        const card = new JellyHANowPlayingCard();
+        card.setConfig({
+            type: 'custom:jellyha-now-playing-card',
+            entity: 'media_player.jellyfin',
+            playing_display_mode: 'full_art',
+            playing_artwork_fit: 'contain',
+        } as JellyHANowPlayingCardConfig);
+
+        card.hass = createMockHass('playing', {
+            media_title: 'Dune: Part Two',
+            media_content_type: 'movie',
+            backdrop_url: '/api/fanart.jpg',
+        });
+
+        const template = (card as any).render();
+        const str = JSON.stringify(template);
+        expect(str).toContain('full-art-playing-card');
+        expect(str).toContain('fit-contain');
+        expect(str).not.toContain('fit-cover');
+    });
+
     it('falls back to poster when backdrop is missing in backdrop mode', () => {
         const card = new JellyHANowPlayingCard();
         card.setConfig({
