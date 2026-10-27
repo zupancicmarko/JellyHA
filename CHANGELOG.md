@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Cover** (`cover`, default): Scales and crops the artwork to fill the entire card bounds edge-to-edge.
     - **Contain** (`contain`): Preserves the full uncropped image aspect ratio centered with elegant pure black letterbox / pillarbox bars.
   - Paired side-by-side selection in the card editor under Full Artwork playback mode for easy customization of artwork source and fitting.
-  - Full localization support across 8 languages (EN, DE, FR, ES, IT, NL, SL, RU).
 
 ## [1.7.1] - 2026-10-25
 
