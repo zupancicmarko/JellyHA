@@ -5,6 +5,13 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.3] - 2026-10-27
+
+### Fixed
+- **History Graphs and Long-Term Statistics for Count Sensors** ([#69](https://github.com/zupancicmarko/JellyHA/issues/69)):
+  - Added `_attr_state_class = SensorStateClass.MEASUREMENT` to all library count sensors (movies, series, episodes, watched/unwatched, favorites, active sessions, transcoding sessions, and storage free space).
+  - Ensures Home Assistant charts these sensors as continuous numeric line graphs in the History panel and `history-graph` cards instead of discrete colored categorical timeline bars, and enables long-term statistics for `statistics-graph` cards.
+
 ## [1.7.2] - 2026-10-27
 
 ### Added

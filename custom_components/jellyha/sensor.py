@@ -165,6 +165,7 @@ class JellyHALibrarySensor(JellyHABaseSensor):
 
     _attr_translation_key = "library"
     _attr_icon = "mdi:video-vintage"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -271,6 +272,7 @@ class JellyHAFavoritesCountSensor(JellyHABaseSensor):
 
     _attr_translation_key = "favorites_count"
     _attr_icon = "mdi:heart"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -295,6 +297,7 @@ class JellyHAUnwatchedCountSensor(JellyHABaseSensor):
 
     _attr_translation_key = "unwatched_count"
     _attr_icon = "mdi:eye-off"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -338,6 +341,7 @@ class JellyHAUnwatchedMoviesSensor(JellyHABaseSensor):
 
     _attr_translation_key = "unwatched_movies"
     _attr_icon = "mdi:movie-open"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -365,6 +369,7 @@ class JellyHAUnwatchedSeriesSensor(JellyHABaseSensor):
 
     _attr_translation_key = "unwatched_series"
     _attr_icon = "mdi:video-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -761,6 +766,7 @@ class JellyHAActiveSessionsSensor(CoordinatorEntity[JellyHASessionCoordinator], 
     _attr_has_entity_name = True
     _attr_translation_key = "active_sessions"
     _attr_icon = "mdi:account-multiple"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -825,7 +831,7 @@ class JellyHAConnectedClientsSensor(CoordinatorEntity[JellyHASessionCoordinator]
     _attr_has_entity_name = True
     _attr_translation_key = "connected_clients"
     _attr_icon = "mdi:account-network"
-    _attr_state_class = "measurement"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     # DeviceId used by the JellyHA integration itself — exclude from client count.
     _OWN_DEVICE_ID = "jellyha"
@@ -887,6 +893,7 @@ class JellyHAUnwatchedEpisodesSensor(JellyHABaseSensor):
 
     _attr_translation_key = "unwatched_episodes"
     _attr_icon = "mdi:video"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -914,6 +921,7 @@ class JellyHAWatchedCountSensor(JellyHABaseSensor):
 
     _attr_translation_key = "watched_count"
     _attr_icon = "mdi:eye-check"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -962,6 +970,7 @@ class JellyHAWatchedEpisodesSensor(JellyHABaseSensor):
 
     _attr_translation_key = "watched_episodes"
     _attr_icon = "mdi:video-check"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -990,6 +999,7 @@ class JellyHAWatchedSeriesSensor(JellyHABaseSensor):
 
     _attr_translation_key = "watched_series"
     _attr_icon = "mdi:video-check-outline"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -1017,6 +1027,7 @@ class JellyHAWatchedMoviesSensor(JellyHABaseSensor):
 
     _attr_translation_key = "watched_movies"
     _attr_icon = "mdi:movie-check"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -1044,6 +1055,7 @@ class JellyHAMoviesCountSensor(JellyHABaseSensor):
 
     _attr_translation_key = "movies"
     _attr_icon = "mdi:movie"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -1089,6 +1101,7 @@ class JellyHASeriesCountSensor(JellyHABaseSensor):
 
     _attr_translation_key = "series"
     _attr_icon = "mdi:television-classic"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -1138,6 +1151,7 @@ class JellyHAEpisodesCountSensor(JellyHABaseSensor):
 
     _attr_translation_key = "episodes"
     _attr_icon = "mdi:television-play"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -1339,6 +1353,7 @@ class JellyHATranscodingSessionsSensor(CoordinatorEntity[JellyHASessionCoordinat
     _attr_has_entity_name = True
     _attr_translation_key = "transcoding_streams"
     _attr_icon = "mdi:sync"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -1420,6 +1435,7 @@ class JellyHAMediaStorageFreeSensor(JellyHABaseSensor):
     _attr_device_class = SensorDeviceClass.DATA_SIZE
     _attr_native_unit_of_measurement = UnitOfInformation.GIGABYTES
     _attr_suggested_display_precision = 1
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
