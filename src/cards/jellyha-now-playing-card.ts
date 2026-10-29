@@ -247,18 +247,20 @@ export class JellyHANowPlayingCard extends LitElement {
             : (episodeImageUrl || attributes.image_url || (stateObj.attributes as any).entity_picture || cachedItem?.poster_url);
         const imageUrl = rawImageUrl;
 
-        // Cache backdrop URL to prevent flicker - update when item or series image toggle changes
+        // Cache backdrop URL to prevent flicker - update when item, series image toggle, or signed URL changes
         const currentItemId = itemId || attributes.item_id || (stateObj.attributes as any).media_content_id;
+        const rawBackdropUrl = attributes.backdrop_url || cachedItem?.backdrop_url || rawImageUrl;
+        const nextBackdropUrl = rawBackdropUrl ? addImageParams(rawBackdropUrl, 640) : undefined;
         const backdropCacheKey = `${currentItemId}_${this._config.use_series_image ? 'series' : 'item'}`;
-        if (backdropCacheKey !== this._cachedItemId) {
+        if (backdropCacheKey !== this._cachedItemId || (nextBackdropUrl && nextBackdropUrl !== this._cachedBackdropUrl)) {
             this._cachedItemId = backdropCacheKey;
-            const rawBackdropUrl = attributes.backdrop_url || cachedItem?.backdrop_url || rawImageUrl;
-            this._cachedBackdropUrl = rawBackdropUrl ? addImageParams(rawBackdropUrl, 640) : undefined;
+            this._cachedBackdropUrl = nextBackdropUrl;
         }
 
-        // Extract dominant color when item or series image toggle changes
-        if (backdropCacheKey !== this._cachedColorItemId && imageUrl) {
-            this._cachedColorItemId = backdropCacheKey;
+        // Extract dominant color when item, series image toggle, or image URL changes
+        const colorCacheKey = `${backdropCacheKey}_${imageUrl || ''}`;
+        if (colorCacheKey !== this._cachedColorItemId && imageUrl) {
+            this._cachedColorItemId = colorCacheKey;
             this._extractDominantColor(addImageParams(imageUrl, 80));
         }
 
@@ -2386,6 +2388,7 @@ export class JellyHANowPlayingCard extends LitElement {
         haCard.classList.toggle('compact-width', isNarrow);
 
         const titleRowEl = (this.shadowRoot?.querySelector('.title-row') || this.shadowRoot?.querySelector('.title')) as HTMLElement;
+        const infoMiddleEl = (this.shadowRoot?.querySelector('.info-middle') || this.shadowRoot?.querySelector('.info-top')) as HTMLElement;
         const bottomEl = this.shadowRoot?.querySelector('.info-bottom') as HTMLElement;
         const infoContainerEl = this.shadowRoot?.querySelector('.info-container') as HTMLElement;
 
@@ -2393,13 +2396,14 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const bottomRect = bottomEl.getBoundingClientRect();
         const titleRect = titleRowEl ? titleRowEl.getBoundingClientRect() : null;
+        const infoRect = infoContainerEl ? infoContainerEl.getBoundingClientRect() : null;
 
         // Space available for middle metadata between title-row and controls
-        const titleBottom = titleRect ? titleRect.bottom : (infoContainerEl ? infoContainerEl.getBoundingClientRect().top + 32 : cardRect.top + 32);
+        const titleBottom = titleRect ? titleRect.bottom : (infoRect ? infoRect.top + 32 : cardRect.top + 32);
         const rawMiddle = bottomRect.top - titleBottom;
         // If bottom section itself is pushed down past the card bottom boundary, clamp middle space immediately
-        const overflowPastCard = bottomRect.bottom - (cardRect.bottom - 6);
-        const availableMiddleHeight = overflowPastCard > 0 ? Math.min(rawMiddle - overflowPastCard, 0) : rawMiddle;
+        const overflowPastCard = bottomRect.bottom - (cardRect.bottom - 2);
+        const availableMiddleHeight = overflowPastCard > 0 ? Math.max(0, rawMiddle - overflowPastCard) : rawMiddle;
 
         const stateObj = this._config?.entity ? this.hass?.states[this._config.entity] : null;
         const attrs = stateObj?.attributes as any;
@@ -2428,27 +2432,45 @@ export class JellyHANowPlayingCard extends LitElement {
         const hasGenres = genres.length > 0;
         const hasBaseMeta = isInlineBadge || !!yearStr || !!runtimeStr || !!ratingStr;
 
-        // Metadata heights:
-        // Subtitle: line height ~16px + margin-bottom 6px = 22px
-        const hSubtitle = hasSubtitle ? 22 : 0;
+        // Metadata heights (compact-height reduces vertical margins to fit standard 3-row cards):
+        const hSubtitle = hasSubtitle ? (isCompact ? 20 : 22) : 0;
+        const lineMetaHeight = isCompact ? 26 : 29;
+        const wrappedLineHeight = isCompact ? 25 : 27;
+        const hBaseMeta = hasBaseMeta ? lineMetaHeight : 0;
 
-        // Base metadata (inline badge, year, runtime, rating):
-        // Height of pills is 22px + margin-top 4px + margin-bottom 3px = 29px
-        const hBaseMeta = hasBaseMeta ? 29 : 0;
+        // Estimate width of metadata row to detect whether genres wrap onto an additional line
+        const availableWidth = Math.max(
+            120,
+            infoRect && infoRect.width > 0 ? infoRect.width : (bottomRect.width > 0 ? bottomRect.width : cardRect.width - 140)
+        );
+        let metaWidth = 0;
+        if (isInlineBadge) metaWidth += 60;
+        if (yearStr) metaWidth += (metaWidth > 0 ? 18 : 0) + 36;
+        if (runtimeStr) metaWidth += (metaWidth > 0 ? 18 : 0) + 48;
+        if (ratingStr) metaWidth += (metaWidth > 0 ? 18 : 0) + 48;
 
-        // Genres:
-        // When inline badge / year / runtime / rating is present, 3 genres wrap onto an additional line (+27px).
-        // When there is no base meta, genres take line 1 (29px) and wrap to line 2 (+27px) if many.
         let hGenres = 0;
         if (hasGenres) {
+            let currentLineWidth = metaWidth;
+            let genreLines = hasBaseMeta ? 0 : 1;
+            for (let i = 0; i < genres.length; i++) {
+                const pillWidth = Math.max(36, String(genres[i]).length * 7.2 + 16);
+                const gapBefore = currentLineWidth > 0 ? (i === 0 && hasBaseMeta ? 18 : 8) : 0;
+                if (currentLineWidth > 0 && currentLineWidth + gapBefore + pillWidth > availableWidth) {
+                    genreLines++;
+                    currentLineWidth = pillWidth;
+                } else {
+                    currentLineWidth += gapBefore + pillWidth;
+                }
+            }
             if (hasBaseMeta) {
-                hGenres = 27;
+                hGenres = genreLines * wrappedLineHeight;
             } else {
-                hGenres = genres.length > 2 ? 56 : 29;
+                hGenres = lineMetaHeight + Math.max(0, genreLines - 1) * wrappedLineHeight;
             }
         }
 
-        // Client line: font-size 0.8rem, margin-top 7px = 22px
+        // Client line: font-size 0.8rem, margin-top 7px (22px) or 3px in compact mode (18px)
         const effectiveUser = attrs?.user_name || (this.hass as any)?.user?.name || '';
         const userName = (this._config?.show_user !== false) ? effectiveUser : '';
         const effectiveClient = attrs?.client || (stateObj?.attributes as any)?.app_name || (stateObj?.attributes as any)?.friendly_name || '';
@@ -2456,7 +2478,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const deviceInfo = (this._config?.show_device_name === true) ? (attrs?.device_name || '') : '';
         const sourceInfo = [...new Set([deviceInfo, clientInfo].filter(Boolean))].join(' · ');
         const hasClient = !!(userName || sourceInfo);
-        const clientHeight = hasClient ? 22 : 0;
+        const clientHeight = hasClient ? (isCompact ? 18 : 22) : 0;
 
         // Cumulative middle heights:
         // Level 4: Title only (0px in middle)
@@ -2470,8 +2492,15 @@ export class JellyHANowPlayingCard extends LitElement {
         // Level 0: Title + Subtitle + Base Meta + Genres + Client
         const hMid0 = hMid1 + clientHeight;
 
-        // Space available for middle section (with 4px safety margin):
-        const SAFE_MID = availableMiddleHeight - 4;
+        // Space available for middle section. If all items are currently rendered in auto-height mode
+        // without overflowing .info-middle or pushing .info-bottom past the card, preserve state 0.
+        const domFitsAtZero =
+            this._overflowState === 0 &&
+            overflowPastCard <= 0 &&
+            infoMiddleEl &&
+            infoMiddleEl.clientHeight > 0 &&
+            infoMiddleEl.scrollHeight <= infoMiddleEl.clientHeight + 1;
+        const SAFE_MID = domFitsAtZero ? Math.max(availableMiddleHeight, hMid0) : (availableMiddleHeight - 2);
 
         // Choose state with 4px hysteresis headroom when stepping down to a less restrictive state
         const cur = this._overflowState;
@@ -3619,6 +3648,20 @@ export class JellyHANowPlayingCard extends LitElement {
             font-size: 1.25rem !important;
             line-height: 1.2 !important;
             margin: 0 !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .subtitle {
+            font-size: 0.95rem !important;
+            line-height: 1.2 !important;
+            margin-bottom: 2px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .meta-line {
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
+            gap: 3px 6px !important;
+        }
+        ha-card:not(.empty-state):not(.error-state).compact-height .client-line {
+            margin-top: 3px !important;
+            line-height: 1.2 !important;
         }
         ha-card:not(.empty-state):not(.error-state).compact-height .header-actions {
             margin: 0 !important;

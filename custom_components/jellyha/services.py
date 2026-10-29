@@ -36,6 +36,15 @@ from .security import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _sign_path(hass: HomeAssistant, path: str, expiration: timedelta) -> str:
+    """Sign a path using Home Assistant's persistent content user rather than a transient session."""
+    try:
+        return async_sign_path(hass, path, expiration, use_content_user=True)
+    except TypeError:
+        return async_sign_path(hass, path, expiration)
+
+
 # Service Constants
 SERVICE_PLAY_ON_CHROMECAST = "play_on_chromecast"
 SERVICE_REFRESH_LIBRARY = "refresh_library"
@@ -580,7 +589,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 base_url = None
 
         primary_thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{target_img_item_id}/Primary"
-        primary_img_url = async_sign_path(hass, primary_thumb_path, timedelta(hours=24))
+        primary_img_url = _sign_path(hass, primary_thumb_path, timedelta(hours=24))
         if base_url and primary_img_url and primary_img_url.startswith("/"):
             primary_img_url = f"{base_url.rstrip('/')}{primary_img_url}"
         elif not primary_img_url:
@@ -597,7 +606,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
             # Also include episode still as secondary image in metadata
             if target_img_item_id != item_id:
                 ep_thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{item_id}/Primary"
-                episode_img_url = async_sign_path(hass, ep_thumb_path, timedelta(hours=24))
+                episode_img_url = _sign_path(hass, ep_thumb_path, timedelta(hours=24))
                 if base_url and episode_img_url and episode_img_url.startswith("/"):
                     episode_img_url = f"{base_url.rstrip('/')}{episode_img_url}"
                 elif not episode_img_url:
@@ -871,15 +880,15 @@ async def async_register_services(hass: HomeAssistant) -> None:
         media_url = item.get("stream_url")
         if not media_url:
             stream_path = api.get_stream_path(coordinator.entry.entry_id, item_id, item_type="Audio")
-            media_url = async_sign_path(hass, stream_path, timedelta(hours=24))
+            media_url = _sign_path(hass, stream_path, timedelta(hours=24))
 
         # Cover art: signed Home Assistant proxy URL
         thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{item_id}/Primary"
-        thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+        thumb_url = _sign_path(hass, thumb_path, timedelta(hours=24))
         album_id = item.get("album_id")
         if not thumb_url and album_id:
             thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{album_id}/Primary"
-            thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+            thumb_url = _sign_path(hass, thumb_path, timedelta(hours=24))
 
         base_url = None
         if get_url:
@@ -1112,13 +1121,13 @@ async def async_register_services(hass: HomeAssistant) -> None:
         media_url = first_transformed.get("stream_url")
         if not media_url:
             stream_path = api.get_stream_path(coordinator.entry.entry_id, first_id, item_type="Audio")
-            media_url = async_sign_path(hass, stream_path, timedelta(hours=24))
+            media_url = _sign_path(hass, stream_path, timedelta(hours=24))
 
         thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{first_id}/Primary"
-        thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+        thumb_url = _sign_path(hass, thumb_path, timedelta(hours=24))
         if not thumb_url and playlist_id:
             thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{playlist_id}/Primary"
-            thumb_url = async_sign_path(hass, thumb_path, timedelta(hours=24))
+            thumb_url = _sign_path(hass, thumb_path, timedelta(hours=24))
 
         base_url = None
         if get_url:
@@ -1228,7 +1237,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
             img_url = None
             if pid:
                 img_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{pid}/Primary"
-                img_url = async_sign_path(hass, img_path, timedelta(hours=24))
+                img_url = _sign_path(hass, img_path, timedelta(hours=24))
             playlists.append(
                 {
                     "id": pid,
@@ -1276,9 +1285,9 @@ async def async_register_services(hass: HomeAssistant) -> None:
             backdrop_url = None
             if cid:
                 img_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{cid}/Primary"
-                img_url = async_sign_path(hass, img_path, timedelta(hours=24))
+                img_url = _sign_path(hass, img_path, timedelta(hours=24))
                 bd_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{cid}/Backdrop"
-                backdrop_url = async_sign_path(hass, bd_path, timedelta(hours=24))
+                backdrop_url = _sign_path(hass, bd_path, timedelta(hours=24))
             col_data = {
                 "id": cid,
                 "name": c.get("Name", "Unknown Collection"),

@@ -63,6 +63,15 @@ _LOGGER = logging.getLogger(__name__)
 # Temporarily lower this value (e.g. 60) for quick manual testing.
 _URL_CACHE_TTL = 23 * 3600  # 23 hours
 
+
+def _sign_path(hass: HomeAssistant, path: str, expiration: timedelta) -> str:
+    """Sign a path using Home Assistant's persistent content user rather than a transient WebSocket session."""
+    try:
+        return async_sign_path(hass, path, expiration, use_content_user=True)
+    except TypeError:
+        return async_sign_path(hass, path, expiration)
+
+
 class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Coordinator to fetch media library items from Jellyfin."""
 
@@ -411,7 +420,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             poster_url = cached[0]
         else:
             poster_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Primary?tag={poster_tag}"
-            poster_url = async_sign_path(self.hass, poster_path, expiration)
+            poster_url = _sign_path(self.hass, poster_path, expiration)
             self._url_cache[poster_cache_key] = (poster_url, now)
 
         backdrop_url = None
@@ -429,7 +438,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 backdrop_url = cached[0]
             else:
                 backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{backdrop_item_id}/Backdrop?tag={backdrop_tag}"
-                backdrop_url = async_sign_path(self.hass, backdrop_path, expiration)
+                backdrop_url = _sign_path(self.hass, backdrop_path, expiration)
                 self._url_cache[backdrop_cache_key] = (backdrop_url, now)
 
         # Cache series poster URL for episodes
@@ -444,7 +453,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     series_poster_url = cached[0]
                 else:
                     series_path = f"/api/jellyha/image/{self.entry.entry_id}/{series_id}/Primary?tag={series_tag}"
-                    series_poster_url = async_sign_path(self.hass, series_path, expiration)
+                    series_poster_url = _sign_path(self.hass, series_path, expiration)
                     self._url_cache[series_cache_key] = (series_poster_url, now)
 
         # Extract media streams if present
@@ -488,7 +497,7 @@ class JellyHALibraryCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         stream_url = None
         if self._api and item_id and item_type in ("Audio", "MusicAlbum", "MusicArtist"):
             stream_path = self._api.get_stream_path(self.entry.entry_id, item_id, item_type="Audio")
-            stream_url = async_sign_path(self.hass, stream_path, expiration)
+            stream_url = _sign_path(self.hass, stream_path, expiration)
 
         # Build direct Jellyfin web UI link
         jellyfin_url = None
@@ -696,7 +705,7 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                         s["jellyha_poster_url"] = cached[0]
                     else:
                         poster_path = f"/api/jellyha/image/{self.entry.entry_id}/{item_id}/Primary?tag={poster_tag}"
-                        s["jellyha_poster_url"] = async_sign_path(self.hass, poster_path, expiration)
+                        s["jellyha_poster_url"] = _sign_path(self.hass, poster_path, expiration)
                         self._url_cache[poster_cache_key] = (s["jellyha_poster_url"], now)
                     
                     # Cache backdrop URL
@@ -714,7 +723,7 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                             s["jellyha_backdrop_url"] = cached[0]
                         else:
                             backdrop_path = f"/api/jellyha/image/{self.entry.entry_id}/{backdrop_item_id}/Backdrop?tag={backdrop_tag}"
-                            s["jellyha_backdrop_url"] = async_sign_path(self.hass, backdrop_path, expiration)
+                            s["jellyha_backdrop_url"] = _sign_path(self.hass, backdrop_path, expiration)
                             self._url_cache[backdrop_cache_key] = (s["jellyha_backdrop_url"], now)
                     
                     # Cache series poster URL for episodes
@@ -728,7 +737,7 @@ class JellyHASessionCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
                                 s["jellyha_series_poster_url"] = cached[0]
                             else:
                                 series_path = f"/api/jellyha/image/{self.entry.entry_id}/{series_id}/Primary?tag={series_tag}"
-                                s["jellyha_series_poster_url"] = async_sign_path(self.hass, series_path, expiration)
+                                s["jellyha_series_poster_url"] = _sign_path(self.hass, series_path, expiration)
                                 self._url_cache[series_cache_key] = (s["jellyha_series_poster_url"], now)
 
     async def _handle_ws_session_update(self, sessions: list[dict[str, Any]]) -> None:
