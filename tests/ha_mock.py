@@ -121,7 +121,7 @@ sys.modules["homeassistant.helpers.update_coordinator"].CoordinatorEntity = Mock
 sys.modules["homeassistant.components.media_player"].MediaPlayerEntity = MockMediaPlayerEntity
 
 auth_mod = sys.modules["homeassistant.components.http.auth"]
-auth_mod.async_sign_path = lambda hass, path, expiration=None: f"{path}{'&' if '?' in path else '?'}authSig=mock_sig"
+auth_mod.async_sign_path = lambda hass, path, expiration=None, **kwargs: f"{path}{'&' if '?' in path else '?'}authSig=mock_sig"
 
 ws_mod = sys.modules["homeassistant.components.websocket_api"]
 ws_mod.async_response = lambda func: func

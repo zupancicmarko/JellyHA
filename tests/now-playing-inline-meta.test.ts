@@ -497,5 +497,192 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
             expect(str).toContain('seek-handle');
             expect(str).toContain('calc(0% + (50 - 0) * 0.12px)');
         });
+
+        const createMockLayoutEl = (rect: { top: number; bottom: number; height: number; width: number }, extra: Record<string, any> = {}) => {
+            const classes = new Set<string>();
+            return {
+                classList: {
+                    contains: (c: string) => classes.has(c),
+                    toggle: (c: string, force?: boolean) => {
+                        if (force === undefined ? !classes.has(c) : force) classes.add(c);
+                        else classes.delete(c);
+                    },
+                    remove: (...cs: string[]) => cs.forEach(c => classes.delete(c)),
+                },
+                getBoundingClientRect: () => ({ left: 0, right: rect.width, x: 0, y: rect.top, toJSON: () => {}, ...rect }),
+                ...extra,
+            };
+        };
+
+        it('keeps _overflowState at 0 (showing user_name, client, and device_name) for TV episodes with year and genres in a standard 3-row card when badge_style is poster', () => {
+            const card = new JellyHANowPlayingCard();
+            card.setConfig({
+                type: 'custom:jellyha-now-playing-card',
+                entity: 'media_player.jellyfin',
+                badge_style: 'poster',
+                show_media_type_badge: true,
+                show_year: true,
+                show_genres: true,
+                show_client: true,
+                show_user: true,
+                show_device_name: true,
+                show_subtitle: true,
+            } as JellyHANowPlayingCardConfig);
+
+            card.hass = createMockHass('playing', {
+                item_id: 'ep_101',
+                media_title: 'Bad Optics',
+                series_title: 'Lanterns',
+                media_content_type: 'episode',
+                media_type: 'Episode',
+                season: 1,
+                episode: 6,
+                year: 2026,
+                genres: ['Action', 'Adventure', 'Crime'],
+                user_name: 'Alice',
+                client: 'Jellyfin Mobile (iOS)',
+                device_name: 'iPhone',
+                entity_picture: '/api/lanterns.jpg',
+            });
+
+            // Mock standard 3-row Lovelace card geometry (184px height, 480px width)
+            const haCardEl = createMockLayoutEl({ top: 0, bottom: 184, height: 184, width: 480 });
+            const titleRowEl = createMockLayoutEl({ top: 10, bottom: 36, height: 26, width: 320 });
+            const bottomEl = createMockLayoutEl({ top: 117, bottom: 176, height: 59, width: 320 });
+            const infoContainerEl = createMockLayoutEl({ top: 10, bottom: 176, height: 166, width: 320 });
+
+            (card as any).getBoundingClientRect = () => ({ top: 0, bottom: 184, height: 184, width: 480, left: 0, right: 480, x: 0, y: 0, toJSON: () => {} });
+            Object.defineProperty(card, 'shadowRoot', {
+                value: {
+                    querySelector: (sel: string) => {
+                        if (sel === 'ha-card') return haCardEl;
+                        if (sel === '.title-row') return titleRowEl;
+                        if (sel === '.info-bottom') return bottomEl;
+                        if (sel === '.info-container') return infoContainerEl;
+                        return null;
+                    },
+                },
+                configurable: true,
+            });
+
+            (card as any)._doLayoutCheck();
+            expect((card as any)._overflowState).toBe(0);
+
+            const rendered = JSON.stringify((card as any).render());
+            expect(rendered).toContain('client-line');
+            expect(rendered).toContain('Alice');
+            expect(rendered).toContain('iPhone · Jellyfin Mobile (iOS)');
+        });
+
+        it('does not collapse _overflowState to 4 when bottom controls sit near the bottom edge of a compact card', () => {
+            const card = setupCardWithState(0);
+
+            // bottomRect.bottom = 183 on a 184px card (within 6px of cardRect.bottom)
+            const haCardEl = createMockLayoutEl({ top: 0, bottom: 184, height: 184, width: 480 });
+            const titleRowEl = createMockLayoutEl({ top: 10, bottom: 34, height: 24, width: 340 });
+            const bottomEl = createMockLayoutEl({ top: 126, bottom: 183, height: 57, width: 340 });
+            const infoContainerEl = createMockLayoutEl({ top: 10, bottom: 183, height: 173, width: 340 });
+
+            (card as any).getBoundingClientRect = () => ({ top: 0, bottom: 184, height: 184, width: 480, left: 0, right: 480, x: 0, y: 0, toJSON: () => {} });
+            Object.defineProperty(card, 'shadowRoot', {
+                value: {
+                    querySelector: (sel: string) => {
+                        if (sel === 'ha-card') return haCardEl;
+                        if (sel === '.title-row') return titleRowEl;
+                        if (sel === '.info-bottom') return bottomEl;
+                        if (sel === '.info-container') return infoContainerEl;
+                        return null;
+                    },
+                },
+                configurable: true,
+            });
+
+            (card as any)._doLayoutCheck();
+            expect((card as any)._overflowState).toBeLessThan(4);
+        });
+
+        it('updates cached backdrop URL when authSig changes for the same item_id after HA restart', () => {
+            const card = new JellyHANowPlayingCard();
+            card.setConfig({
+                type: 'custom:jellyha-now-playing-card',
+                entity: 'media_player.jellyfin',
+                show_background: true,
+            } as JellyHANowPlayingCardConfig);
+
+            card.hass = createMockHass('playing', {
+                item_id: 'mov_123',
+                media_title: 'Inception',
+                backdrop_url: '/api/jellyha/image/entry1/mov_123/Backdrop?tag=abc&authSig=old_sig',
+                image_url: '/api/jellyha/image/entry1/mov_123/Primary?tag=def&authSig=old_sig',
+            });
+            (card as any).render();
+            expect((card as any)._cachedBackdropUrl).toContain('authSig=old_sig');
+
+            // Simulate HA restart updating the entity attributes with a newly signed URL for the same item
+            card.hass = createMockHass('playing', {
+                item_id: 'mov_123',
+                media_title: 'Inception',
+                backdrop_url: '/api/jellyha/image/entry1/mov_123/Backdrop?tag=abc&authSig=new_sig',
+                image_url: '/api/jellyha/image/entry1/mov_123/Primary?tag=def&authSig=new_sig',
+            });
+            (card as any).render();
+            expect((card as any)._cachedBackdropUrl).toContain('authSig=new_sig');
+        });
+
+        it('does not hide client-line in auto-height (Masonry/stack) layouts when info-middle fits without overflow', () => {
+            const card = new JellyHANowPlayingCard();
+            card.setConfig({
+                type: 'custom:jellyha-now-playing-card',
+                entity: 'media_player.jellyfin',
+                badge_style: 'poster',
+                show_year: true,
+                show_genres: true,
+                show_client: true,
+                show_user: true,
+                show_device_name: true,
+                show_subtitle: true,
+            } as JellyHANowPlayingCardConfig);
+
+            card.hass = createMockHass('playing', {
+                item_id: 'ep_102',
+                media_title: 'Pilot',
+                series_title: 'Severance',
+                media_content_type: 'episode',
+                media_type: 'Episode',
+                season: 1,
+                episode: 1,
+                year: 2022,
+                genres: ['Drama', 'Sci-Fi'],
+                user_name: 'Mark',
+                client: 'Jellyfin Web',
+                device_name: 'Chrome',
+            });
+
+            // In auto-height layout (or when poster image fails/is loading), bottomRect.top - titleRect.bottom
+            // equals the exact rendered height of .info-middle (64px) with no scroll overflow.
+            const haCardEl = createMockLayoutEl({ top: 0, bottom: 165, height: 165, width: 480 });
+            const titleRowEl = createMockLayoutEl({ top: 10, bottom: 34, height: 24, width: 320 });
+            const infoMiddleEl = createMockLayoutEl({ top: 34, bottom: 98, height: 64, width: 320 }, { clientHeight: 64, scrollHeight: 64 });
+            const bottomEl = createMockLayoutEl({ top: 98, bottom: 155, height: 57, width: 320 });
+            const infoContainerEl = createMockLayoutEl({ top: 10, bottom: 155, height: 145, width: 320 });
+
+            (card as any).getBoundingClientRect = () => ({ top: 0, bottom: 165, height: 165, width: 480, left: 0, right: 480, x: 0, y: 0, toJSON: () => {} });
+            Object.defineProperty(card, 'shadowRoot', {
+                value: {
+                    querySelector: (sel: string) => {
+                        if (sel === 'ha-card') return haCardEl;
+                        if (sel === '.title-row') return titleRowEl;
+                        if (sel === '.info-middle' || sel === '.info-top') return infoMiddleEl;
+                        if (sel === '.info-bottom') return bottomEl;
+                        if (sel === '.info-container') return infoContainerEl;
+                        return null;
+                    },
+                },
+                configurable: true,
+            });
+
+            (card as any)._doLayoutCheck();
+            expect((card as any)._overflowState).toBe(0);
+        });
     });
 });

@@ -77,6 +77,46 @@ class TestViewsAuthentication(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(response.status, 401, f"Expected 401 Unauthorized, got {response.status}")
 
+    async def test_coordinator_signs_cached_image_urls_with_content_user(self):
+        """Verify coordinator signs cached Primary and Backdrop URLs with use_content_user=True so closing a private browser WS session does not invalidate cached URLs."""
+        import custom_components.jellyha.coordinator as coord_mod
+        from unittest.mock import patch
+
+        mock_entry = MagicMock()
+        mock_entry.entry_id = "01KMBE8QY54E8PPTNKYYD3FXGT"
+        mock_entry.data = {"refresh_interval": 300}
+        mock_entry.options = {}
+
+        coordinator = coord_mod.JellyHALibraryCoordinator(self.hass, mock_entry)
+        calls = []
+
+        def fake_sign_path(hass, path, expiration=None, *, refresh_token_id=None, use_content_user=False):
+            calls.append({"path": path, "use_content_user": use_content_user})
+            return f"{path}&authSig={'content_user_sig' if use_content_user else 'ws_session_sig'}"
+
+        raw_item = {
+            "Id": "ep_123",
+            "Name": "Pilot",
+            "Type": "Episode",
+            "SeriesId": "series_456",
+            "SeriesPrimaryImageTag": "stag1",
+            "ImageTags": {"Primary": "ptag1"},
+            "BackdropImageTags": ["btag1"],
+        }
+
+        with patch.object(coord_mod, "async_sign_path", side_effect=fake_sign_path):
+            transformed = await coordinator._async_transform_item(raw_item)
+
+        self.assertTrue(len(calls) >= 3)
+        for call in calls:
+            self.assertTrue(
+                call["use_content_user"],
+                f"Expected use_content_user=True for {call['path']} to prevent 401 when WS session ends",
+            )
+        self.assertIn("content_user_sig", transformed["poster_url"])
+        self.assertIn("content_user_sig", transformed["backdrop_url"])
+        self.assertIn("content_user_sig", transformed["series_poster_url"])
+
 
 if __name__ == "__main__":
     unittest.main()
