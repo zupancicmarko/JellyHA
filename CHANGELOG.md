@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.7.5] - 2026-10-31
 
 ### Fixed
+- **Now Playing Card Mobile Client Line Visibility** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)):
+  - Removed narrow container query suppression (`@container now-playing (max-width: 320px)`) that unconditionally hid `.client-line` on mobile dashboards and narrow cards, allowing username, client, and device info to render reliably with text truncation.
+
+## [1.7.4] - 2026-10-29
+
+### Fixed
 - **Now Playing Card Intermittent Missing Username, Client, and Device Name** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)):
-  - Removed narrow container query suppression (`@container now-playing (max-width: 320px)`) that unconditionally hid `.client-line` on mobile dashboards and narrow cards.
   - Fixed hardcoded genre height overestimation in `_doLayoutCheck()`: replaced unconditional second-line wrapping assumption (`hGenres = 27`) with dynamic width-based estimation against `.info-container`, ensuring TV episodes with year and genre pills in `poster` and `header` badge modes fit on a single line without falsely pushing the card into `_overflowState = 1` (which hid the client line).
   - Fixed `Math.min` typo in `availableMiddleHeight` clamping calculation (`Math.max(0, rawMiddle - overflowPastCard)`), preventing cards with controls near the bottom edge from collapsing to `_overflowState = 4`.
   - Fixed auto-height layout feedback loop: preserved `_overflowState = 0` in unconstrained / Masonry / stack layouts when `.info-middle` fits without vertical scroll overflow and controls remain within bounds.
