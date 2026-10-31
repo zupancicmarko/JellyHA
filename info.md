@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.7.4** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.5** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,9 +8,9 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.7.4
+### 🆕 What's new in v1.7.5
 
-- 👤 **Reliable Username, Client & Device Visibility on Now Playing Card** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)) — Fixed layout overflow calculation that caused username, client, and device name to intermittently disappear on TV episodes with metadata in compact and auto-height card layouts.
+- 👤 **Reliable Username, Client & Device Visibility on Now Playing Card** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)) — Fixed layout overflow calculations and narrow container query rules that caused username, client, and device name to intermittently disappear on TV episodes with metadata in mobile, compact, and auto-height card layouts.
 - 🖼️ **Persistent Image Proxy Authentication** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)) — Signed image and backdrop URLs now use Home Assistant's persistent content system user and auto-refresh on HA restart, preventing `401 Unauthorized` errors when browsing in private windows or after restart.
 
 ---

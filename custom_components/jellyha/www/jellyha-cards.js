@@ -9277,7 +9277,7 @@ var qi = Object.defineProperty, Wi = Object.getOwnPropertyDescriptor, M = (e, t,
     (r = e[a]) && (s = (o ? r(t, i, s) : r(s)) || s);
   return o && s && qi(t, i, s), s;
 };
-const Vi = "1.7.4";
+const Vi = "1.7.5";
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${Vi} `,
   "color: white; background: #00a4dc; font-weight: bold;",
