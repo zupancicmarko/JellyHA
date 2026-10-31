@@ -684,5 +684,13 @@ describe('Now Playing Card - Inline Badge Style & Metadata Layout', () => {
             (card as any)._doLayoutCheck();
             expect((card as any)._overflowState).toBe(0);
         });
+
+        it('does not unconditionally hide client-line or meta-line via max-width: 320px container query', async () => {
+            const { JellyHANowPlayingCard } = await import('../src/cards/jellyha-now-playing-card');
+            const styles = (JellyHANowPlayingCard as any).styles;
+            const cssText = Array.isArray(styles) ? styles.map((s: any) => s.cssText).join(' ') : (styles?.cssText || '');
+
+            expect(cssText).not.toMatch(/@container\s+now-playing\s*\(max-width:\s*320px\)\s*\{[^}]*\.client-line\s*\{[^}]*display:\s*none/);
+        });
     });
 });

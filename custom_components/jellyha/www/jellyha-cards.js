@@ -13638,11 +13638,8 @@ A.styles = ze`
             }
         }
 
-        /* Hide meta/client lines when narrow */
+        /* Adjust layout when narrow */
         @container now-playing (max-width: 320px) {
-            .meta-line, .client-line {
-                display: none !important;
-            }
             .title {
                 font-size: 1.25rem;
                 margin-bottom: 2px;
