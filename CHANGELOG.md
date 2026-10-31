@@ -5,6 +5,24 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.5] - 2026-10-31
+
+### Fixed
+- **Now Playing Card Mobile Client Line Visibility** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)):
+  - Removed narrow container query suppression (`@container now-playing (max-width: 320px)`) that unconditionally hid `.client-line` on mobile dashboards and narrow cards, allowing username, client, and device info to render reliably with text truncation.
+
+## [1.7.4] - 2026-10-29
+
+### Fixed
+- **Now Playing Card Intermittent Missing Username, Client, and Device Name** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)):
+  - Fixed hardcoded genre height overestimation in `_doLayoutCheck()`: replaced unconditional second-line wrapping assumption (`hGenres = 27`) with dynamic width-based estimation against `.info-container`, ensuring TV episodes with year and genre pills in `poster` and `header` badge modes fit on a single line without falsely pushing the card into `_overflowState = 1` (which hid the client line).
+  - Fixed `Math.min` typo in `availableMiddleHeight` clamping calculation (`Math.max(0, rawMiddle - overflowPastCard)`), preventing cards with controls near the bottom edge from collapsing to `_overflowState = 4`.
+  - Fixed auto-height layout feedback loop: preserved `_overflowState = 0` in unconstrained / Masonry / stack layouts when `.info-middle` fits without vertical scroll overflow and controls remain within bounds.
+  - Added compact vertical margins for `.subtitle`, `.meta-line`, and `.client-line` under `.compact-height` to guarantee full metadata row headroom in default 3-row grid cards.
+- **Signed Image URL Caching & Private Window Auth Expiry** ([#72](https://github.com/zupancicmarko/JellyHA/issues/72)):
+  - Updated frontend backdrop caching to detect and apply fresh `authSig` tokens for the current item when Home Assistant restarts or tokens refresh.
+  - Updated backend URL signing across `coordinator`, `browse_media`, and `services` to pass `use_content_user=True` when signing proxy URLs for `Primary` and `Backdrop` images and media streams, ensuring cached URLs remain valid under the persistent Home Assistant Content user even after transient WebSocket browser sessions (e.g. private browsing windows) disconnect or expire.
+
 ## [1.7.3] - 2026-10-27
 
 ### Fixed

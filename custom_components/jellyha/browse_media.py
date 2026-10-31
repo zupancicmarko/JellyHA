@@ -93,7 +93,10 @@ def _signed_image_url(
 ) -> str:
     """Build a signed proxy URL for a Jellyfin image (no API key leaked)."""
     path = f"/api/jellyha/image/{entry_id}/{item_id}/{image_type}"
-    return async_sign_path(hass, path, timedelta(hours=24))
+    try:
+        return async_sign_path(hass, path, timedelta(hours=24), use_content_user=True)
+    except TypeError:
+        return async_sign_path(hass, path, timedelta(hours=24))
 
 
 async def async_browse_media(
