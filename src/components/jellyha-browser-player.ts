@@ -9,6 +9,7 @@ export interface BrowserPlayerParams {
     serverEntityId?: string;
     subtitleMode?: 'auto' | 'none' | 'forced_only' | 'custom' | string;
     subtitleLanguage?: string;
+    audioStreamIndex?: number;
 }
 
 export interface BrowserPlayerSubtitleTrack {
@@ -18,6 +19,58 @@ export interface BrowserPlayerSubtitleTrack {
     url: string;
     isDefault: boolean;
 }
+
+export interface BrowserPlayerAudioTrack {
+    index: number;
+    label: string;
+    shortLang: string;
+    details: string;
+    isDefault: boolean;
+}
+
+const LANG_NAMES: Record<string, { name: string; short: string }> = {
+    eng: { name: 'English', short: 'ENG' },
+    en: { name: 'English', short: 'ENG' },
+    slv: { name: 'Slovenian', short: 'SLV' },
+    sl: { name: 'Slovenian', short: 'SLV' },
+    hrv: { name: 'Croatian', short: 'HRV' },
+    hr: { name: 'Croatian', short: 'HRV' },
+    srp: { name: 'Serbian', short: 'SRP' },
+    sr: { name: 'Serbian', short: 'SRP' },
+    bos: { name: 'Bosnian', short: 'BOS' },
+    bs: { name: 'Bosnian', short: 'BOS' },
+    deu: { name: 'German', short: 'DEU' },
+    ger: { name: 'German', short: 'DEU' },
+    de: { name: 'German', short: 'DEU' },
+    fra: { name: 'French', short: 'FRA' },
+    fre: { name: 'French', short: 'FRA' },
+    fr: { name: 'French', short: 'FRA' },
+    spa: { name: 'Spanish', short: 'SPA' },
+    es: { name: 'Spanish', short: 'SPA' },
+    ita: { name: 'Italian', short: 'ITA' },
+    it: { name: 'Italian', short: 'ITA' },
+    jpn: { name: 'Japanese', short: 'JPN' },
+    ja: { name: 'Japanese', short: 'JPN' },
+    kor: { name: 'Korean', short: 'KOR' },
+    ko: { name: 'Korean', short: 'KOR' },
+    zho: { name: 'Chinese', short: 'ZHO' },
+    chi: { name: 'Chinese', short: 'ZHO' },
+    zh: { name: 'Chinese', short: 'ZHO' },
+    rus: { name: 'Russian', short: 'RUS' },
+    ru: { name: 'Russian', short: 'RUS' },
+    pol: { name: 'Polish', short: 'POL' },
+    pl: { name: 'Polish', short: 'POL' },
+    ces: { name: 'Czech', short: 'CES' },
+    cze: { name: 'Czech', short: 'CES' },
+    cs: { name: 'Czech', short: 'CES' },
+    hun: { name: 'Hungarian', short: 'HUN' },
+    hu: { name: 'Hungarian', short: 'HUN' },
+    nld: { name: 'Dutch', short: 'NLD' },
+    dut: { name: 'Dutch', short: 'NLD' },
+    nl: { name: 'Dutch', short: 'NLD' },
+    por: { name: 'Portuguese', short: 'POR' },
+    pt: { name: 'Portuguese', short: 'POR' },
+};
 
 const TEXT_SUBTITLE_CODECS = new Set([
     'subrip', 'srt', 'vtt', 'webvtt', 'mov_text', 'ass', 'ssa', 'text', 'ttml'
@@ -106,9 +159,13 @@ export class JellyHABrowserPlayer extends LitElement {
     @state() private _hlsToken?: string;
     @state() private _item?: MediaItem;
     @state() private _subtitleTracks: BrowserPlayerSubtitleTrack[] = [];
+    @state() private _audioTracks: BrowserPlayerAudioTrack[] = [];
+    @state() private _selectedAudioIndex?: number;
+    @state() private _audioMenuOpen = false;
 
     private _portalContainer: HTMLElement | null = null;
     private _hlsInstance?: any;
+    private _lastParams?: BrowserPlayerParams;
 
     public connectedCallback(): void {
         super.connectedCallback();
@@ -124,6 +181,12 @@ export class JellyHABrowserPlayer extends LitElement {
 
     private _handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape' && this._open) {
+            if (this._audioMenuOpen) {
+                this._audioMenuOpen = false;
+                this._renderPortal();
+                e.stopPropagation();
+                return;
+            }
             this.close();
             e.stopPropagation();
         }
@@ -133,6 +196,7 @@ export class JellyHABrowserPlayer extends LitElement {
         // Clean up any previously active playback session first
         this._teardownActiveSession();
 
+        this._lastParams = params;
         this.hass = params.hass;
         this._item = params.item;
         this._open = true;
@@ -140,6 +204,9 @@ export class JellyHABrowserPlayer extends LitElement {
         this._error = undefined;
         this._streamUrl = undefined;
         this._subtitleTracks = [];
+        this._audioTracks = [];
+        this._selectedAudioIndex = undefined;
+        this._audioMenuOpen = false;
         this._mimeType = params.item.type === 'Audio' ? 'audio/mp4' : 'video/mp4';
 
         this._ensurePortal();
@@ -196,6 +263,10 @@ export class JellyHABrowserPlayer extends LitElement {
                 }
             }
 
+            this._audioTracks = this._resolveAudioTracks(playItem);
+            const defaultAudio = this._audioTracks.find(t => t.isDefault) || this._audioTracks[0];
+            this._selectedAudioIndex = defaultAudio?.index;
+
             const streamInfo = await this._resolveStream({ ...params, item: playItem });
             if (!this._open) {
                 // If user closed dialog while resolution was in-flight, terminate transcode immediately
@@ -239,6 +310,96 @@ export class JellyHABrowserPlayer extends LitElement {
             if (!this._open) return;
             this._loading = false;
             this._error = err?.message || 'Failed to resolve media stream';
+            this._renderPortal();
+        }
+    }
+
+    private _resolveAudioTracks(item: MediaItem): BrowserPlayerAudioTrack[] {
+        if (item.type === 'Audio') return [];
+
+        const audioStreams = (item.media_streams || []).filter(
+            s => s.Type?.toLowerCase() === 'audio'
+        );
+        if (!audioStreams || audioStreams.length === 0) return [];
+
+        const defaultStream = audioStreams.find(s => s.IsDefault) || audioStreams[0];
+
+        return audioStreams.map((s, idx) => {
+            const rawLang = (s.Language || '').trim().toLowerCase();
+            const langInfo = LANG_NAMES[rawLang];
+            const label = langInfo
+                ? langInfo.name
+                : (s.Title || s.DisplayTitle || (rawLang && rawLang !== 'und' ? rawLang.toUpperCase() : `Track ${idx + 1}`));
+            const shortLang = langInfo
+                ? langInfo.short
+                : (rawLang && rawLang !== 'und' ? rawLang.slice(0, 3).toUpperCase() : `TR${idx + 1}`);
+
+            let chLabel = '';
+            if (s.Channels === 6) chLabel = '5.1';
+            else if (s.Channels === 8) chLabel = '7.1';
+            else if (s.Channels === 2) chLabel = 'Stereo';
+            else if (s.Channels === 1) chLabel = 'Mono';
+            else if (s.Channels) chLabel = `${s.Channels} ch`;
+
+            const codecLabel = s.Codec ? s.Codec.toUpperCase() : '';
+            const details = [chLabel, codecLabel].filter(Boolean).join(' • ');
+
+            return {
+                index: s.Index,
+                label,
+                shortLang,
+                details,
+                isDefault: defaultStream ? s.Index === defaultStream.Index : idx === 0,
+            };
+        });
+    }
+
+    private async _selectAudioTrack(index: number): Promise<void> {
+        this._audioMenuOpen = false;
+        if (index === this._selectedAudioIndex || !this._item) {
+            this._renderPortal();
+            return;
+        }
+
+        this._selectedAudioIndex = index;
+
+        // If HLS instance already exposes multi-audio tracks in the manifest, switch directly
+        if (this._hlsInstance && Array.isArray(this._hlsInstance.audioTracks) && this._hlsInstance.audioTracks.length > 1) {
+            const hlsIdx = this._hlsInstance.audioTracks.findIndex((t: any) => t.id === index);
+            if (hlsIdx !== -1) {
+                this._hlsInstance.audioTrack = hlsIdx;
+                this._renderPortal();
+                return;
+            }
+        }
+
+        const video = this._portalContainer?.querySelector('video') as HTMLVideoElement | null;
+        const resumeTime = video ? (video.currentTime || 0) : 0;
+        const wasPaused = video ? video.paused : false;
+
+        // Terminate previous server session & HLS instance before starting new audio stream
+        this._stopServerSession();
+
+        try {
+            const baseParams = this._lastParams || { hass: this.hass, item: this._item };
+            const streamInfo = await this._resolveStream({
+                ...baseParams,
+                hass: this.hass,
+                item: this._item,
+                audioStreamIndex: index,
+            });
+            if (!this._open) {
+                this._teardownActiveSession();
+                return;
+            }
+
+            this._streamUrl = streamInfo.url;
+            this._mimeType = streamInfo.mimeType;
+            this._renderPortal();
+            await this._attachVideoMedia(resumeTime, wasPaused);
+            this._activateDefaultSubtitle();
+        } catch (err: any) {
+            console.error('JellyHA: Failed to switch audio track', err);
             this._renderPortal();
         }
     }
@@ -383,7 +544,7 @@ export class JellyHABrowserPlayer extends LitElement {
         });
     }
 
-    private _teardownActiveSession(): void {
+    private _stopServerSession(): void {
         // Destroy HLS instance if active
         if (this._hlsInstance) {
             try {
@@ -414,6 +575,10 @@ export class JellyHABrowserPlayer extends LitElement {
             this._playSessionId = undefined;
         }
         this._playMethod = 'DirectPlay';
+    }
+
+    private _teardownActiveSession(): void {
+        this._stopServerSession();
 
         // Stop any running media
         if (this._portalContainer) {
@@ -436,16 +601,19 @@ export class JellyHABrowserPlayer extends LitElement {
         this._open = false;
         this._loading = false;
         this._error = undefined;
+        this._audioMenuOpen = false;
 
         this._teardownActiveSession();
 
         this._streamUrl = undefined;
         this._subtitleTracks = [];
+        this._audioTracks = [];
+        this._selectedAudioIndex = undefined;
         this._item = undefined;
         this._renderPortal();
     };
 
-    private async _attachVideoMedia(): Promise<void> {
+    private async _attachVideoMedia(resumeTime = 0, wasPaused = false): Promise<void> {
         if (!this._portalContainer || !this._streamUrl || this._item?.type === 'Audio') return;
 
         const video = this._portalContainer.querySelector('video') as HTMLVideoElement | null;
@@ -457,6 +625,20 @@ export class JellyHABrowserPlayer extends LitElement {
             // Native HLS check (e.g. Safari / iOS)
             if (typeof video.canPlayType === 'function' && video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = this._streamUrl;
+                if (resumeTime > 0 && typeof video.addEventListener === 'function') {
+                    video.addEventListener(
+                        'loadedmetadata',
+                        () => {
+                            try {
+                                video.currentTime = resumeTime;
+                            } catch (e) {
+                                console.debug('JellyHA: Could not seek native HLS stream', e);
+                            }
+                            if (!wasPaused) video.play().catch(() => {});
+                        },
+                        { once: true }
+                    );
+                }
                 return;
             }
 
@@ -471,12 +653,22 @@ export class JellyHABrowserPlayer extends LitElement {
                     const hls = new Hls({
                         enableWorker: true,
                         lowLatencyMode: true,
+                        ...(resumeTime > 0 ? { startPosition: resumeTime } : {}),
                     });
                     this._hlsInstance = hls;
                     hls.loadSource(this._streamUrl);
                     hls.attachMedia(video);
                     hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                        video.play().catch(() => {});
+                        if (resumeTime > 0) {
+                            try {
+                                video.currentTime = resumeTime;
+                            } catch (e) {
+                                console.debug('JellyHA: Could not seek HLS stream on manifest parsed', e);
+                            }
+                        }
+                        if (!wasPaused) {
+                            video.play().catch(() => {});
+                        }
                         this._activateDefaultSubtitle();
                     });
                     hls.on(Hls.Events.ERROR, (_event: any, data: any) => {
@@ -503,6 +695,22 @@ export class JellyHABrowserPlayer extends LitElement {
             } catch (e) {
                 console.error('JellyHA: Error loading hls.js', e);
                 video.src = this._streamUrl;
+            }
+        } else if (resumeTime > 0) {
+            video.src = this._streamUrl;
+            if (typeof video.addEventListener === 'function') {
+                video.addEventListener(
+                    'loadedmetadata',
+                    () => {
+                        try {
+                            video.currentTime = resumeTime;
+                        } catch (e) {
+                            console.debug('JellyHA: Could not seek direct stream', e);
+                        }
+                        if (!wasPaused) video.play().catch(() => {});
+                    },
+                    { once: true }
+                );
             }
         }
     }
@@ -541,6 +749,7 @@ export class JellyHABrowserPlayer extends LitElement {
                 item_id: item.id,
                 ...(entryId ? { config_entry_id: entryId } : {}),
                 ...(params.serverEntityId ? { server_entity_id: params.serverEntityId } : {}),
+                ...(params.audioStreamIndex !== undefined ? { audio_stream_index: params.audioStreamIndex } : {}),
             });
             if (res?.url) {
                 this._playMethod = res.play_method || 'DirectPlay';
@@ -651,6 +860,8 @@ export class JellyHABrowserPlayer extends LitElement {
             }
 
             .jellyha-player-header {
+                position: relative;
+                z-index: 30;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -681,6 +892,140 @@ export class JellyHABrowserPlayer extends LitElement {
                 font-size: 1.05rem;
                 font-weight: 700;
                 color: #ffffff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .jellyha-player-header-actions {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+
+            .jellyha-player-audio-selector {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .jellyha-player-audio-btn {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 17px;
+                height: 34px;
+                padding: 0 12px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                cursor: pointer;
+                color: #ffffff;
+                font-size: 0.8rem;
+                font-weight: 600;
+                letter-spacing: 0.03em;
+                transition: all 0.2s ease;
+            }
+
+            .jellyha-player-audio-btn:hover:not(:disabled),
+            .jellyha-player-audio-btn.active {
+                background: rgba(3, 169, 244, 0.22);
+                border-color: rgba(3, 169, 244, 0.65);
+            }
+
+            .jellyha-player-audio-btn:disabled {
+                cursor: default;
+                opacity: 0.85;
+            }
+
+            .jellyha-audio-chevron {
+                transition: transform 0.2s ease;
+            }
+
+            .jellyha-player-audio-btn.active .jellyha-audio-chevron {
+                transform: rotate(180deg);
+            }
+
+            .jellyha-player-audio-menu {
+                position: absolute;
+                top: calc(100% + 8px);
+                right: 0;
+                z-index: 50;
+                background: #202124;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 12px;
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+                padding: 6px 0;
+                min-width: 220px;
+                max-height: 260px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .jellyha-audio-menu-header {
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: rgba(255, 255, 255, 0.55);
+                padding: 6px 14px 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                margin-bottom: 4px;
+            }
+
+            .jellyha-audio-menu-item {
+                background: transparent;
+                border: none;
+                width: 100%;
+                text-align: left;
+                padding: 8px 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+                color: #ffffff;
+                transition: background 0.15s ease;
+            }
+
+            .jellyha-audio-menu-item:hover {
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .jellyha-audio-menu-item.selected {
+                color: #03a9f4;
+                background: rgba(3, 169, 244, 0.12);
+            }
+
+            .jellyha-audio-item-icon {
+                flex-shrink: 0;
+                opacity: 0.85;
+            }
+
+            .jellyha-audio-menu-item.selected .jellyha-audio-item-icon {
+                color: #03a9f4;
+                opacity: 1;
+            }
+
+            .jellyha-audio-item-info {
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .jellyha-audio-item-title {
+                font-size: 0.88rem;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .jellyha-audio-item-details {
+                font-size: 0.73rem;
+                color: rgba(255, 255, 255, 0.6);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -805,18 +1150,78 @@ export class JellyHABrowserPlayer extends LitElement {
             subtitleText = item.artist_name;
         }
 
+        const activeAudio = this._audioTracks.find(t => t.index === this._selectedAudioIndex) || this._audioTracks[0];
+
         const portalTemplate = html`
             ${this._getPortalStyles()}
             <div class="jellyha-player-scrim" @click=${this.close}>
-                <div class="jellyha-player-surface" @click=${(e: Event) => e.stopPropagation()}>
+                <div
+                    class="jellyha-player-surface"
+                    @click=${(e: Event) => {
+                        e.stopPropagation();
+                        if (this._audioMenuOpen) {
+                            this._audioMenuOpen = false;
+                            this._renderPortal();
+                        }
+                    }}
+                >
                     <div class="jellyha-player-header">
                         <div class="jellyha-player-title-wrap">
                             ${subtitleText ? html`<span class="jellyha-player-subtitle">${subtitleText}</span>` : nothing}
                             <span class="jellyha-player-title" title="${titleText}">${titleText}</span>
                         </div>
-                        <button class="jellyha-player-close-btn" @click=${this.close} aria-label="Close" title="Close">
-                            <ha-icon icon="mdi:close"></ha-icon>
-                        </button>
+                        <div class="jellyha-player-header-actions">
+                            ${!this._loading && !this._error && !isAudio && this._audioTracks.length > 0 ? html`
+                                <div class="jellyha-player-audio-selector">
+                                    <button
+                                        class="jellyha-player-audio-btn ${this._audioMenuOpen ? 'active' : ''}"
+                                        @click=${(e: Event) => {
+                                            e.stopPropagation();
+                                            if (this._audioTracks.length > 1) {
+                                                this._audioMenuOpen = !this._audioMenuOpen;
+                                                this._renderPortal();
+                                            }
+                                        }}
+                                        aria-label="Audio track"
+                                        title="${activeAudio ? `${activeAudio.label}${activeAudio.details ? ` (${activeAudio.details})` : ''}` : 'Audio track'}"
+                                        ?disabled=${this._audioTracks.length <= 1}
+                                    >
+                                        <ha-icon icon="mdi:headphones" style="--mdc-icon-size: 18px;"></ha-icon>
+                                        <span>${activeAudio?.shortLang || 'AUD'}</span>
+                                        ${this._audioTracks.length > 1 ? html`
+                                            <ha-icon icon="mdi:chevron-down" class="jellyha-audio-chevron" style="--mdc-icon-size: 16px;"></ha-icon>
+                                        ` : nothing}
+                                    </button>
+                                    ${this._audioMenuOpen && this._audioTracks.length > 1 ? html`
+                                        <div class="jellyha-player-audio-menu" @click=${(e: Event) => e.stopPropagation()}>
+                                            <div class="jellyha-audio-menu-header">Audio Track</div>
+                                            ${this._audioTracks.map(track => {
+                                                const isSelected = track.index === this._selectedAudioIndex;
+                                                return html`
+                                                    <button
+                                                        class="jellyha-audio-menu-item ${isSelected ? 'selected' : ''}"
+                                                        @click=${() => this._selectAudioTrack(track.index)}
+                                                    >
+                                                        <ha-icon
+                                                            icon="${isSelected ? 'mdi:check' : 'mdi:volume-high'}"
+                                                            class="jellyha-audio-item-icon"
+                                                            style="--mdc-icon-size: 18px;"
+                                                        ></ha-icon>
+                                                        <div class="jellyha-audio-item-info">
+                                                            <span class="jellyha-audio-item-title">${track.label}</span>
+                                                            ${track.details ? html`<span class="jellyha-audio-item-details">${track.details}</span>` : nothing}
+                                                        </div>
+                                                    </button>
+                                                `;
+                                            })}
+                                        </div>
+                                    ` : nothing}
+                                </div>
+                            ` : nothing}
+                            <button class="jellyha-player-close-btn" @click=${this.close} aria-label="Close" title="Close">
+                                <ha-icon icon="mdi:close"></ha-icon>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="jellyha-player-content">

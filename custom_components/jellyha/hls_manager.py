@@ -30,6 +30,7 @@ class HlsSession:
     created_at: float
     last_accessed: float
     api: Any
+    device_id: str = "jellyha-browser"
     max_expires_at: float = 0.0
 
     def is_expired(self, now: float | None = None) -> bool:
@@ -61,6 +62,7 @@ class HlsSessionManager:
         server_url: str,
         api_key: str,
         api: Any,
+        device_id: str = "jellyha-browser",
     ) -> HlsSession:
         """Create a new HLS playback capability session."""
         now = time.time()
@@ -76,6 +78,7 @@ class HlsSessionManager:
             created_at=now,
             last_accessed=now,
             api=api,
+            device_id=device_id,
             max_expires_at=now + MAX_SESSION_LIFETIME_SECONDS,
         )
         self._sessions[token] = session
@@ -116,7 +119,12 @@ class HlsSessionManager:
         )
         if session.api:
             try:
-                await session.api.stop_active_encoding(session.play_session_id)
+                try:
+                    await session.api.stop_active_encoding(
+                        session.play_session_id, device_id=getattr(session, "device_id", "jellyha-browser")
+                    )
+                except TypeError:
+                    await session.api.stop_active_encoding(session.play_session_id)
                 await session.api.stop_playback_session(session.play_session_id, session.item_id)
             except Exception as err:
                 _LOGGER.debug("Error during HLS transcode cleanup: %s", err)

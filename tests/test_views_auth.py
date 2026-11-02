@@ -7,7 +7,11 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import tests.ha_mock
 
-from custom_components.jellyha.views import JellyHAStreamView, JellyHASubtitleView
+from custom_components.jellyha.views import (
+    JellyHAImageView,
+    JellyHAStreamView,
+    JellyHASubtitleView,
+)
 
 
 class TestViewsAuthentication(unittest.IsolatedAsyncioTestCase):
@@ -17,6 +21,7 @@ class TestViewsAuthentication(unittest.IsolatedAsyncioTestCase):
         self.hass.config_entries.async_entries.return_value = []
         self.stream_view = JellyHAStreamView(self.hass)
         self.subtitle_view = JellyHASubtitleView(self.hass)
+        self.image_view = JellyHAImageView(self.hass)
 
     async def test_stream_view_rejects_unvalidated_auth_sig_query(self):
         """Verify that passing ?authSig=fake does NOT grant access without valid signature."""
@@ -76,6 +81,42 @@ class TestViewsAuthentication(unittest.IsolatedAsyncioTestCase):
             stream_index="2",
         )
         self.assertEqual(response.status, 401, f"Expected 401 Unauthorized, got {response.status}")
+
+    async def test_image_view_debug_logging_does_not_leak_credentials(self):
+        """Verify that image view debug logging does not output sensitive user tokens or authSig."""
+        import logging
+        sensitive_token = "SECRET_SUPER_SENSITIVE_JWT_OR_REFRESH_TOKEN_9999"
+        sensitive_auth_sig = "SECRET_AUTHSIG_QUERY_PARAM_8888"
+
+        class FakeUser:
+            def __init__(self):
+                self.id = "user_safe_id_123"
+                self.refresh_tokens = [sensitive_token]
+
+            def __repr__(self):
+                return f"<User id={self.id} tokens={sensitive_token}>"
+
+        mock_user = FakeUser()
+        request = {
+            "hass_user": mock_user,
+            "hass_refresh_token_id": "safe_refresh_id",
+        }
+        mock_request = MagicMock()
+        mock_request.get.side_effect = lambda k, default=None: request.get(k, default)
+        mock_request.query = {"authSig": sensitive_auth_sig, "width": "300"}
+        mock_request.headers = {}
+
+        with self.assertLogs("custom_components.jellyha.views", level=logging.DEBUG) as cm:
+            await self.image_view.get(
+                mock_request,
+                entry_id="01KMBE8QY54E8PPTNKYYD3FXGT",
+                item_id="0123456789abcdef0123456789abcdef",
+                image_type="Primary",
+            )
+
+        log_output = " ".join(cm.output)
+        self.assertNotIn(sensitive_token, log_output)
+        self.assertNotIn(sensitive_auth_sig, log_output)
 
     async def test_coordinator_signs_cached_image_urls_with_content_user(self):
         """Verify coordinator signs cached Primary and Backdrop URLs with use_content_user=True so closing a private browser WS session does not invalidate cached URLs."""

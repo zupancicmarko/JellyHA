@@ -38,7 +38,6 @@ class JellyfinConnectionError(JellyfinApiError):
 
 BROWSER_DEVICE_PROFILE: dict[str, Any] = {
     "Name": "JellyHA Browser Player",
-    "Id": "jellyha-browser-player",
     "DirectPlayProfiles": [
         {
             "Container": "mp4,m4v,webm",
@@ -642,13 +641,30 @@ class JellyfinApiClient:
         """Get playback info for an item."""
         params = {"UserId": user_id}
         if profile:
-            return await self._request("POST", f"/Items/{item_id}/PlaybackInfo", params=params, json=profile)
+            if "DeviceProfile" in profile:
+                dev_profile = {k: v for k, v in profile["DeviceProfile"].items() if k != "Id"}
+                body = dict(profile)
+                body["DeviceProfile"] = dev_profile
+            else:
+                dev_profile = {k: v for k, v in profile.items() if k != "Id"}
+                body = {
+                    "UserId": user_id,
+                    "DeviceProfile": dev_profile,
+                }
+            return await self._request("POST", f"/Items/{item_id}/PlaybackInfo", params=params, json=body)
         return await self._request("GET", f"/Items/{item_id}/PlaybackInfo", params=params)
 
-    async def stop_active_encoding(self, play_session_id: str) -> bool:
+    async def stop_active_encoding(
+        self, play_session_id: str, device_id: str = "jellyha-browser"
+    ) -> bool:
         """Stop active transcode encoding in Jellyfin to kill ffmpeg process."""
         try:
-            await self._request("DELETE", "/Videos/ActiveEncodings", params={"PlaySessionId": play_session_id})
+            params = {
+                "PlaySessionId": play_session_id,
+                "DeviceId": device_id,
+                "deviceId": device_id,
+            }
+            await self._request("DELETE", "/Videos/ActiveEncodings", params=params)
             return True
         except Exception as err:
             _LOGGER.debug("Failed to stop active encoding for %s: %s", play_session_id, err)
