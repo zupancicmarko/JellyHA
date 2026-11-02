@@ -88,7 +88,7 @@ class TestHlsSessionManager(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result)
         self.assertIsNone(self.manager.get_session(session.token))
 
-        self.api.stop_active_encoding.assert_called_once_with("play_789")
+        self.api.stop_active_encoding.assert_called_once_with("play_789", device_id="jellyha-browser")
         self.api.stop_playback_session.assert_called_once_with("play_789", "item_456")
 
     async def test_terminate_session_by_play_session_id(self):

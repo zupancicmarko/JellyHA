@@ -6,6 +6,7 @@ import asyncio
 import uuid
 from datetime import timedelta
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlparse
 
 import voluptuous as vol
 
@@ -479,6 +480,7 @@ async def websocket_get_item(
     vol.Optional("config_entry_id"): cv.string,
     vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("entity_id"): cv.entity_id,
+    vol.Optional("audio_stream_index"): vol.All(vol.Coerce(int), vol.Range(min=0)),
 })
 @websocket_api.async_response
 async def websocket_resolve_playback(
@@ -512,11 +514,14 @@ async def websocket_resolve_playback(
             return
 
         item_type = raw_item.get("Type", "Video")
+        audio_stream_index = msg.get("audio_stream_index")
         playback_info = await api.get_playback_info(user_id, item_id, profile=BROWSER_DEVICE_PROFILE)
 
         media_sources = playback_info.get("MediaSources", [])
         media_source = media_sources[0] if media_sources else {}
         supports_direct_play = media_source.get("SupportsDirectPlay", False)
+        if audio_stream_index is not None:
+            supports_direct_play = False
         media_source_id = media_source.get("Id", item_id)
 
         # 1. Direct Play if supported
@@ -548,11 +553,49 @@ async def websocket_resolve_playback(
             server_url=api.server_url,
             api_key=api.api_key,
             api=api,
+            device_id="jellyha-browser",
         )
+
+        # Baseline parameters ensuring browser compatibility and hardware acceleration (VAAPI/NVENC/QSV)
+        transcode_params: dict[str, str] = {
+            "DeviceId": "jellyha-browser",
+            "MediaSourceId": str(media_source_id),
+            "VideoCodec": "h264",
+            "AudioCodec": "aac",
+            "AudioBitrate": "256000",
+            "VideoBitrate": "60000000",
+            "MaxStreamingBitrate": "60000000",
+            "TranscodingMaxAudioChannels": "2",
+            "SegmentContainer": "ts",
+            "MinSegments": "2",
+            "BreakOnNonKeyFrames": "False",
+        }
+
+        # Merge server-generated TranscodingUrl parameters if returned by Jellyfin
+        transcoding_url = media_source.get("TranscodingUrl")
+        if transcoding_url:
+            parsed_query = parse_qsl(urlparse(transcoding_url).query)
+            for k, v in parsed_query:
+                transcode_params[k] = v
+
+        # Enforce required session and transcode parameters
+        if audio_stream_index is not None:
+            transcode_params["AudioStreamIndex"] = str(audio_stream_index)
+        transcode_params["PlaySessionId"] = play_session_id
+        if not transcode_params.get("DeviceId"):
+            transcode_params["DeviceId"] = "jellyha-browser"
+        if not transcode_params.get("VideoCodec"):
+            transcode_params["VideoCodec"] = "h264"
+        if not transcode_params.get("AudioCodec"):
+            transcode_params["AudioCodec"] = "aac"
+        if not transcode_params.get("VideoBitrate"):
+            transcode_params["VideoBitrate"] = "60000000"
+        if not transcode_params.get("MaxStreamingBitrate"):
+            transcode_params["MaxStreamingBitrate"] = "60000000"
 
         hls_url = (
             f"/api/jellyha/hls/{session.token}/master.m3u8"
-            f"?MediaSourceId={media_source_id}&PlaySessionId={play_session_id}"
+            f"?{urlencode(transcode_params)}"
         )
 
         connection.send_result(msg["id"], {

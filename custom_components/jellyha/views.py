@@ -42,12 +42,19 @@ class JellyHAImageView(HomeAssistantView):
         is_authenticated = request.get("hass_user") is not None
         has_valid_signature = request.get("hass_refresh_token_id") is not None
 
+        user = request.get("hass_user")
+        user_id = getattr(user, "id", None) or (user.get("id") if isinstance(user, dict) else None)
+        sanitized_query = {
+            k: v for k, v in request.query.items()
+            if k not in ("authSig", "api_key", "ApiKey", "token")
+        }
+
         _LOGGER.debug(
-            "Image request: entry=%s, item=%s, type=%s, user=%s, refresh_token=%s, query=%s",
+            "Image request: entry=%s, item=%s, type=%s, user_id=%s, has_sig=%s, query=%s",
             entry_id, item_id, image_type,
-            request.get("hass_user"),
-            request.get("hass_refresh_token_id"),
-            dict(request.query)
+            user_id,
+            has_valid_signature,
+            sanitized_query,
         )
 
         if not is_authenticated and not has_valid_signature:
@@ -534,7 +541,7 @@ class JellyHAHlsView(HomeAssistantView):
 
         if path.startswith("Videos/"):
             parts = path.split("/")
-            if len(parts) > 1 and parts[1] != session.item_id:
+            if len(parts) > 1 and parts[1] not in (session.item_id, "ActiveEncodings"):
                 return web.Response(status=403, text="Forbidden: Token item mismatch")
             target_url = f"{session.server_url}/{path}"
         else:

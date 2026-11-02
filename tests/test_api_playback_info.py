@@ -38,17 +38,46 @@ class TestApiPlaybackInfo(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(hls_profile["VideoCodec"], "h264")
         self.assertEqual(hls_profile["AudioCodec"], "aac")
 
+        # Verify DeviceProfile does not contain non-GUID string Id which Jellyfin rejects
+        self.assertNotIn("Id", BROWSER_DEVICE_PROFILE)
+
+    async def test_get_playback_info_wraps_device_profile(self):
+        """Verify get_playback_info wraps profile in DeviceProfile and strips invalid Id."""
+        self.api._request = AsyncMock(return_value={"MediaSources": []})
+
+        test_profile = {
+            "Name": "Custom Profile",
+            "Id": "invalid-non-guid-id",
+            "DirectPlayProfiles": [],
+        }
+
+        result = await self.api.get_playback_info("user_123", "item_456", profile=test_profile)
+        self.api._request.assert_called_once_with(
+            "POST",
+            "/Items/item_456/PlaybackInfo",
+            params={"UserId": "user_123"},
+            json={
+                "UserId": "user_123",
+                "DeviceProfile": {
+                    "Name": "Custom Profile",
+                    "DirectPlayProfiles": [],
+                },
+            },
+        )
+
     async def test_stop_active_encoding(self):
-        """Verify stop_active_encoding sends DELETE /Videos/ActiveEncodings."""
+        """Verify stop_active_encoding sends DELETE /Videos/ActiveEncodings with required DeviceId."""
         self.api._request = AsyncMock(return_value={})
 
         result = await self.api.stop_active_encoding("session_12345")
         self.assertTrue(result)
-        self.api._request.assert_called_once_with(
-            "DELETE",
-            "/Videos/ActiveEncodings",
-            params={"PlaySessionId": "session_12345"},
-        )
+        self.api._request.assert_called_once()
+        args = self.api._request.call_args
+        self.assertEqual(args[0][0], "DELETE")
+        self.assertEqual(args[0][1], "/Videos/ActiveEncodings")
+        params = args[1]["params"]
+        self.assertEqual(params.get("PlaySessionId"), "session_12345")
+        self.assertIn("jellyha-browser", (params.get("DeviceId"), params.get("deviceId")))
 
     async def test_stop_playback_session(self):
         """Verify stop_playback_session sends POST /Sessions/Playing/Stopped."""
