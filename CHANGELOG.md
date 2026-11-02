@@ -5,6 +5,21 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.6] - 2026-11-02
+
+### Added
+- **Play in Browser Audio Track Selector**:
+  - Added an intuitive audio track selector in the browser player modal header (`🎧 <LANG> ▾`) next to the close button, displaying the active audio stream and channel/codec info (e.g. `English • 5.1 (AC3)`, `Slovenian • Stereo (AAC)`).
+  - Clicking the selector opens a dark popover menu allowing instant audio switching on multi-audio HLS playlists or smooth reload with `audio_stream_index` while preserving current playback timestamp (`video.currentTime`) and playback state.
+  - Added support for `audio_stream_index` in `jellyha/resolve_playback` WebSocket command to enforce specific audio track selection in transcoding sessions.
+
+### Fixed
+- **Play in Browser PlaybackInfo & Transcoding Session Handling** ([#75](https://github.com/zupancicmarko/JellyHA/issues/75)):
+  - Sanitized custom device profiles sent to `/Items/{itemId}/PlaybackInfo` by stripping invalid non-GUID IDs that caused Jellyfin 500 internal server errors.
+  - Fixed `DELETE /Videos/ActiveEncodings` by providing `DeviceId="jellyha-browser"`, ensuring FFmpeg transcoding jobs terminate properly on the Jellyfin server when closing the browser player modal.
+  - Enforced baseline browser transcoding parameters (`VideoCodec=h264`, `AudioCodec=aac`, `SegmentContainer=ts`, and bitrate limits) while merging server-provided `TranscodingUrl` query parameters.
+  - Sanitized debug logging in image views to strip sensitive authentication credentials from Home Assistant logs.
+
 ## [1.7.5] - 2026-10-31
 
 ### Fixed
