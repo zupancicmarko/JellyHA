@@ -63,6 +63,8 @@ export class JellyHANowPlayingCard extends LitElement {
     private _fetchingIdleItems: boolean = false;
     private _visibilityHandler?: () => void;
     private _optimisticSeekTimer?: any;
+    private _optimisticVolumeTimers: Record<string, any> = {};
+    private _optimisticBaseVolume: Record<string, number> = {};
     private _seekingTimer?: any;
     private _lastActiveStateObj?: HassEntity;
     private _longPressRaf: number | null = null;
@@ -1747,6 +1749,37 @@ export class JellyHANowPlayingCard extends LitElement {
         await toggleMute(this.hass, targetEntity);
     }
 
+    private _setOptimisticVolume(entityId: string, percent: number): void {
+        if (this._optimisticVolumeTimers[entityId]) {
+            clearTimeout(this._optimisticVolumeTimers[entityId]);
+            delete this._optimisticVolumeTimers[entityId];
+        }
+        if (this._optimisticBaseVolume[entityId] === undefined && this.hass?.states[entityId]) {
+            const currentLevel = this.hass.states[entityId].attributes?.volume_level;
+            if (typeof currentLevel === 'number') {
+                this._optimisticBaseVolume[entityId] = Math.round(currentLevel * 100);
+            }
+        }
+        this._optimisticVolume = { ...this._optimisticVolume, [entityId]: percent };
+        this.requestUpdate();
+        this._optimisticVolumeTimers[entityId] = setTimeout(() => {
+            this._clearOptimisticVolume(entityId);
+        }, 2000);
+    }
+
+    private _clearOptimisticVolume(entityId: string): void {
+        if (this._optimisticVolumeTimers[entityId]) {
+            clearTimeout(this._optimisticVolumeTimers[entityId]);
+            delete this._optimisticVolumeTimers[entityId];
+        }
+        delete this._optimisticBaseVolume[entityId];
+        if (this._optimisticVolume[entityId] !== undefined) {
+            const { [entityId]: _, ...rest } = this._optimisticVolume;
+            this._optimisticVolume = rest;
+            this.requestUpdate();
+        }
+    }
+
     private async _handleVolumeStep(deltaPercent: number): Promise<void> {
         this._haptic('light');
         const targetEntity = this._config?.volume_entity || this._config?.entity;
@@ -1757,8 +1790,7 @@ export class JellyHANowPlayingCard extends LitElement {
         const currentPct = this._optimisticVolume[targetEntity] ?? vol.volumePercent;
         const nextPct = Math.max(0, Math.min(100, Math.round(currentPct + deltaPercent)));
 
-        this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: nextPct };
-        this.requestUpdate();
+        this._setOptimisticVolume(targetEntity, nextPct);
 
         await stepVolume(this.hass, targetEntity, deltaPercent / 100, currentPct / 100);
     }
@@ -1819,8 +1851,7 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const targetEntity = this._config?.volume_entity || this._config?.entity;
         if (targetEntity && this.hass) {
-            this._optimisticVolume = { ...this._optimisticVolume, [targetEntity]: finalPercent };
-            this.requestUpdate();
+            this._setOptimisticVolume(targetEntity, finalPercent);
             await setVolumeLevel(this.hass, targetEntity, finalPercent / 100);
         }
     }
@@ -1833,6 +1864,10 @@ export class JellyHANowPlayingCard extends LitElement {
         }
         this._isVolumeDragging = false;
         this._dragVolumePercent = null;
+        const targetEntity = this._config?.volume_entity || this._config?.entity;
+        if (targetEntity) {
+            this._clearOptimisticVolume(targetEntity);
+        }
         this.requestUpdate();
     }
 
@@ -1871,7 +1906,7 @@ export class JellyHANowPlayingCard extends LitElement {
                 </ha-icon-button>
 
                 <div
-                    class="volume-slider-track"
+                    class="volume-slider-track ${this._isVolumeDragging ? 'dragging' : ''}"
                     @pointerdown=${this._startVolumeDrag}
                     @pointermove=${this._handleVolumeDrag}
                     @pointerup=${this._endVolumeDrag}
@@ -1879,11 +1914,11 @@ export class JellyHANowPlayingCard extends LitElement {
                 >
                     <div
                         class="volume-slider-fill"
-                        style="width: ${volumePercent}%; background: ${this._dominantColor};"
+                        style="width: ${volumePercent}%; background: ${this._dominantColor}; transition: ${this._isVolumeDragging ? 'none' : 'width 200ms cubic-bezier(0.34, 1.28, 0.64, 1)'};"
                     ></div>
                     <div
                         class="volume-slider-thumb"
-                        style="left: ${volumePercent}%; background: ${this._dominantColor};"
+                        style="left: ${volumePercent}%; background: ${this._dominantColor}; transition: ${this._isVolumeDragging ? 'transform 0.1s ease' : 'left 200ms cubic-bezier(0.34, 1.28, 0.64, 1), transform 0.1s ease'};"
                     ></div>
                 </div>
 
@@ -2274,6 +2309,11 @@ export class JellyHANowPlayingCard extends LitElement {
             clearTimeout(this._optimisticSeekTimer);
             this._optimisticSeekTimer = undefined;
         }
+        for (const entityId of Object.keys(this._optimisticVolumeTimers)) {
+            clearTimeout(this._optimisticVolumeTimers[entityId]);
+        }
+        this._optimisticVolumeTimers = {};
+        this._optimisticBaseVolume = {};
         if (this._visibilityHandler) {
             document.removeEventListener('visibilitychange', this._visibilityHandler);
             this._visibilityHandler = undefined;
@@ -2307,6 +2347,20 @@ export class JellyHANowPlayingCard extends LitElement {
         super.updated(changedProps);
         this._checkLayout();
         if (changedProps.has('hass')) {
+            const targetEntity = this._config?.volume_entity || this._config?.entity;
+            if (targetEntity && this._optimisticVolume[targetEntity] !== undefined && !this._isVolumeDragging) {
+                const oldHass = changedProps.get('hass') as HomeAssistant | undefined;
+                const oldLevel = oldHass?.states[targetEntity]?.attributes?.volume_level;
+                const newLevel = this.hass?.states[targetEntity]?.attributes?.volume_level;
+                if (newLevel !== undefined && newLevel !== null && typeof newLevel === 'number') {
+                    const newPct = Math.round(newLevel * 100);
+                    const basePct = this._optimisticBaseVolume[targetEntity];
+                    const targetPct = this._optimisticVolume[targetEntity];
+                    if (newPct === targetPct || (basePct !== undefined && newPct !== basePct) || (oldLevel !== undefined && newLevel !== oldLevel)) {
+                        this._clearOptimisticVolume(targetEntity);
+                    }
+                }
+            }
             if (this._config?.idle_backdrop_cycle) {
                 if (this._idleItems.length === 0 && !this._fetchingIdleItems) {
                     this._fetchIdleLibraryItems();
@@ -3376,6 +3430,7 @@ export class JellyHANowPlayingCard extends LitElement {
             left: 0;
             top: 0;
             height: 100%;
+            max-width: 100%;
             border-radius: 9999px;
             pointer-events: none;
             overflow: hidden;
@@ -3406,6 +3461,10 @@ export class JellyHANowPlayingCard extends LitElement {
         .volume-slider-track:hover .volume-slider-thumb,
         .volume-slider-track:active .volume-slider-thumb {
             transform: translate(-50%, -50%) scale(1.1);
+        }
+        .volume-slider-track.dragging .volume-slider-fill,
+        .volume-slider-track.dragging .volume-slider-thumb {
+            transition: none !important;
         }
         .volume-pct {
             font-size: 13px;

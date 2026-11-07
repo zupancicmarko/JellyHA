@@ -234,7 +234,7 @@ For solutions to common issues, browser cache clearing, Android TV & Wholphin pl
 
 If you enjoy JellyHA and would like to support its development:
 
-[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/zupancicmarko)
+<a href="https://www.buymeacoffee.com/zupancicmarko" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" /></a>
 
 ## Acknowledgments
 

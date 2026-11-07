@@ -114,6 +114,86 @@ class TestMediaStrategy(unittest.TestCase):
         self.assertIn("Static=true", playback_info["media_url"])
         self.assertIn(f"UserId={self.user_id}", playback_info["media_url"])
 
+    def test_transcode_with_text_subtitles_delivers_vtt_sidecar(self):
+        """Verify transcoding stream with text subtitles delivers WebVTT sidecar instead of blocking burn-in."""
+        media_info = {
+            "video_codec": "h264",
+            "video_height": 1080,
+            "bit_depth": 8,
+            "audio_codec": "aac",
+            "audio_channels": 2,
+            "container": "mkv",
+        }
+        text_sub = {
+            "Index": 35,
+            "Type": "Subtitle",
+            "Codec": "subrip",
+            "Language": "sl",
+            "DisplayTitle": "Slovenian",
+            "IsExternal": False,
+        }
+
+        # Legacy Gen 1 requires 720p transcode for 1080p source
+        playback_info = MediaStrategy.get_playback_info(
+            server_url=self.server_url,
+            api_key=self.api_key,
+            item_id="item_text_sub_004",
+            media_info=media_info,
+            device_model="Chromecast",  # Gen 1
+            item_type="Movie",
+            selected_sub=text_sub,
+            user_id=self.user_id,
+        )
+
+        # 1. Must deliver WebVTT sidecar
+        self.assertIn("vtt_url", playback_info)
+        self.assertIn("/Subtitles/35/Stream.vtt", playback_info["vtt_url"])
+        self.assertEqual(playback_info.get("subtitles_lang"), "sl")
+
+        # 2. Transcode URL must NOT burn in subtitles (which blocks on multi-minute FFmpeg extraction)
+        media_url = playback_info["media_url"]
+        self.assertNotIn("SubtitleMethod=Encode", media_url)
+        self.assertNotIn("SubtitleStreamIndex=", media_url)
+        self.assertIn("EnableSubtitlesInManifest=false", media_url)
+
+    def test_transcode_with_bitmap_subtitles_forces_burn_in(self):
+        """Verify bitmap subtitles (PGS/VobSub) force server-side transcode burn-in."""
+        media_info = {
+            "video_codec": "h264",
+            "video_height": 720,
+            "bit_depth": 8,
+            "audio_codec": "aac",
+            "audio_channels": 2,
+            "container": "mp4",
+        }
+        pgs_sub = {
+            "Index": 4,
+            "Type": "Subtitle",
+            "Codec": "pgssub",
+            "Language": "en",
+            "DisplayTitle": "English (PGS)",
+            "IsExternal": False,
+        }
+
+        playback_info = MediaStrategy.get_playback_info(
+            server_url=self.server_url,
+            api_key=self.api_key,
+            item_id="item_pgs_sub_005",
+            media_info=media_info,
+            device_model="Chromecast Ultra",
+            item_type="Movie",
+            selected_sub=pgs_sub,
+            user_id=self.user_id,
+        )
+
+        # 1. Must NOT have vtt_url (Chromecast cannot render PGS via WebVTT)
+        self.assertNotIn("vtt_url", playback_info)
+
+        # 2. Must force burn-in in transcode URL
+        media_url = playback_info["media_url"]
+        self.assertIn("SubtitleStreamIndex=4", media_url)
+        self.assertIn("SubtitleMethod=Encode", media_url)
+
 
 if __name__ == "__main__":
     unittest.main()

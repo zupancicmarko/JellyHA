@@ -608,17 +608,20 @@ class MediaStrategy:
             sub_lang = selected_sub.get("Language") or "en"
             sub_title = selected_sub.get("DisplayTitle") or "Subtitles"
 
-            if should_direct_play and is_text:
-                # Text subtitle on direct-playable video: deliver WebVTT sidecar (0% server transcode CPU!)
+            if is_text:
+                # Text subtitle: always deliver as WebVTT sidecar (0% server transcode CPU, instant playback).
+                # Google Cast Default Media Receiver natively renders WebVTT over both DirectPlay and HLS streams.
+                # Bypasses blocking FFmpeg subtitle extraction that causes Chromecast receivers to time out.
                 ms_id = media_source_id or item_id
                 vtt_url = f"{server_url}/Videos/{item_id}/{ms_id}/Subtitles/{sub_index}/Stream.vtt?{auth_query}"
             else:
-                # Video requires transcode OR subtitle is bitmap (PGS/VobSub): force transcode with burn-in
+                # Bitmap subtitle (PGS / VobSub / DVB): Chromecast cannot decode bitmap subtitles via WebVTT,
+                # so force server-side video transcode with subtitle burn-in.
                 should_direct_play = False
                 force_burn_in = True
 
         sub_params = "&EnableSubtitlesInManifest=false"
-        if selected_sub is not None and (force_burn_in or not should_direct_play):
+        if selected_sub is not None and force_burn_in:
             sub_params = f"&SubtitleStreamIndex={sub_index}&SubtitleMethod=Encode"
 
         media_url = ""
@@ -644,6 +647,8 @@ class MediaStrategy:
             log_mode = "TRANSCODE (Legacy Gen 1 - Force 720p/Stereo)"
             if force_burn_in:
                 log_mode += f" + Burn-in Subtitles ({sub_lang})"
+            elif vtt_url:
+                log_mode += f" + WebVTT Sidecar ({sub_lang})"
             
             play_session_id = uuid.uuid4().hex
             media_url = (
@@ -678,6 +683,8 @@ class MediaStrategy:
             log_mode = "TRANSCODE (Modern HQ)"
             if force_burn_in:
                 log_mode += f" + Burn-in Subtitles ({sub_lang})"
+            elif vtt_url:
+                log_mode += f" + WebVTT Sidecar ({sub_lang})"
             
             play_session_id = uuid.uuid4().hex
             media_url = (
