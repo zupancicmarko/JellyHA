@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.7.6** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.7** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,10 +8,10 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.7.6
+### 🆕 What's new in v1.7.7
 
-- 🎧 **Play in Browser Audio Track Selector** — Added an audio language switcher in the browser player modal header (`🎧 <LANG> ▾`), allowing instant switching across multi-audio HLS streams and seamless fallback transcode reload with exact playback timestamp preservation.
-- ⚡ **Play in Browser PlaybackInfo & Transcoding Improvements** ([#75](https://github.com/zupancicmarko/JellyHA/issues/75)) — Fixed Jellyfin 500 errors by stripping invalid non-GUID device profile IDs on playback info requests, ensured browser HLS transcode streams include required hardware-acceleration baseline parameters (`h264`, `aac`, bitrate limits), and fixed `ActiveEncodings` cleanup so active FFmpeg transcoding jobs terminate properly when closing the browser player modal.
+- 🔈 **Real-time Volume Synchronization & Tactile Animation** ([#77](https://github.com/zupancicmarko/JellyHA/issues/77)) — Fixed an issue where volume changes made via hardware remotes, physical device buttons, or HA scripts did not reflect on the Now Playing card, and added a smooth tactile spring rebound animation when volume updates.
+- 📡 **Chromecast Subtitle Transcoding Optimization** — Fixed playback timeouts on older Chromecast devices when playing items with text subtitles by delivering native WebVTT sidecar streams over HLS instead of forcing heavy video burn-in.
 
 ---
 

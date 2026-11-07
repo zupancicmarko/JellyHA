@@ -128,7 +128,7 @@ const { is: ii, defineProperty: ai, getOwnPropertyDescriptor: oi, getOwnProperty
       }
   }
   return i;
-} }, yt = (e, t) => !ii(e, t), At = { attribute: !0, type: String, converter: st, reflect: !1, useDefault: !1, hasChanged: yt };
+} }, yt = (e, t) => !ii(e, t), Tt = { attribute: !0, type: String, converter: st, reflect: !1, useDefault: !1, hasChanged: yt };
 Symbol.metadata ??= Symbol("metadata"), lt.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let je = class extends HTMLElement {
   static addInitializer(t) {
@@ -137,7 +137,7 @@ let je = class extends HTMLElement {
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(t, i = At) {
+  static createProperty(t, i = Tt) {
     if (i.state && (i.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((i = Object.create(i)).wrapped = !0), this.elementProperties.set(t, i), !i.noAccessor) {
       const o = Symbol(), s = this.getPropertyDescriptor(t, o, i);
       s !== void 0 && ai(this.prototype, t, s);
@@ -155,7 +155,7 @@ let je = class extends HTMLElement {
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(t) {
-    return this.elementProperties.get(t) ?? At;
+    return this.elementProperties.get(t) ?? Tt;
   }
   static _$Ei() {
     if (this.hasOwnProperty(qe("elementProperties"))) return;
@@ -317,9 +317,9 @@ je.elementStyles = [], je.shadowRootOptions = { mode: "open" }, je[qe("elementPr
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const vt = globalThis, Tt = (e) => e, rt = vt.trustedTypes, Et = rt ? rt.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Vt = "$lit$", ce = `lit$${Math.random().toFixed(9).slice(2)}$`, Wt = "?" + ce, ci = `<${Wt}>`, we = document, Ve = () => we.createComment(""), We = (e) => e === null || typeof e != "object" && typeof e != "function", wt = Array.isArray, pi = (e) => wt(e) || typeof e?.[Symbol.iterator] == "function", pt = `[ 	
+const vt = globalThis, At = (e) => e, rt = vt.trustedTypes, Et = rt ? rt.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Vt = "$lit$", ce = `lit$${Math.random().toFixed(9).slice(2)}$`, Wt = "?" + ce, ci = `<${Wt}>`, we = document, Ve = () => we.createComment(""), We = (e) => e === null || typeof e != "object" && typeof e != "function", wt = Array.isArray, pi = (e) => wt(e) || typeof e?.[Symbol.iterator] == "function", pt = `[ 	
 \f\r]`, Be = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, zt = /-->/g, Mt = />/g, be = RegExp(`>|${pt}(?:([^\\s"'>=/]+)(${pt}*=${pt}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Dt = /'/g, Lt = /"/g, Jt = /^(?:script|style|textarea|title)$/i, hi = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), l = hi(1), Te = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), Nt = /* @__PURE__ */ new WeakMap(), ye = we.createTreeWalker(we, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Dt = /'/g, Lt = /"/g, Jt = /^(?:script|style|textarea|title)$/i, hi = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), l = hi(1), Ae = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), Nt = /* @__PURE__ */ new WeakMap(), ye = we.createTreeWalker(we, 129);
 function Yt(e, t) {
   if (!wt(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return Et !== void 0 ? Et.createHTML(t) : t;
@@ -374,7 +374,7 @@ class Je {
   }
 }
 function Ee(e, t, i = e, o) {
-  if (t === Te) return t;
+  if (t === Ae) return t;
   let s = o !== void 0 ? i._$Co?.[o] : i._$Cl;
   const a = We(t) ? void 0 : t._$litDirective$;
   return s?.constructor !== a && (s?._$AO?.(!1), a === void 0 ? s = void 0 : (s = new a(e), s._$AT(e, i, o)), o !== void 0 ? (i._$Co ??= [])[o] = s : i._$Cl = s), s !== void 0 && (t = Ee(e, s._$AS(e, t.values), s, o)), t;
@@ -426,7 +426,7 @@ class Xe {
     return this._$AB;
   }
   _$AI(t, i = this) {
-    t = Ee(this, t, i), We(t) ? t === h || t == null || t === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : t !== this._$AH && t !== Te && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : pi(t) ? this.k(t) : this._(t);
+    t = Ee(this, t, i), We(t) ? t === h || t == null || t === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : t !== this._$AH && t !== Ae && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : pi(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -458,8 +458,8 @@ class Xe {
   }
   _$AR(t = this._$AA.nextSibling, i) {
     for (this._$AP?.(!1, !0, i); t !== this._$AB; ) {
-      const o = Tt(t).nextSibling;
-      Tt(t).remove(), t = o;
+      const o = At(t).nextSibling;
+      At(t).remove(), t = o;
     }
   }
   setConnected(t) {
@@ -479,11 +479,11 @@ class dt {
   _$AI(t, i = this, o, s) {
     const a = this.strings;
     let r = !1;
-    if (a === void 0) t = Ee(this, t, i, 0), r = !We(t) || t !== this._$AH && t !== Te, r && (this._$AH = t);
+    if (a === void 0) t = Ee(this, t, i, 0), r = !We(t) || t !== this._$AH && t !== Ae, r && (this._$AH = t);
     else {
       const n = t;
       let c, p;
-      for (t = a[0], c = 0; c < a.length - 1; c++) p = Ee(this, n[o + c], i, c), p === Te && (p = this._$AH[c]), r ||= !We(p) || p !== this._$AH[c], p === h ? t = h : t !== h && (t += (p ?? "") + a[c + 1]), this._$AH[c] = p;
+      for (t = a[0], c = 0; c < a.length - 1; c++) p = Ee(this, n[o + c], i, c), p === Ae && (p = this._$AH[c]), r ||= !We(p) || p !== this._$AH[c], p === h ? t = h : t !== h && (t += (p ?? "") + a[c + 1]), this._$AH[c] = p;
     }
     r && !s && this.j(t);
   }
@@ -512,7 +512,7 @@ class fi extends dt {
     super(t, i, o, s, a), this.type = 5;
   }
   _$AI(t, i = this) {
-    if ((t = Ee(this, t, i, 0) ?? h) === Te) return;
+    if ((t = Ee(this, t, i, 0) ?? h) === Ae) return;
     const o = this._$AH, s = t === h && o !== h || t.capture !== o.capture || t.once !== o.once || t.passive !== o.passive, a = t !== h && (o === h || s);
     s && this.element.removeEventListener(this.name, this, o), a && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
@@ -567,7 +567,7 @@ class ee extends je {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return Te;
+    return Ae;
   }
 }
 ee._$litElement$ = !0, ee.finalized = !0, xt.litElementHydrateSupport?.({ LitElement: ee });
@@ -672,7 +672,7 @@ function N(e, t) {
   const i = e.includes("?") ? "&" : "?";
   return `${e}${i}width=${t}`;
 }
-function Ae(e, t) {
+function Te(e, t) {
   if (!t) return "Run Script";
   const i = t.includes(".") ? t : `script.${t}`, o = e?.states?.[i]?.attributes?.friendly_name;
   if (typeof o == "string" && o.trim())
@@ -764,7 +764,7 @@ const Pi = {
   zho: "zh",
   chi: "zh"
 };
-function Ai(e, t, i) {
+function Ti(e, t, i) {
   if (!i) return !1;
   const o = i.trim().toLowerCase();
   if (!o) return !1;
@@ -945,7 +945,7 @@ let R = class extends ee {
     const s = (i.subtitleMode || "auto").toLowerCase(), a = (i.subtitleLanguage || "").split(",").map((p) => p.trim().toLowerCase()).filter(Boolean);
     let r = -1;
     const n = (p, u = !1) => {
-      const _ = o.filter((m) => u && !m.IsForced ? !1 : Ai(m.Language, m.DisplayTitle || m.Title, p));
+      const _ = o.filter((m) => u && !m.IsForced ? !1 : Ti(m.Language, m.DisplayTitle || m.Title, p));
       return _.length === 0 ? void 0 : _.find((m) => {
         const b = (m.DisplayTitle || m.Title || "").toLowerCase();
         return !m.IsHearingImpaired && !b.includes("sdh") && !b.includes("hearing impaired");
@@ -5698,7 +5698,7 @@ function d(e, t, i) {
   const o = (e || "en").split("-")[0].toLowerCase();
   return tt[o]?.[t] ? tt[o][t] : tt.en?.[t] ? tt.en[t] : i !== void 0 ? i : "";
 }
-function Ti(e) {
+function Ai(e) {
   if (e?.power_entity)
     return e.power_entity;
   const t = e?.entity;
@@ -7714,7 +7714,7 @@ let j = class extends ee {
       const t = this.hass?.locale?.language || this.hass?.language || "en";
       return d(t, "modal.play_in_browser") || "Play in Browser";
     }
-    return Ae(this.hass, e.service);
+    return Te(this.hass, e.service);
   }
   _renderPrimaryPlayButton(e) {
     if (this._playTargets.length === 0) return h;
@@ -8890,7 +8890,7 @@ let Ye = class extends ee {
         const a = this._config.modal_service || (this._config.click_action === "call-service" ? this._config.click_service || this._config.service : void 0) || (this._config.hold_action === "call-service" ? this._config.hold_service : void 0) || (this._config.double_tap_action === "call-service" ? this._config.double_tap_service : void 0) || this._config.click_service || this._config.service;
         a && s.push({
           type: "script",
-          name: Ae(this.hass, a),
+          name: Te(this.hass, a),
           service: a,
           icon: "mdi:play"
         }), s.length > 0 && (o.modal_play_actions = s);
@@ -9609,7 +9609,7 @@ var Vi = Object.defineProperty, Wi = Object.getOwnPropertyDescriptor, M = (e, t,
     (r = e[a]) && (s = (o ? r(t, i, s) : r(s)) || s);
   return o && s && Vi(t, i, s), s;
 };
-const Ji = "1.7.6";
+const Ji = "1.7.7";
 console.info(
   `%c JELLYHA-LIBRARY-CARD %c v${Ji} `,
   "color: white; background: #00a4dc; font-weight: bold;",
@@ -9669,7 +9669,7 @@ function Pe(e, t, i) {
   });
   e.dispatchEvent(o);
 }
-let A = class extends ee {
+let T = class extends ee {
   constructor() {
     super(), this._currentPage = 0, this._itemsPerPage = 5, this._pressStartTime = 0, this._isHoldActive = !1, this._rewindActive = !1, this._items = [], this._lastUpdate = "", this._searchQuery = "", this._searchGenre = "", this._touchStartX = 0, this._touchStartY = 0, this._isOverscrolling = !1, this._elasticAnchorX = 0, this._itemTouchStartX = 0, this._itemTouchStartY = 0, this._containerWidth = 0, this.LIST_ITEM_MIN_WIDTH = 300, this.FEATURED_QUEUE_ITEM_MIN_WIDTH = 200, this._effectiveListColumns = 1, this._isFeaturedCramped = !1, this._isSwiping = !1, this._autoSwipePaused = !1, this._lastFrameTime = 0, this._scrollAccumulator = 0, this._scrollProgress = 0, this._hasScrollableContent = !1, this.SCROLL_INDICATOR_DOTS = 5, this._handleMouseEnter = () => {
       this._autoSwipePaused = !0;
@@ -10644,7 +10644,7 @@ let A = class extends ee {
     if (this._config.modal_service)
       e.push({
         type: "script",
-        name: Ae(this.hass, this._config.modal_service),
+        name: Te(this.hass, this._config.modal_service),
         service: this._config.modal_service,
         service_data: this._config.modal_service_data,
         icon: "mdi:play"
@@ -10654,7 +10654,7 @@ let A = class extends ee {
         const t = this._config.click_service || this._config.service;
         e.push({
           type: "script",
-          name: Ae(this.hass, t),
+          name: Te(this.hass, t),
           service: t,
           service_data: this._config.click_service_data || this._config.service_data,
           icon: "mdi:play"
@@ -10662,13 +10662,13 @@ let A = class extends ee {
       }
       this._config.hold_action === "call-service" && this._config.hold_service && (e.some((t) => t.type === "script" && t.service === this._config.hold_service) || e.push({
         type: "script",
-        name: Ae(this.hass, this._config.hold_service),
+        name: Te(this.hass, this._config.hold_service),
         service: this._config.hold_service,
         service_data: this._config.hold_service_data,
         icon: "mdi:play"
       })), this._config.double_tap_action === "call-service" && this._config.double_tap_service && (e.some((t) => t.type === "script" && t.service === this._config.double_tap_service) || e.push({
         type: "script",
-        name: Ae(this.hass, this._config.double_tap_service),
+        name: Te(this.hass, this._config.double_tap_service),
         service: this._config.double_tap_service,
         service_data: this._config.double_tap_service_data,
         icon: "mdi:play"
@@ -10739,67 +10739,67 @@ let A = class extends ee {
     `;
   }
 };
-A.styles = Kt;
+T.styles = Kt;
 M([
   V({ attribute: !1 })
-], A.prototype, "hass", 2);
+], T.prototype, "hass", 2);
 M([
   f()
-], A.prototype, "_config", 2);
+], T.prototype, "_config", 2);
 M([
   f()
-], A.prototype, "_currentPage", 2);
+], T.prototype, "_currentPage", 2);
 M([
   f()
-], A.prototype, "_itemsPerPage", 2);
+], T.prototype, "_itemsPerPage", 2);
 M([
   f()
-], A.prototype, "_pressStartTime", 2);
+], T.prototype, "_pressStartTime", 2);
 M([
   f()
-], A.prototype, "_holdTimer", 2);
+], T.prototype, "_holdTimer", 2);
 M([
   f()
-], A.prototype, "_isHoldActive", 2);
+], T.prototype, "_isHoldActive", 2);
 M([
   f()
-], A.prototype, "_rewindActive", 2);
+], T.prototype, "_rewindActive", 2);
 M([
   f()
-], A.prototype, "_items", 2);
+], T.prototype, "_items", 2);
 M([
   f()
-], A.prototype, "_error", 2);
+], T.prototype, "_error", 2);
 M([
   f()
-], A.prototype, "_lastUpdate", 2);
+], T.prototype, "_lastUpdate", 2);
 M([
   f()
-], A.prototype, "_mostRecentNextUpItemId", 2);
+], T.prototype, "_mostRecentNextUpItemId", 2);
 M([
   f()
-], A.prototype, "_searchQuery", 2);
+], T.prototype, "_searchQuery", 2);
 M([
   f()
-], A.prototype, "_searchGenre", 2);
+], T.prototype, "_searchGenre", 2);
 M([
   $i("jellyha-item-details-modal")
-], A.prototype, "_modal", 2);
+], T.prototype, "_modal", 2);
 M([
   f()
-], A.prototype, "_effectiveListColumns", 2);
+], T.prototype, "_effectiveListColumns", 2);
 M([
   f()
-], A.prototype, "_isFeaturedCramped", 2);
+], T.prototype, "_isFeaturedCramped", 2);
 M([
   f()
-], A.prototype, "_scrollProgress", 2);
+], T.prototype, "_scrollProgress", 2);
 M([
   f()
-], A.prototype, "_hasScrollableContent", 2);
-A = M([
+], T.prototype, "_hasScrollableContent", 2);
+T = M([
   xe("jellyha-library-card")
-], A);
+], T);
 var Yi = Object.defineProperty, Gi = Object.getOwnPropertyDescriptor, $t = (e, t, i, o) => {
   for (var s = o > 1 ? void 0 : o ? Gi(t, i) : t, a = e.length - 1, r; a >= 0; a--)
     (r = e[a]) && (s = (o ? r(t, i, s) : r(s)) || s);
@@ -11539,9 +11539,9 @@ typeof window < "u" && (window.customCards = window.customCards || [], window.cu
   description: "Display currently playing media from Jellyfin",
   preview: !0
 }));
-let T = class extends ee {
+let A = class extends ee {
   constructor() {
-    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._isSeeking = !1, this._powerActivating = !1, this._isVolumeDragging = !1, this._dragVolumePercent = null, this._optimisticVolume = {}, this._idleItems = [], this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._lastHapticVolumeTick = 0, this._fetchingIdleItems = !1, this._longPressRaf = null, this._longPressConsumed = !1, this._layoutCheckRaf = null, this._optimisticFavorites = {}, this._resolvedImages = {}, this._fetchingImageKey = null, this._resolvedMetadata = {}, this._fetchingMetadataId = null, this._phrases = [];
+    super(...arguments), this._rewindActive = !1, this._overflowState = 0, this._dominantColor = "var(--primary-color)", this._longPressProgress = 0, this._stopPulse = !1, this._isDragging = !1, this._dragPercentage = 0, this._optimisticSeekPercent = null, this._isSeeking = !1, this._powerActivating = !1, this._isVolumeDragging = !1, this._dragVolumePercent = null, this._optimisticVolume = {}, this._idleItems = [], this._currentIdleIndex = 0, this._prevIdleIndex = null, this._idleFadeOut = !1, this._lastHapticVolumeTick = 0, this._fetchingIdleItems = !1, this._optimisticVolumeTimers = {}, this._optimisticBaseVolume = {}, this._longPressRaf = null, this._longPressConsumed = !1, this._layoutCheckRaf = null, this._optimisticFavorites = {}, this._resolvedImages = {}, this._fetchingImageKey = null, this._resolvedMetadata = {}, this._fetchingMetadataId = null, this._phrases = [];
   }
   setConfig(e) {
     const t = e.show_power_button ?? e.show_power ?? !0, i = e.show_volume ?? !!e.volume_entity;
@@ -12556,7 +12556,7 @@ let T = class extends ee {
     });
   }
   get _targetPowerEntity() {
-    return Ti(this._config);
+    return Ai(this._config);
   }
   async _handlePowerClick(e) {
     e.stopPropagation(), this._haptic("light");
@@ -12603,12 +12603,27 @@ let T = class extends ee {
     const e = this._config?.volume_entity || this._config?.entity;
     !e || !this.hass || await Di(this.hass, e);
   }
+  _setOptimisticVolume(e, t) {
+    if (this._optimisticVolumeTimers[e] && (clearTimeout(this._optimisticVolumeTimers[e]), delete this._optimisticVolumeTimers[e]), this._optimisticBaseVolume[e] === void 0 && this.hass?.states[e]) {
+      const i = this.hass.states[e].attributes?.volume_level;
+      typeof i == "number" && (this._optimisticBaseVolume[e] = Math.round(i * 100));
+    }
+    this._optimisticVolume = { ...this._optimisticVolume, [e]: t }, this.requestUpdate(), this._optimisticVolumeTimers[e] = setTimeout(() => {
+      this._clearOptimisticVolume(e);
+    }, 2e3);
+  }
+  _clearOptimisticVolume(e) {
+    if (this._optimisticVolumeTimers[e] && (clearTimeout(this._optimisticVolumeTimers[e]), delete this._optimisticVolumeTimers[e]), delete this._optimisticBaseVolume[e], this._optimisticVolume[e] !== void 0) {
+      const { [e]: t, ...i } = this._optimisticVolume;
+      this._optimisticVolume = i, this.requestUpdate();
+    }
+  }
   async _handleVolumeStep(e) {
     this._haptic("light");
     const t = this._config?.volume_entity || this._config?.entity;
     if (!t || !this.hass) return;
     const i = this._optimisticVolume[t], o = mt(this.hass, this._config?.volume_entity, this._config?.entity, i), s = this._optimisticVolume[t] ?? o.volumePercent, a = Math.max(0, Math.min(100, Math.round(s + e)));
-    this._optimisticVolume = { ...this._optimisticVolume, [t]: a }, this.requestUpdate(), await Mi(this.hass, t, e / 100, s / 100);
+    this._setOptimisticVolume(t, a), await Mi(this.hass, t, e / 100, s / 100);
   }
   _startVolumeDrag(e) {
     e.stopPropagation(), e.preventDefault();
@@ -12640,12 +12655,14 @@ let T = class extends ee {
     const i = this._dragVolumePercent ?? 0;
     this._isVolumeDragging = !1, this._dragVolumePercent = null;
     const o = this._config?.volume_entity || this._config?.entity;
-    o && this.hass && (this._optimisticVolume = { ...this._optimisticVolume, [o]: i }, this.requestUpdate(), await Qt(this.hass, o, i / 100));
+    o && this.hass && (this._setOptimisticVolume(o, i), await Qt(this.hass, o, i / 100));
   }
   _cancelVolumeDrag(e) {
     if (!this._isVolumeDragging) return;
     const t = e.currentTarget.closest(".volume-slider-track") || e.currentTarget;
-    t && t.hasPointerCapture(e.pointerId) && t.releasePointerCapture(e.pointerId), this._isVolumeDragging = !1, this._dragVolumePercent = null, this.requestUpdate();
+    t && t.hasPointerCapture(e.pointerId) && t.releasePointerCapture(e.pointerId), this._isVolumeDragging = !1, this._dragVolumePercent = null;
+    const i = this._config?.volume_entity || this._config?.entity;
+    i && this._clearOptimisticVolume(i), this.requestUpdate();
   }
   _renderVolumeControls() {
     if (!(this._config?.show_volume === !0 || this._config?.show_volume !== !1 && !!this._config?.volume_entity) || !this.hass) return h;
@@ -12665,7 +12682,7 @@ let T = class extends ee {
                 </ha-icon-button>
 
                 <div
-                    class="volume-slider-track"
+                    class="volume-slider-track ${this._isVolumeDragging ? "dragging" : ""}"
                     @pointerdown=${this._startVolumeDrag}
                     @pointermove=${this._handleVolumeDrag}
                     @pointerup=${this._endVolumeDrag}
@@ -12673,11 +12690,11 @@ let T = class extends ee {
                 >
                     <div
                         class="volume-slider-fill"
-                        style="width: ${a}%; background: ${this._dominantColor};"
+                        style="width: ${a}%; background: ${this._dominantColor}; transition: ${this._isVolumeDragging ? "none" : "width 200ms cubic-bezier(0.34, 1.28, 0.64, 1)"};"
                     ></div>
                     <div
                         class="volume-slider-thumb"
-                        style="left: ${a}%; background: ${this._dominantColor};"
+                        style="left: ${a}%; background: ${this._dominantColor}; transition: ${this._isVolumeDragging ? "transform 0.1s ease" : "left 200ms cubic-bezier(0.34, 1.28, 0.64, 1), transform 0.1s ease"};"
                     ></div>
                 </div>
 
@@ -12872,7 +12889,10 @@ let T = class extends ee {
     }, document.addEventListener("visibilitychange", this._visibilityHandler), this._config?.idle_backdrop_cycle && (this._idleItems.length > 1 && !this._idleTimer ? this._startIdleTimer() : this._idleItems.length === 0 && !this._fetchingIdleItems && this.hass && this._fetchIdleLibraryItems());
   }
   disconnectedCallback() {
-    super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect(), this._layoutCheckRaf && (cancelAnimationFrame(this._layoutCheckRaf), this._layoutCheckRaf = null), this._stopProgressTimer(), this._endLongPress(), this._stopIdleTimer(), this._seekingTimer && (clearTimeout(this._seekingTimer), this._seekingTimer = void 0), this._optimisticSeekTimer && (clearTimeout(this._optimisticSeekTimer), this._optimisticSeekTimer = void 0), this._visibilityHandler && (document.removeEventListener("visibilitychange", this._visibilityHandler), this._visibilityHandler = void 0);
+    super.disconnectedCallback(), this._resizeObserver && this._resizeObserver.disconnect(), this._layoutCheckRaf && (cancelAnimationFrame(this._layoutCheckRaf), this._layoutCheckRaf = null), this._stopProgressTimer(), this._endLongPress(), this._stopIdleTimer(), this._seekingTimer && (clearTimeout(this._seekingTimer), this._seekingTimer = void 0), this._optimisticSeekTimer && (clearTimeout(this._optimisticSeekTimer), this._optimisticSeekTimer = void 0);
+    for (const e of Object.keys(this._optimisticVolumeTimers))
+      clearTimeout(this._optimisticVolumeTimers[e]);
+    this._optimisticVolumeTimers = {}, this._optimisticBaseVolume = {}, this._visibilityHandler && (document.removeEventListener("visibilitychange", this._visibilityHandler), this._visibilityHandler = void 0);
   }
   _startProgressTimer() {
     this._stopProgressTimer(), this._progressTimer = window.setInterval(() => {
@@ -12886,12 +12906,22 @@ let T = class extends ee {
     this._progressTimer && (clearInterval(this._progressTimer), this._progressTimer = void 0);
   }
   updated(e) {
-    if (super.updated(e), this._checkLayout(), e.has("hass") && this._config?.idle_backdrop_cycle) {
-      if (this._idleItems.length === 0 && !this._fetchingIdleItems)
-        this._fetchIdleLibraryItems();
-      else if (this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both") {
-        const t = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_both" ? this._getItemFromLatestSensor("movie") : null, i = this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" ? this._getItemFromLatestSensor("episode") : null, o = this._idleItems.map((a) => a.id).join(","), s = [t?.id, i?.id].filter(Boolean).join(",");
-        s && s !== o && !this._fetchingIdleItems && this._fetchIdleLibraryItems();
+    if (super.updated(e), this._checkLayout(), e.has("hass")) {
+      const t = this._config?.volume_entity || this._config?.entity;
+      if (t && this._optimisticVolume[t] !== void 0 && !this._isVolumeDragging) {
+        const o = e.get("hass")?.states[t]?.attributes?.volume_level, s = this.hass?.states[t]?.attributes?.volume_level;
+        if (s != null && typeof s == "number") {
+          const a = Math.round(s * 100), r = this._optimisticBaseVolume[t], n = this._optimisticVolume[t];
+          (a === n || r !== void 0 && a !== r || o !== void 0 && s !== o) && this._clearOptimisticVolume(t);
+        }
+      }
+      if (this._config?.idle_backdrop_cycle) {
+        if (this._idleItems.length === 0 && !this._fetchingIdleItems)
+          this._fetchIdleLibraryItems();
+        else if (this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both") {
+          const i = this._config.idle_content_source === "latest_movie" || this._config.idle_content_source === "latest_both" ? this._getItemFromLatestSensor("movie") : null, o = this._config.idle_content_source === "latest_episode" || this._config.idle_content_source === "latest_both" ? this._getItemFromLatestSensor("episode") : null, s = this._idleItems.map((r) => r.id).join(","), a = [i?.id, o?.id].filter(Boolean).join(",");
+          a && a !== s && !this._fetchingIdleItems && this._fetchIdleLibraryItems();
+        }
       }
     }
     if (e.has("_config")) {
@@ -12956,7 +12986,7 @@ let T = class extends ee {
     return this._formatSeconds(e / 1e7);
   }
 };
-T.styles = ze`
+A.styles = ze`
         :host {
             display: block;
             height: 100%;
@@ -13793,6 +13823,7 @@ T.styles = ze`
             left: 0;
             top: 0;
             height: 100%;
+            max-width: 100%;
             border-radius: 9999px;
             pointer-events: none;
             overflow: hidden;
@@ -13823,6 +13854,10 @@ T.styles = ze`
         .volume-slider-track:hover .volume-slider-thumb,
         .volume-slider-track:active .volume-slider-thumb {
             transform: translate(-50%, -50%) scale(1.1);
+        }
+        .volume-slider-track.dragging .volume-slider-fill,
+        .volume-slider-track.dragging .volume-slider-thumb {
+            transition: none !important;
         }
         .volume-pct {
             font-size: 13px;
@@ -15214,64 +15249,64 @@ T.styles = ze`
     `;
 D([
   V({ attribute: !1 })
-], T.prototype, "hass", 2);
+], A.prototype, "hass", 2);
 D([
   f()
-], T.prototype, "_config", 2);
+], A.prototype, "_config", 2);
 D([
   f()
-], T.prototype, "_rewindActive", 2);
+], A.prototype, "_rewindActive", 2);
 D([
   f()
-], T.prototype, "_overflowState", 2);
+], A.prototype, "_overflowState", 2);
 D([
   f()
-], T.prototype, "_dominantColor", 2);
+], A.prototype, "_dominantColor", 2);
 D([
   f()
-], T.prototype, "_longPressProgress", 2);
+], A.prototype, "_longPressProgress", 2);
 D([
   f()
-], T.prototype, "_stopPulse", 2);
+], A.prototype, "_stopPulse", 2);
 D([
   f()
-], T.prototype, "_isDragging", 2);
+], A.prototype, "_isDragging", 2);
 D([
   f()
-], T.prototype, "_dragPercentage", 2);
+], A.prototype, "_dragPercentage", 2);
 D([
   f()
-], T.prototype, "_optimisticSeekPercent", 2);
+], A.prototype, "_optimisticSeekPercent", 2);
 D([
   f()
-], T.prototype, "_isSeeking", 2);
+], A.prototype, "_isSeeking", 2);
 D([
   f()
-], T.prototype, "_powerActivating", 2);
+], A.prototype, "_powerActivating", 2);
 D([
   f()
-], T.prototype, "_isVolumeDragging", 2);
+], A.prototype, "_isVolumeDragging", 2);
 D([
   f()
-], T.prototype, "_dragVolumePercent", 2);
+], A.prototype, "_dragVolumePercent", 2);
 D([
   f()
-], T.prototype, "_optimisticVolume", 2);
+], A.prototype, "_optimisticVolume", 2);
 D([
   f()
-], T.prototype, "_idleItems", 2);
+], A.prototype, "_idleItems", 2);
 D([
   f()
-], T.prototype, "_currentIdleIndex", 2);
+], A.prototype, "_currentIdleIndex", 2);
 D([
   f()
-], T.prototype, "_prevIdleIndex", 2);
+], A.prototype, "_prevIdleIndex", 2);
 D([
   f()
-], T.prototype, "_idleFadeOut", 2);
-T = D([
+], A.prototype, "_idleFadeOut", 2);
+A = D([
   xe("jellyha-now-playing-card")
-], T);
+], A);
 function Ie(e) {
   const t = e.shadowRoot;
   if (!t) return;

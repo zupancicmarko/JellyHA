@@ -5,6 +5,21 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.7] - 2026-11-07
+
+### Added
+- **Now Playing Card Tactile Volume Slider Animation**:
+  - Added smooth sliding transition with tactile spring rebound overshoot animation when volume is updated externally (remotes, scripts, automation, or physical controls).
+  - Maintained instant zero-latency tracking when dragging or adjusting the volume slider directly by suppressing transitions during active user interaction.
+
+### Fixed
+- **Volume Level Synchronization on Now Playing Card** ([#77](https://github.com/zupancicmarko/JellyHA/issues/77)):
+  - Fixed an issue where the Now Playing volume bar failed to reflect volume updates made directly on physical media players, remotes, or via Home Assistant scripts.
+  - Implemented an optimistic volume synchronization state with an active debounce timer and state comparison in `updated()` to prevent stale optimistic volume values from overriding external updates.
+- **Chromecast Playback with Text Subtitles**:
+  - Resolved playback timeouts and buffering failures on legacy Chromecast devices (e.g. Chromecast Gen 1) when playing media with embedded or external text subtitles (`subrip`, `vtt`, `ass`, `ssa`).
+  - Configured media strategy to deliver text subtitles as native WebVTT sidecars during HLS transcoding instead of forcing intensive server-side subtitle burn-in.
+
 ## [1.7.6] - 2026-11-02
 
 ### Added
