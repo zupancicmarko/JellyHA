@@ -521,56 +521,84 @@ async def async_register_services(hass: HomeAssistant) -> None:
                     return
 
         # Strategy logic
+        from .hls_manager import is_live_tv_item, open_live_tv_hls_session
         from .media_strategy import MediaStrategy
-        zc = None
-        try:
-            from homeassistant.components import zeroconf
-            zc = await zeroconf.async_get_instance(hass)
-        except Exception:
-            pass
 
-        model_name, _ = await hass.async_add_executor_job(
-            MediaStrategy.discover_chromecast_model, hass, target_entity_id, zc
-        )
-
-        # Subtitle selection
-        subtitle_mode = call.data.get("subtitle_mode", "auto")
-        subtitle_language = call.data.get("subtitle_language")
-        subtitle_index = call.data.get("subtitle_index")
-
-        user_config = None
-        if subtitle_mode == "auto":
+        # Signed Home Assistant base URL (used for thumbnails and Live TV HLS proxy)
+        base_url = None
+        if get_url:
             try:
-                user_obj = await api.get_user(user_id)
-                if user_obj:
-                    user_config = user_obj.get("Configuration", {})
-            except Exception as e:
-                _LOGGER.debug("Could not fetch user configuration for subtitle resolution: %s", e)
+                base_url = get_url(hass)
+            except Exception:
+                base_url = None
 
-        selected_sub = MediaStrategy.resolve_subtitle_stream(
-            item=item,
-            subtitle_mode=subtitle_mode,
-            subtitle_language=subtitle_language,
-            user_config=user_config,
-            subtitle_index=subtitle_index,
-        )
+        if is_live_tv_item(item):
+            live_hls = await open_live_tv_hls_session(
+                hass,
+                coordinator.entry.entry_id,
+                user_id,
+                item_id,
+                api,
+                device_id="jellyha",
+            )
+            media_url = live_hls["url"]
+            if base_url and media_url.startswith("/"):
+                media_url = f"{base_url.rstrip('/')}{media_url}"
+            playback_info = {
+                "media_url": media_url,
+                "content_type": live_hls["mime_type"],
+                "log_mode": "LIVE TV (HLS)",
+            }
+        else:
+            zc = None
+            try:
+                from homeassistant.components import zeroconf
+                zc = await zeroconf.async_get_instance(hass)
+            except Exception:
+                pass
 
-        media_source_id = None
-        if "MediaSources" in item and item["MediaSources"]:
-            media_source_id = item["MediaSources"][0].get("Id")
+            model_name, _ = await hass.async_add_executor_job(
+                MediaStrategy.discover_chromecast_model, hass, target_entity_id, zc
+            )
 
-        media_info = MediaStrategy.analyze_media(item)
-        playback_info = MediaStrategy.get_playback_info(
-            api._server_url,
-            api._api_key,
-            item_id,
-            media_info,
-            model_name,
-            item_type=item.get("Type"),
-            selected_sub=selected_sub,
-            media_source_id=media_source_id,
-            user_id=user_id,
-        )
+            # Subtitle selection
+            subtitle_mode = call.data.get("subtitle_mode", "auto")
+            subtitle_language = call.data.get("subtitle_language")
+            subtitle_index = call.data.get("subtitle_index")
+
+            user_config = None
+            if subtitle_mode == "auto":
+                try:
+                    user_obj = await api.get_user(user_id)
+                    if user_obj:
+                        user_config = user_obj.get("Configuration", {})
+                except Exception as e:
+                    _LOGGER.debug("Could not fetch user configuration for subtitle resolution: %s", e)
+
+            selected_sub = MediaStrategy.resolve_subtitle_stream(
+                item=item,
+                subtitle_mode=subtitle_mode,
+                subtitle_language=subtitle_language,
+                user_config=user_config,
+                subtitle_index=subtitle_index,
+            )
+
+            media_source_id = None
+            if "MediaSources" in item and item["MediaSources"]:
+                media_source_id = item["MediaSources"][0].get("Id")
+
+            media_info = MediaStrategy.analyze_media(item)
+            playback_info = MediaStrategy.get_playback_info(
+                api._server_url,
+                api._api_key,
+                item_id,
+                media_info,
+                model_name,
+                item_type=item.get("Type"),
+                selected_sub=selected_sub,
+                media_source_id=media_source_id,
+                user_id=user_id,
+            )
 
         # Cast
         use_series_img = call.data.get("use_series_image", True)
@@ -579,14 +607,6 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
         # Choose primary image: series poster for episodes if enabled, otherwise item image
         target_img_item_id = series_id if (is_episode and series_id and use_series_img) else item_id
-
-        # Signed Home Assistant proxy URL (prevents exposing Jellyfin API key in HA entity state/attributes)
-        base_url = None
-        if get_url:
-            try:
-                base_url = get_url(hass)
-            except Exception:
-                base_url = None
 
         primary_thumb_path = f"/api/jellyha/image/{coordinator.entry.entry_id}/{target_img_item_id}/Primary"
         primary_img_url = _sign_path(hass, primary_thumb_path, timedelta(hours=24))

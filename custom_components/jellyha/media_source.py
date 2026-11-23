@@ -22,6 +22,7 @@ from homeassistant.core import HomeAssistant
 
 from .browse_media import async_browse_media, async_browse_media_search
 from .const import DOMAIN
+from .hls_manager import is_live_tv_item, open_live_tv_hls_session
 from .media_strategy import MediaStrategy
 
 _LOGGER = logging.getLogger(__name__)
@@ -148,6 +149,7 @@ class JellyHAMediaSource(MediaSource):
         item_type = "Video"
         mime = "video/mp4"
         filename = None
+        item_info: dict[str, Any] | None = None
         try:
             item_info = await api.get_item(user_id, item_id)
             item_type = item_info.get("Type", "Video")
@@ -172,6 +174,22 @@ class JellyHAMediaSource(MediaSource):
                 filename = f"{filename}.{ext}"
         except Exception:
             pass
+
+        # Live TV channels require opening a live stream and serving HLS (not static ?static=true)
+        if is_live_tv_item(item_info):
+            try:
+                live_hls = await open_live_tv_hls_session(
+                    self.hass,
+                    entry_id,
+                    user_id,
+                    item_id,
+                    api,
+                    device_id="jellyha",
+                )
+                return PlayMedia(live_hls["url"], live_hls["mime_type"])
+            except Exception as err:
+                _LOGGER.error("Failed to open Live TV stream for %s: %s", item_id, err)
+                raise Unresolvable(f"Failed to open Live TV stream: {err}") from err
 
         # Use signed proxy URL — no API key exposed to the client
         stream_path = api.get_stream_path(entry_id, item_id, item_type, filename=filename)

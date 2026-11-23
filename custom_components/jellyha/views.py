@@ -538,16 +538,18 @@ class JellyHAHlsView(HomeAssistantView):
         params = dict(request.query)
         params["api_key"] = session.api_key
         params["PlaySessionId"] = session.play_session_id
+        if session.live_stream_id and "LiveStreamId" not in params:
+            params["LiveStreamId"] = session.live_stream_id
 
-        if path.startswith("Videos/"):
+        if path.lower().startswith("videos/"):
             parts = path.split("/")
-            if len(parts) > 1 and parts[1] not in (session.item_id, "ActiveEncodings"):
+            if len(parts) > 1 and parts[1].lower() not in (session.item_id.lower(), "activeencodings"):
                 return web.Response(status=403, text="Forbidden: Token item mismatch")
             target_url = f"{session.server_url}/{path}"
         else:
             target_url = f"{session.server_url}/Videos/{session.item_id}/{path}"
 
-        is_playlist = path.endswith(".m3u8")
+        is_playlist = clean_path.endswith(".m3u8")
         client_session = session.api.session
 
         if is_playlist:
@@ -569,8 +571,18 @@ class JellyHAHlsView(HomeAssistantView):
 
                 # Rewrite absolute Jellyfin server URLs and /Videos/ paths to token proxy routes
                 if session.server_url:
-                    cleaned_text = cleaned_text.replace(f"{session.server_url}/Videos/{session.item_id}/", "")
-                    cleaned_text = cleaned_text.replace(f"{session.server_url}/Videos/", f"/api/jellyha/hls/{token}/Videos/")
+                    cleaned_text = re.sub(
+                        rf'{re.escape(session.server_url)}/Videos/{re.escape(session.item_id)}/',
+                        "",
+                        cleaned_text,
+                        flags=re.IGNORECASE,
+                    )
+                    cleaned_text = re.sub(
+                        rf'{re.escape(session.server_url)}/Videos/',
+                        f"/api/jellyha/hls/{token}/Videos/",
+                        cleaned_text,
+                        flags=re.IGNORECASE,
+                    )
 
                 cleaned_text = re.sub(
                     rf'(["\']?)/Videos/{re.escape(session.item_id)}/',
