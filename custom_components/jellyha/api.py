@@ -75,6 +75,29 @@ BROWSER_DEVICE_PROFILE: dict[str, Any] = {
     ],
 }
 
+CHROMECAST_LIVE_TV_PROFILE: dict[str, Any] = {
+    "Name": "JellyHA Chromecast Live TV",
+    "MaxStreamingBitrate": 20000000,
+    "DirectPlayProfiles": [],
+    "TranscodingProfiles": [
+        {
+            "Container": "ts",
+            "Type": "Video",
+            "VideoCodec": "h264",
+            "AudioCodec": "aac",
+            "Protocol": "hls",
+            "Context": "Streaming",
+            "MaxAudioChannels": "2",
+            "MinSegments": 2,
+            "BreakOnNonKeyFrames": False,
+            "EnableMpegtsM2TsMode": False,
+        },
+    ],
+    "SubtitleProfiles": [
+        {"Format": "vtt", "Method": "External"},
+    ],
+}
+
 
 class JellyfinApiClient:
     """Async client for Jellyfin API."""
@@ -636,7 +659,13 @@ class JellyfinApiClient:
         return final_result
 
     async def get_playback_info(
-        self, user_id: str, item_id: str, profile: dict[str, Any] | None = None
+        self,
+        user_id: str,
+        item_id: str,
+        profile: dict[str, Any] | None = None,
+        *,
+        auto_open_live_stream: bool = False,
+        max_streaming_bitrate: int | None = None,
     ) -> dict[str, Any]:
         """Get playback info for an item."""
         params = {"UserId": user_id}
@@ -651,8 +680,46 @@ class JellyfinApiClient:
                     "UserId": user_id,
                     "DeviceProfile": dev_profile,
                 }
+            if auto_open_live_stream:
+                body["AutoOpenLiveStream"] = True
+            if max_streaming_bitrate is not None:
+                body["MaxStreamingBitrate"] = max_streaming_bitrate
             return await self._request("POST", f"/Items/{item_id}/PlaybackInfo", params=params, json=body)
         return await self._request("GET", f"/Items/{item_id}/PlaybackInfo", params=params)
+
+    async def open_live_stream(
+        self,
+        user_id: str,
+        item_id: str,
+        open_token: str,
+        play_session_id: str,
+        profile: dict[str, Any],
+        max_streaming_bitrate: int = 20000000,
+    ) -> dict[str, Any]:
+        """Open a Live TV stream via Jellyfin's LiveStreams/Open endpoint."""
+        dev_profile = {k: v for k, v in profile.items() if k != "Id"}
+        body: dict[str, Any] = {
+            "OpenToken": open_token,
+            "UserId": user_id,
+            "PlaySessionId": play_session_id,
+            "MaxStreamingBitrate": max_streaming_bitrate,
+            "ItemId": item_id,
+            "DeviceProfile": dev_profile,
+        }
+        return await self._request("POST", "/LiveStreams/Open", json=body)
+
+    async def close_live_stream(self, live_stream_id: str) -> bool:
+        """Close an open Live TV stream so Jellyfin releases the tuner."""
+        try:
+            await self._request(
+                "POST",
+                "/LiveStreams/Close",
+                params={"liveStreamId": live_stream_id},
+            )
+            return True
+        except Exception as err:
+            _LOGGER.debug("Failed to close live stream %s: %s", live_stream_id, err)
+            return False
 
     async def stop_active_encoding(
         self, play_session_id: str, device_id: str = "jellyha-browser"
@@ -670,10 +737,21 @@ class JellyfinApiClient:
             _LOGGER.debug("Failed to stop active encoding for %s: %s", play_session_id, err)
             return False
 
-    async def stop_playback_session(self, play_session_id: str, item_id: str) -> bool:
+    async def stop_playback_session(
+        self,
+        play_session_id: str,
+        item_id: str,
+        live_stream_id: str | None = None,
+    ) -> bool:
         """Report playback stopped to Jellyfin."""
         try:
-            await self._request("POST", "/Sessions/Playing/Stopped", json={"PlaySessionId": play_session_id, "ItemId": item_id})
+            payload: dict[str, Any] = {
+                "PlaySessionId": play_session_id,
+                "ItemId": item_id,
+            }
+            if live_stream_id:
+                payload["LiveStreamId"] = live_stream_id
+            await self._request("POST", "/Sessions/Playing/Stopped", json=payload)
             return True
         except Exception as err:
             _LOGGER.debug("Failed to report playback stopped: %s", err)

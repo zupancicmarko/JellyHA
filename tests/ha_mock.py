@@ -41,6 +41,9 @@ HA_MODULES = [
     "homeassistant.helpers.entity_platform",
     "homeassistant.components.media_player",
     "homeassistant.components.media_player.const",
+    "homeassistant.components.media_source",
+    "homeassistant.components.media_source.error",
+    "homeassistant.components.media_source.models",
     "homeassistant.components.sensor",
     "homeassistant.components.websocket_api",
 ]
@@ -150,3 +153,36 @@ sys.modules["homeassistant.components.sensor"].SensorEntity = MockSensorEntity
 sys.modules["homeassistant.components.sensor"].SensorStateClass = MockSensorStateClass
 sys.modules["homeassistant.components.sensor"].SensorDeviceClass = MockSensorDeviceClass
 sys.modules["homeassistant.const"].UnitOfInformation = MockUnitOfInformation
+
+
+class MockMediaSourceError(Exception):
+    pass
+
+
+class MockUnresolvable(MockMediaSourceError):
+    pass
+
+
+class MockMediaSource:
+    def __init__(self, domain: str):
+        self.domain = domain
+
+
+class MockPlayMedia:
+    def __init__(self, url: str, mime_type: str):
+        self.url = url
+        self.mime_type = mime_type
+
+
+class MockBrowseMediaSource:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+sys.modules["homeassistant.components.media_source.error"].MediaSourceError = MockMediaSourceError
+sys.modules["homeassistant.components.media_source.error"].Unresolvable = MockUnresolvable
+sys.modules["homeassistant.components.media_source.models"].MediaSource = MockMediaSource
+sys.modules["homeassistant.components.media_source.models"].PlayMedia = MockPlayMedia
+sys.modules["homeassistant.components.media_source.models"].BrowseMediaSource = MockBrowseMediaSource
+

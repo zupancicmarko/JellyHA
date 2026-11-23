@@ -19,6 +19,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN, ITEM_TYPE_EPISODE
 from .api import BROWSER_DEVICE_PROFILE
+from .hls_manager import is_live_tv_item, open_live_tv_hls_session
 from .security import is_valid_item_id
 
 _LOGGER = logging.getLogger(__name__)
@@ -515,6 +516,26 @@ async def websocket_resolve_playback(
 
         item_type = raw_item.get("Type", "Video")
         audio_stream_index = msg.get("audio_stream_index")
+
+        if is_live_tv_item(raw_item):
+            live_hls = await open_live_tv_hls_session(
+                hass,
+                coordinator.entry.entry_id,
+                user_id,
+                item_id,
+                api,
+                profile=BROWSER_DEVICE_PROFILE,
+                device_id="jellyha-browser",
+            )
+            connection.send_result(msg["id"], {
+                "play_method": "Transcode",
+                "url": live_hls["url"],
+                "mime_type": live_hls["mime_type"],
+                "play_session_id": live_hls["play_session_id"],
+                "token": live_hls["token"],
+            })
+            return
+
         playback_info = await api.get_playback_info(user_id, item_id, profile=BROWSER_DEVICE_PROFILE)
 
         media_sources = playback_info.get("MediaSources", [])
