@@ -5,6 +5,15 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.8] - 2026-11-23
+
+### Fixed
+- **Live TV Casting to Chromecast & Browser Player** ([#79](https://github.com/zupancicmarko/JellyHA/issues/79)):
+  - Fixed Live TV channels failing to cast from Home Assistant's Media Browser (`📡 Live TV`), `jellyha.play_on_chromecast`, and the built-in browser player.
+  - Added Live TV stream detection (`TvChannel` / `LiveTvChannel`, `IsInfiniteStream`, `RequiresOpening`) that opens the live stream via Jellyfin's `PlaybackInfo` (`AutoOpenLiveStream`) / `LiveStreams/Open` endpoints and serves a proxied HLS stream (`application/x-mpegURL`) with `LiveStreamId` forwarding and API key stripping.
+  - Added automatic Live TV tuner cleanup (`POST /LiveStreams/Close` and `LiveStreamId` stop reporting) with a dedicated 90-second inactivity timeout so upstream tuners (Threadfin, HDHomeRun, M3U) are released promptly after stopping playback.
+  - Preserved all existing Chromecast and VOD playback logic unchanged for movies, TV episodes, home videos, and music.
+
 ## [1.7.7] - 2026-11-07
 
 ### Added

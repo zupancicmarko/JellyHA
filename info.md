@@ -1,6 +1,6 @@
 # JellyHA — Jellyfin for Home Assistant
 
-**v1.7.7** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
+**v1.7.8** · [Full Changelog](https://github.com/zupancicmarko/JellyHA/blob/main/CHANGELOG.md) · [Documentation](https://github.com/zupancicmarko/JellyHA/tree/main/docs)
 
 ![JellyHA Library Card](https://github.com/zupancicmarko/JellyHA/raw/main/docs/JellyHA-Library-Grid.png)
 
@@ -8,10 +8,9 @@ JellyHA integrates your Jellyfin media server directly into Home Assistant with 
 
 ---
 
-### 🆕 What's new in v1.7.7
+### 🆕 What's new in v1.7.8
 
-- 🔈 **Real-time Volume Synchronization & Tactile Animation** ([#77](https://github.com/zupancicmarko/JellyHA/issues/77)) — Fixed an issue where volume changes made via hardware remotes, physical device buttons, or HA scripts did not reflect on the Now Playing card, and added a smooth tactile spring rebound animation when volume updates.
-- 📡 **Chromecast Subtitle Transcoding Optimization** — Fixed playback timeouts on older Chromecast devices when playing items with text subtitles by delivering native WebVTT sidecar streams over HLS instead of forcing heavy video burn-in.
+- 📡 **Live TV Casting to Chromecast** ([#79](https://github.com/zupancicmarko/JellyHA/issues/79)) — Live TV channels from the HA Media Browser (`📡 Live TV`), `jellyha.play_on_chromecast`, and the built-in browser player now properly open Jellyfin live streams and proxy playable HLS streams (`application/x-mpegURL`) with automatic tuner cleanup on stop.
 
 ---
 
