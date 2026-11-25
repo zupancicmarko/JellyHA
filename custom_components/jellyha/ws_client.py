@@ -57,6 +57,21 @@ class JellyfinWebSocketClient:
         """Return True if connected."""
         return self._connected
 
+    def _redact_secret(self, text: str) -> str:
+        """Scrub API keys and tokens from URLs and exception messages before logging."""
+        sanitized = re.sub(
+            r'([?&])(api_key|apikey|token)=[^&\s"\']+',
+            r'\1\2=REDACTED',
+            text,
+            flags=re.IGNORECASE,
+        )
+        if self._api_key:
+            sanitized = sanitized.replace(self._api_key, "REDACTED")
+            encoded_key = quote(self._api_key)
+            if encoded_key != self._api_key:
+                sanitized = sanitized.replace(encoded_key, "REDACTED")
+        return sanitized
+
     async def _run(self):
         """Run the WebSocket loop."""
         # Construct WebSocket URL
@@ -94,7 +109,7 @@ class JellyfinWebSocketClient:
         
         while not self._stop_event.is_set():
             try:
-                safe_log_url = re.sub(r'([?&])api_key=[^&]+', r'\1api_key=REDACTED', url)
+                safe_log_url = self._redact_secret(url)
                 _LOGGER.debug("Connecting to Jellyfin WebSocket: %s", safe_log_url)
                 async with self._session.ws_connect(url, headers=headers) as ws:
                     self._ws = ws
@@ -118,14 +133,15 @@ class JellyfinWebSocketClient:
                         if msg.type == aiohttp.WSMsgType.TEXT:
                             await self._handle_message(msg.data)
                         elif msg.type == aiohttp.WSMsgType.ERROR:
-                            _LOGGER.error("WebSocket connection error: %s", ws.exception())
+                            _LOGGER.error("WebSocket connection error: %s", self._redact_secret(str(ws.exception())))
                             break
             except Exception as ex:  # pylint: disable=broad-except
                  if not self._stop_event.is_set():
-                     if "503" in str(ex):
-                         _LOGGER.debug("Jellyfin server is loading (503), retrying WebSocket in %ds: %s", retry_delay, ex)
+                     safe_ex = self._redact_secret(str(ex))
+                     if "503" in safe_ex:
+                         _LOGGER.debug("Jellyfin server is loading (503), retrying WebSocket in %ds: %s", retry_delay, safe_ex)
                      else:
-                         _LOGGER.warning("WebSocket connection failed, retrying in %ds: %s", retry_delay, ex)
+                         _LOGGER.warning("WebSocket connection failed, retrying in %ds: %s", retry_delay, safe_ex)
             finally:
                 if self._connected:
                     # Successful connection happened, reset backoff

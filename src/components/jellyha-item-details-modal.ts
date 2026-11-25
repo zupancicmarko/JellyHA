@@ -5,7 +5,7 @@ import { HomeAssistant, MediaItem, PlayTarget } from '../shared/types';
 import { getScriptDefaultName } from '../shared/utils';
 import { localize } from '../shared/localize';
 import { showJellyHABrowserPlayer } from './jellyha-browser-player';
-import { safeOpenWindow } from '../shared/safe-url';
+import { isSafeExternalUrl, safeOpenWindow } from '../shared/safe-url';
 
 @customElement('jellyha-item-details-modal')
 export class JellyHAItemDetailsModal extends LitElement {
@@ -1448,7 +1448,7 @@ export class JellyHAItemDetailsModal extends LitElement {
                                     <ha-icon icon="${item.is_favorite ? 'mdi:heart' : 'mdi:heart-outline'}"></ha-icon>
                                 </button>
 
-                                <a href="${this._getJellyfinUrl(item) || 'javascript:void(0)'}" target="_blank" rel="noopener noreferrer" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => {
+                                <a href="${this._getJellyfinUrl(item) || '#'}" target="_blank" rel="noopener noreferrer" class="action-btn" title="Open in Jellyfin" @click=${(e: Event) => {
                                     this._haptic();
                                     const jfUrl = this._getJellyfinUrl(item);
                                     if (!jfUrl) {
@@ -2303,13 +2303,14 @@ export class JellyHAItemDetailsModal extends LitElement {
                     originalUrlObj.pathname = extPath + originalUrlObj.pathname;
                 }
 
-                return originalUrlObj.toString();
+                const resolved = originalUrlObj.toString();
+                return isSafeExternalUrl(resolved) ? resolved : undefined;
             } catch (e) {
                 console.warn('JellyHA: Failed to parse URLs to inject external URL override', e);
             }
         }
 
-        return url;
+        return isSafeExternalUrl(url) ? url : undefined;
     }
 
     private _openExternalUrl(url: string | undefined): void {

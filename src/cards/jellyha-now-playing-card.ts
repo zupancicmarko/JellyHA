@@ -211,12 +211,18 @@ export class JellyHANowPlayingCard extends LitElement {
             : rawStateObj;
         const attributes = stateObj.attributes as unknown as NowPlayingSensorData;
 
-        // Extract Jellyfin item ID and enrich missing metadata for generic media players (like Chromecast)
+        // Extract Jellyfin item ID (or HLS proxy token) and enrich missing metadata for generic media players (like Chromecast)
         const itemId = this._extractItemId(stateObj);
-        if (itemId && !this._resolvedMetadata[itemId] && (!attributes.community_rating || !attributes.year || !attributes.genres || !attributes.media_type)) {
-            this._fetchMissingMetadata(itemId);
+        const hlsToken = !itemId ? this._extractHlsToken(stateObj) : null;
+        const metadataKey = itemId || hlsToken;
+        if (metadataKey && !this._resolvedMetadata[metadataKey] && (!attributes.community_rating || !attributes.year || !attributes.genres || !attributes.media_type || !(stateObj.attributes as any).entity_picture)) {
+            if (itemId) {
+                this._fetchMissingMetadata(itemId);
+            } else if (hlsToken) {
+                this._fetchMissingMetadataByHlsToken(hlsToken);
+            }
         }
-        const cachedItem = itemId ? this._resolvedMetadata[itemId] : null;
+        const cachedItem = metadataKey ? this._resolvedMetadata[metadataKey] : null;
 
         const durationSeconds = this._getDurationSeconds(stateObj);
         const currentPositionSeconds = this._getCurrentPositionSeconds(stateObj);
@@ -1397,16 +1403,27 @@ export class JellyHANowPlayingCard extends LitElement {
 
         const contentId = (stateObj.attributes as any).media_content_id || '';
         const entityPic = (stateObj.attributes as any).entity_picture || '';
+        const uuidPattern = '[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
-        // Match direct Jellyfin (/Videos/<id>/..., /Items/<id>/..., /Audio/<id>/...) or JellyHA proxy (/api/jellyha/stream/<entry>/<id> or /api/jellyha/hls/<token>/<id>)
-        const vidMatch = contentId.match(/(?:Videos|Items|Audio|stream\/[a-zA-Z0-9_-]+|hls\/[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)/i);
+        // Match direct Jellyfin (/Videos/<uuid>, /Items/<uuid>, /Audio/<uuid>) or JellyHA stream proxy (/api/jellyha/stream/<entry>/(?:Videos|Audio)?/<uuid>)
+        const vidMatch = contentId.match(
+            new RegExp(`(?:Videos|Items|Audio|stream\\/[a-zA-Z0-9_-]+(?:\\/(?:Videos|Audio))?)\\/(${uuidPattern})`, 'i')
+        );
         if (vidMatch && vidMatch[1]) return vidMatch[1];
 
-        // Match direct /Items/<id>/... or signed proxy /api/jellyha/image/<entry>/<id>/...
-        const picMatch = entityPic.match(/(?:Items|image\/[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)/i);
+        // Match direct /Items/<uuid>/... or signed proxy /api/jellyha/image/<entry>/<uuid>/...
+        const picMatch = entityPic.match(
+            new RegExp(`(?:Items|image\\/[a-zA-Z0-9_-]+)\\/(${uuidPattern})`, 'i')
+        );
         if (picMatch && picMatch[1]) return picMatch[1];
 
         return null;
+    }
+
+    private _extractHlsToken(stateObj: HassEntity): string | null {
+        const contentId = (stateObj.attributes as any).media_content_id || '';
+        const hlsMatch = contentId.match(/\/api\/jellyha\/hls\/([a-zA-Z0-9_-]+)\//i);
+        return hlsMatch && hlsMatch[1] ? hlsMatch[1] : null;
     }
 
     private async _fetchMissingMetadata(itemId: string): Promise<void> {
@@ -1428,6 +1445,28 @@ export class JellyHANowPlayingCard extends LitElement {
                 this._resolvedMetadata[itemId] = res.item;
             } else {
                 this._resolvedMetadata[itemId] = {};
+            }
+            this.requestUpdate();
+            this._checkLayout();
+        } catch (e) {
+            // WS call failed, ignore
+        } finally {
+            this._fetchingMetadataId = null;
+        }
+    }
+
+    private async _fetchMissingMetadataByHlsToken(hlsToken: string): Promise<void> {
+        if (!hlsToken || this._resolvedMetadata[hlsToken] || this._fetchingMetadataId === hlsToken) return;
+        this._fetchingMetadataId = hlsToken;
+        try {
+            const res: any = await this.hass.callWS({
+                type: 'jellyha/get_item',
+                hls_token: hlsToken,
+            });
+            if (res && res.item) {
+                this._resolvedMetadata[hlsToken] = res.item;
+            } else {
+                this._resolvedMetadata[hlsToken] = {};
             }
             this.requestUpdate();
             this._checkLayout();
@@ -1470,38 +1509,18 @@ export class JellyHANowPlayingCard extends LitElement {
             if ((cachedItem.poster_url || cachedItem.image_url) && !episodeImageUrl) episodeImageUrl = cachedItem.poster_url || cachedItem.image_url;
         }
 
-        // Try to parse Jellyfin URL from media_content_id or entity_picture
-        const vidMatch = contentId.match(/^(https?:\/\/[^\/]+)\/(?:Videos|Items)\/([a-zA-Z0-9_-]+)/i);
-        const picMatch = entityPic.match(/^(https?:\/\/[^\/]+)\/Items\/([a-zA-Z0-9_-]+)\/Images\/Primary/i);
+        // Try to parse proxied JellyHA image URL from entity_picture (never extract or forward raw API keys)
         const proxyPicMatch = entityPic.match(/(?:Items|image\/[a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)/i);
+        const picId = proxyPicMatch ? proxyPicMatch[1] : null;
+        const epId = attributes.item_id || null;
 
-        const serverBase = vidMatch ? vidMatch[1] : (picMatch ? picMatch[1] : '');
-        const epId = vidMatch ? vidMatch[2] : (attributes.item_id || null);
-        const picId = picMatch ? picMatch[2] : (proxyPicMatch ? proxyPicMatch[1] : null);
-
-        // Find API key from contentId or entityPic
-        const keyMatch = contentId.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i) ||
-                         entityPic.match(/[?&](?:api_key|ApiKey)=([a-zA-Z0-9]+)/i);
-        const apiKeyParam = keyMatch ? `&api_key=${keyMatch[1]}` : '';
-
-        if (serverBase && epId) {
-            // We know the episode ID!
-            const epDirectUrl = `${serverBase}/Items/${epId}/Images/Primary?maxHeight=300&quality=90${apiKeyParam}`;
-            if (!episodeImageUrl) {
-                if (picId === epId) {
-                    episodeImageUrl = entityPic;
-                } else {
-                    episodeImageUrl = epDirectUrl;
-                }
-            }
-
-            if (picId && picId !== epId && !seriesImageUrl) {
-                // picId differs from episode ID -> entity_picture is the Series poster!
+        if (proxyPicMatch) {
+            if (picId && epId && picId !== epId && !seriesImageUrl) {
+                // picId differs from episode ID -> entity_picture is the Series poster
                 seriesImageUrl = entityPic;
+            } else if (!episodeImageUrl) {
+                episodeImageUrl = entityPic;
             }
-        } else if ((picMatch || proxyPicMatch) && !episodeImageUrl && !seriesImageUrl) {
-            // Default entity_picture as fallback for episode
-            episodeImageUrl = entityPic;
         }
 
         // Save what we have in cache

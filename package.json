@@ -1,6 +1,6 @@
 {
     "name": "jellyha",
-    "version": "1.7.8",
+    "version": "1.7.9",
     "description": "Jellyfin Custom Integration for Home Assistant",
     "main": "custom_components/jellyha/www/jellyha-cards.js",
     "type": "module",
@@ -8,7 +8,8 @@
         "build": "vite build",
         "dev": "vite build --watch",
         "lint": "eslint src --ext .ts",
-        "test": "vitest"
+        "test": "vitest",
+        "security-check": "python scripts/security_check.py && npx vitest run tests/safe-url.test.ts"
     },
     "keywords": [
         "home-assistant",

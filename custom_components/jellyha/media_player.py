@@ -273,7 +273,7 @@ class JellyHAMediaPlayer(CoordinatorEntity[JellyHALibraryCoordinator], MediaPlay
         category, parsed_id = parse_item_id(media_id)
         item_id = parsed_id or extract_item_id(media_id)
 
-        if not item_id:
+        if not item_id or not UUID_HEX_RE.match(item_id):
             _LOGGER.warning("Cannot play: invalid media_id format: %s", media_id)
             return
 

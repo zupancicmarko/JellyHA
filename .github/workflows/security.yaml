@@ -1,0 +1,56 @@
+name: Security Check
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-security:
+    name: Backend Security & SAST
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install security tools
+        run: python -m pip install --upgrade pip bandit voluptuous aiohttp
+
+      - name: Run JellyHA security checks and tests
+        run: python scripts/security_check.py
+
+      - name: Run Bandit SAST
+        run: bandit -r custom_components/jellyha -ll -ii
+
+  frontend-security:
+    name: Frontend Security & Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run frontend URL/XSS security tests
+        run: npx vitest run tests/safe-url.test.ts
+
+      - name: Audit production npm dependencies
+        run: npm audit --omit=dev --audit-level=high
+

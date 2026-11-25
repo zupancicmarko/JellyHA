@@ -24,6 +24,7 @@ from .browse_media import async_browse_media, async_browse_media_search
 from .const import DOMAIN
 from .hls_manager import is_live_tv_item, open_live_tv_hls_session
 from .media_strategy import MediaStrategy
+from .security import is_valid_item_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,6 +63,9 @@ class JellyHAMediaSource(MediaSource):
         entry_id = parts[0]
         category = parts[1]
         item_id = parts[2]
+
+        if not is_valid_item_id(item_id):
+            raise Unresolvable(f"Invalid item ID: {item_id}")
         
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if not entry or not hasattr(entry, "runtime_data"):
@@ -178,6 +182,11 @@ class JellyHAMediaSource(MediaSource):
         # Live TV channels require opening a live stream and serving HLS (not static ?static=true)
         if is_live_tv_item(item_info):
             try:
+                # HA Media Browser "Web browser" mode (target_media_player is None) uses
+                # <ha-hls-player>, which runs `new URL(variant, baseUrl)` on master playlists
+                # and throws TypeError on relative base URLs. Serving live.m3u8 directly
+                # avoids that crash while keeping relative URLs working over HTTP & HTTPS.
+                is_web_browser = getattr(item, "target_media_player", None) is None
                 live_hls = await open_live_tv_hls_session(
                     self.hass,
                     entry_id,
@@ -185,6 +194,8 @@ class JellyHAMediaSource(MediaSource):
                     item_id,
                     api,
                     device_id="jellyha",
+                    direct_live_playlist=is_web_browser,
+                    display_name=filename,
                 )
                 return PlayMedia(live_hls["url"], live_hls["mime_type"])
             except Exception as err:

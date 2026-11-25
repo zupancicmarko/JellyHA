@@ -77,7 +77,7 @@ BROWSER_DEVICE_PROFILE: dict[str, Any] = {
 
 CHROMECAST_LIVE_TV_PROFILE: dict[str, Any] = {
     "Name": "JellyHA Chromecast Live TV",
-    "MaxStreamingBitrate": 20000000,
+    "MaxStreamingBitrate": 40000000,
     "DirectPlayProfiles": [],
     "TranscodingProfiles": [
         {
@@ -88,9 +88,77 @@ CHROMECAST_LIVE_TV_PROFILE: dict[str, Any] = {
             "Protocol": "hls",
             "Context": "Streaming",
             "MaxAudioChannels": "2",
-            "MinSegments": 2,
+            "MinSegments": 1,
             "BreakOnNonKeyFrames": False,
             "EnableMpegtsM2TsMode": False,
+        },
+    ],
+    "CodecProfiles": [
+        {
+            "Type": "Video",
+            "Codec": "h264",
+            "Conditions": [
+                {
+                    "Condition": "NotEquals",
+                    "Property": "IsAnamorphic",
+                    "Value": "true",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "NotEquals",
+                    "Property": "IsInterlaced",
+                    "Value": "true",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "EqualsAny",
+                    "Property": "VideoProfile",
+                    "Value": "high|main|baseline|constrained baseline",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "VideoLevel",
+                    "Value": "41",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "VideoBitDepth",
+                    "Value": "8",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "Width",
+                    "Value": "1920",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "Height",
+                    "Value": "1080",
+                    "IsRequired": False,
+                },
+            ],
+        },
+        {
+            "Type": "VideoAudio",
+            "Codec": "aac",
+            "Conditions": [
+                {
+                    "Condition": "LessThanEqual",
+                    "Property": "AudioChannels",
+                    "Value": "2",
+                    "IsRequired": False,
+                },
+                {
+                    "Condition": "Equals",
+                    "Property": "IsSecondaryAudio",
+                    "Value": "false",
+                    "IsRequired": False,
+                },
+            ],
         },
     ],
     "SubtitleProfiles": [
@@ -174,7 +242,11 @@ class JellyfinApiClient:
         **kwargs: Any,
     ) -> Any:
         """Make an API request with retry logic."""
+        if ".." in endpoint.split("/") or "\\" in endpoint:
+            raise ValueError(f"Path traversal detected in Jellyfin API endpoint: {endpoint!r}")
         url = urljoin(self._server_url + "/", endpoint.lstrip("/"))
+        if not url.startswith(self._server_url):
+            raise ValueError(f"Resolved URL escapes configured Jellyfin server: {endpoint!r}")
         _LOGGER.debug("API request: %s %s", method, url)
         
         request_headers = self._headers.copy()
