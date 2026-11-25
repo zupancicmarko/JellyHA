@@ -144,6 +144,9 @@ async def websocket_get_next_up(
 ) -> None:
     """Handle get next up episode command."""
     series_id = msg["series_id"]
+    if not is_valid_item_id(series_id):
+        connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Invalid series ID")
+        return
     coordinator, err = _get_coordinator_from_msg(hass, msg)
     if not coordinator:
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, err or "Integration not loaded")
@@ -303,7 +306,7 @@ async def websocket_get_episodes(
         "Movie", "Series", "Episode",
         "Audio", "MusicAlbum", "MusicArtist", "MusicVideo", "Video",
     ]),
-    vol.Optional("limit", default=20): int,
+    vol.Optional("limit", default=20): vol.All(vol.Coerce(int), vol.Range(min=1, max=200)),
 })
 @websocket_api.async_response
 async def websocket_search_media(
@@ -381,8 +384,12 @@ async def websocket_search_media(
     vol.Optional("entity_id"): cv.entity_id,
     vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
-    vol.Optional("item_types"): [str],
-    vol.Optional("limit", default=100): int,
+    vol.Optional("item_types"): [vol.In([
+        "Movie", "Series", "Episode",
+        "Audio", "MusicAlbum", "MusicArtist", "MusicVideo", "Video",
+        "Playlist", "BoxSet",
+    ])],
+    vol.Optional("limit", default=100): vol.All(vol.Coerce(int), vol.Range(min=1, max=200)),
 })
 @websocket_api.async_response
 async def websocket_get_latest_items(
@@ -428,7 +435,8 @@ async def websocket_get_latest_items(
 
 @websocket_api.websocket_command({
     vol.Required("type"): "jellyha/get_item",
-    vol.Required("item_id"): str,
+    vol.Optional("item_id"): str,
+    vol.Optional("hls_token"): str,
     vol.Optional("entity_id"): cv.entity_id,
     vol.Optional("server_entity_id"): cv.entity_id,
     vol.Optional("config_entry_id"): cv.string,
@@ -439,12 +447,25 @@ async def websocket_get_item(
     connection: websocket_api.ActiveConnection,
     msg: dict[str, Any],
 ) -> None:
-    """Handle get single item command."""
-    item_id = msg["item_id"]
-    if not is_valid_item_id(item_id):
+    """Handle get single item command (by item_id or active hls_token)."""
+    item_id = msg.get("item_id")
+    hls_token = msg.get("hls_token")
+    effective_msg = dict(msg)
+
+    if not item_id and hls_token:
+        manager = hass.data.get(DOMAIN, {}).get("hls_manager")
+        hls_session = manager.get_session(hls_token) if manager else None
+        if not hls_session:
+            connection.send_result(msg["id"], {"item": None})
+            return
+        item_id = hls_session.item_id
+        if hls_session.entry_id and not effective_msg.get("config_entry_id"):
+            effective_msg["config_entry_id"] = hls_session.entry_id
+
+    if not item_id or not is_valid_item_id(item_id):
         connection.send_error(msg["id"], websocket_api.ERR_INVALID_FORMAT, "Invalid item ID")
         return
-    coordinator, err = _get_coordinator_from_msg(hass, msg)
+    coordinator, err = _get_coordinator_from_msg(hass, effective_msg)
     if not coordinator:
         connection.send_error(msg["id"], websocket_api.ERR_NOT_FOUND, err or "Integration not loaded")
         return
@@ -468,6 +489,14 @@ async def websocket_get_item(
             item["media_streams"] = raw_item["MediaSources"][0].get("MediaStreams", [])
         elif "MediaStreams" in raw_item:
             item["media_streams"] = raw_item["MediaStreams"]
+
+        # Enrich Live TV channels with CurrentProgram metadata when available
+        current_prog = raw_item.get("CurrentProgram")
+        if isinstance(current_prog, dict):
+            if not item.get("description") and current_prog.get("Overview"):
+                item["description"] = current_prog["Overview"]
+            if current_prog.get("Name"):
+                item["current_program"] = current_prog["Name"]
 
         connection.send_result(msg["id"], {"item": item})
     except Exception as err:
@@ -593,10 +622,13 @@ async def websocket_resolve_playback(
         }
 
         # Merge server-generated TranscodingUrl parameters if returned by Jellyfin
+        # (strip sensitive credential parameters so API keys are never leaked to clients)
         transcoding_url = media_source.get("TranscodingUrl")
         if transcoding_url:
             parsed_query = parse_qsl(urlparse(transcoding_url).query)
             for k, v in parsed_query:
+                if k.lower() in ("api_key", "apikey", "token"):
+                    continue
                 transcode_params[k] = v
 
         # Enforce required session and transcode parameters
@@ -648,5 +680,5 @@ async def websocket_stop_playback(
     manager = hass.data.get(DOMAIN, {}).get("hls_manager")
     target = msg.get("token") or msg.get("play_session_id")
     if manager and target:
-        await manager.terminate_session(target)
+        await manager.terminate_session(target, explicit_stop=True)
     connection.send_result(msg["id"], {"success": True})

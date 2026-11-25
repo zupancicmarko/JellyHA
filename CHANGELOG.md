@@ -5,6 +5,29 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.9] - 2026-11-25
+
+### Fixed
+- **Live TV Chromecast, Browser Playback & Now Playing Artwork** ([#79](https://github.com/zupancicmarko/JellyHA/issues/79)):
+  - Fixed HTTP 403 `Token item mismatch` errors caused by hyphenated vs. compact UUID formatting in HLS proxy paths and playlist rewriting.
+  - Fixed `ValueError: already has OPTIONS handler` during multi-instance setup by removing the redundant `options()` handler on `JellyHAHlsView` and added `HEAD` support for Cast receivers.
+  - Fixed Live TV playback in Home Assistant Media Browser's "Web browser" mode (`live.m3u8` direct playlist) and prevented premature termination of shared `LiveStreamId` sessions on inactivity reap.
+  - Added friendly channel-name URL aliasing so Home Assistant Media Browser and Chromecast Default Media Receiver display the channel name instead of `master.m3u8?DeviceId=...`.
+  - Fixed missing channel poster and blurred backdrop on the Now Playing card when casting Live TV (or proxied VOD HLS) to Chromecast by resolving active `hls_token` sessions in `jellyha/get_item`.
+
+### Security
+- **Zero API Key Exposure on Cast & Browser Playback:**
+  - Routed `jellyha.play_on_chromecast` VOD/Audio DirectPlay, HLS transcodes, and WebVTT subtitles through Home Assistant's signed/tokenized proxy views instead of embedding raw Jellyfin API keys in Cast URLs.
+  - Stripped `api_key`, `ApiKey`, and `token` query parameters from Jellyfin `TranscodingUrl` in `jellyha/resolve_playback` WebSocket responses.
+  - Removed raw `api_key` regex extraction from the Now Playing card frontend.
+- **Input Validation, Log Redaction & Proxy Hardening:**
+  - Added central path-traversal and origin-boundary checks in `JellyfinApiClient._request` plus strict item/session ID validation across `play_music`, `play_live_tv_channel`, `media_source`, `browse_media`, `media_player`, and `jellyha/get_next_up`.
+  - Scrubbed `api_key`, `token`, and raw/encoded key values from `JellyfinWebSocketClient` connection URLs and exception logs.
+  - Enforced `MAX_ACTIVE_SESSIONS = 64` with LRU eviction in `HlsSessionManager` and bounded `limit` / `item_types` on WebSocket query commands.
+  - Changed `Cache-Control` from `public` to `private` on authenticated image/subtitle proxy views, sanitized `Content-Disposition` filenames, and hid raw exception details in `JellyHAStreamView.head` 500 responses.
+  - Gated `_getJellyfinUrl()` with `isSafeExternalUrl()` and replaced `innerHTML` with `textContent` in `jellyha-seek-polyfill.ts`.
+  - Added automated local security check (`scripts/security_check.py`, `npm run security-check`) and GitHub Actions security workflow (`.github/workflows/security.yaml`).
+
 ## [1.7.8] - 2026-11-23
 
 ### Fixed

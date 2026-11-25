@@ -131,7 +131,7 @@ function fixSlider(inst: any): void {
                 if (curr) {
                     const mins = Math.floor(targetVal / 60);
                     const secs = Math.floor(targetVal % 60);
-                    curr.innerHTML = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                    curr.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
                 }
             }
         });
@@ -152,7 +152,7 @@ function patchBarMediaPlayer(Cls: any): void {
                 if (this._currentProgress) {
                     const mins = Math.floor(targetVal / 60);
                     const secs = Math.floor(targetVal % 60);
-                    this._currentProgress.innerHTML = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                    this._currentProgress.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
                 }
             }
             return;

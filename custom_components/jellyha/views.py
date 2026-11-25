@@ -143,9 +143,9 @@ class JellyHAImageView(HomeAssistantView):
                 if "ETag" in resp.headers:
                     response.headers["ETag"] = resp.headers["ETag"]
                 
-                # If a tag is provided, we can cache aggressively (1 year)
+                # If a tag is provided, we can cache aggressively (1 year) in private caches only
                 if tag:
-                    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                    response.headers["Cache-Control"] = "private, max-age=31536000, immutable"
                 
                 await response.prepare(request)
                 prepared = True
@@ -325,13 +325,16 @@ class JellyHAStreamView(HomeAssistantView):
 
                     if filename:
                         import urllib.parse
-                        display_filename = urllib.parse.unquote(filename).replace('"', '')
-                        headers["Content-Disposition"] = f'inline; filename="{display_filename}"'
+                        display_filename = re.sub(
+                            r'[\x00-\x1f\x7f";\\]', "", urllib.parse.unquote(filename)
+                        ).strip()
+                        if display_filename:
+                            headers["Content-Disposition"] = f'inline; filename="{display_filename}"'
 
                     return web.Response(status=resp.status, headers=headers)
             except Exception as err:
                 _LOGGER.error("Stream HEAD error for %s: %s", item_id, err)
-                return web.Response(status=500, text=str(err))
+                return web.Response(status=500, text="Stream proxy error")
 
         prepared = False
         try:
@@ -358,8 +361,11 @@ class JellyHAStreamView(HomeAssistantView):
                         response.headers[header_key] = resp.headers[header_key]
                 if filename:
                     import urllib.parse
-                    display_filename = urllib.parse.unquote(filename).replace('"', '')
-                    response.headers["Content-Disposition"] = f'inline; filename="{display_filename}"'
+                    display_filename = re.sub(
+                        r'[\x00-\x1f\x7f";\\]', "", urllib.parse.unquote(filename)
+                    ).strip()
+                    if display_filename:
+                        response.headers["Content-Disposition"] = f'inline; filename="{display_filename}"'
 
                 await response.prepare(request)
                 prepared = True
@@ -483,7 +489,7 @@ class JellyHASubtitleView(HomeAssistantView):
                             charset="utf-8",
                             headers={
                                 "Access-Control-Allow-Origin": "*",
-                                "Cache-Control": "public, max-age=86400",
+                                "Cache-Control": "private, max-age=86400",
                             },
                         )
 
@@ -498,7 +504,7 @@ class JellyHASubtitleView(HomeAssistantView):
                     charset="utf-8",
                     headers={
                         "Access-Control-Allow-Origin": "*",
-                        "Cache-Control": "public, max-age=86400",
+                        "Cache-Control": "private, max-age=86400",
                     },
                 )
         except Exception as err:
@@ -517,6 +523,54 @@ class JellyHAHlsView(HomeAssistantView):
         """Initialize."""
         self.hass = hass
 
+    async def head(self, request: web.Request, token: str, path: str) -> web.Response:
+        """Handle HEAD requests for HLS playlists and segments without starting extra transcodes."""
+        manager = self.hass.data.get(DOMAIN, {}).get("hls_manager")
+        if not manager:
+            return web.Response(status=503, text="HLS manager not initialized")
+
+        if not path or ".." in path or path.startswith("/") or path.startswith("\\"):
+            return web.Response(status=400, text="Invalid path")
+
+        clean_path = path.split("?")[0].split("#")[0]
+        session = manager.get_session(token)
+        if not session:
+            ext = ("." + clean_path.rsplit(".", 1)[-1].lower()) if "." in clean_path else ""
+            if ext not in ALLOWED_HLS_EXTENSIONS:
+                return web.Response(status=400, text="Invalid HLS file type")
+            return web.Response(status=404, text="HLS session expired or invalid")
+
+        is_alias = bool(getattr(session, "alias_path", None) and clean_path == session.alias_path)
+        effective_path = (session.upstream_playlist or "master.m3u8") if is_alias else clean_path
+        ext = ("." + effective_path.rsplit(".", 1)[-1].lower()) if "." in effective_path else ""
+        if not is_alias and ext not in ALLOWED_HLS_EXTENSIONS:
+            return web.Response(status=400, text="Invalid HLS file type")
+
+        if effective_path.lower().startswith(("videos/", "audio/")):
+            parts = effective_path.split("/")
+            normalized_path_id = parts[1].replace("-", "").lower() if len(parts) > 1 else ""
+            normalized_session_id = session.item_id.replace("-", "").lower()
+            if len(parts) > 1 and normalized_path_id not in (normalized_session_id, "activeencodings"):
+                return web.Response(status=403, text="Forbidden: Token item mismatch")
+
+        if is_alias or ext == ".m3u8":
+            content_type = "application/vnd.apple.mpegurl"
+        elif ext in (".m4s", ".mp4"):
+            content_type = "video/mp4"
+        elif ext in (".vtt", ".webvtt"):
+            content_type = "text/vtt"
+        else:
+            content_type = "video/mp2t"
+
+        return web.Response(
+            status=200,
+            headers={
+                "Content-Type": content_type,
+                "Access-Control-Allow-Origin": "*",
+                "Cache-Control": "no-cache",
+            },
+        )
+
     async def get(self, request: web.Request, token: str, path: str) -> web.Response:
         """Handle HLS playlist and segment requests."""
         manager = self.hass.data.get(DOMAIN, {}).get("hls_manager")
@@ -527,52 +581,80 @@ class JellyHAHlsView(HomeAssistantView):
             return web.Response(status=400, text="Invalid path")
 
         clean_path = path.split("?")[0].split("#")[0]
-        ext = ("." + clean_path.rsplit(".", 1)[-1].lower()) if "." in clean_path else ""
-        if ext not in ALLOWED_HLS_EXTENSIONS:
-            return web.Response(status=400, text="Invalid HLS file type")
-
         session = manager.get_session(token)
         if not session:
+            ext = ("." + clean_path.rsplit(".", 1)[-1].lower()) if "." in clean_path else ""
+            if ext not in ALLOWED_HLS_EXTENSIONS:
+                return web.Response(status=400, text="Invalid HLS file type")
             return web.Response(status=404, text="HLS session expired or invalid")
 
-        params = dict(request.query)
+        is_alias = bool(getattr(session, "alias_path", None) and clean_path == session.alias_path)
+        effective_path = (session.upstream_playlist or "master.m3u8") if is_alias else path
+        effective_clean_path = effective_path.split("?")[0].split("#")[0]
+        ext = ("." + effective_clean_path.rsplit(".", 1)[-1].lower()) if "." in effective_clean_path else ""
+        if not is_alias and ext not in ALLOWED_HLS_EXTENSIONS:
+            return web.Response(status=400, text="Invalid HLS file type")
+
+        params: dict[str, str] = {}
+        if is_alias and getattr(session, "initial_params", None):
+            params.update(session.initial_params)
+        for k, v in request.query.items():
+            if k != "authSig":
+                params[k] = v
         params["api_key"] = session.api_key
         params["PlaySessionId"] = session.play_session_id
         if session.live_stream_id and "LiveStreamId" not in params:
             params["LiveStreamId"] = session.live_stream_id
 
-        if path.lower().startswith("videos/"):
-            parts = path.split("/")
-            if len(parts) > 1 and parts[1].lower() not in (session.item_id.lower(), "activeencodings"):
+        if effective_path.lower().startswith(("videos/", "audio/")):
+            parts = effective_path.split("/")
+            normalized_path_id = parts[1].replace("-", "").lower() if len(parts) > 1 else ""
+            normalized_session_id = session.item_id.replace("-", "").lower()
+            if len(parts) > 1 and normalized_path_id not in (normalized_session_id, "activeencodings"):
                 return web.Response(status=403, text="Forbidden: Token item mismatch")
-            target_url = f"{session.server_url}/{path}"
+            target_url = f"{session.server_url}/{effective_path}"
         else:
-            target_url = f"{session.server_url}/Videos/{session.item_id}/{path}"
+            target_url = f"{session.server_url}/Videos/{session.item_id}/{effective_path}"
 
-        is_playlist = clean_path.endswith(".m3u8")
+        is_playlist = is_alias or effective_clean_path.endswith(".m3u8")
+        if not is_playlist or not effective_clean_path.lower().endswith("master.m3u8"):
+            session.stream_started = True
         client_session = session.api.session
 
         if is_playlist:
+            playlist_timeout = 45 if session.live_stream_id else 15
             try:
                 async with client_session.get(
                     target_url,
                     params=params,
                     headers=session.api._headers,
-                    timeout=aiohttp.ClientTimeout(total=15),
+                    timeout=aiohttp.ClientTimeout(total=playlist_timeout),
                 ) as resp:
                     if resp.status != 200:
                         return web.Response(status=resp.status, text=resp.reason)
                     raw_text = await resp.text()
 
-                # Rewrite playlist: strip api_key and ApiKey query parameters
-                cleaned_text = re.sub(r'([?&])(api_key|ApiKey)=[^&"\s\n]+', '', raw_text)
-                cleaned_text = re.sub(r'\?&', '?', cleaned_text)
+                # Rewrite playlist: strip api_key/ApiKey/token query parameters while preserving '?'
+                cleaned_text = re.sub(r'&(api_key|ApiKey|token|Token)=[^&"\s\n]+', '', raw_text)
+                cleaned_text = re.sub(r'\?(api_key|ApiKey|token|Token)=[^&"\s\n]+&', '?', cleaned_text)
+                cleaned_text = re.sub(r'\?(api_key|ApiKey|token|Token)=[^&"\s\n]+', '', cleaned_text)
                 cleaned_text = re.sub(r'(\?|\&)\s*$', '', cleaned_text, flags=re.MULTILINE)
+
+                # Match both compact 32-hex and hyphenated UUID representations of session.item_id
+                raw_hex = session.item_id.replace("-", "")
+                if len(raw_hex) == 32:
+                    hyphenated = (
+                        f"{raw_hex[0:8]}-{raw_hex[8:12]}-{raw_hex[12:16]}-"
+                        f"{raw_hex[16:20]}-{raw_hex[20:32]}"
+                    )
+                    item_id_pattern = rf"(?:{re.escape(raw_hex)}|{re.escape(hyphenated)})"
+                else:
+                    item_id_pattern = re.escape(session.item_id)
 
                 # Rewrite absolute Jellyfin server URLs and /Videos/ paths to token proxy routes
                 if session.server_url:
                     cleaned_text = re.sub(
-                        rf'{re.escape(session.server_url)}/Videos/{re.escape(session.item_id)}/',
+                        rf'{re.escape(session.server_url)}/Videos/{item_id_pattern}/',
                         "",
                         cleaned_text,
                         flags=re.IGNORECASE,
@@ -585,7 +667,7 @@ class JellyHAHlsView(HomeAssistantView):
                     )
 
                 cleaned_text = re.sub(
-                    rf'(["\']?)/Videos/{re.escape(session.item_id)}/',
+                    rf'(["\']?)/Videos/{item_id_pattern}/',
                     rf'\1/api/jellyha/hls/{token}/',
                     cleaned_text,
                     flags=re.IGNORECASE,

@@ -16,6 +16,7 @@ from datetime import timedelta
 
 from .const import DOMAIN
 from .media_strategy import MediaStrategy
+from .security import is_valid_item_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -118,6 +119,9 @@ async def async_browse_media(
 
     # Parse the content ID
     category, item_id = parse_item_id(media_content_id)
+
+    if item_id and not is_valid_item_id(item_id):
+        raise ValueError(f"Invalid item ID: {item_id}")
 
     if category == "movies":
         return await _build_movies_list(coordinator, entry_id)

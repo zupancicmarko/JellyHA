@@ -540,6 +540,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 item_id,
                 api,
                 device_id="jellyha",
+                display_name=item.get("Name"),
             )
             media_url = live_hls["url"]
             if base_url and media_url.startswith("/"):
@@ -588,7 +589,7 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 media_source_id = item["MediaSources"][0].get("Id")
 
             media_info = MediaStrategy.analyze_media(item)
-            playback_info = MediaStrategy.get_playback_info(
+            raw_playback_info = MediaStrategy.get_playback_info(
                 api._server_url,
                 api._api_key,
                 item_id,
@@ -599,6 +600,71 @@ async def async_register_services(hass: HomeAssistant) -> None:
                 media_source_id=media_source_id,
                 user_id=user_id,
             )
+
+            # Proxy media_url and vtt_url through Home Assistant so raw Jellyfin API keys
+            # are never exposed in Cast entity state attributes, Recorder DB, or LAN traffic.
+            from urllib.parse import parse_qsl, urlencode, urlparse
+            from .hls_manager import HlsSessionManager, _SENSITIVE_QUERY_KEYS
+
+            playback_info = dict(raw_playback_info)
+            raw_media_url = raw_playback_info.get("media_url", "")
+            parsed_media = urlparse(raw_media_url)
+            parsed_path = parsed_media.path.lstrip("/")
+            item_type_str = item.get("Type") or "Video"
+
+            if parsed_path.lower().endswith(".m3u8"):
+                # Route HLS transcode through tokenized JellyHAHlsView
+                hls_manager = hass.data.get(DOMAIN, {}).get("hls_manager")
+                if not hls_manager:
+                    hass.data.setdefault(DOMAIN, {})
+                    hls_manager = HlsSessionManager(hass)
+                    hass.data[DOMAIN]["hls_manager"] = hls_manager
+
+                clean_params: dict[str, str] = {}
+                for k, v in parse_qsl(parsed_media.query):
+                    if k.lower() in _SENSITIVE_QUERY_KEYS:
+                        continue
+                    clean_params[k] = v
+
+                play_session_id = clean_params.get("PlaySessionId") or f"cast_{item_id[:12]}"
+                clean_params["PlaySessionId"] = play_session_id
+                hls_session = hls_manager.create_session(
+                    entry_id=coordinator.entry.entry_id,
+                    item_id=item_id,
+                    play_session_id=play_session_id,
+                    media_source_id=str(media_source_id or item_id),
+                    server_url=api._server_url,
+                    api_key=api._api_key,
+                    api=api,
+                    device_id=clean_params.get("DeviceId", "jellyha"),
+                )
+                hls_rel_path = parsed_path if parsed_path.lower().startswith(("videos/", "audio/")) else "master.m3u8"
+                proxied_media_url = f"/api/jellyha/hls/{hls_session.token}/{hls_rel_path}?{urlencode(clean_params)}"
+            else:
+                # Route DirectPlay through signed JellyHAStreamView
+                stream_type = "Audio" if item_type_str == "Audio" else "Video"
+                stream_path = api.get_stream_path(
+                    coordinator.entry.entry_id,
+                    item_id,
+                    item_type=stream_type,
+                )
+                proxied_media_url = _sign_path(hass, stream_path, timedelta(hours=24))
+
+            if base_url and proxied_media_url.startswith("/"):
+                proxied_media_url = f"{base_url.rstrip('/')}{proxied_media_url}"
+            playback_info["media_url"] = proxied_media_url
+
+            if raw_playback_info.get("vtt_url") and raw_playback_info.get("subtitle_stream_index") is not None:
+                sub_idx = raw_playback_info["subtitle_stream_index"]
+                ms_id = media_source_id or item_id
+                sub_path = (
+                    f"/api/jellyha/subtitles/{coordinator.entry.entry_id}/{item_id}/{sub_idx}"
+                    f"?media_source_id={ms_id}"
+                )
+                proxied_vtt_url = _sign_path(hass, sub_path, timedelta(hours=24))
+                if base_url and proxied_vtt_url.startswith("/"):
+                    proxied_vtt_url = f"{base_url.rstrip('/')}{proxied_vtt_url}"
+                playback_info["vtt_url"] = proxied_vtt_url
 
         # Cast
         use_series_img = call.data.get("use_series_image", True)
@@ -811,6 +877,10 @@ async def async_register_services(hass: HomeAssistant) -> None:
 
         item = None
         if direct_item_id:
+            try:
+                direct_item_id = validate_item_id(direct_item_id)
+            except ValueError as err:
+                raise HomeAssistantError(f"Invalid item ID: {err}") from err
             raw = await api.get_item(user_id, direct_item_id)
             if raw:
                 item = await coordinator._async_transform_item(raw)
@@ -1703,6 +1773,11 @@ async def async_register_services(hass: HomeAssistant) -> None:
         )
         api = coordinator._api
         session_id = call.data.get("session_id")
+        if session_id:
+            try:
+                session_id = validate_session_id(session_id)
+            except ValueError as err:
+                raise HomeAssistantError(f"Invalid session ID: {err}") from err
         device_id = call.data.get("device_id")
         device_name = call.data.get("device_name")
         client = call.data.get("client")
