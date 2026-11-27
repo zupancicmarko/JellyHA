@@ -5,6 +5,13 @@ All notable changes to JellyHA will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.10] - 2026-11-27
+
+### Fixed
+- **Device Session Matching for `'Jellyfin for '` Clients** ([#80](https://github.com/zupancicmarko/JellyHA/pull/80) by `@sunfirester`):
+  - Normalized `'Jellyfin for '` (as well as `'Jellyfin '` and `'Jellyfin-'`) prefixes when matching Jellyfin device media player entities against active sessions, fixing Android TV (e.g. NVIDIA SHIELD), Android, Kodi, Roku, and WebOS entities staying `idle` during active playback.
+  - Hardened device/client label parsing with balanced parenthesis scanning from the right so devices with parentheses in their own name (e.g. `Living Room (Main) (Android TV)`) and clients with nested parentheses (e.g. `iPhone (Jellyfin Mobile (iOS))`) match reliably without stripping `'for '` from non-Jellyfin clients.
+
 ## [1.7.9] - 2026-11-25
 
 ### Fixed

@@ -1239,6 +1239,38 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
         else:
             self._attr_icon = "mdi:television-play"
 
+    @staticmethod
+    def _split_device_and_client(raw_target: str) -> tuple[str, str]:
+        """Split a 'Device Name (Client/App)' label into (base_name, client_target).
+
+        Uses balanced parenthesis scanning from the right so both parentheses in
+        the device name (e.g. 'Living Room (Main) (Android TV)') and nested
+        parentheses in the client name (e.g. 'iPhone (Jellyfin Mobile (iOS))')
+        are parsed accurately.
+        """
+        text = raw_target.strip()
+        if text.endswith(")"):
+            depth = 0
+            for idx in range(len(text) - 1, -1, -1):
+                ch = text[idx]
+                if ch == ")":
+                    depth += 1
+                elif ch == "(":
+                    depth -= 1
+                    if depth == 0:
+                        base = text[:idx].strip().lower()
+                        client = text[idx + 1 : -1].strip().lower()
+                        if base:
+                            return base, client
+                        break
+        return text.lower(), ""
+
+    @staticmethod
+    def _normalize_client_name(client: str) -> str:
+        """Normalize a Jellyfin client/app name by collapsing spaces and stripping optional 'jellyfin [for ]' prefix."""
+        collapsed = " ".join(client.strip().lower().split())
+        return re.sub(r"^jellyfin(?:[\s-]+for\s+|[\s-]+)", "", collapsed).strip()
+
     def _is_matching_device_session(self, s: dict[str, Any]) -> bool:
         """Check if a session belongs to this device."""
         session_dev_id = s.get("DeviceId") or ""
@@ -1261,13 +1293,7 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
             return False
 
         # If custom device name has "(Client/App)", extract base name and client
-        match = re.match(r"^(.*?)\s*\((.*?)\)$", raw_target)
-        if match:
-            base_name = match.group(1).strip().lower()
-            client_target = match.group(2).strip().lower()
-        else:
-            base_name = raw_target.lower()
-            client_target = ""
+        base_name, client_target = self._split_device_and_client(raw_target)
 
         # Check if base device name matches session's device name
         if base_name in session_names or raw_target.lower() in session_names:
@@ -1276,9 +1302,9 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
             session_client = str(s.get("Client") or s.get("AppName") or "").strip().lower()
             if not session_client:
                 return True
-            # Compare client names, normalizing optional 'jellyfin ' / 'jellyfin for ' prefix
-            norm_target = client_target.removeprefix("jellyfin ").removeprefix("for ").strip()
-            norm_session = session_client.removeprefix("jellyfin ").removeprefix("for ").strip()
+            # Compare client names, normalizing optional 'jellyfin ' / 'jellyfin for ' / 'jellyfin-' prefix
+            norm_target = self._normalize_client_name(client_target)
+            norm_session = self._normalize_client_name(session_client)
             return norm_target == norm_session or client_target == session_client
 
         return False
