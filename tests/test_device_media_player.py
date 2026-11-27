@@ -141,6 +141,22 @@ class TestDeviceMediaPlayer(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(android_player._is_matching_device_session(jellyfin_android_session))
         self.assertFalse(moonfin_player._is_matching_device_session(jellyfin_android_session))
 
+        # "Jellyfin for Android TV" session matches "SHIELD (Android TV)" player
+        shield_player = JellyHADeviceMediaPlayer(
+            self.mock_coordinator,
+            self.mock_entry,
+            "dev_db_id_shield",
+            "SHIELD (Android TV)",
+            "JellyHA",
+        )
+        shield_playback_session = {
+            "Id": "sess_4",
+            "DeviceId": "different_playback_device_id",
+            "DeviceName": "SHIELD",
+            "Client": "Jellyfin for Android TV",
+        }
+        self.assertTrue(shield_player._is_matching_device_session(shield_playback_session))
+
     def test_config_flow_device_select_preserves_client_in_device_map(self):
         """Verify config flow device select step maps device ID to full label with client info."""
         flow = JellyHAConfigFlow()

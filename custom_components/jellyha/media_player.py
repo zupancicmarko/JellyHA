@@ -1276,9 +1276,9 @@ class JellyHADeviceMediaPlayer(JellyHABasePlaybackMediaPlayer):
             session_client = str(s.get("Client") or s.get("AppName") or "").strip().lower()
             if not session_client:
                 return True
-            # Compare client names, normalizing optional 'jellyfin ' prefix
-            norm_target = client_target.removeprefix("jellyfin ").strip()
-            norm_session = session_client.removeprefix("jellyfin ").strip()
+            # Compare client names, normalizing optional 'jellyfin ' / 'jellyfin for ' prefix
+            norm_target = client_target.removeprefix("jellyfin ").removeprefix("for ").strip()
+            norm_session = session_client.removeprefix("jellyfin ").removeprefix("for ").strip()
             return norm_target == norm_session or client_target == session_client
 
         return False
