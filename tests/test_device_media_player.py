@@ -157,6 +157,70 @@ class TestDeviceMediaPlayer(unittest.IsolatedAsyncioTestCase):
         }
         self.assertTrue(shield_player._is_matching_device_session(shield_playback_session))
 
+    def test_device_session_matching_edge_cases(self):
+        """Verify balanced parentheses, hyphen/whitespace normalization, and non-Jellyfin 'for ' preservation."""
+        # 1. Parentheses inside device name itself: "Living Room (Main) (Android TV)"
+        paren_device_player = JellyHADeviceMediaPlayer(
+            self.mock_coordinator,
+            self.mock_entry,
+            "dev_paren_1",
+            "Living Room (Main) (Android TV)",
+            "JellyHA",
+        )
+        self.assertTrue(
+            paren_device_player._is_matching_device_session({
+                "Id": "s1",
+                "DeviceId": "other_id",
+                "DeviceName": "Living Room (Main)",
+                "Client": "Jellyfin for Android TV",
+            })
+        )
+        self.assertFalse(
+            paren_device_player._is_matching_device_session({
+                "Id": "s2",
+                "DeviceId": "other_id",
+                "DeviceName": "Living Room (Main)",
+                "Client": "Kodi",
+            })
+        )
+
+        # 2. Nested parentheses inside client name: "iPhone (Jellyfin Mobile (iOS))"
+        nested_client_player = JellyHADeviceMediaPlayer(
+            self.mock_coordinator,
+            self.mock_entry,
+            "dev_paren_2",
+            "iPhone (Jellyfin Mobile (iOS))",
+            "JellyHA",
+        )
+        self.assertTrue(
+            nested_client_player._is_matching_device_session({
+                "Id": "s3",
+                "DeviceId": "other_id",
+                "DeviceName": "iPhone",
+                "Client": "Mobile (iOS)",
+            })
+        )
+
+        # 3. Extra whitespace & hyphenated "Jellyfin-" prefix
+        self.assertEqual(
+            JellyHADeviceMediaPlayer._normalize_client_name("Jellyfin  for  Android TV"),
+            "android tv",
+        )
+        self.assertEqual(
+            JellyHADeviceMediaPlayer._normalize_client_name("Jellyfin-Android TV"),
+            "android tv",
+        )
+
+        # 4. Non-Jellyfin client literally starting with "For " is NOT stripped
+        self.assertEqual(
+            JellyHADeviceMediaPlayer._normalize_client_name("For Kodi"),
+            "for kodi",
+        )
+        self.assertNotEqual(
+            JellyHADeviceMediaPlayer._normalize_client_name("For Kodi"),
+            JellyHADeviceMediaPlayer._normalize_client_name("Kodi"),
+        )
+
     def test_config_flow_device_select_preserves_client_in_device_map(self):
         """Verify config flow device select step maps device ID to full label with client info."""
         flow = JellyHAConfigFlow()
